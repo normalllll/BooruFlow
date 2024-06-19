@@ -1,5 +1,8 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
+    <uses-permission android:name="io.github.normalllll.yande_gui.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" tools:node="remove" />
     <application
         android:label="Yande GUI"
         android:name="${applicationName}"

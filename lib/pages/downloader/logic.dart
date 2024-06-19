@@ -1,4 +1,6 @@
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yande_gui/image_saver.dart';
 import 'package:yande_gui/rust_lib.dart';
@@ -63,12 +65,32 @@ class Downloader extends _$Downloader {
   }
 
   Future<DownloadTaskProvider?> addTask(Post post) async {
+
+    final androidInfo = await DeviceInfoPlugin().androidInfo;
+
+    if (androidInfo.version.sdkInt < 29) {
+      PermissionStatus status = await Permission.storage.status;
+
+      if (status.isPermanentlyDenied) {
+        EasyLoading.showError('Permission storage permanently denied\nPlease manually enable storage permissions in settings');
+        await Future.delayed(const Duration(seconds: 2));
+        openAppSettings();
+        return null;
+      }
+      if (!status.isGranted) {
+        status = await Permission.storage.request();
+        if (!status.isGranted) {
+          EasyLoading.showError('Permission storage denied');
+          return null;
+        }
+      }
+    }
+
     if (state.tasks.any((provider) => provider.post.id == post.id)) {
       EasyLoading.showToast('Download task already exists');
       return null;
     }
-    if (await ImageSaver.existImage(
-        '${post.id}.${post.fileExt}', post.fileSize)) {
+    if (await ImageSaver.existImage('${post.id}.${post.fileExt}', post.fileSize)) {
       EasyLoading.showToast('Image file already exists');
       return null;
     }
@@ -93,7 +115,7 @@ class DownloadTask extends _$DownloadTask {
     state = state.copyWith(progress: received / total);
   }
 
-  void doDownload({bool retry = false}) {
+  Future<void> doDownload({bool retry = false}) async {
     state = state.copyWith(type: DownloadTaskStateType.busy, progress: 0);
     if (retry) {
       EasyLoading.showToast('Retry download task ${state.post.id}');

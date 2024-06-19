@@ -2,12 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:yande_gui/global.dart';
 import 'package:yande_gui/rust_lib.dart';
 
 import 'pages/index/index_page.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await rustInit();
+  final packageInfo = await PackageInfo.fromPlatform();
+  Global.appVersion = packageInfo.version;
+  Global.buildNumber = packageInfo.buildNumber;
   runApp(const ProviderScope(child: MyApp()));
 }
 

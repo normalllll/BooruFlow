@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:yande_gui/global.dart';
 import 'package:yande_gui/src/rust/api/rustc.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
 
@@ -50,6 +51,7 @@ class _AboutPageState extends State<AboutPage> {
                 launchUrlString('https://github.com/normalllll/yande_gui/releases/latest', mode: LaunchMode.externalApplication);
               },
             ),
+            buildItem(title: 'App Version', subtitle: '${Global.appVersion}+${Global.buildNumber}'),
             buildItem(
               title: 'Flutter Version',
               subtitle: Platform.version,

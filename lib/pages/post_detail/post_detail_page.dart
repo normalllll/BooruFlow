@@ -64,9 +64,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
 
     if (schemeUrl case String schemeUrl?) {
       if (Platform.isAndroid) {
-        if (!await launchUrlString(schemeUrl, mode: LaunchMode.externalApplication)) {
-          launchUrlString(url, mode: LaunchMode.externalApplication);
-        }
+        launchUrlString(schemeUrl, mode: LaunchMode.externalApplication).catchError((e) => launchUrlString(url, mode: LaunchMode.externalApplication));
       } else {
         if (await canLaunchUrlString(schemeUrl)) {
           launchUrlString(schemeUrl, mode: LaunchMode.externalApplication);
