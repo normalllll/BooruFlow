@@ -10,6 +10,9 @@ Cross-platform GUI for yande.re
 | macOS    | ✅    | ✅        | ❌        |       |
 | iOS      | ✅    | ❌        | ❌        |       |
 
+# Discussion
+[![Telegram](https://img.shields.io/badge/chat-Telegram-blue.svg)](https://t.me/+ONtNV3HTQ0NhMzVh)
+
 ## Preview
 
 
