@@ -20,12 +20,21 @@ class PostListPage extends ConsumerStatefulWidget {
 
 class _PostListPageState extends ConsumerState<PostListPage> {
   final scrollController = ScrollController();
-  late final searchInputController = TextEditingController(text: widget.tags?.join(' '));
   final focusNode = FocusNode();
+  late final searchInputController = TextEditingController(text: widget.tags?.join(' '));
+  late final provider = postListProvider(runtimeType, tags: widget.tags ?? []);
+
+  bool _hasFocus = false;
+
+  void onFocusChanged() {
+    setState(() {
+      _hasFocus = focusNode.hasFocus;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final provider = postListProvider(runtimeType, tags: widget.tags ?? []);
+    print('rebuild');
 
     final state = ref.watch(provider);
     double screenWidth = MediaQuery.of(context).size.width;
@@ -78,7 +87,10 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                   ref.read(provider.notifier).onTagsChanged([]);
                 }
               },
-              icon: const Icon(Icons.clear),
+              icon: Icon(switch (_hasFocus) {
+                true => Icons.close,
+                false => Icons.refresh,
+              }),
             ),
           ],
         ),

@@ -92,7 +92,7 @@ class YandeImage extends StatelessWidget {
       },
       color: color,
       colorBlendMode: colorBlendMode,
-      enableMemoryCache: false,
+      enableMemoryCache: true,
       width: width,
       height: height,
       fit: fit ?? BoxFit.fitWidth,

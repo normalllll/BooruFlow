@@ -6,7 +6,7 @@ part of 'logic.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$postListHash() => r'5859759b7fd82a54ee028ee5418b94860e6e151c';
+String _$postListHash() => r'336b1c0bcf2d410d6e2a3365b35d6cd9960d8281';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -29,7 +29,7 @@ class _SystemHash {
   }
 }
 
-abstract class _$PostList extends BuildlessAutoDisposeNotifier<PostListState> {
+abstract class _$PostList extends BuildlessNotifier<PostListState> {
   late final Type type;
   late final List<String> tags;
 
@@ -85,8 +85,7 @@ class PostListFamily extends Family<PostListState> {
 }
 
 /// See also [PostList].
-class PostListProvider
-    extends AutoDisposeNotifierProviderImpl<PostList, PostListState> {
+class PostListProvider extends NotifierProviderImpl<PostList, PostListState> {
   /// See also [PostList].
   PostListProvider(
     Type type, {
@@ -151,7 +150,7 @@ class PostListProvider
   }
 
   @override
-  AutoDisposeNotifierProviderElement<PostList, PostListState> createElement() {
+  NotifierProviderElement<PostList, PostListState> createElement() {
     return _PostListProviderElement(this);
   }
 
@@ -172,7 +171,7 @@ class PostListProvider
   }
 }
 
-mixin PostListRef on AutoDisposeNotifierProviderRef<PostListState> {
+mixin PostListRef on NotifierProviderRef<PostListState> {
   /// The parameter `type` of this provider.
   Type get type;
 
@@ -181,8 +180,7 @@ mixin PostListRef on AutoDisposeNotifierProviderRef<PostListState> {
 }
 
 class _PostListProviderElement
-    extends AutoDisposeNotifierProviderElement<PostList, PostListState>
-    with PostListRef {
+    extends NotifierProviderElement<PostList, PostListState> with PostListRef {
   _PostListProviderElement(super.provider);
 
   @override

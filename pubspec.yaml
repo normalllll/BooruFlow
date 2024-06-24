@@ -27,7 +27,7 @@ dependencies:
   visibility_detector: ^0.4.0+2
   path: ^1.9.0
   loading_more_list: ^6.0.0
-  extended_image: ^8.2.0
+  extended_image: ^8.2.1
   flutter_easyloading: ^3.0.5
   url_launcher: ^6.3.0
   vector_math: ^2.1.4

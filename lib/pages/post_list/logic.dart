@@ -44,7 +44,7 @@ class PostListSource extends DataListSource<Post> {
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 class PostList extends _$PostList {
   @override
   PostListState build(Type type, {required List<String> tags}) {
