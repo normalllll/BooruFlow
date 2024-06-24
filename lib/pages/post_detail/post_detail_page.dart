@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:yande_gui/components/yande_image/yande_image.dart';
 import 'package:yande_gui/pages/downloader/logic.dart';
+import 'package:yande_gui/pages/image_zoom_page/image_zoom_page.dart';
 import 'package:yande_gui/pages/post_detail/post_similar_widget.dart';
 import 'package:yande_gui/pages/post_list/post_list_page.dart';
 import 'package:yande_gui/src/rust/yande/model/post.dart';
@@ -173,6 +174,9 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                 final height = width * post.height / post.width;
 
                 return GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(builder: (context) => ImageZoomPage(url: post.fileUrl)));
+                  },
                   onLongPress: () {
                     ref.read(downloaderProvider.notifier).addTask(post).then((downloadTaskProvider) {
                       if (downloadTaskProvider != null) {
@@ -186,7 +190,6 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                       post.sampleUrl,
                       width: width,
                       height: height,
-                      gesture: true,
                       placeholderWidget: YandeImage(
                         post.previewUrl,
                         width: width,

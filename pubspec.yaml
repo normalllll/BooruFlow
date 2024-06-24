@@ -30,6 +30,7 @@ dependencies:
   extended_image: ^8.2.0
   flutter_easyloading: ^3.0.5
   url_launcher: ^6.3.0
+  vector_math: ^2.1.4
 
 dev_dependencies:
   flutter_test:

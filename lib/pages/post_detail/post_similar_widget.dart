@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yande_gui/components/yande_image/yande_image.dart';
 import 'package:yande_gui/pages/downloader/logic.dart';
+import 'package:yande_gui/pages/image_zoom_page/image_zoom_page.dart';
 import 'package:yande_gui/pages/post_detail/logic.dart';
 import 'package:yande_gui/src/rust/yande/model/post.dart';
 
@@ -22,6 +23,11 @@ class _PostSimilarWidgetState extends ConsumerState<PostSimilarWidget> {
       final height = width * post.height / post.width;
 
       return GestureDetector(
+        onTap: () {
+          Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+            return ImageZoomPage(url: post.fileUrl);
+          }));
+        },
         onLongPress: () {
           ref.read(downloaderProvider.notifier).addTask(post).then((downloadTaskProvider) {
             if (downloadTaskProvider != null) {
@@ -33,7 +39,6 @@ class _PostSimilarWidgetState extends ConsumerState<PostSimilarWidget> {
           post.sampleUrl,
           width: width,
           height: height,
-          gesture: true,
           placeholderWidget: YandeImage(
             post.previewUrl,
             width: width,

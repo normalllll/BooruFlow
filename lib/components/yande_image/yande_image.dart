@@ -20,7 +20,6 @@ class YandeImage extends StatelessWidget {
 
   final Widget? placeholderWidget;
 
-  final bool? gesture;
 
   const YandeImage(
     this.url, {
@@ -32,7 +31,6 @@ class YandeImage extends StatelessWidget {
     this.fit,
     this.imageBuilder,
     this.placeholderWidget,
-    this.gesture,
   });
 
   @override
@@ -44,20 +42,6 @@ class YandeImage extends StatelessWidget {
         printError: false,
       ),
       handleLoadingProgress: true,
-      initGestureConfigHandler: switch (gesture) {
-        true => (state) => GestureConfig(
-              minScale: 0.9,
-              animationMinScale: 0.7,
-              maxScale: 3.0,
-              animationMaxScale: 3.5,
-              speed: 1.0,
-              inertialSpeed: 100.0,
-              initialScale: 1.0,
-              inPageView: false,
-              initialAlignment: InitialAlignment.center,
-            ),
-        _ => null,
-      },
       loadStateChanged: (ExtendedImageState state) {
         switch (state.extendedImageLoadState) {
           case LoadState.loading:
@@ -75,9 +59,9 @@ class YandeImage extends StatelessWidget {
                     ],
                   );
                 } else {
-                  return const Padding(
-                    padding: EdgeInsets.all(5),
-                    child: Center(child: CupertinoActivityIndicator()),
+                  return Padding(
+                    padding: const EdgeInsets.all(5),
+                    child: Center(child: CircularProgressIndicator(value: progress)),
                   );
                 }
               }
