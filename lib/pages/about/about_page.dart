@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:yande_gui/global.dart';
+import 'package:yande_gui/services/updater_service.dart';
 import 'package:yande_gui/src/rust/api/rustc.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
 
@@ -28,6 +30,27 @@ class _AboutPageState extends State<AboutPage> {
         onTap: onTap,
       ),
     );
+  }
+
+  void doUpdate() {
+    EasyLoading.showToast('Check for update...');
+    UpdaterService.checkForUpdate().then((result) {
+      if (result == null) {
+        EasyLoading.showToast('No new version found');
+        return;
+      }
+
+      UpdaterService.selectDownloadUrl(result.$3).then((url) {
+        if (url == null) {
+          EasyLoading.showToast('Cannot find download url.\nPlease go to the project page to manually update or ask for help in the project issue page.');
+          return;
+        }
+
+        launchUrlString(url, mode: LaunchMode.externalApplication);
+      });
+    }).catchError((e) {
+      EasyLoading.showToast('Check for update failed. Please check your Internet connection.');
+    });
   }
 
   @override
@@ -59,6 +82,11 @@ class _AboutPageState extends State<AboutPage> {
             buildItem(
               title: 'Rust Version',
               subtitle: rustcVersion(),
+            ),
+            buildItem(
+              title: 'Download Update',
+              subtitle: 'Download the latest version for your device in your browser',
+              onTap: doUpdate,
             ),
           ],
         );
