@@ -32,7 +32,7 @@ class UpdaterService {
         final version = tagName.split('v')[1].split('+');
         final latestVersion = version[0];
         final latestBuildNumber = version[1];
-        if (latestVersion != appVersion || latestBuildNumber != buildNumber) {
+        if (latestVersion != appVersion || int.parse(latestBuildNumber) > int.parse(buildNumber)) {
           return (latestVersion, int.parse(latestBuildNumber), latestRelease['assets'] as List<dynamic>);
         }
       } catch (e) {
