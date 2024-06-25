@@ -42,7 +42,6 @@ impl HttpClient {
             }
             None => Url::parse(url)?,
         };
-        println!("{:?}", url.as_str());
         self.client.get(url).send().await.map_err(|e| e.into())
     }
 

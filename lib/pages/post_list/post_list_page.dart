@@ -34,7 +34,6 @@ class _PostListPageState extends ConsumerState<PostListPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('rebuild');
 
     final state = ref.watch(provider);
     double screenWidth = MediaQuery.of(context).size.width;
