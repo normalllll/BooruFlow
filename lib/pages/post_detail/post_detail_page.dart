@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:yande_gui/components/yande_image/yande_image.dart';
 import 'package:yande_gui/pages/downloader/logic.dart';
@@ -14,6 +13,7 @@ import 'package:yande_gui/pages/post_detail/post_similar_widget.dart';
 import 'package:yande_gui/pages/post_list/post_list_page.dart';
 import 'package:yande_gui/src/rust/yande/model/post.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
+import 'package:yande_gui/widgets/tag/tag.dart';
 
 class PostDetailPage extends ConsumerStatefulWidget {
   final Post post;
@@ -147,12 +147,8 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                         Clipboard.setData(ClipboardData(text: tag));
                         EasyLoading.showSuccess('Copied $tag');
                       },
-                      child: Chip(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-                        label: Text(tag),
+                      child: TagWidget(
+                        text: tag,
                       ),
                     ),
                 ],
