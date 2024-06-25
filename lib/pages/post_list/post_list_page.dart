@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_more_list/loading_more_list.dart';
 import 'package:yande_gui/components/loading_more_indicator/loading_more_indicator.dart';
@@ -33,8 +34,13 @@ class _PostListPageState extends ConsumerState<PostListPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+    focusNode.addListener(onFocusChanged);
+    super.initState();
+  }
 
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(provider);
     double screenWidth = MediaQuery.of(context).size.width;
 
@@ -86,10 +92,14 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                   ref.read(provider.notifier).onTagsChanged([]);
                 }
               },
-              icon: Icon(switch (_hasFocus) {
-                true => Icons.close,
-                false => Icons.refresh,
-              }),
+              icon: switch (_hasFocus) {
+                true => const Icon(
+                    Icons.clear,
+                  ).animate(key: const ValueKey(true)).scale(duration: 150.ms),
+                false => const Icon(
+                    Icons.refresh,
+                  ).animate(key: const ValueKey(false)).scale(duration: 150.ms),
+              },
             ),
           ],
         ),
@@ -135,13 +145,16 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                                 children: [
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(6),
-                                    child: Hero(
-                                      tag: item.id,
-                                      child: YandeImage(
-                                        item.previewUrl,
-                                        width: width,
-                                        height: height,
-                                      ),
+                                    child: YandeImage(
+                                      item.previewUrl,
+                                      width: width,
+                                      height: height,
+                                      imageBuilder: (child) {
+                                        return Hero(
+                                          tag: item.id,
+                                          child: child,
+                                        ).animate().fade(duration: 250.ms);
+                                      },
                                     ),
                                   ),
                                   if (item.parentId != null)

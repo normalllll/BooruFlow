@@ -24,7 +24,7 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     const darkPrimaryColor = Color(0xfff175a9);
     const lightPrimaryColor = Color(0xffef83be);
-    const secondaryColor = Color(0xffa1f1f0);
+    const secondaryColor = Color(0xff28a4ff);
 
     final systemLocale = WidgetsFlutterBinding.ensureInitialized().platformDispatcher.locale;
 
@@ -55,6 +55,7 @@ class MyApp extends ConsumerWidget {
         cardTheme: const CardTheme(
           color: Color(0xff181818),
         ),
+
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
           selectedItemColor: darkPrimaryColor,
         ),
