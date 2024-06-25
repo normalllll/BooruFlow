@@ -13,14 +13,18 @@ Cross-platform GUI for yande.re
 # Discussion
 [![Telegram](https://img.shields.io/badge/chat-Telegram-blue.svg)](https://t.me/+ONtNV3HTQ0NhMzVh)
 
-## Preview
+## Preview (Desktop)
 
+| ![img0](screenshot/desktop/img0.webp) | ![img1](screenshot/desktop/img1.webp) |
+|---------------------------------------|---------------------------------------|
 
-| ![img0](./images/img0.png) | ![img1](./images/img1.png) |
-|----------------------------|----------------------------|
+| ![img2](screenshot/desktop/img2.webp) | ![img3](screenshot/desktop/img3.webp) |
+|---------------------------------------|---------------------------------------|
 
-| ![img2](./images/img2.png) | ![img3](./images/img3.png) |
-|----------------------------|----------------------------|
+## Preview (Mobile)
 
+| ![img0](screenshot/mobile/img0.webp) | ![img1](screenshot/mobile/img1.webp) |
+|--------------------------------------|--------------------------------------|
 
-
+| ![img2](screenshot/mobile/img2.webp) | ![img3](screenshot/mobile/img3.webp) |
+|--------------------------------------|--------------------------------------|
