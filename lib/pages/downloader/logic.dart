@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -65,24 +67,30 @@ class Downloader extends _$Downloader {
   }
 
   Future<DownloadTaskProvider?> addTask(Post post) async {
+    if (Platform.isAndroid) {
+      try {
+        final androidInfo = await DeviceInfoPlugin().androidInfo;
 
-    final androidInfo = await DeviceInfoPlugin().androidInfo;
+        if (androidInfo.version.sdkInt < 29) {
+          PermissionStatus status = await Permission.storage.status;
 
-    if (androidInfo.version.sdkInt < 29) {
-      PermissionStatus status = await Permission.storage.status;
-
-      if (status.isPermanentlyDenied) {
-        EasyLoading.showError('Permission storage permanently denied\nPlease manually enable storage permissions in settings');
-        await Future.delayed(const Duration(seconds: 2));
-        openAppSettings();
-        return null;
-      }
-      if (!status.isGranted) {
-        status = await Permission.storage.request();
-        if (!status.isGranted) {
-          EasyLoading.showError('Permission storage denied');
-          return null;
+          if (status.isPermanentlyDenied) {
+            EasyLoading.showError('Permission storage permanently denied\nPlease manually enable storage permissions in settings');
+            await Future.delayed(const Duration(seconds: 2));
+            openAppSettings();
+            return null;
+          }
+          if (!status.isGranted) {
+            status = await Permission.storage.request();
+            if (!status.isGranted) {
+              EasyLoading.showError('Permission storage denied');
+              return null;
+            }
+          }
         }
+      } catch (e) {
+        EasyLoading.showError('Get device info failed: $e');
+        return null;
       }
     }
 
