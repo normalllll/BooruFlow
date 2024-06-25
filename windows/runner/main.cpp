@@ -32,7 +32,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
 
 
   int window_width = 1440;
-  int window_height = 900;
+  int window_height = 1200;
 
   // center the window
   Win32Window::Point origin((screen_width - window_width) / 2, (screen_height - window_height) / 2);
