@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -78,131 +79,194 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
     }
   }
 
+  Widget buildMetadata() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(6),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('id: ${post.id}'),
+            Text('date: ${formatIntDateTime(post.createdAt)}'),
+            Text('author: ${post.author}'),
+            if (RegExp(
+              r'^(?:http|https)://[\w\-]+(?:\.[\w\-]+)*(?::\d+)?(?:/\S*)?$',
+              caseSensitive: false,
+              multiLine: false,
+            ).hasMatch(post.source))
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => openUrl(post.source),
+                onLongPress: () {
+                  //set clipboard
+                  Clipboard.setData(ClipboardData(text: post.source));
+                  EasyLoading.showSuccess('Copied ${post.source}');
+                },
+                child: Row(
+                  children: [
+                    const Text('source: '),
+                    Expanded(
+                      child: Text(
+                        post.source,
+                        style: const TextStyle(color: Colors.blueAccent, overflow: TextOverflow.ellipsis),
+                      ),
+                    )
+                  ],
+                ),
+              )
+            else
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  //set clipboard
+                  Clipboard.setData(ClipboardData(text: post.source));
+                  EasyLoading.showSuccess('Copied ${post.source}');
+                },
+                child: Text('source: ${post.source}', overflow: TextOverflow.ellipsis),
+              ),
+            Text('width: ${post.width}'),
+            Text('height: ${post.height}'),
+            Text('score: ${post.score}'),
+            Text('size: ${(post.fileSize / 1024 / 1024).toStringAsFixed(2)}MB'),
+            Text('parent: ${post.parentId}'),
+            Text('hasChildren: ${post.hasChildren}'),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Wrap(
+                runSpacing: 6,
+                spacing: 6,
+                children: [
+                  for (final tag in post.tags.split(' '))
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => PostListPage(tags: [tag])));
+                      },
+                      onLongPress: () {
+                        //set clipboard
+                        Clipboard.setData(ClipboardData(text: tag));
+                        EasyLoading.showSuccess('Copied $tag');
+                      },
+                      child: Chip(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                        label: Text(tag),
+                      ),
+                    ),
+                ],
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildImage({required double width, required double height}) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) => ImageZoomPage(url: post.fileUrl)));
+      },
+      onLongPress: () {
+        ref.read(downloaderProvider.notifier).addTask(post).then((downloadTaskProvider) {
+          if (downloadTaskProvider != null) {
+            ref.read(downloadTaskProvider.notifier).doDownload();
+          }
+        });
+      },
+      child: Center(
+        child: SizedBox(
+          width: width,
+          height: height,
+          child: Hero(
+            tag: post.id,
+            child: YandeImage(
+              post.sampleUrl,
+              width: width,
+              height: height,
+              placeholderWidget: YandeImage(
+                post.previewUrl,
+                width: width,
+                height: height,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> buildImageList({required double maxWidth, required double maxHeight}) {
+    final double calcHeight;
+    final double calcWidth;
+
+    if (post.width > post.height) {
+      calcWidth = maxWidth;
+      calcHeight = calcWidth * post.height / post.width;
+    } else {
+      calcHeight = maxHeight;
+      calcWidth = calcHeight * post.width / post.height;
+    }
+    return [
+      SliverToBoxAdapter(
+        child: buildImage(width: calcWidth, height: calcHeight),
+      ),
+      if (post.parentId != null || post.hasChildren)
+        SliverToBoxAdapter(
+          child: PostSimilarWidget(
+            id: post.id,
+            maxWidth: maxWidth,
+            maxHeight: maxHeight,
+          ),
+        ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return AutoScaffold(
       titleWidget: Text('Post :${post.id}'),
       builder: (context, horizontal) {
-        return CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Column(
+        if (horizontal) {
+          return LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Text('id: ${post.id}'),
-                  Text('date: ${formatIntDateTime(post.createdAt)}'),
-                  Text('author: ${post.author}'),
-                  if (RegExp(
-                    r'^(?:http|https)://[\w\-]+(?:\.[\w\-]+)*(?::\d+)?(?:/\S*)?$',
-                    caseSensitive: false,
-                    multiLine: false,
-                  ).hasMatch(post.source))
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () => openUrl(post.source),
-                      onLongPress: () {
-                        //set clipboard
-                        Clipboard.setData(ClipboardData(text: post.source));
-                        EasyLoading.showSuccess('Copied ${post.source}');
-                      },
-                      child: RichText(
-                        text: TextSpan(
-                          text: 'source: ',
-                          style: DefaultTextStyle.of(context).style,
-                          children: <TextSpan>[
-                            TextSpan(
-                              text: post.source,
-                              style: const TextStyle(
-                                color: Colors.blue,
-                                // decoration: TextDecoration.underline,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  else
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () {
-                        //set clipboard
-                        Clipboard.setData(ClipboardData(text: post.source));
-                        EasyLoading.showSuccess('Copied ${post.source}');
-                      },
-                      child: Text('source: ${post.source}', overflow: TextOverflow.ellipsis),
-                    ),
-                  Text('width: ${post.width}'),
-                  Text('height: ${post.height}'),
-                  Text('score: ${post.score}'),
-                  Text('size: ${(post.fileSize / 1024 / 1024).toStringAsFixed(2)}MB'),
-                  Text('parent: ${post.parentId}'),
-                  Text('hasChildren: ${post.hasChildren}'),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Wrap(
-                      runSpacing: 6,
-                      spacing: 6,
-                      children: [
-                        for (final tag in post.tags.split(' '))
-                          GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(builder: (context) => PostListPage(tags: [tag])));
-                            },
-                            onLongPress: () {
-                              //set clipboard
-                              Clipboard.setData(ClipboardData(text: tag));
-                              EasyLoading.showSuccess('Copied $tag');
-                            },
-                            child: Chip(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-                              label: Text(tag),
-                            ),
-                          )
-                      ],
-                    ),
-                  )
-                ],
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: LayoutBuilder(builder: (context, constraints) {
-                final width = constraints.maxWidth;
-                final height = width * post.height / post.width;
-
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(builder: (context) => ImageZoomPage(url: post.fileUrl)));
-                  },
-                  onLongPress: () {
-                    ref.read(downloaderProvider.notifier).addTask(post).then((downloadTaskProvider) {
-                      if (downloadTaskProvider != null) {
-                        ref.read(downloadTaskProvider.notifier).doDownload();
-                      }
-                    });
-                  },
-                  child: Hero(
-                    tag: post.id,
-                    child: YandeImage(
-                      post.sampleUrl,
-                      width: width,
-                      height: height,
-                      placeholderWidget: YandeImage(
-                        post.previewUrl,
-                        width: width,
-                        height: height,
+                  SizedBox(
+                    width: 400,
+                    child: buildMetadata(),
+                  ),
+                  Expanded(
+                    child: CustomScrollView(
+                      slivers: buildImageList(
+                        maxWidth: constraints.maxWidth - 400,
+                        maxHeight: constraints.maxHeight,
                       ),
                     ),
                   ),
-                );
-              }),
-            ),
-            if (post.parentId != null || post.hasChildren) SliverToBoxAdapter(child: PostSimilarWidget(id: post.id)),
-          ],
-        );
+                ],
+              );
+            },
+          );
+        } else {
+          return LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              return CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(child: buildMetadata()),
+                  ...buildImageList(
+                    maxWidth: constraints.maxWidth,
+                    maxHeight: constraints.maxHeight,
+                  )
+                ],
+              );
+            },
+          );
+        }
       },
     );
   }
