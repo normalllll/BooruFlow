@@ -163,7 +163,15 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
   Widget buildImage({required double width, required double height}) {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) => ImageZoomPage(url: post.fileUrl)));
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => ImageZoomPage(
+              url: post.fileUrl,
+              width: post.width.toDouble(),
+              height: post.height.toDouble(),
+            ),
+          ),
+        );
       },
       onLongPress: () {
         ref.read(downloaderProvider.notifier).addTask(post).then((downloadTaskProvider) {

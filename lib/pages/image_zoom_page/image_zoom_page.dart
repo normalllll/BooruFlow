@@ -8,8 +8,15 @@ import 'package:yande_gui/components/yande_image/yande_image.dart';
 
 class ImageZoomPage extends StatefulWidget {
   final String url;
+  final double width;
+  final double height;
 
-  const ImageZoomPage({super.key, required this.url});
+  const ImageZoomPage({
+    super.key,
+    required this.url,
+    required this.width,
+    required this.height,
+  });
 
   @override
   State<ImageZoomPage> createState() => _ImageZoomPageState();
@@ -41,31 +48,34 @@ class _ImageZoomPageState extends State<ImageZoomPage> {
       body: Center(
         child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
-            return YandeImage(widget.url, imageBuilder: (Widget imageWidget) {
-              return Zoom(
-                key: zoomStateKey,
-                onMinZoom: (v) {
-                  if (v) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      initialMatrix ??= zoomStateKey.currentState?._transformationController?.value;
-                    });
-                  }
-                },
-                maxScale: 10,
-                initTotalZoomOut: true,
-                canvasColor: Colors.transparent,
-                backgroundColor: Colors.transparent,
-                colorScrollBars: Theme.of(context).primaryColor,
-                opacityScrollBars: 0.7,
-                scrollWeight: 10.0,
-                // centerOnScale: true,
-                enableScroll: true,
-                doubleTapZoom: true,
-
-                zoomSensibility: 0.05,
-                child: imageWidget,
-              );
-            });
+            return YandeImage(
+              widget.url,
+              width: widget.width,
+              height: widget.height,
+              imageBuilder: (Widget imageWidget) {
+                return Zoom(
+                  key: zoomStateKey,
+                  onMinZoom: (v) {
+                    if (v) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        initialMatrix ??= zoomStateKey.currentState?._transformationController?.value;
+                      });
+                    }
+                  },
+                  maxScale: 10,
+                  initTotalZoomOut: true,
+                  canvasColor: Colors.transparent,
+                  backgroundColor: Colors.transparent,
+                  colorScrollBars: Theme.of(context).primaryColor,
+                  opacityScrollBars: 0.7,
+                  scrollWeight: 10.0,
+                  enableScroll: true,
+                  doubleTapZoom: true,
+                  zoomSensibility: 0.05,
+                  child: imageWidget,
+                );
+              },
+            );
           },
         ),
       ),

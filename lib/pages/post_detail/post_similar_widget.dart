@@ -39,9 +39,15 @@ class _PostSimilarWidgetState extends ConsumerState<PostSimilarWidget> {
     }
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-          return ImageZoomPage(url: post.fileUrl);
-        }));
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => ImageZoomPage(
+              url: post.fileUrl,
+              width: post.width.toDouble(),
+              height: post.height.toDouble(),
+            ),
+          ),
+        );
       },
       onLongPress: () {
         ref.read(downloaderProvider.notifier).addTask(post).then((downloadTaskProvider) {
