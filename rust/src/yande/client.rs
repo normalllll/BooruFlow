@@ -17,12 +17,13 @@ impl YandeClient {
 
 impl YandeClient {
     pub async fn get_posts(&self, tags: Vec<String>, limit: u32, page: u32) -> anyhow::Result<Vec<Post>> {
-        let tags = tags.iter().map(|tag| ("tags", tag.as_str())).collect::<Vec<_>>();
+        let tags = tags.join("+");
         let resp = self.http.get("https://yande.re/post.json", Some(
-            tags.iter().chain(vec![
+            vec![
+                ("tags", tags.as_str()),
                 ("limit", limit.to_string().as_str()),
                 ("page", page.to_string().as_str()),
-            ].iter()).map(|(k, v)| (*k, *v)).collect::<Vec<_>>()
+            ].iter().map(|(k, v)| (*k, *v)).collect::<Vec<_>>()
         )).await?;
         let posts = resp.json::<Vec<Post>>().await?;
         Ok(posts)
@@ -50,4 +51,12 @@ impl YandeClient {
 
 lazy_static! {
     pub static ref YANDE_CLIENT: YandeClient = YandeClient::new();
+}
+
+mod test {
+    #[tokio::test]
+    async fn test() {
+        let posts = crate::api::yande_client::get_posts(vec!["nekomimi".to_string(), "no_bra".to_string()], 10, 1).await.unwrap();
+        println!("{:?}", posts);
+    }
 }

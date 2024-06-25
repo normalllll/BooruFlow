@@ -28,11 +28,21 @@ impl HttpClient {
     pub async fn get(&self, url: &str, params: Option<Vec<(&str, &str)>>) -> anyhow::Result<reqwest::Response> {
         let url = match params {
             Some(params) => {
-                Url::parse_with_params(url, params)?
+                let encoded_params = params.iter().map(|(key, value)| {
+                    let encoded_key = url::form_urlencoded::byte_serialize(key.as_bytes()).collect::<String>().replace("%2B", "+");
+                    let encoded_value =  url::form_urlencoded::byte_serialize(value.as_bytes()).collect::<String>().replace("%2B", "+");
+                    (encoded_key, encoded_value)
+                });
+
+                // Construct query string manually
+                let query_string = encoded_params.map(|(k, v)| format!("{}={}", k, v)).collect::<Vec<String>>().join("&");
+                let mut url = Url::parse(url)?;
+                url.set_query(Some(&query_string));
+                url
             }
             None => Url::parse(url)?,
         };
-        // println!("{:?}", url.as_str());
+        println!("{:?}", url.as_str());
         self.client.get(url).send().await.map_err(|e| e.into())
     }
 
