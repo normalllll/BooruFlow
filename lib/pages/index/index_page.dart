@@ -3,6 +3,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:yande_gui/pages/about/about_page.dart';
 import 'package:yande_gui/pages/downloader/downloader_page.dart';
 import 'package:yande_gui/pages/post_list/post_list_page.dart';
+import 'package:yande_gui/pages/settings/settings_page.dart';
 import 'package:yande_gui/services/updater_service.dart';
 import 'package:yande_gui/widgets/lazy_indexed_stack/lazy_indexed_stack.dart';
 
@@ -18,7 +19,7 @@ class _IndexPageState extends State<IndexPage> {
     (Icons.list_alt_outlined, 'Post'): (context) => const PostListPage(),
     (Icons.cloud_download_outlined, 'Downloader'): (context) => const DownloaderPage(),
     (Icons.info_outlined, 'About'): (context) => const AboutPage(),
-    (Icons.settings, 'Settings'): (context) => const Placeholder(),
+    (Icons.settings, 'Settings'): (context) => const SettingsPage(),
   };
 
   final controller = PageController();

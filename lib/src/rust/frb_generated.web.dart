@@ -6,6 +6,7 @@
 // Static analysis wrongly picks the IO variant, thus ignore this
 // ignore_for_file: argument_type_not_assignable
 
+import 'api/file_util.dart';
 import 'api/rustc.dart';
 import 'api/yande_client.dart';
 import 'dart:async';
@@ -62,6 +63,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Post dco_decode_post(dynamic raw);
 
   @protected
+  (bool, bool) dco_decode_record_bool_bool(dynamic raw);
+
+  @protected
   Similar dco_decode_similar(dynamic raw);
 
   @protected
@@ -108,6 +112,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Post sse_decode_post(SseDeserializer deserializer);
+
+  @protected
+  (bool, bool) sse_decode_record_bool_bool(SseDeserializer deserializer);
 
   @protected
   Similar sse_decode_similar(SseDeserializer deserializer);
@@ -167,6 +174,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_post(Post self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_record_bool_bool((bool, bool) self, SseSerializer serializer);
 
   @protected
   void sse_encode_similar(Similar self, SseSerializer serializer);
