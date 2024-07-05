@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:yande_gui/global.dart';
 import 'package:yande_gui/services/settings_service.dart';
-import 'package:yande_gui/src/rust/api/file_util.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
 import 'package:path/path.dart' as path;
 
@@ -174,9 +173,11 @@ class _SettingsPageState extends State<SettingsPage> {
                 }
 
                 try {
-                  final (_, writable) = getFilePermissions(path: dir);
+                  final mode = Directory(dir).statSync().mode;
 
-                  if (!writable) {
+                  final hasWritePermission = (mode & 0x80) != 0;
+
+                  if (!hasWritePermission) {
                     EasyLoading.showError('Path is not writable');
                     return;
                   }
