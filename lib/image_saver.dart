@@ -4,10 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:yande_gui/services/settings_service.dart';
 
 class ImageSaver {
-  static const MethodChannel _channel =
-      MethodChannel('io.github.normalllll.yande_gui/imagesaver');
+  static const MethodChannel _channel = MethodChannel('io.github.normalllll.yande_gui/imagesaver');
 
   static Future<bool> saveImage(Uint8List imageBytes, String filename) async {
     if (Platform.isAndroid) {
@@ -24,7 +24,12 @@ class ImageSaver {
     } else {
       try {
         final downloadDir = await getDownloadsDirectory();
-        final file = File(path.join(downloadDir!.path, 'yande', filename));
+        final File file;
+        if (SettingsService.downloadPath case String downloadPath) {
+          file = File(path.join(downloadPath, filename));
+        } else {
+          file = File(path.join(downloadDir!.path, 'yande', filename));
+        }
         await file.create(recursive: true);
         await file.writeAsBytes(imageBytes);
         return true;
@@ -51,7 +56,12 @@ class ImageSaver {
     } else {
       try {
         final downloadDir = await getDownloadsDirectory();
-        final file = File(path.join(downloadDir!.path, 'yande', filename));
+        final File file;
+        if (SettingsService.downloadPath case String downloadPath) {
+          file = File(path.join(downloadPath, filename));
+        } else {
+          file = File(path.join(downloadDir!.path, 'yande', filename));
+        }
         return await file.exists() && await file.length() == fileSize;
       } catch (e) {
         EasyLoading.showError(e.toString());
