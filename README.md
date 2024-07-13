@@ -19,7 +19,7 @@ Cross-platform GUI for yande.re
 
 If you have any questions or suggestions, you can go to Telegram to discuss or open an [Issue](https://github.com/normalllll/yande_gui/issues/new).
 
-## Which to download?
+# Which to download?
 
 | Architecture | Windows                                                                                 | Linux                                                                                       | Android                                                                                             | macOS                                                                                            | iOS                                                                                      |
 |--------------|-----------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
@@ -57,7 +57,7 @@ sudo xattr -r -d com.apple.quarantine yande_gui.app
 
 Please sign the IPA file and install it manually.
 
-## Screenshots (Desktop)
+# Screenshots (Desktop)
 
 | ![img0](screenshot/desktop/img0.webp) | ![img1](screenshot/desktop/img1.webp) |
 |---------------------------------------|---------------------------------------|
@@ -65,7 +65,7 @@ Please sign the IPA file and install it manually.
 | ![img2](screenshot/desktop/img2.webp) | ![img3](screenshot/desktop/img3.webp) |
 |---------------------------------------|---------------------------------------|
 
-## Screenshots (Mobile)
+# Screenshots (Mobile)
 
 | ![img0](screenshot/mobile/img0.webp) | ![img1](screenshot/mobile/img1.webp) |
 |--------------------------------------|--------------------------------------|
