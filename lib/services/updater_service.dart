@@ -9,8 +9,7 @@ class UpdaterService {
 
   static Future<Map<String, dynamic>> _fetchLatestRelease() async {
     HttpClient client = HttpClient();
-    final request = await client.getUrl(Uri.parse(
-        'https://api.github.com/repos/normalllll/yande_gui/releases/latest'));
+    final request = await client.getUrl(Uri.parse('https://api.github.com/repos/normalllll/yande_gui/releases/latest'));
     final response = await request.close();
     if (response.statusCode == 200) {
       final body = await response.transform(utf8.decoder).join();
@@ -33,13 +32,8 @@ class UpdaterService {
         final version = tagName.split('v')[1].split('+');
         final latestVersion = version[0];
         final latestBuildNumber = version[1];
-        if (latestVersion != appVersion ||
-            int.parse(latestBuildNumber) > int.parse(buildNumber)) {
-          return (
-            latestVersion,
-            int.parse(latestBuildNumber),
-            latestRelease['assets'] as List<dynamic>
-          );
+        if (int.parse(latestBuildNumber) > int.parse(buildNumber)) {
+          return (latestVersion, int.parse(latestBuildNumber), latestRelease['assets'] as List<dynamic>);
         }
       } catch (e) {
         throw Exception('Failed to parse latest release version');
