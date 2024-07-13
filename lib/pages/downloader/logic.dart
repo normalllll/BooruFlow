@@ -4,8 +4,8 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yande_gui/global.dart';
 import 'package:yande_gui/image_saver.dart';
-import 'package:yande_gui/rust_lib.dart';
 import 'package:yande_gui/src/rust/yande/model/post.dart';
 
 part 'logic.g.dart';
@@ -75,7 +75,8 @@ class Downloader extends _$Downloader {
           PermissionStatus status = await Permission.storage.status;
 
           if (status.isPermanentlyDenied) {
-            EasyLoading.showError('Permission storage permanently denied\nPlease manually enable storage permissions in settings');
+            EasyLoading.showError(
+                'Permission storage permanently denied\nPlease manually enable storage permissions in settings');
             await Future.delayed(const Duration(seconds: 2));
             openAppSettings();
             return null;
@@ -98,7 +99,8 @@ class Downloader extends _$Downloader {
       EasyLoading.showToast('Download task already exists');
       return null;
     }
-    if (await ImageSaver.existImage('${post.id}.${post.fileExt}', post.fileSize)) {
+    if (await ImageSaver.existImage(
+        '${post.id}.${post.fileExt}', post.fileSize)) {
       EasyLoading.showToast('Image file already exists');
       return null;
     }
@@ -130,7 +132,7 @@ class DownloadTask extends _$DownloadTask {
     } else {
       EasyLoading.showToast('Download task start ${state.post.id}');
     }
-    YandeClient.downloadToMemory(
+    yandeClient.downloadToMemory(
       url: state.post.fileUrl,
       progressCallback: (received, total) async {
         updateProgress(received, total);

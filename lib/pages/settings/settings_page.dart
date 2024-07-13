@@ -17,7 +17,8 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  Widget buildItem({required Widget title, Widget? subtitle, Function()? onTap}) {
+  Widget buildItem(
+      {required Widget title, Widget? subtitle, Function()? onTap}) {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
@@ -100,7 +101,8 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _downloadPathDialog() {
-    final textController = TextEditingController(text: SettingsService.downloadPath);
+    final textController =
+        TextEditingController(text: SettingsService.downloadPath);
     showCupertinoDialog(
       context: context,
       barrierDismissible: true,
@@ -126,7 +128,10 @@ class _SettingsPageState extends State<SettingsPage> {
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          FilePicker.platform.getDirectoryPath(dialogTitle: 'Select a directory').then((value) {
+                          FilePicker.platform
+                              .getDirectoryPath(
+                                  dialogTitle: 'Select a directory')
+                              .then((value) {
                             if (value != null) {
                               textController.text = value;
                             }
@@ -161,7 +166,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 final dir = textController.text;
 
                 if (dir.isEmpty) {
-                  SettingsService.downloadPath= null;
+                  SettingsService.downloadPath = null;
                   EasyLoading.showInfo('Download path set to platform default');
                   setState(() {});
                   Navigator.of(context).pop();
@@ -214,7 +219,8 @@ class _SettingsPageState extends State<SettingsPage> {
             if (Platform.isWindows || Platform.isLinux || Platform.isMacOS)
               buildItem(
                 title: const Text('Download path'),
-                subtitle: Text(SettingsService.downloadPath ?? 'Platform Default'),
+                subtitle:
+                    Text(SettingsService.downloadPath ?? 'Platform Default'),
                 onTap: () {
                   _downloadPathDialog();
                 },

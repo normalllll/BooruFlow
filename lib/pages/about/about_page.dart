@@ -16,7 +16,8 @@ class AboutPage extends StatefulWidget {
 }
 
 class _AboutPageState extends State<AboutPage> {
-  Widget buildItem({required String title, String? subtitle, Function()? onTap}) {
+  Widget buildItem(
+      {required String title, String? subtitle, Function()? onTap}) {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
@@ -42,14 +43,16 @@ class _AboutPageState extends State<AboutPage> {
 
       UpdaterService.selectDownloadUrl(result.$3).then((url) {
         if (url == null) {
-          EasyLoading.showToast('Cannot find download url.\nPlease go to the project page to manually update or ask for help in the project issue page.');
+          EasyLoading.showToast(
+              'Cannot find download url.\nPlease go to the project page to manually update or ask for help in the project issue page.');
           return;
         }
 
         launchUrlString(url, mode: LaunchMode.externalApplication);
       });
     }).catchError((e) {
-      EasyLoading.showToast('Check for update failed. Please check your Internet connection.');
+      EasyLoading.showToast(
+          'Check for update failed. Please check your Internet connection.');
     });
   }
 
@@ -64,17 +67,23 @@ class _AboutPageState extends State<AboutPage> {
               title: 'Project URL',
               subtitle: 'https://github.com/normalllll/yande_gui',
               onTap: () {
-                launchUrlString('https://github.com/normalllll/yande_gui', mode: LaunchMode.externalApplication);
+                launchUrlString('https://github.com/normalllll/yande_gui',
+                    mode: LaunchMode.externalApplication);
               },
             ),
             buildItem(
               title: 'Publish page',
-              subtitle: 'https://github.com/normalllll/yande_gui/releases/latest',
+              subtitle:
+                  'https://github.com/normalllll/yande_gui/releases/latest',
               onTap: () {
-                launchUrlString('https://github.com/normalllll/yande_gui/releases/latest', mode: LaunchMode.externalApplication);
+                launchUrlString(
+                    'https://github.com/normalllll/yande_gui/releases/latest',
+                    mode: LaunchMode.externalApplication);
               },
             ),
-            buildItem(title: 'App Version', subtitle: '${Global.appVersion}+${Global.buildNumber}'),
+            buildItem(
+                title: 'App Version',
+                subtitle: '${Global.appVersion}+${Global.buildNumber}'),
             buildItem(
               title: 'Flutter Version',
               subtitle: Platform.version,
@@ -85,7 +94,8 @@ class _AboutPageState extends State<AboutPage> {
             ),
             buildItem(
               title: 'Download Update',
-              subtitle: 'Download the latest version for your device in your browser',
+              subtitle:
+                  'Download the latest version for your device in your browser',
               onTap: doUpdate,
             ),
           ],

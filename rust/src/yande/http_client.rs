@@ -11,16 +11,23 @@ pub struct HttpClient {
 
 
 impl HttpClient {
-    pub fn new() -> Self {
-        //198.98.58.238
-        let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(198, 98, 58, 238)), 443);
+    pub fn new(ip: Option<String>) -> Self {
+        //107.189.2.17
+        if let Some(ip) = ip {
+            if let Ok(socket) = format!("{}:443", ip).parse() {
+                return Self {
+                    client: reqwest::ClientBuilder::new().
+                        tls_sni(false).
+                        resolve("yande.re", socket).
+                        resolve("files.yande.re", socket).
+                        resolve("assets.yande.re", socket).
+                        danger_accept_invalid_certs(true).
+                        build().unwrap(),
+                };
+            }
+        }
         Self {
             client: reqwest::ClientBuilder::new().
-                tls_sni(false).
-                resolve("yande.re", socket).
-                resolve("files.yande.re", socket).
-                resolve("assets.yande.re", socket).
-                danger_accept_invalid_certs(true).
                 build().unwrap(),
         }
     }
@@ -30,7 +37,7 @@ impl HttpClient {
             Some(params) => {
                 let encoded_params = params.iter().map(|(key, value)| {
                     let encoded_key = url::form_urlencoded::byte_serialize(key.as_bytes()).collect::<String>().replace("%2B", "+");
-                    let encoded_value =  url::form_urlencoded::byte_serialize(value.as_bytes()).collect::<String>().replace("%2B", "+");
+                    let encoded_value = url::form_urlencoded::byte_serialize(value.as_bytes()).collect::<String>().replace("%2B", "+");
                     (encoded_key, encoded_value)
                 });
 

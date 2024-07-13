@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:yande_gui/rust_lib.dart';
+import 'package:yande_gui/global.dart';
 
 class YandeExtendedImageProvider
     extends ImageProvider<ExtendedNetworkImageProvider>
@@ -248,7 +248,7 @@ class YandeExtendedImageProvider
       //       : null,
       // );
 
-      final Uint8List bytes = await YandeClient.downloadToMemory(
+      final Uint8List bytes = await yandeClient.downloadToMemory(
         url: url,
         progressCallback: (BigInt received, BigInt total) async {
           // print('received: $received, total: $total');

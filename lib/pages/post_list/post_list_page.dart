@@ -22,7 +22,8 @@ class PostListPage extends ConsumerStatefulWidget {
 class _PostListPageState extends ConsumerState<PostListPage> {
   final scrollController = ScrollController();
   final focusNode = FocusNode();
-  late final searchInputController = TextEditingController(text: widget.tags?.join(' '));
+  late final searchInputController =
+      TextEditingController(text: widget.tags?.join(' '));
   late final provider = postListProvider(runtimeType, tags: widget.tags ?? []);
 
   bool _hasFocus = false;
@@ -80,7 +81,9 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                   hintText: 'Tags',
                 ),
                 onSubmitted: (value) {
-                  ref.read(provider.notifier).onTagsChanged(value.trim().split(' '));
+                  ref
+                      .read(provider.notifier)
+                      .onTagsChanged(value.trim().split(' '));
                 },
               ),
             ),
@@ -107,7 +110,8 @@ class _PostListPageState extends ConsumerState<PostListPage> {
     }
 
     return AutoScaffold(
-      verticalOnlyTitleWidget: widget.tags == null ? const Text('Post List') : null,
+      verticalOnlyTitleWidget:
+          widget.tags == null ? const Text('Post List') : null,
       titleWidget: switch (widget.tags) {
         null => null,
         final tags => Row(
@@ -127,18 +131,24 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                 onRefresh: () => state.source.refresh(true),
                 child: LoadingMoreList(
                   ListConfig(
-                    extendedListDelegate: SliverWaterfallFlowDelegateWithFixedCrossAxisCount(crossAxisCount: state.rowMax == 0 ? autoRowMax : state.rowMax),
+                    extendedListDelegate:
+                        SliverWaterfallFlowDelegateWithFixedCrossAxisCount(
+                            crossAxisCount:
+                                state.rowMax == 0 ? autoRowMax : state.rowMax),
                     controller: scrollController,
                     itemBuilder: (BuildContext context, item, int index) {
                       return GestureDetector(
                         onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(builder: (context) => PostDetailPage(post: item)));
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) =>
+                                  PostDetailPage(post: item)));
                         },
                         child: LayoutBuilder(
                           builder: (context, constraints) {
                             const padding = 4;
                             final width = constraints.maxWidth - padding * 2;
-                            final height = (item.height * width / item.width) - padding * 2;
+                            final height = (item.height * width / item.width) -
+                                padding * 2;
                             return Padding(
                               padding: const EdgeInsets.all(4),
                               child: Stack(
@@ -166,7 +176,8 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                                         decoration: BoxDecoration(
                                           color: Colors.black.withOpacity(0.5),
                                         ),
-                                        child: const Icon(Icons.more_outlined, color: Colors.white),
+                                        child: const Icon(Icons.more_outlined,
+                                            color: Colors.white),
                                       ),
                                     )
                                   else if (item.hasChildren)
@@ -178,7 +189,8 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                                         decoration: BoxDecoration(
                                           color: Colors.black.withOpacity(0.5),
                                         ),
-                                        child: const Icon(Icons.more_horiz, color: Colors.white),
+                                        child: const Icon(Icons.more_horiz,
+                                            color: Colors.white),
                                       ),
                                     ),
                                   Positioned(
@@ -191,7 +203,8 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                                       ),
                                       child: Text(
                                         '${Resolution.match(item.width * item.height).title} ${item.width} x ${item.height}',
-                                        style: const TextStyle(color: Colors.white),
+                                        style: const TextStyle(
+                                            color: Colors.white),
                                       ),
                                     ),
                                   ),
@@ -222,7 +235,8 @@ class _PostListPageState extends ConsumerState<PostListPage> {
           scrollController.jumpTo(0);
         },
         mini: true,
-        child: const Icon(Icons.vertical_align_top_outlined, color: Colors.white),
+        child:
+            const Icon(Icons.vertical_align_top_outlined, color: Colors.white),
       ),
     );
   }

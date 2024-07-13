@@ -2,7 +2,7 @@ name: yande_gui
 description: "Cross-platform GUI for yande"
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 0.2.1+9
+version: 0.3.0+10
 
 environment:
   sdk: '>=3.3.4 <4.0.0'
@@ -16,7 +16,7 @@ dependencies:
   cupertino_icons: ^1.0.6
   core:
     path: rust_builder
-  flutter_rust_bridge: 2.0.0
+  flutter_rust_bridge: 2.1.0
   package_info_plus: ^8.0.0
   device_info_plus: ^10.1.0
   permission_handler: ^11.3.1

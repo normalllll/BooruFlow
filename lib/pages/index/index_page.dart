@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:yande_gui/global.dart';
 import 'package:yande_gui/pages/about/about_page.dart';
 import 'package:yande_gui/pages/downloader/downloader_page.dart';
 import 'package:yande_gui/pages/post_list/post_list_page.dart';
 import 'package:yande_gui/pages/settings/settings_page.dart';
+import 'package:yande_gui/services/dns_service.dart';
 import 'package:yande_gui/services/updater_service.dart';
+import 'package:yande_gui/src/rust/api/yande_client.dart';
 import 'package:yande_gui/widgets/lazy_indexed_stack/lazy_indexed_stack.dart';
 
 class IndexPage extends StatefulWidget {
@@ -26,19 +29,38 @@ class _IndexPageState extends State<IndexPage> {
 
   int _selectedIndex = 0;
 
+  bool _initialized = false;
+
   @override
   void initState() {
-    UpdaterService.checkForUpdate().then((result) {
-      if (result != null) {
-        EasyLoading.showToast(
-          'New version found: ${result.$1}.\nPlease go to the About page and click Download Update.',
-          toastPosition: EasyLoadingToastPosition.bottom,
-          duration: const Duration(seconds: 6),
-        );
+    Future.delayed(Duration.zero, () async {
+      YandeClient instance;
+      try {
+        final dns = await DnsService.fetchDns();
+        instance = await YandeClient.newInstance(ip: dns);
+      } catch (e) {
+        instance = await YandeClient.newInstance(ip: null);
       }
-    }).catchError((e) {
-      EasyLoading.showToast('Check for update failed. Please check your Internet connection.');
+
+      setYandeClient(instance);
+
+      setState(() {
+        _initialized = true;
+      });
+
+      UpdaterService.checkForUpdate().then((result) {
+        if (result != null) {
+          EasyLoading.showToast(
+            'New version found: ${result.$1}.\nPlease go to the About page and click Download Update.',
+            toastPosition: EasyLoadingToastPosition.bottom,
+            duration: const Duration(seconds: 6),
+          );
+        }
+      }).catchError((e) {
+        EasyLoading.showToast('Check for update failed. Please check your Internet connection.');
+      });
     });
+
     super.initState();
   }
 
@@ -47,35 +69,47 @@ class _IndexPageState extends State<IndexPage> {
     final isVertical = MediaQuery.of(context).size.width < MediaQuery.of(context).size.height;
 
     return Scaffold(
-      body: Row(
-        children: [
-          if (!isVertical)
-            NavigationRail(
-              destinations: [
-                for (final key in _pages.keys)
-                  NavigationRailDestination(
-                    icon: Icon(key.$1),
-                    label: Text(key.$2),
-                  ),
-              ],
-              labelType: NavigationRailLabelType.all,
-              selectedIndex: _selectedIndex,
-              onDestinationSelected: (index) {
-                setState(() {
-                  _selectedIndex = index;
-                });
-              },
-            ),
-          Expanded(
-            child: LazyIndexedStack(
-              index: _selectedIndex,
+      body: switch (_initialized) {
+        false => const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                for (final page in _pages.values) page(context),
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Fetching DNS...'),
               ],
             ),
           ),
-        ],
-      ),
+        true => Row(
+            children: [
+              if (!isVertical)
+                NavigationRail(
+                  destinations: [
+                    for (final key in _pages.keys)
+                      NavigationRailDestination(
+                        icon: Icon(key.$1),
+                        label: Text(key.$2),
+                      ),
+                  ],
+                  labelType: NavigationRailLabelType.all,
+                  selectedIndex: _selectedIndex,
+                  onDestinationSelected: (index) {
+                    setState(() {
+                      _selectedIndex = index;
+                    });
+                  },
+                ),
+              Expanded(
+                child: LazyIndexedStack(
+                  index: _selectedIndex,
+                  children: [
+                    for (final page in _pages.values) page(context),
+                  ],
+                ),
+              ),
+            ],
+          ),
+      },
       bottomNavigationBar: switch (isVertical) {
         true => BottomNavigationBar(
             onTap: (index) {

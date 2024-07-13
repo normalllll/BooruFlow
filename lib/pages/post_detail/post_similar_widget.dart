@@ -50,7 +50,10 @@ class _PostSimilarWidgetState extends ConsumerState<PostSimilarWidget> {
         );
       },
       onLongPress: () {
-        ref.read(downloaderProvider.notifier).addTask(post).then((downloadTaskProvider) {
+        ref
+            .read(downloaderProvider.notifier)
+            .addTask(post)
+            .then((downloadTaskProvider) {
           if (downloadTaskProvider != null) {
             ref.read(downloadTaskProvider.notifier).doDownload();
           }
@@ -79,7 +82,10 @@ class _PostSimilarWidgetState extends ConsumerState<PostSimilarWidget> {
             const Text('Similar Posts'),
             for (final post in value.posts) ...[
               const Divider(),
-              if (post.parentId == widget.id) Text('Parent Post: ${widget.id}') else Text('Child Post: ${post.id}'),
+              if (post.parentId == widget.id)
+                Text('Parent Post: ${widget.id}')
+              else
+                Text('Child Post: ${post.id}'),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: buildPost(post),

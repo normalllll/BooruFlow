@@ -36,6 +36,7 @@ abstract class DataListSource<T> extends LoadingMoreBase<T> {
 
       return true;
     } catch (e) {
+      print(e);
       return false;
     }
   }

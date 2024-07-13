@@ -34,7 +34,9 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
   }
 
   static String formatIntDateTime(int timestamp) {
-    final dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000, isUtc: true).toLocal();
+    final dateTime =
+        DateTime.fromMillisecondsSinceEpoch(timestamp * 1000, isUtc: true)
+            .toLocal();
 
     return '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
@@ -54,10 +56,12 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
 
     final String? schemeUrl;
 
-    if (url.contains('https://www.pixiv.net/artworks') || url.contains('https://pixiv.net/artworks')) {
+    if (url.contains('https://www.pixiv.net/artworks') ||
+        url.contains('https://pixiv.net/artworks')) {
       final id = url.split('/').last;
       schemeUrl = 'pixiv://illusts/$id';
-    } else if (url.contains('https://www.pixiv.net/users') || url.contains('https://pixiv.net/users')) {
+    } else if (url.contains('https://www.pixiv.net/users') ||
+        url.contains('https://pixiv.net/users')) {
       final id = url.split('/').last;
       schemeUrl = 'pixiv://users/$id';
     } else {
@@ -66,7 +70,9 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
 
     if (schemeUrl case String schemeUrl?) {
       if (Platform.isAndroid) {
-        launchUrlString(schemeUrl, mode: LaunchMode.externalApplication).catchError((e) => launchUrlString(url, mode: LaunchMode.externalApplication));
+        launchUrlString(schemeUrl, mode: LaunchMode.externalApplication)
+            .catchError((e) =>
+                launchUrlString(url, mode: LaunchMode.externalApplication));
       } else {
         if (await canLaunchUrlString(schemeUrl)) {
           launchUrlString(schemeUrl, mode: LaunchMode.externalApplication);
@@ -108,7 +114,9 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                     Expanded(
                       child: Text(
                         post.source,
-                        style: const TextStyle(color: Colors.blueAccent, overflow: TextOverflow.ellipsis),
+                        style: const TextStyle(
+                            color: Colors.blueAccent,
+                            overflow: TextOverflow.ellipsis),
                       ),
                     )
                   ],
@@ -122,7 +130,8 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                   Clipboard.setData(ClipboardData(text: post.source));
                   EasyLoading.showSuccess('Copied ${post.source}');
                 },
-                child: Text('source: ${post.source}', overflow: TextOverflow.ellipsis),
+                child: Text('source: ${post.source}',
+                    overflow: TextOverflow.ellipsis),
               ),
             Text('width: ${post.width}'),
             Text('height: ${post.height}'),
@@ -140,7 +149,8 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                     GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => PostListPage(tags: [tag])));
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => PostListPage(tags: [tag])));
                       },
                       onLongPress: () {
                         //set clipboard
@@ -174,7 +184,10 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
         );
       },
       onLongPress: () {
-        ref.read(downloaderProvider.notifier).addTask(post).then((downloadTaskProvider) {
+        ref
+            .read(downloaderProvider.notifier)
+            .addTask(post)
+            .then((downloadTaskProvider) {
           if (downloadTaskProvider != null) {
             ref.read(downloadTaskProvider.notifier).doDownload();
           }
@@ -202,7 +215,8 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
     );
   }
 
-  List<Widget> buildImageList({required double maxWidth, required double maxHeight}) {
+  List<Widget> buildImageList(
+      {required double maxWidth, required double maxHeight}) {
     final double calcHeight;
     final double calcWidth;
 

@@ -1,6 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yande_gui/data_list_source.dart';
-import 'package:yande_gui/rust_lib.dart';
+import 'package:yande_gui/global.dart';
 import 'package:yande_gui/src/rust/yande/model/post.dart';
 
 part 'logic.g.dart';
@@ -40,7 +40,7 @@ class PostListSource extends DataListSource<Post> {
 
   @override
   Future<List<Post>> fetchList(int page, int limit) {
-    return YandeClient.getPosts(tags: tags, limit: limit, page: page);
+    return yandeClient.getPosts(tags: tags, limit: limit, page: page);
   }
 }
 

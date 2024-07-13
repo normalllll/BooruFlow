@@ -4,17 +4,19 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:yande_gui/global.dart';
-import 'package:yande_gui/rust_lib.dart';
+
+import 'package:yande_gui/src/rust/frb_generated.dart';
 
 import 'pages/index/index_page.dart';
 import 'services/settings_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await rustInit();
+  await RustLib.init();
   final packageInfo = await PackageInfo.fromPlatform();
   Global.appVersion = packageInfo.version;
   Global.buildNumber = packageInfo.buildNumber;
+  await SettingsService.initialize();
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -27,7 +29,7 @@ class MyApp extends ConsumerWidget {
     const lightPrimaryColor = Color(0xffef83be);
     const secondaryColor = Color(0xff28a4ff);
 
-    final systemLocale = WidgetsFlutterBinding.ensureInitialized().platformDispatcher.locale;
+    final systemLocale = WidgetsBinding.instance.platformDispatcher.locale;
 
     return StreamBuilder(
       stream: rootUpdateController.stream,

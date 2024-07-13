@@ -10,7 +10,6 @@ class TagWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
       decoration: BoxDecoration(
@@ -18,7 +17,7 @@ class TagWidget extends StatelessWidget {
         color: Theme.of(context).colorScheme.onSurface.withAlpha(20),
       ),
       child: Text(
-       text,
+        text,
         style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
