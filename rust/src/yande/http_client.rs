@@ -10,16 +10,32 @@ pub struct HttpClient {
 
 
 impl HttpClient {
-    pub fn new(ip: Option<String>) -> Self {
+    pub fn new(ips: Option<[String;3]>) -> Self {
         //107.189.2.17
-        if let Some(ip) = ip {
-            if let Ok(socket) = format!("{}:443", ip).parse() {
+        if let Some(ips) = ips {
+            // if let Ok(socket) = format!("{}:443", ip).parse() {
+            //     return Self {
+            //         client: reqwest::ClientBuilder::new().
+            //             tls_sni(false).
+            //             resolve("yande.re", socket).
+            //             resolve("files.yande.re", socket).
+            //             resolve("assets.yande.re", socket).
+            //             danger_accept_invalid_certs(true).
+            //             build().unwrap(),
+            //     };
+            // }
+
+            let socket0 = format!("{}:443", ips[0]).parse();
+            let socket1 = format!("{}:443", ips[1]).parse();
+            let socket2 = format!("{}:443", ips[2]).parse();
+
+            if let (Ok(socket0), Ok(socket1), Ok(socket2)) = (socket0, socket1, socket2) {
                 return Self {
                     client: reqwest::ClientBuilder::new().
                         tls_sni(false).
-                        resolve("yande.re", socket).
-                        resolve("files.yande.re", socket).
-                        resolve("assets.yande.re", socket).
+                        resolve("yande.re", socket0).
+                        resolve("files.yande.re", socket1).
+                        resolve("assets.yande.re", socket2).
                         danger_accept_invalid_certs(true).
                         build().unwrap(),
                 };

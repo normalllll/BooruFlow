@@ -6,6 +6,7 @@
 import '../frb_generated.dart';
 import '../yande/model/post.dart';
 import '../yande/model/similar.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<YandeClient>>
@@ -25,6 +26,20 @@ abstract class YandeClient implements RustOpaqueInterface {
   Future<Similar> getSimilar({required PlatformInt64 postId});
 
   // HINT: Make it `#[frb(sync)]` to let it become the default constructor of Dart class.
-  static Future<YandeClient> newInstance({String? ip}) =>
-      RustLib.instance.api.crateApiYandeClientYandeClientNew(ip: ip);
+  static Future<YandeClient> newInstance({StringArray3? ips}) =>
+      RustLib.instance.api.crateApiYandeClientYandeClientNew(ips: ips);
+}
+
+class StringArray3 extends NonGrowableListView<String> {
+  static const arraySize = 3;
+
+  @internal
+  List<String> get inner => _inner;
+  final List<String> _inner;
+
+  StringArray3(this._inner)
+      : assert(_inner.length == arraySize),
+        super(_inner);
+
+  StringArray3.init(String fill) : this(List<String>.filled(arraySize, fill));
 }

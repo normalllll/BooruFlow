@@ -7,9 +7,9 @@ pub struct YandeClient {
 }
 
 impl YandeClient {
-    pub fn new(ip: Option<String>) -> Self {
+    pub fn new(ips: Option<[String;3]>) -> Self {
         Self {
-            http: HttpClient::new(ip),
+            http: HttpClient::new(ips),
         }
     }
 }

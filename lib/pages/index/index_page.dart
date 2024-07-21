@@ -36,10 +36,12 @@ class _IndexPageState extends State<IndexPage> {
     Future.delayed(Duration.zero, () async {
       YandeClient instance;
       try {
-        final dns = await DnsService.fetchDns();
-        instance = await YandeClient.newInstance(ip: dns);
+        final List<String>? dns = await DnsService.fetchDns();
+
+        final ips = dns != null ? StringArray3(dns) : null;
+        instance = await YandeClient.newInstance(ips: ips);
       } catch (e) {
-        instance = await YandeClient.newInstance(ip: null);
+        instance = await YandeClient.newInstance(ips: null);
       }
 
       setYandeClient(instance);

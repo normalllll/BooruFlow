@@ -353,12 +353,12 @@ fn wire__crate__api__yande_client__YandeClient_new_impl(
             };
             let mut deserializer =
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            let api_ip = <Option<String>>::sse_decode(&mut deserializer);
+            let api_ips = <Option<[String; 3]>>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| {
                 transform_result_sse::<_, ()>((move || {
                     let output_ok =
-                        Result::<_, ()>::Ok(crate::api::yande_client::YandeClient::new(api_ip))?;
+                        Result::<_, ()>::Ok(crate::api::yande_client::YandeClient::new(api_ips))?;
                     Ok(output_ok)
                 })())
             }
@@ -454,6 +454,14 @@ impl SseDecode for String {
     }
 }
 
+impl SseDecode for [String; 3] {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <Vec<String>>::sse_decode(deserializer);
+        return flutter_rust_bridge::for_generated::from_vec_to_array(inner);
+    }
+}
+
 impl SseDecode for bool {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -504,11 +512,11 @@ impl SseDecode for Vec<u8> {
     }
 }
 
-impl SseDecode for Option<String> {
+impl SseDecode for Option<[String; 3]> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         if (<bool>::sse_decode(deserializer)) {
-            return Some(<String>::sse_decode(deserializer));
+            return Some(<[String; 3]>::sse_decode(deserializer));
         } else {
             return None;
         }
@@ -840,6 +848,19 @@ impl SseEncode for String {
     }
 }
 
+impl SseEncode for [String; 3] {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<String>>::sse_encode(
+            {
+                let boxed: Box<[_]> = Box::new(self);
+                boxed.into_vec()
+            },
+            serializer,
+        );
+    }
+}
+
 impl SseEncode for bool {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -884,12 +905,12 @@ impl SseEncode for Vec<u8> {
     }
 }
 
-impl SseEncode for Option<String> {
+impl SseEncode for Option<[String; 3]> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <bool>::sse_encode(self.is_some(), serializer);
         if let Some(value) = self {
-            <String>::sse_encode(value, serializer);
+            <[String; 3]>::sse_encode(value, serializer);
         }
     }
 }

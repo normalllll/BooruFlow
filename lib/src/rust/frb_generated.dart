@@ -92,7 +92,7 @@ abstract class RustLibApi extends BaseApi {
   Future<Similar> crateApiYandeClientYandeClientGetSimilar(
       {required YandeClient that, required PlatformInt64 postId});
 
-  Future<YandeClient> crateApiYandeClientYandeClientNew({String? ip});
+  Future<YandeClient> crateApiYandeClientYandeClientNew({StringArray3? ips});
 
   RustArcIncrementStrongCountFnType
       get rust_arc_increment_strong_count_YandeClient;
@@ -261,11 +261,11 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<YandeClient> crateApiYandeClientYandeClientNew({String? ip}) {
+  Future<YandeClient> crateApiYandeClientYandeClientNew({StringArray3? ips}) {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
-        sse_encode_opt_String(ip, serializer);
+        sse_encode_opt_String_array_3(ips, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
             funcId: 6, port: port_);
       },
@@ -275,7 +275,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         decodeErrorData: null,
       ),
       constMeta: kCrateApiYandeClientYandeClientNewConstMeta,
-      argValues: [ip],
+      argValues: [ips],
       apiImpl: this,
     ));
   }
@@ -283,7 +283,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiYandeClientYandeClientNewConstMeta =>
       const TaskConstMeta(
         debugName: "YandeClient_new",
-        argNames: ["ip"],
+        argNames: ["ips"],
       );
 
   Future<void> Function(int, dynamic, dynamic)
@@ -379,6 +379,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  StringArray3 dco_decode_String_array_3(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return StringArray3((raw as List<dynamic>).map(dco_decode_String).toList());
+  }
+
+  @protected
   bool dco_decode_bool(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as bool;
@@ -415,9 +421,9 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  String? dco_decode_opt_String(dynamic raw) {
+  StringArray3? dco_decode_opt_String_array_3(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    return raw == null ? null : dco_decode_String(raw);
+    return raw == null ? null : dco_decode_String_array_3(raw);
   }
 
   @protected
@@ -558,6 +564,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  StringArray3 sse_decode_String_array_3(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_list_String(deserializer);
+    return StringArray3(inner);
+  }
+
+  @protected
   bool sse_decode_bool(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getUint8() != 0;
@@ -607,11 +620,11 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  String? sse_decode_opt_String(SseDeserializer deserializer) {
+  StringArray3? sse_decode_opt_String_array_3(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
     if (sse_decode_bool(deserializer)) {
-      return (sse_decode_String(deserializer));
+      return (sse_decode_String_array_3(deserializer));
     } else {
       return null;
     }
@@ -806,6 +819,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_String_array_3(StringArray3 self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_String(self.inner, serializer);
+  }
+
+  @protected
   void sse_encode_bool(bool self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putUint8(self ? 1 : 0);
@@ -851,12 +870,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_opt_String(String? self, SseSerializer serializer) {
+  void sse_encode_opt_String_array_3(
+      StringArray3? self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
     sse_encode_bool(self != null, serializer);
     if (self != null) {
-      sse_encode_String(self, serializer);
+      sse_encode_String_array_3(self, serializer);
     }
   }
 
