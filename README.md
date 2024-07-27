@@ -7,7 +7,7 @@ The Cross-platform GUI for yande.re
 | Android  | ✅    | ✅        | ✅        |       |
 | Windows  | ✅    | ✅        | ✅        |       |
 | Linux    | ✅    | ✅        | ✅        |       |
-| macOS    | ✅    | ✅        | ❌        |       |
+| macOS    | ✅    | ✅        | ✅        |       |
 | iOS      | ✅    | ❌        | ❌        |       |
 
 # Discussion
