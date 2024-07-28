@@ -285,6 +285,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            macos-arm64-nosigned.app
-            macos-x86_64-nosigned.app
+            macos-arm64-nosigned.zip
+            macos-x86_64-nosigned.zip
           token: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
