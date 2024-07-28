@@ -2,7 +2,7 @@ name: yande_gui
 description: "Cross-platform GUI for yande"
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 0.3.3+13
+version: 0.3.4+14
 
 environment:
   sdk: '>=3.3.4 <4.0.0'
