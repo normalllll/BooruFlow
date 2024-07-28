@@ -23,7 +23,7 @@ jobs:
         with:
           cache: true
           cache-workspaces: |-
-            ./rust
+            ./rus
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -247,7 +247,7 @@ jobs:
           token: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
 
   build-and-release-macos-arm64:
-    name: Build & Release macOS arm64
+    name: Build & Release macOS arm64 & x86_64
     runs-on: macos-latest
 
     steps:
@@ -272,12 +272,17 @@ jobs:
 
       - name: Build macOS arm64
         run: |
+          export FLUTTER_BUILD_ARCH=x86_64
           flutter build macos
           cd build/macos/Build/Products/Release/ && zip -r -m ./macos-arm64-nosigned.zip ./*
+          mv build/macos/Build/Products/Release/yande_gui.app build/yande_gui-x86_64-nosigned.app
+          export FLUTTER_BUILD_ARCH=arm64
+          mv build/macos/Build/Products/Release/yande_gui.app build/yande_gui-arm64-nosigned.app
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            build/macos/Build/Products/Release/macos-arm64-nosigned.zip
+            build/yande_gui-arm64-nosigned.app
+            build/yande_gui-x86_64-nosigned.app
           token: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
