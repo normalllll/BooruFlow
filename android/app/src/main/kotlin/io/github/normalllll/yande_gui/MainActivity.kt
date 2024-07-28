@@ -15,7 +15,7 @@ import java.io.File
 
 
 class MainActivity : FlutterActivity() {
-    private val channel = "io.github.normalllll.yande_gui/imagesaver"
+    private val channel = "io.github.normalllll.yandegui/image_saver"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)

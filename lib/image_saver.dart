@@ -8,10 +8,10 @@ import 'package:yande_gui/services/settings_service.dart';
 
 class ImageSaver {
   static const MethodChannel _channel =
-      MethodChannel('io.github.normalllll.yande_gui/imagesaver');
+      MethodChannel('io.github.normalllll.yandegui/image_saver');
 
   static Future<bool> saveImage(Uint8List imageBytes, String filename) async {
-    if (Platform.isAndroid) {
+    if (Platform.isAndroid || Platform.isIOS) {
       try {
         final bool result = await _channel.invokeMethod('saveImage', {
           'imageBytes': imageBytes,

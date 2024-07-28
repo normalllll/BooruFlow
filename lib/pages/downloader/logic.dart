@@ -93,6 +93,23 @@ class Downloader extends _$Downloader {
         EasyLoading.showError('Get device info failed: $e');
         return null;
       }
+    } else if (Platform.isIOS) {
+      PermissionStatus status = await Permission.photos.status;
+
+      if (status.isPermanentlyDenied) {
+        EasyLoading.showError(
+            'Permission photos permanently denied\nPlease manually enable photos permissions in settings');
+        await Future.delayed(const Duration(seconds: 2));
+        openAppSettings();
+        return null;
+      }
+      if (!status.isGranted) {
+        status = await Permission.photos.request();
+        if (!status.isGranted) {
+          EasyLoading.showError('Permission photos denied');
+          return null;
+        }
+      }
     }
 
     if (state.tasks.any((provider) => provider.post.id == post.id)) {
@@ -132,12 +149,14 @@ class DownloadTask extends _$DownloadTask {
     } else {
       EasyLoading.showToast('Download task start ${state.post.id}');
     }
-    yandeClient.downloadToMemory(
+    yandeClient
+        .downloadToMemory(
       url: state.post.fileUrl,
       progressCallback: (received, total) async {
         updateProgress(received, total);
       },
-    ).then((bytes) {
+    )
+        .then((bytes) {
       try {
         ImageSaver.saveImage(bytes, '${state.post.id}.${state.post.fileExt}');
         EasyLoading.showSuccess('Downloaded ${state.post.id}');
