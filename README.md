@@ -2,13 +2,13 @@
 
 The Cross-platform GUI for yande.re
 
-| Platform | View | Download | Verified | Notes |
-|----------|------|----------|----------|-------|
-| Android  | ✅    | ✅        | ✅        |       |
-| Windows  | ✅    | ✅        | ✅        |       |
-| Linux    | ✅    | ✅        | ✅        |       |
-| macOS    | ✅    | ✅        | ✅        |       |
-| iOS      | ✅    | ❌        | ❌        |       |
+| Platform | View | Download | Verified | Notes          |
+|----------|------|----------|----------|----------------|
+| Android  | ✅    | ✅        | ✅        |                |
+| Windows  | ✅    | ✅        | ✅        |                |
+| Linux    | ✅    | ✅        | ✅        |                |
+| macOS    | ✅    | ✅        | ✅        |                |
+| iOS      | ✅    | ✅        | ✅        | iPadOS support |
 
 # Discussion
 
