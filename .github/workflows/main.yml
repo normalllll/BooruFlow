@@ -272,17 +272,19 @@ jobs:
 
       - name: Build macOS arm64
         run: |
+          export FLUTTER_BUILD_ARCH=arm64
+          flutter build macos
+          ditto -c -k --sequesterRsrc --keepParent build/macos/Build/Products/Release/yande_gui.app macos-arm64-nosigned.zip
+      - name: Build macOS x86_64
+        run: |
           export FLUTTER_BUILD_ARCH=x86_64
           flutter build macos
-          cd build/macos/Build/Products/Release/ && zip -r -m ./macos-arm64-nosigned.zip ./*
-          mv build/macos/Build/Products/Release/yande_gui.app build/yande_gui-x86_64-nosigned.app
-          export FLUTTER_BUILD_ARCH=arm64
-          mv build/macos/Build/Products/Release/yande_gui.app build/yande_gui-arm64-nosigned.app
+          ditto -c -k --sequesterRsrc --keepParent build/macos/Build/Products/Release/yande_gui.app macos-x86_64-nosigned.zip
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            build/yande_gui-arm64-nosigned.app
-            build/yande_gui-x86_64-nosigned.app
+            macos-arm64-nosigned.app
+            macos-x86_64-nosigned.app
           token: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
