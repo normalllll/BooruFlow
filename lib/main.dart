@@ -35,6 +35,7 @@ class MyApp extends ConsumerWidget {
       stream: rootUpdateController.stream,
       builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
         return MaterialApp(
+          title: 'Yande GUI',
           home: const IndexPage(),
           darkTheme: ThemeData(
             brightness: Brightness.dark,
