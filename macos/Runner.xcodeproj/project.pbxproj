@@ -568,7 +568,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 33E5194F232828860026EE4D /* AppInfo.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(FLUTTER_BUILD_ARCH)";
+				ARCHS = "$(XCODE_BUILD_ARCH)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/DebugProfile.entitlements;
@@ -582,6 +582,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
+				XCODE_BUILD_ARCH = "$(ARCHS_STANDARD)";
 			};
 			name = Profile;
 		};
@@ -702,7 +703,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 33E5194F232828860026EE4D /* AppInfo.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(FLUTTER_BUILD_ARCH)";
+				ARCHS = "$(XCODE_BUILD_ARCH)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/DebugProfile.entitlements;
@@ -713,9 +714,11 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
+				XCODE_BUILD_ARCH = "$(ARCHS_STANDARD)";
 			};
 			name = Debug;
 		};
@@ -723,7 +726,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 33E5194F232828860026EE4D /* AppInfo.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(FLUTTER_BUILD_ARCH)";
+				ARCHS = "$(XCODE_BUILD_ARCH)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Release.entitlements;
@@ -737,6 +740,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
+				XCODE_BUILD_ARCH = "$(FLUTTER_BUILD_ARCH)";
 			};
 			name = Release;
 		};
