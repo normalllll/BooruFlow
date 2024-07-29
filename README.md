@@ -16,6 +16,8 @@ The Cross-platform GUI for yande.re
 
 If you have any questions or suggestions, you can go to Telegram to discuss or open an [Issue](https://github.com/normalllll/yande_gui/issues/new).
 
+We are recruiting artists to draw `icons` for this App
+
 # Screenshots (Desktop)
 
 | ![img0](screenshot/desktop/img0.webp) | ![img1](screenshot/desktop/img1.webp) |
