@@ -220,7 +220,7 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                     indicatorBuilder: (context, status) => LoadingMoreIndicator(
                       status: status,
                       errorRefresh: () {
-                        state.source.refresh(true);
+                        state.source.errorRefresh();
                       },
                     ),
                   ),
