@@ -6,7 +6,7 @@ part of 'logic.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$downloaderHash() => r'b47f903e76a4e650fbe99522f58c1e9e294686ec';
+String _$downloaderHash() => r'be1a80cc02f6654b485ed5b6add5550d6038f8f8';
 
 /// See also [Downloader].
 @ProviderFor(Downloader)
@@ -21,7 +21,7 @@ final downloaderProvider =
 );
 
 typedef _$Downloader = Notifier<DownloaderState>;
-String _$downloadTaskHash() => r'14f342f61c63b8500a4bea426fb80e7900f389f9';
+String _$downloadTaskHash() => r'e8facf173da0afeca32692f87c517736b3ecd135';
 
 /// Copied from Dart SDK
 class _SystemHash {

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 import 'package:vector_math/vector_math_64.dart' show Quad, Vector3, Matrix4;
 import 'package:yande_gui/components/yande_image/yande_image.dart';
+import 'package:yande_gui/i18n.dart';
 
 class ImageZoomPage extends StatefulWidget {
   final String url;
@@ -30,7 +31,7 @@ class _ImageZoomPageState extends State<ImageZoomPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Image Zoom'),
+        title:  Text(i18n.imageZoom.title),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),

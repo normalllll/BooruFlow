@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +6,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:yande_gui/components/yande_image/yande_image.dart';
+import 'package:yande_gui/i18n.dart';
 import 'package:yande_gui/pages/downloader/logic.dart';
 import 'package:yande_gui/pages/image_zoom_page/image_zoom_page.dart';
 import 'package:yande_gui/pages/post_detail/post_similar_widget.dart';
@@ -86,9 +86,8 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('id: ${post.id}'),
-            Text('date: ${formatIntDateTime(post.createdAt)}'),
-            Text('author: ${post.author}'),
+            Text('${i18n.postDetail.createdAt}: ${formatIntDateTime(post.createdAt)}'),
+            Text('${i18n.postDetail.author}: ${post.author}'),
             if (RegExp(
               r'^(?:http|https)://[\w\-]+(?:\.[\w\-]+)*(?::\d+)?(?:/\S*)?$',
               caseSensitive: false,
@@ -100,11 +99,11 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                 onLongPress: () {
                   //set clipboard
                   Clipboard.setData(ClipboardData(text: post.source));
-                  EasyLoading.showSuccess('Copied ${post.source}');
+                  EasyLoading.showSuccess(i18n.generic.copiedWithValue(post.source));
                 },
                 child: Row(
                   children: [
-                    const Text('source: '),
+                    Text('${i18n.postDetail.source}: '),
                     Expanded(
                       child: Text(
                         post.source,
@@ -120,16 +119,16 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                 onTap: () {
                   //set clipboard
                   Clipboard.setData(ClipboardData(text: post.source));
-                  EasyLoading.showSuccess('Copied ${post.source}');
+                  EasyLoading.showSuccess(i18n.generic.copiedWithValue(post.source));
                 },
-                child: Text('source: ${post.source}', overflow: TextOverflow.ellipsis),
+                child: Text('${i18n.postDetail.source}: ${post.source}', overflow: TextOverflow.ellipsis),
               ),
-            Text('width: ${post.width}'),
-            Text('height: ${post.height}'),
-            Text('score: ${post.score}'),
-            Text('size: ${(post.fileSize / 1024 / 1024).toStringAsFixed(2)}MB'),
-            Text('parent: ${post.parentId}'),
-            Text('hasChildren: ${post.hasChildren}'),
+            Text('${i18n.postDetail.width}: ${post.width}'),
+            Text('${i18n.postDetail.height}: ${post.height}'),
+            Text('${i18n.postDetail.score}: ${post.score}'),
+            Text('${i18n.postDetail.size}: ${(post.fileSize / 1024 / 1024).toStringAsFixed(2)}MB'),
+            Text('${i18n.postDetail.parent}: ${post.parentId}'),
+            Text('${i18n.postDetail.hasChildren}: ${post.hasChildren}'),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Wrap(
@@ -145,7 +144,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                       onLongPress: () {
                         //set clipboard
                         Clipboard.setData(ClipboardData(text: tag));
-                        EasyLoading.showSuccess('Copied $tag');
+                        EasyLoading.showSuccess(i18n.generic.copiedWithValue(tag));
                       },
                       child: TagWidget(
                         text: tag,
@@ -231,7 +230,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
   @override
   Widget build(BuildContext context) {
     return AutoScaffold(
-      titleWidget: Text('Post :${post.id}'),
+      titleWidget: Text(i18n.postDetail.titleWithId(post.id)),
       builder: (context, horizontal) {
         if (horizontal) {
           return LayoutBuilder(

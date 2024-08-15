@@ -1,0 +1,90 @@
+generic:
+  ok: OK
+  cancel: キャンセル
+  clear: クリア
+  confirm: 確認
+  copiedWithValue(String value): "$value をクリップボードにコピーしました"
+  errorWithValue(String value): "エラーが発生しました: $value"
+
+update:
+  checkUpdateStart: アップデートを確認中…
+  checkUpdateFailed: アップデートの確認に失敗しました。インターネット接続を確認してください。
+  selectDownloadUrlFailed: ダウンロードURLが見つかりません。\nプロジェクトページにアクセスし、手動で更新するか、プロジェクトのIssueページでヘルプを求めてください。
+  newVersionFound(String version): "新しいバージョンが見つかりました: $version。\n「ページについて」ページに移動し、「アップデートをダウンロード」をクリックしてください。"
+  noNewVersionFound: 新しいバージョンが見つかりません。
+
+postList:
+  short: 投稿
+  title: 投稿リスト
+  titleWithTags(String tags): "タグ付き投稿: $tags"
+
+postDetail:
+  titleWithId(int id): "投稿: $id"
+  createdAt: 作成日時
+  author: 作者
+  source: ソース
+  width: 幅
+  height: 高さ
+  score: スコア
+  size: サイズ
+  parent: 親ID
+  hasChildren: 子投稿があります
+  similarPosts: 類似投稿
+  parentPost: 親投稿
+  childPost: 子投稿
+
+imageZoom:
+  title: 画像をズーム
+
+downloader:
+  title: ダウンローダー
+  messages:
+    storagePermanentlyDenied: ストレージのアクセス許可が永久に拒否されました。\n設定で手動でストレージのアクセス許可を有効にしてください。  # Android
+    storageDenied: ストレージのアクセス許可が拒否されました。  # Android
+    deviceInfoError: デバイス情報を解析できません。
+    photosPermanentlyDenied: 写真のアクセス許可が永久に拒否されました。\n設定で手動で写真のアクセス許可を有効にしてください。  # iOS
+    photosDenied: 写真のアクセス許可が拒否されました。  # iOS
+    downloadTaskExists: ダウンロードタスクは既に存在しています。
+    imageFileExists: 画像ファイルは既に存在しています。
+
+    downloadRetryWithId(int id): "ダウンロードタスクを再試行: $id"
+    downloadStartWithId(int id): "ダウンロードタスクを開始: $id"
+
+    downloadCompletedWithId(int id): "ダウンロード完了: タスク $id"
+    downloadFailedWithId(int id): "ダウンロード失敗: タスク $id"
+    saveFailedWith(int id): "保存失敗: タスク $id"
+
+about:
+  title: について
+  projectUrl: プロジェクトURL
+  publishPage: 公開ページ
+  appVersion: アプリバージョン
+  flutterVersion: Flutterバージョン
+  rustVersion: Rustバージョン
+  downloadUpdate: アップデートをダウンロード
+  downloadUpdateHint: お使いのデバイス用に最新バージョンをブラウザでダウンロードしてください。
+
+settings:
+  title: 設定
+  theme: テーマ
+  language: 言語
+  downloadPath: ダウンロードパス
+  platformDefault: プラットフォームのデフォルト
+  system: システム
+  light: ライト
+  dark: ダーク
+
+  languageDialog:
+    title: 言語を選択
+
+  themeModeDialog:
+    title: テーマモードを選択
+
+  selectDownloadPathDialog:
+    title: ダウンロードパスを選択
+    pickerTitle: ディレクトリを選択
+    pick: ディレクトリを選択
+    messages:
+      setToPlatformDefault: ダウンロードパスがプラットフォームのデフォルトに設定されました。
+      pathNotAbsolute: パスは絶対パスである必要があります。
+      pathNotWritable: パスに書き込みできません

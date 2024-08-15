@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yande_gui/i18n.dart';
 import 'package:yande_gui/pages/downloader/logic.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
 
@@ -13,7 +14,7 @@ class DownloaderPage extends ConsumerWidget {
     final provider = downloaderProvider;
     final state = ref.watch(provider);
     return AutoScaffold(
-      verticalOnlyTitleWidget: const Text('Downloader'),
+      verticalOnlyTitleWidget:  Text(i18n.downloader.title),
       builder: (context, horizontal) {
         return ListView.builder(
           itemCount: state.tasks.length,

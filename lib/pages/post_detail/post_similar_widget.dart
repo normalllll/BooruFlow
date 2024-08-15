@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yande_gui/components/yande_image/yande_image.dart';
+import 'package:yande_gui/i18n.dart';
 import 'package:yande_gui/pages/downloader/logic.dart';
 import 'package:yande_gui/pages/image_zoom_page/image_zoom_page.dart';
 import 'package:yande_gui/pages/post_detail/logic.dart';
@@ -50,10 +51,7 @@ class _PostSimilarWidgetState extends ConsumerState<PostSimilarWidget> {
         );
       },
       onLongPress: () {
-        ref
-            .read(downloaderProvider.notifier)
-            .addTask(post)
-            .then((downloadTaskProvider) {
+        ref.read(downloaderProvider.notifier).addTask(post).then((downloadTaskProvider) {
           if (downloadTaskProvider != null) {
             ref.read(downloadTaskProvider.notifier).doDownload();
           }
@@ -79,13 +77,10 @@ class _PostSimilarWidgetState extends ConsumerState<PostSimilarWidget> {
     return switch (ref.watch(provider)) {
       AsyncData(:final value) => Column(
           children: [
-            const Text('Similar Posts'),
+            Text(i18n.postDetail.similarPosts),
             for (final post in value.posts) ...[
               const Divider(),
-              if (post.parentId == widget.id)
-                Text('Parent Post: ${widget.id}')
-              else
-                Text('Child Post: ${post.id}'),
+              if (post.parentId == widget.id) Text('${i18n.postDetail.parentPost}: ${widget.id}') else Text('${i18n.postDetail.childPost}: ${post.id}'),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: buildPost(post),
@@ -96,7 +91,7 @@ class _PostSimilarWidgetState extends ConsumerState<PostSimilarWidget> {
       AsyncError(:final error) => GestureDetector(
           onTap: () => ref.refresh(provider),
           behavior: HitTestBehavior.opaque,
-          child: Text('Error: $error'),
+          child: Text(i18n.generic.errorWithValue(error.toString())),
         ),
       _ => const Padding(
           padding: EdgeInsets.symmetric(horizontal: 4),

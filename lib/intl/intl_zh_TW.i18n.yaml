@@ -1,0 +1,90 @@
+generic:
+  ok: 確定
+  cancel: 取消
+  clear: 清除
+  confirm: 確認
+  copiedWithValue(String value): "已複製到剪貼簿: $value"
+  errorWithValue(String value): "發生錯誤: $value"
+
+update:
+  checkUpdateStart: 正在檢查更新...
+  checkUpdateFailed: 檢查更新失敗，請檢查您的網路連線。
+  selectDownloadUrlFailed: 找不到下載連結。\n請訪問專案頁面以手動更新或在專案Issue頁尋求幫助。
+  newVersionFound(String version): "發現新版本: $version。請轉到「關於」頁面並點擊「下載更新」。"
+  noNewVersionFound: 沒有新版本。
+
+postList:
+  short: 帖子
+  title: 帖子列表
+  titleWithTags(String tags): "帶有標籤的帖子: $tags"
+
+postDetail:
+  titleWithId(int id): "帖子: $id"
+  createdAt: 建立時間
+  author: 作者
+  source: 來源
+  width: 寬度
+  height: 高度
+  score: 評分
+  size: 大小
+  parent: 父ID
+  hasChildren: 有子帖子
+  similarPosts: 相似帖子
+  parentPost: 父帖子
+  childPost: 子帖子
+
+imageZoom:
+  title: 縮放圖片
+
+downloader:
+  title: 下載器
+  messages:
+    storagePermanentlyDenied: 您已永久拒絕存儲權限。\n請在設定中手動啟用存儲權限。  # Android
+    storageDenied: 您已拒絕存儲權限。  # Android
+    deviceInfoError: 無法解析設備資訊。
+    photosPermanentlyDenied: 您已永久拒絕照片權限。\n請在設定中手動啟用照片權限。  # iOS
+    photosDenied: 您已拒絕照片權限。  # iOS
+    downloadTaskExists: 下載任務已經存在。
+    imageFileExists: 圖片檔案已經存在。
+
+    downloadRetryWithId(int id): "重試下載任務: $id"
+    downloadStartWithId(int id): "開始下載任務: $id"
+
+    downloadCompletedWithId(int id): "下載任務完成: $id"
+    downloadFailedWithId(int id): "下載任務失敗: $id"
+    saveFailedWith(int id): "儲存失敗: 任務 $id"
+
+about:
+  title: 關於
+  projectUrl: 專案網址
+  publishPage: 發佈頁面
+  appVersion: 應用程式版本
+  flutterVersion: Flutter 版本
+  rustVersion: Rust 版本
+  downloadUpdate: 下載更新
+  downloadUpdateHint: 透過瀏覽器下載適合您裝置的最新版本。
+
+settings:
+  title: 設定
+  theme: 主題
+  language: 語言
+  downloadPath: 下載路徑
+  platformDefault: 平台預設
+  system: 系統預設
+  light: 淺色模式
+  dark: 深色模式
+
+  languageDialog:
+    title: 選擇語言
+
+  themeModeDialog:
+    title: 選擇主題
+
+  selectDownloadPathDialog:
+    title: 選擇下載路徑
+    pickerTitle: 選擇資料夾
+    pick: 選擇資料夾
+    messages:
+      setToPlatformDefault: 下載路徑已設為平台預設值。
+      pathNotAbsolute: 路徑必須為絕對路徑。
+      pathNotWritable: 路徑無法寫入

@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:yande_gui/global.dart';
+import 'package:yande_gui/i18n.dart';
 import 'package:yande_gui/services/settings_service.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
 import 'package:path/path.dart' as path;
@@ -17,8 +18,7 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  Widget buildItem(
-      {required Widget title, Widget? subtitle, Function()? onTap}) {
+  Widget buildItem({required Widget title, Widget? subtitle, Function()? onTap}) {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
@@ -37,13 +37,23 @@ class _SettingsPageState extends State<SettingsPage> {
   String themeModeToText(int themeMode) {
     switch (themeMode) {
       case 0:
-        return 'System';
+        return i18n.settings.system;
       case 1:
-        return 'Light';
+        return i18n.settings.light;
       case 2:
-        return 'Dark';
+        return i18n.settings.dark;
     }
     return 'Unknown';
+  }
+
+  String languageToText(int language) {
+    return switch (language) {
+      0 => i18n.settings.system,
+      1 => 'English',
+      2 => '日本語',
+      3 => '繁體中文',
+      _ => 'Unknown',
+    };
   }
 
   void _themeModeDialog() {
@@ -51,12 +61,12 @@ class _SettingsPageState extends State<SettingsPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Select Theme Mode'),
+          title: Text(i18n.settings.themeModeDialog.title),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               RadioListTile<int>(
-                title: const Text('System'),
+                title: Text(i18n.settings.system),
                 value: 0,
                 groupValue: SettingsService.themeMode,
                 onChanged: (value) {
@@ -66,7 +76,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 },
               ),
               RadioListTile<int>(
-                title: const Text('Light'),
+                title: Text(i18n.settings.light),
                 value: 1,
                 groupValue: SettingsService.themeMode,
                 onChanged: (value) {
@@ -76,7 +86,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 },
               ),
               RadioListTile<int>(
-                title: const Text('Dark'),
+                title: Text(i18n.settings.dark),
                 value: 2,
                 groupValue: SettingsService.themeMode,
                 onChanged: (value) {
@@ -92,7 +102,75 @@ class _SettingsPageState extends State<SettingsPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel'),
+              child: Text(i18n.generic.cancel),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _languageDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(i18n.settings.languageDialog.title),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<int>(
+                title: Text(i18n.settings.system),
+                value: 0,
+                groupValue: SettingsService.language,
+                onChanged: (value) {
+                  SettingsService.language = value!;
+                  I18n.update(I18n.getLocale(0));
+                  rootUpdateController.add(null);
+                  Navigator.of(context).pop();
+                },
+              ),
+              RadioListTile<int>(
+                title: const Text('English'),
+                value: 1,
+                groupValue: SettingsService.language,
+                onChanged: (value) {
+                  SettingsService.language = value!;
+                  I18n.update(I18n.getLocale(1));
+                  rootUpdateController.add(null);
+                  Navigator.of(context).pop();
+                },
+              ),
+              RadioListTile<int>(
+                title: const Text('日本語'),
+                value: 2,
+                groupValue: SettingsService.language,
+                onChanged: (value) {
+                  SettingsService.language = value!;
+                  I18n.update(I18n.getLocale(2));
+                  rootUpdateController.add(null);
+                  Navigator.of(context).pop();
+                },
+              ),
+              RadioListTile<int>(
+                title: const Text('繁體中文'),
+                value: 3,
+                groupValue: SettingsService.language,
+                onChanged: (value) {
+                  SettingsService.language = value!;
+                  I18n.update(I18n.getLocale(3));
+                  rootUpdateController.add(null);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(i18n.generic.cancel),
             ),
           ],
         );
@@ -101,8 +179,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _downloadPathDialog() {
-    final textController =
-        TextEditingController(text: SettingsService.downloadPath);
+    final textController = TextEditingController(text: SettingsService.downloadPath);
     showCupertinoDialog(
       context: context,
       barrierDismissible: true,
@@ -128,10 +205,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          FilePicker.platform
-                              .getDirectoryPath(
-                                  dialogTitle: 'Select a directory')
-                              .then((value) {
+                          FilePicker.platform.getDirectoryPath(dialogTitle: 'Select a directory').then((value) {
                             if (value != null) {
                               textController.text = value;
                             }
@@ -205,12 +279,19 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return AutoScaffold(
-      verticalOnlyTitleWidget: const Text('Settings'),
+      verticalOnlyTitleWidget: Text(i18n.settings.title),
       builder: (context, horizontal) {
         return ListView(
           children: [
             buildItem(
-              title: const Text('Theme'),
+              title: Text(i18n.settings.language),
+              subtitle: Text(languageToText(SettingsService.language)),
+              onTap: () {
+                _languageDialog();
+              },
+            ),
+            buildItem(
+              title: Text(i18n.settings.theme),
               subtitle: Text(themeModeToText(SettingsService.themeMode)),
               onTap: () {
                 _themeModeDialog();
@@ -218,9 +299,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             if (Platform.isWindows || Platform.isLinux || Platform.isMacOS)
               buildItem(
-                title: const Text('Download path'),
-                subtitle:
-                    Text(SettingsService.downloadPath ?? 'Platform Default'),
+                title: Text(i18n.settings.downloadPath),
+                subtitle: Text(SettingsService.downloadPath ?? i18n.settings.platformDefault),
                 onTap: () {
                   _downloadPathDialog();
                 },

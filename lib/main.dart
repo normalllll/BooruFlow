@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:yande_gui/global.dart';
+import 'package:yande_gui/i18n.dart';
 
 import 'package:yande_gui/src/rust/frb_generated.dart';
 
@@ -29,14 +30,16 @@ class MyApp extends ConsumerWidget {
     const lightPrimaryColor = Color(0xffef83be);
     const secondaryColor = Color(0xff28a4ff);
 
-    final systemLocale = WidgetsBinding.instance.platformDispatcher.locale;
+
 
     return StreamBuilder(
       stream: rootUpdateController.stream,
       builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+        final locale = I18n.getLocale(SettingsService.language);
+        I18n.update(locale);
         return MaterialApp(
           title: 'Yande GUI',
-          home: const IndexPage(),
+          home:  IndexPage(language: SettingsService.language),
           darkTheme: ThemeData(
             brightness: Brightness.dark,
             primaryColor: darkPrimaryColor,
@@ -112,11 +115,16 @@ class MyApp extends ConsumerWidget {
             2 => ThemeMode.dark,
             _ => ThemeMode.system,
           },
-          locale: systemLocale,
+          locale: locale,
           localizationsDelegates: const [
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('en'),
+            Locale('ja'),
+            Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant', countryCode: 'TW'),
           ],
           localeResolutionCallback: (locale, supportedLocales) {
             for (final supportedLocale in supportedLocales) {

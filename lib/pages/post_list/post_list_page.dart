@@ -5,6 +5,7 @@ import 'package:loading_more_list/loading_more_list.dart';
 import 'package:yande_gui/components/loading_more_indicator/loading_more_indicator.dart';
 import 'package:yande_gui/components/yande_image/yande_image.dart';
 import 'package:yande_gui/enums.dart';
+import 'package:yande_gui/i18n.dart';
 import 'package:yande_gui/pages/post_detail/post_detail_page.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
 
@@ -111,12 +112,12 @@ class _PostListPageState extends ConsumerState<PostListPage> {
 
     return AutoScaffold(
       verticalOnlyTitleWidget:
-          widget.tags == null ? const Text('Post List') : null,
+          widget.tags == null ?  Text(i18n.postList.title) : null,
       titleWidget: switch (widget.tags) {
         null => null,
         final tags => Row(
             children: [
-              Text('Post List: ${tags.join(' ')}'),
+              Text(i18n.postList.titleWithTags(tags.join(' '))),
               const Spacer(),
               buildRowCountSelector(),
             ],

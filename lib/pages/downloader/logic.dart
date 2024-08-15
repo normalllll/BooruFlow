@@ -5,6 +5,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yande_gui/global.dart';
+import 'package:yande_gui/i18n.dart';
 import 'package:yande_gui/image_saver.dart';
 import 'package:yande_gui/src/rust/yande/model/post.dart';
 
@@ -75,8 +76,7 @@ class Downloader extends _$Downloader {
           PermissionStatus status = await Permission.storage.status;
 
           if (status.isPermanentlyDenied) {
-            EasyLoading.showError(
-                'Permission storage permanently denied\nPlease manually enable storage permissions in settings');
+            EasyLoading.showError(i18n.downloader.messages.storagePermanentlyDenied);
             await Future.delayed(const Duration(seconds: 2));
             openAppSettings();
             return null;
@@ -84,21 +84,20 @@ class Downloader extends _$Downloader {
           if (!status.isGranted) {
             status = await Permission.storage.request();
             if (!status.isGranted) {
-              EasyLoading.showError('Permission storage denied');
+              EasyLoading.showError(i18n.downloader.messages.storageDenied);
               return null;
             }
           }
         }
       } catch (e) {
-        EasyLoading.showError('Get device info failed: $e');
+        EasyLoading.showError(i18n.downloader.messages.deviceInfoError);
         return null;
       }
     } else if (Platform.isIOS) {
       PermissionStatus status = await Permission.photos.status;
 
       if (status.isPermanentlyDenied) {
-        EasyLoading.showError(
-            'Permission photos permanently denied\nPlease manually enable photos permissions in settings');
+        EasyLoading.showError(i18n.downloader.messages.photosPermanentlyDenied);
         await Future.delayed(const Duration(seconds: 2));
         openAppSettings();
         return null;
@@ -106,19 +105,18 @@ class Downloader extends _$Downloader {
       if (!status.isGranted) {
         status = await Permission.photos.request();
         if (!status.isGranted) {
-          EasyLoading.showError('Permission photos denied');
+          EasyLoading.showError(i18n.downloader.messages.photosDenied);
           return null;
         }
       }
     }
 
     if (state.tasks.any((provider) => provider.post.id == post.id)) {
-      EasyLoading.showToast('Download task already exists');
+      EasyLoading.showToast(i18n.downloader.messages.downloadTaskExists);
       return null;
     }
-    if (await ImageSaver.existImage(
-        '${post.id}.${post.fileExt}', post.fileSize)) {
-      EasyLoading.showToast('Image file already exists');
+    if (await ImageSaver.existImage('${post.id}.${post.fileExt}', post.fileSize)) {
+      EasyLoading.showToast(i18n.downloader.messages.imageFileExists);
       return null;
     }
     final provider = downloadTaskProvider(post: post);
@@ -145,28 +143,21 @@ class DownloadTask extends _$DownloadTask {
   Future<void> doDownload({bool retry = false}) async {
     state = state.copyWith(type: DownloadTaskStateType.busy, progress: 0);
     if (retry) {
-      EasyLoading.showToast('Retry download task ${state.post.id}');
+      EasyLoading.showToast(i18n.downloader.messages.downloadRetryWithId(state.post.id));
     } else {
-      EasyLoading.showToast('Download task start ${state.post.id}');
+      EasyLoading.showToast(i18n.downloader.messages.downloadStartWithId(state.post.id));
     }
-    yandeClient
-        .downloadToMemory(
-      url: state.post.fileUrl,
-      progressCallback: (received, total) async {
-        updateProgress(received, total);
-      },
-    )
-        .then((bytes) {
+    yandeClient.downloadToMemory(url: state.post.fileUrl, progressCallback: (received, total) => updateProgress(received, total)).then((bytes) {
       try {
         ImageSaver.saveImage(bytes, '${state.post.id}.${state.post.fileExt}');
-        EasyLoading.showSuccess('Downloaded ${state.post.id}');
+        EasyLoading.showSuccess(i18n.downloader.messages.downloadCompletedWithId(state.post.id));
         state = state.copyWith(type: DownloadTaskStateType.completed);
       } catch (e) {
-        EasyLoading.showError('Save ${state.post.id} failed: $e');
+        EasyLoading.showError(i18n.downloader.messages.saveFailedWith(state.post.id));
         state = state.copyWith(type: DownloadTaskStateType.failed);
       }
     }).catchError((e) {
-      EasyLoading.showError('Download ${state.post.id} failed: $e');
+      EasyLoading.showError(i18n.downloader.messages.downloadFailedWithId(state.post.id));
       state = state.copyWith(type: DownloadTaskStateType.failed);
     });
   }

@@ -1,0 +1,90 @@
+generic:
+  ok: OK
+  cancel: Cancel
+  clear: Clear
+  confirm: Confirm
+  copiedWithValue(String value): "Copied to clipboard: $value"
+  errorWithValue(String value): "An error occurred: $value"
+
+update:
+  checkUpdateStart: Checking for updates...
+  checkUpdateFailed: Failed to check for updates. Please check your Internet connection.
+  selectDownloadUrlFailed: Unable to find download URL.\nPlease visit the project page to manually update or seek help on the project Issue page.
+  newVersionFound(String version): "New version found: $version.\nPlease go to the About page and click Download update."
+  noNewVersionFound: No new version found.
+
+postList:
+  short: Post
+  title: Post List
+  titleWithTags(String tags): "Posts with tags: $tags"
+
+postDetail:
+  titleWithId(int id): "Post: $id"
+  createdAt: Created at
+  author: Author
+  source: Source
+  width: Width
+  height: Height
+  score: Score
+  size: Size
+  parent: Parent ID
+  hasChildren: Has child posts
+  similarPosts: Similar posts
+  parentPost: Parent post
+  childPost: Child post
+
+imageZoom:
+  title: Zoom Image
+
+downloader:
+  title: Downloader
+  messages:
+    storagePermanentlyDenied: You have permanently denied storage permissions.\nPlease manually enable storage permissions in settings.  # Android
+    storageDenied: You have denied storage permissions.  # Android
+    deviceInfoError: Unable to parse device information.
+    photosPermanentlyDenied: You have permanently denied photos permissions.\nPlease manually enable photos permissions in settings.  # iOS
+    photosDenied: You have denied photos permissions.  # iOS
+    downloadTaskExists: The download task already exists.
+    imageFileExists: The image file already exists.
+
+    downloadRetryWithId(int id): "Retry download task $id"
+    downloadStartWithId(int id): "Start download task $id"
+
+    downloadCompletedWithId(int id): "Download completed for task $id"
+    downloadFailedWithId(int id): "Download failed for task $id"
+    saveFailedWith(int id): "Saving failed for task $id"
+
+about:
+  title: Title
+  projectUrl: Project URL
+  publishPage: Publish page
+  appVersion: App version
+  flutterVersion: Flutter version
+  rustVersion: Rust version
+  downloadUpdate: Download update
+  downloadUpdateHint: Download the latest version for your device via your browser.
+
+settings:
+  title: Settings
+  theme: Theme
+  language: Language
+  downloadPath: Download path
+  platformDefault: Platform Default
+  system: System
+  light: Light
+  dark: Dark
+
+  languageDialog:
+    title: Select Language
+
+  themeModeDialog:
+    title: Select Theme Mode
+
+  selectDownloadPathDialog:
+    title: Select download path
+    pickerTitle: Select a directory
+    pick: Pick a directory
+    messages:
+      setToPlatformDefault: Download path set to platform default.
+      pathNotAbsolute: Path must be absolute.
+      pathNotWritable: Path is not writable

@@ -13,6 +13,13 @@ class SettingsService {
 
   static final Map<String, dynamic> _map = {};
 
+  static int get language => _map['language'] as int? ?? 0;
+
+  static set language(int value) {
+    _map['language'] = value;
+    _save();
+  }
+
   static int get themeMode => _map['themeMode'] as int? ?? 0;
 
   static set themeMode(int value) {

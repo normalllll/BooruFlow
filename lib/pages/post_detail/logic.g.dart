@@ -6,7 +6,7 @@ part of 'logic.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$getSimilarHash() => r'883b34538ef279d84068c7884115b46c72308505';
+String _$getSimilarHash() => r'd543918c9aa9e22ff4c120299f6d2f2f0dd41037';
 
 /// Copied from Dart SDK
 class _SystemHash {
