@@ -68,8 +68,7 @@ class MyActionDispatcher extends ActionDispatcher {
   MyActionDispatcher({required this.shortcutEnabled});
 
   @override
-  Object? invokeAction(Action<Intent> action, Intent intent,
-      [BuildContext? context]) {
+  Object? invokeAction(Action<Intent> action, Intent intent, [BuildContext? context]) {
     if (shortcutEnabled) {
       return super.invokeAction(action, intent, context);
     }

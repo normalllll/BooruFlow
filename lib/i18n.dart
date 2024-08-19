@@ -17,12 +17,12 @@ class I18n {
     };
   }
 
-  static Locale getLocale(int index) {
+  static Locale getLocale(int? index) {
     return switch (index) {
-      0 => WidgetsBinding.instance.platformDispatcher.locale,
-      1 => const Locale('en'),
-      2 => const Locale('ja'),
-      3 => const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant', countryCode: 'TW'),
+      null => WidgetsBinding.instance.platformDispatcher.locale,
+      0 => const Locale('en'),
+      1 => const Locale('ja'),
+      2 => const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant', countryCode: 'TW'),
       _ => const Locale('en'),
     };
   }

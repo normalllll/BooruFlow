@@ -14,7 +14,7 @@ class DownloaderPage extends ConsumerWidget {
     final provider = downloaderProvider;
     final state = ref.watch(provider);
     return AutoScaffold(
-      verticalOnlyTitleWidget:  Text(i18n.downloader.title),
+      verticalOnlyTitleWidget: Text(i18n.downloader.title),
       builder: (context, horizontal) {
         return ListView.builder(
           itemCount: state.tasks.length,

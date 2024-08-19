@@ -54,18 +54,13 @@ class YandeImage extends StatelessWidget {
                   return Stack(
                     children: [
                       widget,
-                      Positioned(
-                          left: 0,
-                          top: 0,
-                          right: 0,
-                          child: LinearProgressIndicator(value: progress)),
+                      Positioned(left: 0, top: 0, right: 0, child: LinearProgressIndicator(value: progress)),
                     ],
                   );
                 } else {
                   return Padding(
                     padding: const EdgeInsets.all(5),
-                    child: Center(
-                        child: CircularProgressIndicator(value: progress)),
+                    child: Center(child: CircularProgressIndicator(value: progress)),
                   );
                 }
               }
@@ -74,11 +69,7 @@ class YandeImage extends StatelessWidget {
                 return Stack(
                   children: [
                     widget,
-                    const Positioned(
-                        left: 0,
-                        top: 0,
-                        right: 0,
-                        child: LinearProgressIndicator()),
+                    const Positioned(left: 0, top: 0, right: 0, child: LinearProgressIndicator()),
                   ],
                 );
               } else {
@@ -95,10 +86,7 @@ class YandeImage extends StatelessWidget {
           case LoadState.completed:
             return imageBuilder?.call(state.completedWidget);
           case LoadState.failed:
-            return Center(
-                child: IconButton(
-                    icon: const Icon(Icons.refresh_outlined),
-                    onPressed: state.reLoadImage));
+            return Center(child: IconButton(icon: const Icon(Icons.refresh_outlined), onPressed: state.reLoadImage));
         }
       },
       color: color,

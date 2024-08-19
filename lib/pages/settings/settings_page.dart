@@ -34,24 +34,24 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  String themeModeToText(int themeMode) {
+  String themeModeToText(int? themeMode) {
     switch (themeMode) {
-      case 0:
+      case null:
         return i18n.settings.system;
-      case 1:
+      case 0:
         return i18n.settings.light;
-      case 2:
+      case 1:
         return i18n.settings.dark;
     }
     return 'Unknown';
   }
 
-  String languageToText(int language) {
+  String languageToText(int? language) {
     return switch (language) {
-      0 => i18n.settings.system,
-      1 => 'English',
-      2 => '日本語',
-      3 => '繁體中文',
+      null => i18n.settings.system,
+      0 => 'English',
+      1 => '日本語',
+      2 => '繁體中文',
       _ => 'Unknown',
     };
   }
@@ -65,32 +65,32 @@ class _SettingsPageState extends State<SettingsPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              RadioListTile<int>(
+              RadioListTile<int?>(
                 title: Text(i18n.settings.system),
-                value: 0,
+                value: null,
                 groupValue: SettingsService.themeMode,
                 onChanged: (value) {
-                  SettingsService.themeMode = value!;
+                  SettingsService.themeMode = value;
                   rootUpdateController.add(null);
                   Navigator.of(context).pop();
                 },
               ),
               RadioListTile<int>(
                 title: Text(i18n.settings.light),
-                value: 1,
+                value: 0,
                 groupValue: SettingsService.themeMode,
                 onChanged: (value) {
-                  SettingsService.themeMode = value!;
+                  SettingsService.themeMode = value;
                   rootUpdateController.add(null);
                   Navigator.of(context).pop();
                 },
               ),
               RadioListTile<int>(
                 title: Text(i18n.settings.dark),
-                value: 2,
+                value: 1,
                 groupValue: SettingsService.themeMode,
                 onChanged: (value) {
-                  SettingsService.themeMode = value!;
+                  SettingsService.themeMode = value;
                   rootUpdateController.add(null);
                   Navigator.of(context).pop();
                 },
@@ -119,13 +119,13 @@ class _SettingsPageState extends State<SettingsPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              RadioListTile<int>(
+              RadioListTile<int?>(
                 title: Text(i18n.settings.system),
-                value: 0,
+                value: null,
                 groupValue: SettingsService.language,
                 onChanged: (value) {
-                  SettingsService.language = value!;
-                  I18n.update(I18n.getLocale(0));
+                  SettingsService.language = value;
+                  I18n.update(I18n.getLocale(value));
                   rootUpdateController.add(null);
                   Navigator.of(context).pop();
                 },
@@ -135,8 +135,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 value: 1,
                 groupValue: SettingsService.language,
                 onChanged: (value) {
-                  SettingsService.language = value!;
-                  I18n.update(I18n.getLocale(1));
+                  SettingsService.language = value;
+                  I18n.update(I18n.getLocale(value));
                   rootUpdateController.add(null);
                   Navigator.of(context).pop();
                 },
@@ -146,8 +146,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 value: 2,
                 groupValue: SettingsService.language,
                 onChanged: (value) {
-                  SettingsService.language = value!;
-                  I18n.update(I18n.getLocale(2));
+                  SettingsService.language = value;
+                  I18n.update(I18n.getLocale(value));
                   rootUpdateController.add(null);
                   Navigator.of(context).pop();
                 },
@@ -157,8 +157,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 value: 3,
                 groupValue: SettingsService.language,
                 onChanged: (value) {
-                  SettingsService.language = value!;
-                  I18n.update(I18n.getLocale(3));
+                  SettingsService.language = value;
+                  I18n.update(I18n.getLocale(value));
                   rootUpdateController.add(null);
                   Navigator.of(context).pop();
                 },
@@ -276,6 +276,61 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  void _waterfallColumnsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        double currentSliderValue = (SettingsService.waterfallColumns ?? -1).toDouble();
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title:  Text(i18n.settings.setWaterfallColumnsDialog.title),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Slider(
+                    value: currentSliderValue,
+                    min: -1,
+                    max: 8,
+                    divisions: 9,
+                    label: switch (currentSliderValue) {
+                      -1 => 'Auto',
+                      final value =>(value.toInt()+2).toString(),
+                    },
+                    onChanged: (double value) {
+                      setState(() {
+                        currentSliderValue = value;
+                      });
+                    },
+                    onChangeEnd: (double value) {
+                      SettingsService.waterfallColumns = value == -1 ? null : value.toInt()+2;
+                      rootUpdateController.add(null);
+                    },
+                  ),
+                  Text(
+                    i18n.settings.setWaterfallColumnsDialog.current(switch (currentSliderValue) {
+                      -1 => 'Auto',
+                      final value => (value.toInt()+2).toString(),
+                    }),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(i18n.generic.confirm),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AutoScaffold(
@@ -295,6 +350,13 @@ class _SettingsPageState extends State<SettingsPage> {
               subtitle: Text(themeModeToText(SettingsService.themeMode)),
               onTap: () {
                 _themeModeDialog();
+              },
+            ),
+            buildItem(
+              title: Text(i18n.settings.waterfallColumns),
+              // subtitle: Text(themeModeToText(SettingsService.themeMode)),
+              onTap: () {
+                _waterfallColumnsDialog();
               },
             ),
             if (Platform.isWindows || Platform.isLinux || Platform.isMacOS)

@@ -30,8 +30,6 @@ class MyApp extends ConsumerWidget {
     const lightPrimaryColor = Color(0xffef83be);
     const secondaryColor = Color(0xff28a4ff);
 
-
-
     return StreamBuilder(
       stream: rootUpdateController.stream,
       builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
@@ -39,7 +37,7 @@ class MyApp extends ConsumerWidget {
         I18n.update(locale);
         return MaterialApp(
           title: 'Yande GUI',
-          home:  IndexPage(language: SettingsService.language),
+          home: IndexPage(language: SettingsService.language),
           darkTheme: ThemeData(
             brightness: Brightness.dark,
             primaryColor: darkPrimaryColor,
@@ -47,16 +45,18 @@ class MyApp extends ConsumerWidget {
             colorScheme: const ColorScheme.dark(
               primary: darkPrimaryColor,
               secondary: secondaryColor,
-              // background: Color(0xff1c1c1c),
-              // onBackground: Color(0xff8e8e8e),
-              surface: Color(0xff121212),
-              onSurface: Color(0xffe6e1e5),
+              surface: Color.fromARGB(255, 26, 26, 26),
+              onSurface: Color.fromARGB(255, 216, 216, 216),
             ),
             scaffoldBackgroundColor: const Color(0xff1c1c1c),
             inputDecorationTheme: const InputDecorationTheme(
               contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(6)),
+              ),
+              fillColor: Color.fromARGB(255, 32, 35, 39),
+              hintStyle: TextStyle(
+                color: Color.fromARGB(255, 113, 117, 123),
               ),
             ),
             navigationRailTheme: const NavigationRailThemeData(
@@ -67,13 +67,16 @@ class MyApp extends ConsumerWidget {
             ),
             bottomNavigationBarTheme: const BottomNavigationBarThemeData(
               selectedItemColor: darkPrimaryColor,
+              unselectedItemColor: Color.fromARGB(255, 216, 216, 216),
             ),
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ButtonStyle(
                 shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(4))),
                 padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 8, vertical: 15)),
-                // minimumSize: WidgetStateProperty.all(const Size(20, 35)),
               ),
+            ),
+            progressIndicatorTheme: const ProgressIndicatorThemeData(
+              linearTrackColor: Color(0xff181818),
             ),
           ),
           theme: ThemeData(
@@ -82,10 +85,8 @@ class MyApp extends ConsumerWidget {
             colorScheme: const ColorScheme.light(
               primary: lightPrimaryColor,
               secondary: secondaryColor,
-              // background: Color(0xfff0f0f0),
-              // onBackground: Color(0xff1c1c1c),
-              surface: Color(0xfffffefe),
-              onSurface: Color(0xff1c1c1c),
+              surface: Color(0xffffffff),
+              onSurface: Color.fromARGB(255, 16, 19, 24),
             ),
             scaffoldBackgroundColor: const Color(0xfff0f0f0),
             inputDecorationTheme: const InputDecorationTheme(
@@ -93,13 +94,17 @@ class MyApp extends ConsumerWidget {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(6)),
               ),
+              fillColor: Color.fromARGB(255, 239, 242, 244),
+              hintStyle: TextStyle(
+                color: Color.fromARGB(255, 86, 99, 112),
+              ),
             ),
             navigationRailTheme: const NavigationRailThemeData(
               indicatorColor: lightPrimaryColor,
-              // backgroundColor: Color(0xff1c1c1c),
             ),
             bottomNavigationBarTheme: const BottomNavigationBarThemeData(
               selectedItemColor: lightPrimaryColor,
+              unselectedItemColor: Color.fromARGB(255, 16, 19, 24),
             ),
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ButtonStyle(
@@ -108,11 +113,14 @@ class MyApp extends ConsumerWidget {
                 minimumSize: WidgetStateProperty.all(const Size(20, 35)),
               ),
             ),
+            progressIndicatorTheme: const ProgressIndicatorThemeData(
+              linearTrackColor: Color(0xffffffff),
+            ),
           ),
           themeMode: switch (SettingsService.themeMode) {
-            0 => ThemeMode.system,
-            1 => ThemeMode.light,
-            2 => ThemeMode.dark,
+            null => ThemeMode.system,
+            0 => ThemeMode.light,
+            1 => ThemeMode.dark,
             _ => ThemeMode.system,
           },
           locale: locale,

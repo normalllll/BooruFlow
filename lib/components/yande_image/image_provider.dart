@@ -9,8 +9,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:yande_gui/global.dart';
 
-class YandeExtendedImageProvider
-    extends ImageProvider<ExtendedNetworkImageProvider>
+class YandeExtendedImageProvider extends ImageProvider<ExtendedNetworkImageProvider>
     with ExtendedImageProvider<ExtendedNetworkImageProvider>
     implements ExtendedNetworkImageProvider {
   /// Creates an object that fetches the image at the given URL.
@@ -96,8 +95,7 @@ class YandeExtendedImageProvider
     // Ownership of this controller is handed off to [_loadAsync]; it is that
     // method's responsibility to close the controller's stream when the image
     // has been loaded or an error is thrown.
-    final StreamController<ImageChunkEvent> chunkEvents =
-        StreamController<ImageChunkEvent>();
+    final StreamController<ImageChunkEvent> chunkEvents = StreamController<ImageChunkEvent>();
 
     return MultiFrameImageStreamCompleter(
       codec: _loadAsync(
@@ -118,8 +116,7 @@ class YandeExtendedImageProvider
   }
 
   @override
-  Future<ExtendedNetworkImageProvider> obtainKey(
-      ImageConfiguration configuration) {
+  Future<ExtendedNetworkImageProvider> obtainKey(ImageConfiguration configuration) {
     return SynchronousFuture<ExtendedNetworkImageProvider>(this);
   }
 
@@ -179,8 +176,7 @@ class YandeExtendedImageProvider
     StreamController<ImageChunkEvent>? chunkEvents,
     String md5Key,
   ) async {
-    final Directory _cacheImagesDirectory = Directory(
-        join((await getTemporaryDirectory()).path, cacheImageFolderName));
+    final Directory _cacheImagesDirectory = Directory(join((await getTemporaryDirectory()).path, cacheImageFolderName));
     Uint8List? data;
     // exist, try to find cache image file
     if (_cacheImagesDirectory.existsSync()) {
@@ -262,8 +258,7 @@ class YandeExtendedImageProvider
       );
 
       if (bytes.lengthInBytes == 0) {
-        return Future<Uint8List>.error(
-            StateError('NetworkImage is an empty file: $resolved'));
+        return Future<Uint8List>.error(StateError('NetworkImage is an empty file: $resolved'));
       }
 
       return bytes;

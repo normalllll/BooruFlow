@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yande_gui/components/yande_image/yande_image.dart';
 import 'package:yande_gui/i18n.dart';
@@ -51,20 +52,27 @@ class _PostSimilarWidgetState extends ConsumerState<PostSimilarWidget> {
         );
       },
       onLongPress: () {
+        HapticFeedback.mediumImpact();
         ref.read(downloaderProvider.notifier).addTask(post).then((downloadTaskProvider) {
           if (downloadTaskProvider != null) {
             ref.read(downloadTaskProvider.notifier).doDownload();
           }
         });
       },
-      child: YandeImage(
-        post.sampleUrl,
-        width: calcWidth,
-        height: calcHeight,
-        placeholderWidget: YandeImage(
-          post.previewUrl,
+      child: Center(
+        child: SizedBox(
           width: calcWidth,
-          height: calcHeight,
+          height: calcHeight >= calcWidth ? null : calcHeight,
+          child: YandeImage(
+            post.sampleUrl,
+            width: calcWidth,
+            height: calcHeight >= calcWidth ? null : calcHeight,
+            placeholderWidget: YandeImage(
+              post.previewUrl,
+              width: calcWidth,
+              // height: height,
+            ),
+          ),
         ),
       ),
     );

@@ -33,6 +33,9 @@ postDetail:
   parentPost: 父帖子
   childPost: 子帖子
 
+postSearch:
+  title: 搜尋
+
 imageZoom:
   title: 縮放圖片
 
@@ -70,6 +73,7 @@ settings:
   language: 語言
   downloadPath: 下載路徑
   platformDefault: 平台預設
+  waterfallColumns: 每行的列數
   system: 系統預設
   light: 淺色模式
   dark: 深色模式
@@ -88,3 +92,7 @@ settings:
       setToPlatformDefault: 下載路徑已設為平台預設值。
       pathNotAbsolute: 路徑必須為絕對路徑。
       pathNotWritable: 路徑無法寫入
+
+  setWaterfallColumnsDialog:
+    title: 設定每行的列數
+    current(String value): "目前 $value"

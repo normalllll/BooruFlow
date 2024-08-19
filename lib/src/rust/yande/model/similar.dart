@@ -20,10 +20,5 @@ class Similar {
   int get hashCode => posts.hashCode ^ source.hashCode;
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Similar &&
-          runtimeType == other.runtimeType &&
-          posts == other.posts &&
-          source == other.source;
+  bool operator ==(Object other) => identical(this, other) || other is Similar && runtimeType == other.runtimeType && posts == other.posts && source == other.source;
 }

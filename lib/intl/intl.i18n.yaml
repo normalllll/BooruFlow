@@ -33,6 +33,9 @@ postDetail:
   parentPost: Parent post
   childPost: Child post
 
+postSearch:
+  title: Search
+
 imageZoom:
   title: Zoom Image
 
@@ -70,6 +73,7 @@ settings:
   language: Language
   downloadPath: Download path
   platformDefault: Platform Default
+  waterfallColumns: Columns per Row
   system: System
   light: Light
   dark: Dark
@@ -88,3 +92,7 @@ settings:
       setToPlatformDefault: Download path set to platform default.
       pathNotAbsolute: Path must be absolute.
       pathNotWritable: Path is not writable
+
+  setWaterfallColumnsDialog:
+    title: Number of Columns per Row
+    current(String value): "Current $value"

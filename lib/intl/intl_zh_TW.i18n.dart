@@ -70,6 +70,7 @@ class IntlZhTW extends Intl {
   UpdateIntlZhTW get update => UpdateIntlZhTW(this);
   PostListIntlZhTW get postList => PostListIntlZhTW(this);
   PostDetailIntlZhTW get postDetail => PostDetailIntlZhTW(this);
+  PostSearchIntlZhTW get postSearch => PostSearchIntlZhTW(this);
   ImageZoomIntlZhTW get imageZoom => ImageZoomIntlZhTW(this);
   DownloaderIntlZhTW get downloader => DownloaderIntlZhTW(this);
   AboutIntlZhTW get about => AboutIntlZhTW(this);
@@ -233,6 +234,16 @@ class PostDetailIntlZhTW extends PostDetailIntl {
   String get childPost => """子帖子""";
 }
 
+class PostSearchIntlZhTW extends PostSearchIntl {
+  final IntlZhTW _parent;
+  const PostSearchIntlZhTW(this._parent) : super(_parent);
+
+  /// ```dart
+  /// "搜尋"
+  /// ```
+  String get title => """搜尋""";
+}
+
 class ImageZoomIntlZhTW extends ImageZoomIntl {
   final IntlZhTW _parent;
   const ImageZoomIntlZhTW(this._parent) : super(_parent);
@@ -394,6 +405,11 @@ class SettingsIntlZhTW extends SettingsIntl {
   String get platformDefault => """平台預設""";
 
   /// ```dart
+  /// "每行的列數"
+  /// ```
+  String get waterfallColumns => """每行的列數""";
+
+  /// ```dart
   /// "系統預設"
   /// ```
   String get system => """系統預設""";
@@ -413,6 +429,8 @@ class SettingsIntlZhTW extends SettingsIntl {
       ThemeModeDialogSettingsIntlZhTW(this);
   SelectDownloadPathDialogSettingsIntlZhTW get selectDownloadPathDialog =>
       SelectDownloadPathDialogSettingsIntlZhTW(this);
+  SetWaterfallColumnsDialogSettingsIntlZhTW get setWaterfallColumnsDialog =>
+      SetWaterfallColumnsDialogSettingsIntlZhTW(this);
 }
 
 class LanguageDialogSettingsIntlZhTW extends LanguageDialogSettingsIntl {
@@ -480,6 +498,23 @@ class MessagesSelectDownloadPathDialogSettingsIntlZhTW
   String get pathNotWritable => """路徑無法寫入""";
 }
 
+class SetWaterfallColumnsDialogSettingsIntlZhTW
+    extends SetWaterfallColumnsDialogSettingsIntl {
+  final SettingsIntlZhTW _parent;
+  const SetWaterfallColumnsDialogSettingsIntlZhTW(this._parent)
+      : super(_parent);
+
+  /// ```dart
+  /// "設定每行的列數"
+  /// ```
+  String get title => """設定每行的列數""";
+
+  /// ```dart
+  /// "目前 $value"
+  /// ```
+  String current(String value) => """目前 $value""";
+}
+
 Map<String, String> get intlZhTWMap => {
       """generic.ok""": """確定""",
       """generic.cancel""": """取消""",
@@ -504,6 +539,7 @@ Map<String, String> get intlZhTWMap => {
       """postDetail.similarPosts""": """相似帖子""",
       """postDetail.parentPost""": """父帖子""",
       """postDetail.childPost""": """子帖子""",
+      """postSearch.title""": """搜尋""",
       """imageZoom.title""": """縮放圖片""",
       """downloader.title""": """下載器""",
       """downloader.messages.storagePermanentlyDenied""":
@@ -528,6 +564,7 @@ Map<String, String> get intlZhTWMap => {
       """settings.language""": """語言""",
       """settings.downloadPath""": """下載路徑""",
       """settings.platformDefault""": """平台預設""",
+      """settings.waterfallColumns""": """每行的列數""",
       """settings.system""": """系統預設""",
       """settings.light""": """淺色模式""",
       """settings.dark""": """深色模式""",
@@ -542,4 +579,5 @@ Map<String, String> get intlZhTWMap => {
           """路徑必須為絕對路徑。""",
       """settings.selectDownloadPathDialog.messages.pathNotWritable""":
           """路徑無法寫入""",
+      """settings.setWaterfallColumnsDialog.title""": """設定每行的列數""",
     };

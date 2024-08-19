@@ -33,6 +33,9 @@ postDetail:
   parentPost: 親投稿
   childPost: 子投稿
 
+postSearch:
+  title: 検索
+
 imageZoom:
   title: 画像をズーム
 
@@ -70,6 +73,7 @@ settings:
   language: 言語
   downloadPath: ダウンロードパス
   platformDefault: プラットフォームのデフォルト
+  waterfallColumns: 行あたりの列数
   system: システム
   light: ライト
   dark: ダーク
@@ -88,3 +92,7 @@ settings:
       setToPlatformDefault: ダウンロードパスがプラットフォームのデフォルトに設定されました。
       pathNotAbsolute: パスは絶対パスである必要があります。
       pathNotWritable: パスに書き込みできません
+
+  setWaterfallColumnsDialog:
+    title: 行あたりの列数を設定する
+    current(String value): "現在 $value"

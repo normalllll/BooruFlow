@@ -13,17 +13,24 @@ class SettingsService {
 
   static final Map<String, dynamic> _map = {};
 
-  static int get language => _map['language'] as int? ?? 0;
+  static int? get language => _map['language'] as int?;
 
-  static set language(int value) {
+  static set language(int? value) {
     _map['language'] = value;
     _save();
   }
 
-  static int get themeMode => _map['themeMode'] as int? ?? 0;
+  static int? get themeMode => _map['themeMode'] as int?;
 
-  static set themeMode(int value) {
+  static set themeMode(int? value) {
     _map['themeMode'] = value;
+    _save();
+  }
+
+  static int? get waterfallColumns => _map['waterfallColumns'] as int?;
+
+  static set waterfallColumns(int? value) {
+    _map['waterfallColumns'] = value;
     _save();
   }
 

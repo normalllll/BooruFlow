@@ -5,6 +5,7 @@ import 'package:yande_gui/i18n.dart';
 import 'package:yande_gui/pages/about/about_page.dart';
 import 'package:yande_gui/pages/downloader/downloader_page.dart';
 import 'package:yande_gui/pages/post_list/post_list_page.dart';
+import 'package:yande_gui/pages/post_search/post_search_page.dart';
 import 'package:yande_gui/pages/settings/settings_page.dart';
 import 'package:yande_gui/services/dns_service.dart';
 import 'package:yande_gui/services/updater_service.dart';
@@ -12,7 +13,7 @@ import 'package:yande_gui/src/rust/api/yande_client.dart';
 import 'package:yande_gui/widgets/lazy_indexed_stack/lazy_indexed_stack.dart';
 
 class IndexPage extends StatefulWidget {
-  final int language;
+  final int? language;
 
   const IndexPage({super.key, required this.language});
 
@@ -23,6 +24,7 @@ class IndexPage extends StatefulWidget {
 class _IndexPageState extends State<IndexPage> {
   Map<(IconData, String), WidgetBuilder> get _pages => {
         (Icons.list_alt_outlined, i18n.postList.short): (context) => const PostListPage(),
+        (Icons.search_outlined, i18n.postSearch.title): (context) => const PostSearchPage(),
         (Icons.cloud_download_outlined, i18n.downloader.title): (context) => const DownloaderPage(),
         (Icons.info_outlined, i18n.about.title): (context) => const AboutPage(),
         (Icons.settings, i18n.settings.title): (context) => const SettingsPage(),

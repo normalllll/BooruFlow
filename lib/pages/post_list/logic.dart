@@ -10,23 +10,19 @@ class PostListState {
 
   final PostListSource source;
 
-  final int rowMax;
 
   PostListState({
     required this.tags,
     required this.source,
-    this.rowMax = 0,
   });
 
   PostListState copyWith({
     List<String>? tags,
     PostListSource? source,
-    int? rowMax,
   }) {
     return PostListState(
       tags: tags ?? this.tags,
       source: source ?? this.source,
-      rowMax: rowMax ?? this.rowMax,
     );
   }
 }
@@ -60,7 +56,5 @@ class PostList extends _$PostList {
     state.source.refresh(true);
   }
 
-  void onRowMaxChanged(int rowMax) {
-    state = state.copyWith(rowMax: rowMax);
-  }
+
 }

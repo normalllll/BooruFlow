@@ -11,23 +11,16 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<YandeClient>>
 abstract class YandeClient implements RustOpaqueInterface {
-  Future<void> downloadToFile(
-      {required String url,
-      required String filePath,
-      required FutureOr<void> Function(BigInt, BigInt) progressCallback});
+  Future<void> downloadToFile({required String url, required String filePath, required FutureOr<void> Function(BigInt, BigInt) progressCallback});
 
-  Future<Uint8List> downloadToMemory(
-      {required String url,
-      required FutureOr<void> Function(BigInt, BigInt) progressCallback});
+  Future<Uint8List> downloadToMemory({required String url, required FutureOr<void> Function(BigInt, BigInt) progressCallback});
 
-  Future<List<Post>> getPosts(
-      {required List<String> tags, required int limit, required int page});
+  Future<List<Post>> getPosts({required List<String> tags, required int limit, required int page});
 
   Future<Similar> getSimilar({required PlatformInt64 postId});
 
   // HINT: Make it `#[frb(sync)]` to let it become the default constructor of Dart class.
-  static Future<YandeClient> newInstance({StringArray3? ips}) =>
-      RustLib.instance.api.crateApiYandeClientYandeClientNew(ips: ips);
+  static Future<YandeClient> newInstance({StringArray3? ips}) => RustLib.instance.api.crateApiYandeClientYandeClientNew(ips: ips);
 }
 
 class StringArray3 extends NonGrowableListView<String> {

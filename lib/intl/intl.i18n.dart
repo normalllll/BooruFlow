@@ -69,6 +69,7 @@ class Intl {
   UpdateIntl get update => UpdateIntl(this);
   PostListIntl get postList => PostListIntl(this);
   PostDetailIntl get postDetail => PostDetailIntl(this);
+  PostSearchIntl get postSearch => PostSearchIntl(this);
   ImageZoomIntl get imageZoom => ImageZoomIntl(this);
   DownloaderIntl get downloader => DownloaderIntl(this);
   AboutIntl get about => AboutIntl(this);
@@ -236,6 +237,16 @@ class PostDetailIntl {
   String get childPost => """Child post""";
 }
 
+class PostSearchIntl {
+  final Intl _parent;
+  const PostSearchIntl(this._parent);
+
+  /// ```dart
+  /// "Search"
+  /// ```
+  String get title => """Search""";
+}
+
 class ImageZoomIntl {
   final Intl _parent;
   const ImageZoomIntl(this._parent);
@@ -401,6 +412,11 @@ class SettingsIntl {
   String get platformDefault => """Platform Default""";
 
   /// ```dart
+  /// "Columns per Row"
+  /// ```
+  String get waterfallColumns => """Columns per Row""";
+
+  /// ```dart
   /// "System"
   /// ```
   String get system => """System""";
@@ -420,6 +436,8 @@ class SettingsIntl {
       ThemeModeDialogSettingsIntl(this);
   SelectDownloadPathDialogSettingsIntl get selectDownloadPathDialog =>
       SelectDownloadPathDialogSettingsIntl(this);
+  SetWaterfallColumnsDialogSettingsIntl get setWaterfallColumnsDialog =>
+      SetWaterfallColumnsDialogSettingsIntl(this);
 }
 
 class LanguageDialogSettingsIntl {
@@ -485,6 +503,21 @@ class MessagesSelectDownloadPathDialogSettingsIntl {
   String get pathNotWritable => """Path is not writable""";
 }
 
+class SetWaterfallColumnsDialogSettingsIntl {
+  final SettingsIntl _parent;
+  const SetWaterfallColumnsDialogSettingsIntl(this._parent);
+
+  /// ```dart
+  /// "Number of Columns per Row"
+  /// ```
+  String get title => """Number of Columns per Row""";
+
+  /// ```dart
+  /// "Current $value"
+  /// ```
+  String current(String value) => """Current $value""";
+}
+
 Map<String, String> get intlMap => {
       """generic.ok""": """OK""",
       """generic.cancel""": """Cancel""",
@@ -510,6 +543,7 @@ Map<String, String> get intlMap => {
       """postDetail.similarPosts""": """Similar posts""",
       """postDetail.parentPost""": """Parent post""",
       """postDetail.childPost""": """Child post""",
+      """postSearch.title""": """Search""",
       """imageZoom.title""": """Zoom Image""",
       """downloader.title""": """Downloader""",
       """downloader.messages.storagePermanentlyDenied""":
@@ -540,6 +574,7 @@ Map<String, String> get intlMap => {
       """settings.language""": """Language""",
       """settings.downloadPath""": """Download path""",
       """settings.platformDefault""": """Platform Default""",
+      """settings.waterfallColumns""": """Columns per Row""",
       """settings.system""": """System""",
       """settings.light""": """Light""",
       """settings.dark""": """Dark""",
@@ -555,4 +590,6 @@ Map<String, String> get intlMap => {
           """Path must be absolute.""",
       """settings.selectDownloadPathDialog.messages.pathNotWritable""":
           """Path is not writable""",
+      """settings.setWaterfallColumnsDialog.title""":
+          """Number of Columns per Row""",
     };

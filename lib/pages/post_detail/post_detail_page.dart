@@ -152,7 +152,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                     ),
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -173,6 +173,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
         );
       },
       onLongPress: () {
+        HapticFeedback.mediumImpact();
         ref.read(downloaderProvider.notifier).addTask(post).then((downloadTaskProvider) {
           if (downloadTaskProvider != null) {
             ref.read(downloadTaskProvider.notifier).doDownload();
@@ -182,13 +183,13 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
       child: Center(
         child: SizedBox(
           width: width,
-          height: height > width ? null : height,
+          height: height >= width ? null : height,
           child: Hero(
             tag: post.id,
             child: YandeImage(
               post.sampleUrl,
               width: width,
-              height: height > width ? null : height,
+              height: height >= width ? null : height,
               placeholderWidget: YandeImage(
                 post.previewUrl,
                 width: width,

@@ -70,6 +70,7 @@ class IntlJa extends Intl {
   UpdateIntlJa get update => UpdateIntlJa(this);
   PostListIntlJa get postList => PostListIntlJa(this);
   PostDetailIntlJa get postDetail => PostDetailIntlJa(this);
+  PostSearchIntlJa get postSearch => PostSearchIntlJa(this);
   ImageZoomIntlJa get imageZoom => ImageZoomIntlJa(this);
   DownloaderIntlJa get downloader => DownloaderIntlJa(this);
   AboutIntlJa get about => AboutIntlJa(this);
@@ -236,6 +237,16 @@ class PostDetailIntlJa extends PostDetailIntl {
   String get childPost => """子投稿""";
 }
 
+class PostSearchIntlJa extends PostSearchIntl {
+  final IntlJa _parent;
+  const PostSearchIntlJa(this._parent) : super(_parent);
+
+  /// ```dart
+  /// "検索"
+  /// ```
+  String get title => """検索""";
+}
+
 class ImageZoomIntlJa extends ImageZoomIntl {
   final IntlJa _parent;
   const ImageZoomIntlJa(this._parent) : super(_parent);
@@ -399,6 +410,11 @@ class SettingsIntlJa extends SettingsIntl {
   String get platformDefault => """プラットフォームのデフォルト""";
 
   /// ```dart
+  /// "行あたりの列数"
+  /// ```
+  String get waterfallColumns => """行あたりの列数""";
+
+  /// ```dart
   /// "システム"
   /// ```
   String get system => """システム""";
@@ -418,6 +434,8 @@ class SettingsIntlJa extends SettingsIntl {
       ThemeModeDialogSettingsIntlJa(this);
   SelectDownloadPathDialogSettingsIntlJa get selectDownloadPathDialog =>
       SelectDownloadPathDialogSettingsIntlJa(this);
+  SetWaterfallColumnsDialogSettingsIntlJa get setWaterfallColumnsDialog =>
+      SetWaterfallColumnsDialogSettingsIntlJa(this);
 }
 
 class LanguageDialogSettingsIntlJa extends LanguageDialogSettingsIntl {
@@ -485,6 +503,22 @@ class MessagesSelectDownloadPathDialogSettingsIntlJa
   String get pathNotWritable => """パスに書き込みできません""";
 }
 
+class SetWaterfallColumnsDialogSettingsIntlJa
+    extends SetWaterfallColumnsDialogSettingsIntl {
+  final SettingsIntlJa _parent;
+  const SetWaterfallColumnsDialogSettingsIntlJa(this._parent) : super(_parent);
+
+  /// ```dart
+  /// "行あたりの列数を設定する"
+  /// ```
+  String get title => """行あたりの列数を設定する""";
+
+  /// ```dart
+  /// "現在 $value"
+  /// ```
+  String current(String value) => """現在 $value""";
+}
+
 Map<String, String> get intlJaMap => {
       """generic.ok""": """OK""",
       """generic.cancel""": """キャンセル""",
@@ -510,6 +544,7 @@ Map<String, String> get intlJaMap => {
       """postDetail.similarPosts""": """類似投稿""",
       """postDetail.parentPost""": """親投稿""",
       """postDetail.childPost""": """子投稿""",
+      """postSearch.title""": """検索""",
       """imageZoom.title""": """画像をズーム""",
       """downloader.title""": """ダウンローダー""",
       """downloader.messages.storagePermanentlyDenied""":
@@ -535,6 +570,7 @@ Map<String, String> get intlJaMap => {
       """settings.language""": """言語""",
       """settings.downloadPath""": """ダウンロードパス""",
       """settings.platformDefault""": """プラットフォームのデフォルト""",
+      """settings.waterfallColumns""": """行あたりの列数""",
       """settings.system""": """システム""",
       """settings.light""": """ライト""",
       """settings.dark""": """ダーク""",
@@ -549,4 +585,5 @@ Map<String, String> get intlJaMap => {
           """パスは絶対パスである必要があります。""",
       """settings.selectDownloadPathDialog.messages.pathNotWritable""":
           """パスに書き込みできません""",
+      """settings.setWaterfallColumnsDialog.title""": """行あたりの列数を設定する""",
     };
