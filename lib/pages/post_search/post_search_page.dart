@@ -137,7 +137,7 @@ class _PostSearchPageState extends State<PostSearchPage> {
           Navigator.of(context).push(MaterialPageRoute(builder: (context) => PostListPage(tags: _textController.text.split(' '))));
         },
         mini: true,
-        child: const Icon(Icons.vertical_align_top_outlined, color: Colors.white),
+        child: const Icon(Icons.search_outlined, color: Colors.white),
       ),
     );
   }
