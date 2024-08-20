@@ -17,6 +17,9 @@ abstract class DataListSource<T> extends LoadingMoreBase<T> {
     _hasMore = true;
     _initialized = false;
     _page = 1;
+    if (!notifyStateChanged) {
+      clear();
+    }
     return super.refresh(notifyStateChanged);
   }
 

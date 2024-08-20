@@ -764,14 +764,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.0"
-  pull_to_refresh_notification:
-    dependency: "direct main"
-    description:
-      name: pull_to_refresh_notification
-      sha256: "5a06c242a6c3264bac3a7facbe2c6d317a5f54fc10c20b556dbd34ceee32c9aa"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.1.0"
   quick_log:
     dependency: transitive
     description:

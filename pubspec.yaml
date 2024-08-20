@@ -30,7 +30,6 @@ dependencies:
   loading_more_list: ^7.1.0
   extended_image: ^8.2.1
   flutter_easyloading: ^3.0.5
-  pull_to_refresh_notification: ^3.1.0
   url_launcher: ^6.3.0
   vector_math: ^2.1.4
   flutter_animate: ^4.5.0
