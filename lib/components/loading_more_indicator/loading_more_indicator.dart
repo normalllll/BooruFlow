@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_more_list/loading_more_list.dart';
 
@@ -28,13 +29,13 @@ class LoadingMoreIndicator extends StatelessWidget {
         widget = const Center(
           child: Padding(
             padding: EdgeInsets.only(top: 10, bottom: 10),
-            child: Text('Loading', style: textStyle),
+            child: CupertinoActivityIndicator(),
           ),
         );
         break;
       case IndicatorStatus.fullScreenBusying:
         widget = const Center(
-          child: CircularProgressIndicator(),
+          child: CupertinoActivityIndicator(),
         );
         if (isSliver) {
           widget = SliverFillRemaining(child: widget);
