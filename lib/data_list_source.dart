@@ -42,11 +42,8 @@ abstract class DataListSource<T> extends LoadingMoreBase<T> {
       if (nextClear) {
         clear();
         nextClear = false;
-        addAll(list.sublist(10, 20));
-      } else {
-        addAll(list);
       }
-
+      addAll(list);
       print(length);
       _page++;
       if (!_initialized) {
