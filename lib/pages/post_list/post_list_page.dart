@@ -7,6 +7,7 @@ import 'package:loading_more_list/loading_more_list.dart';
 import 'package:yande_gui/components/loading_more_indicator/loading_more_indicator.dart';
 import 'package:yande_gui/components/yande_image/yande_image.dart';
 import 'package:yande_gui/enums.dart';
+import 'package:yande_gui/global.dart';
 import 'package:yande_gui/i18n.dart';
 import 'package:yande_gui/pages/post_detail/post_detail_page.dart';
 import 'package:yande_gui/services/settings_service.dart';
@@ -44,7 +45,7 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                 slivers: [
                   SliverAppBar(
                     floating: true,
-                    snap: true,
+                    snap: isMobile,
                     scrolledUnderElevation: 0,
                     title: switch (widget.tags) { final tags? => Text(i18n.postList.titleWithTags(tags.join(' '))), _ => Text(i18n.postList.title) },
                   ),
@@ -147,6 +148,13 @@ class _PostListPageState extends ConsumerState<PostListPage> {
           ],
         );
       },
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          state.source.refresh(true);
+        },
+        mini: isMobile,
+        child: const Icon(Icons.refresh, color: Colors.white),
+      ),
     );
   }
 }

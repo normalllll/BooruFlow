@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yande_gui/global.dart';
 import 'package:yande_gui/i18n.dart';
 import 'package:yande_gui/pages/post_list/post_list_page.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
@@ -136,7 +137,7 @@ class _PostSearchPageState extends State<PostSearchPage> {
         onPressed: () {
           Navigator.of(context).push(MaterialPageRoute(builder: (context) => PostListPage(tags: _textController.text.split(' '))));
         },
-        mini: true,
+        mini: isMobile,
         child: const Icon(Icons.search_outlined, color: Colors.white),
       ),
     );
