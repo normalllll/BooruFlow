@@ -287,7 +287,7 @@ class _SettingsPageState extends State<SettingsPage> {
     showDialog(
       context: context,
       builder: (context) {
-        double currentSliderValue = (SettingsService.waterfallColumns ?? -1).toDouble();
+        double currentSliderValue = ((SettingsService.waterfallColumns ?? -1) - 2).toDouble();
 
         return StatefulBuilder(
           builder: (context, setState) {
