@@ -56,6 +56,13 @@ class _SettingsPageState extends State<SettingsPage> {
     };
   }
 
+  String waterfallColumns(int? columns) {
+    return switch (columns) {
+      null => 'Auto',
+      final value => value.toString(),
+    };
+  }
+
   void _themeModeDialog() {
     showDialog(
       context: context,
@@ -285,7 +292,7 @@ class _SettingsPageState extends State<SettingsPage> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title:  Text(i18n.settings.setWaterfallColumnsDialog.title),
+              title: Text(i18n.settings.setWaterfallColumnsDialog.title),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -296,7 +303,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     divisions: 9,
                     label: switch (currentSliderValue) {
                       -1 => 'Auto',
-                      final value =>(value.toInt()+2).toString(),
+                      final value => (value.toInt() + 2).toString(),
                     },
                     onChanged: (double value) {
                       setState(() {
@@ -304,14 +311,14 @@ class _SettingsPageState extends State<SettingsPage> {
                       });
                     },
                     onChangeEnd: (double value) {
-                      SettingsService.waterfallColumns = value == -1 ? null : value.toInt()+2;
+                      SettingsService.waterfallColumns = value == -1 ? null : value.toInt() + 2;
                       rootUpdateController.add(null);
                     },
                   ),
                   Text(
                     i18n.settings.setWaterfallColumnsDialog.current(switch (currentSliderValue) {
                       -1 => 'Auto',
-                      final value => (value.toInt()+2).toString(),
+                      final value => (value.toInt() + 2).toString(),
                     }),
                   ),
                 ],
@@ -354,7 +361,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             buildItem(
               title: Text(i18n.settings.waterfallColumns),
-              // subtitle: Text(themeModeToText(SettingsService.themeMode)),
+              subtitle: Text(waterfallColumns(SettingsService.waterfallColumns)),
               onTap: () {
                 _waterfallColumnsDialog();
               },
