@@ -53,7 +53,6 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                   ),
                   CupertinoSliverRefreshControl(
                     onRefresh: () async {
-                      await HapticFeedback.mediumImpact();
                       await state.source.refresh();
                     },
                   ),
