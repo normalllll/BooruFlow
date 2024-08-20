@@ -139,7 +139,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               RadioListTile<int>(
                 title: const Text('English'),
-                value: 1,
+                value: 0,
                 groupValue: SettingsService.language,
                 onChanged: (value) {
                   SettingsService.language = value;
@@ -150,7 +150,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               RadioListTile<int>(
                 title: const Text('日本語'),
-                value: 2,
+                value: 1,
                 groupValue: SettingsService.language,
                 onChanged: (value) {
                   SettingsService.language = value;
@@ -161,7 +161,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               RadioListTile<int>(
                 title: const Text('繁體中文'),
-                value: 3,
+                value: 2,
                 groupValue: SettingsService.language,
                 onChanged: (value) {
                   SettingsService.language = value;
