@@ -43,6 +43,7 @@ class _PostListPageState extends ConsumerState<PostListPage> {
           children: [
             Expanded(
               child: LoadingMoreCustomScrollView(
+                physics: const BouncingScrollPhysics(),
                 slivers: [
                   SliverAppBar(
                     floating: isMobile || widget.tags == null,
@@ -149,13 +150,14 @@ class _PostListPageState extends ConsumerState<PostListPage> {
           ],
         );
       },
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          state.source.refresh(true);
-        },
-        mini: isMobile,
-        child: const Icon(Icons.refresh, color: Colors.white),
-      ),
+      floatingActionButton: isDesktop
+          ? FloatingActionButton(
+              onPressed: () {
+                state.source.refresh(true);
+              },
+              child: const Icon(Icons.refresh, color: Colors.white),
+            )
+          : null,
     );
   }
 }
