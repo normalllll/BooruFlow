@@ -26,6 +26,7 @@ class PostListPage extends ConsumerStatefulWidget {
 
 class _PostListPageState extends ConsumerState<PostListPage> {
   late final provider = postListProvider(runtimeType, tags: widget.tags ?? []);
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(provider);
@@ -44,8 +45,9 @@ class _PostListPageState extends ConsumerState<PostListPage> {
               child: LoadingMoreCustomScrollView(
                 slivers: [
                   SliverAppBar(
-                    floating: true,
+                    floating: isMobile || widget.tags == null,
                     snap: isMobile,
+                    pinned: isDesktop && widget.tags != null,
                     scrolledUnderElevation: 0,
                     title: switch (widget.tags) { final tags? => Text(i18n.postList.titleWithTags(tags.join(' '))), _ => Text(i18n.postList.title) },
                   ),

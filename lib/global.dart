@@ -18,6 +18,6 @@ void setYandeClient(YandeClient client) {
   _yandeClient = client;
 }
 
-bool get isDesktop => Platform.isWindows || Platform.isLinux || Platform.isWindows;
+bool get isDesktop => Platform.isWindows || Platform.isLinux || Platform.isMacOS;
 
 bool get isMobile => Platform.isAndroid || Platform.isIOS;
