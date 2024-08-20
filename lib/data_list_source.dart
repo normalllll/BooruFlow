@@ -12,15 +12,22 @@ abstract class DataListSource<T> extends LoadingMoreBase<T> {
   @override
   bool get hasMore => !_initialized || _hasMore;
 
+  bool nextClear = false;
+
   @override
-  Future<bool> refresh([bool notifyStateChanged = false]) async {
+  Future<bool> refresh([bool notifyStateChanged = false, bool auto = true]) async {
     _hasMore = true;
     _initialized = false;
     _page = 1;
-    if (!notifyStateChanged) {
-      clear();
+
+    if (!auto) {
+      nextClear = true;
     }
-    return super.refresh(notifyStateChanged);
+    final result = await super.refresh(notifyStateChanged);
+    if (!auto) {
+      setState();
+    }
+    return result;
   }
 
   @override
@@ -31,7 +38,16 @@ abstract class DataListSource<T> extends LoadingMoreBase<T> {
         _hasMore = false;
         return true;
       }
-      addAll(list);
+
+      if (nextClear) {
+        clear();
+        nextClear = false;
+        addAll(list.sublist(10, 20));
+      } else {
+        addAll(list);
+      }
+
+      print(length);
       _page++;
       if (!_initialized) {
         _initialized = true;

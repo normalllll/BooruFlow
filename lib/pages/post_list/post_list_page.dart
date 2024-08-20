@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_more_list/loading_more_list.dart';
@@ -54,7 +53,7 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                   ),
                   CupertinoSliverRefreshControl(
                     onRefresh: () async {
-                      await state.source.refresh();
+                      await state.source.refresh(false, false);
                     },
                   ),
                   LoadingMoreSliverList(
