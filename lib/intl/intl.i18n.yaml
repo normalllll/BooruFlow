@@ -58,12 +58,13 @@ downloader:
     saveFailedWith(int id): "Saving failed for task $id"
 
 about:
-  title: Title
+  title: About
   projectUrl: Project URL
   publishPage: Publish page
   appVersion: App version
   flutterVersion: Flutter version
   rustVersion: Rust version
+  discussion: Discussion
   downloadUpdate: Download update
   downloadUpdateHint: Download the latest version for your device via your browser.
 

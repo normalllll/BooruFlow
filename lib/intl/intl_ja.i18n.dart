@@ -370,6 +370,11 @@ class AboutIntlJa extends AboutIntl {
   String get rustVersion => """Rustバージョン""";
 
   /// ```dart
+  /// "議論"
+  /// ```
+  String get discussion => """議論""";
+
+  /// ```dart
   /// "アップデートをダウンロード"
   /// ```
   String get downloadUpdate => """アップデートをダウンロード""";
@@ -562,6 +567,7 @@ Map<String, String> get intlJaMap => {
       """about.appVersion""": """アプリバージョン""",
       """about.flutterVersion""": """Flutterバージョン""",
       """about.rustVersion""": """Rustバージョン""",
+      """about.discussion""": """議論""",
       """about.downloadUpdate""": """アップデートをダウンロード""",
       """about.downloadUpdateHint""":
           """お使いのデバイス用に最新バージョンをブラウザでダウンロードしてください。""",

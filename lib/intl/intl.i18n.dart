@@ -341,9 +341,9 @@ class AboutIntl {
   const AboutIntl(this._parent);
 
   /// ```dart
-  /// "Title"
+  /// "About"
   /// ```
-  String get title => """Title""";
+  String get title => """About""";
 
   /// ```dart
   /// "Project URL"
@@ -369,6 +369,11 @@ class AboutIntl {
   /// "Rust version"
   /// ```
   String get rustVersion => """Rust version""";
+
+  /// ```dart
+  /// "Discussion"
+  /// ```
+  String get discussion => """Discussion""";
 
   /// ```dart
   /// "Download update"
@@ -560,12 +565,13 @@ Map<String, String> get intlMap => {
           """The download task already exists.""",
       """downloader.messages.imageFileExists""":
           """The image file already exists.""",
-      """about.title""": """Title""",
+      """about.title""": """About""",
       """about.projectUrl""": """Project URL""",
       """about.publishPage""": """Publish page""",
       """about.appVersion""": """App version""",
       """about.flutterVersion""": """Flutter version""",
       """about.rustVersion""": """Rust version""",
+      """about.discussion""": """Discussion""",
       """about.downloadUpdate""": """Download update""",
       """about.downloadUpdateHint""":
           """Download the latest version for your device via your browser.""",

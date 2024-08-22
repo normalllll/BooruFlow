@@ -17,12 +17,18 @@ class AboutPage extends StatefulWidget {
 }
 
 class _AboutPageState extends State<AboutPage> {
-  Widget buildItem({required String title, String? subtitle, Function()? onTap}) {
+  Widget buildItem({
+    required String title,
+    String? subtitle,
+    Widget? leading,
+    Function()? onTap,
+  }) {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),
       child: ListTile(
+        leading: leading,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
@@ -63,6 +69,7 @@ class _AboutPageState extends State<AboutPage> {
           children: [
             buildItem(
               title: i18n.about.projectUrl,
+              leading: const Icon(Icons.link_outlined),
               subtitle: 'https://github.com/normalllll/yande_gui',
               onTap: () {
                 launchUrlString('https://github.com/normalllll/yande_gui', mode: LaunchMode.externalApplication);
@@ -70,22 +77,38 @@ class _AboutPageState extends State<AboutPage> {
             ),
             buildItem(
               title: i18n.about.publishPage,
+              leading: const Icon(Icons.new_releases_outlined),
               subtitle: 'https://github.com/normalllll/yande_gui/releases/latest',
               onTap: () {
                 launchUrlString('https://github.com/normalllll/yande_gui/releases/latest', mode: LaunchMode.externalApplication);
               },
             ),
-            buildItem(title: i18n.about.appVersion, subtitle: '${Global.appVersion}+${Global.buildNumber}'),
+            buildItem(
+              title: i18n.about.appVersion,
+              leading: const Icon(Icons.tag_outlined),
+              subtitle: '${Global.appVersion}+${Global.buildNumber}',
+            ),
             buildItem(
               title: i18n.about.flutterVersion,
+              leading: const Icon(Icons.verified_outlined),
               subtitle: Platform.version,
             ),
             buildItem(
               title: i18n.about.rustVersion,
+              leading: const Icon(Icons.verified_outlined),
               subtitle: rustcVersion(),
             ),
             buildItem(
+              title: i18n.about.discussion,
+              leading: const Icon(Icons.telegram),
+              subtitle: 'https://t.me/+ONtNV3HTQ0NhMzVh',
+              onTap: () {
+                launchUrlString('https://t.me/+ONtNV3HTQ0NhMzVh');
+              },
+            ),
+            buildItem(
               title: i18n.about.downloadUpdate,
+              leading: const Icon(Icons.save_alt_outlined),
               subtitle: i18n.about.downloadUpdateHint,
               onTap: doUpdate,
             ),

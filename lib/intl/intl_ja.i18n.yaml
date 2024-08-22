@@ -64,6 +64,7 @@ about:
   appVersion: アプリバージョン
   flutterVersion: Flutterバージョン
   rustVersion: Rustバージョン
+  discussion: 議論
   downloadUpdate: アップデートをダウンロード
   downloadUpdateHint: お使いのデバイス用に最新バージョンをブラウザでダウンロードしてください。
 

@@ -6,7 +6,7 @@ part of 'logic.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$postListHash() => r'336b1c0bcf2d410d6e2a3365b35d6cd9960d8281';
+String _$postListHash() => r'1543c96dd3d9034bbcc6bcd4a005247775f21533';
 
 /// Copied from Dart SDK
 class _SystemHash {

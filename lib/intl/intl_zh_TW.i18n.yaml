@@ -64,6 +64,7 @@ about:
   appVersion: 應用程式版本
   flutterVersion: Flutter 版本
   rustVersion: Rust 版本
+  discussion: 討論
   downloadUpdate: 下載更新
   downloadUpdateHint: 透過瀏覽器下載適合您裝置的最新版本。
 
