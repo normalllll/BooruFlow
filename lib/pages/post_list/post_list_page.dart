@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_more_list/loading_more_list.dart';
@@ -8,6 +9,7 @@ import 'package:yande_gui/components/yande_image/yande_image.dart';
 import 'package:yande_gui/enums.dart';
 import 'package:yande_gui/global.dart';
 import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/pages/downloader/logic.dart';
 import 'package:yande_gui/pages/post_detail/post_detail_page.dart';
 import 'package:yande_gui/services/settings_service.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
@@ -63,6 +65,14 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                         return GestureDetector(
                           onTap: () {
                             Navigator.of(context).push(MaterialPageRoute(builder: (context) => PostDetailPage(post: item)));
+                          },
+                          onLongPress: (){
+                            HapticFeedback.mediumImpact();
+                            ref.read(downloaderProvider.notifier).addTask(item).then((downloadTaskProvider) {
+                              if (downloadTaskProvider != null) {
+                                ref.read(downloadTaskProvider.notifier).doDownload();
+                              }
+                            });
                           },
                           child: LayoutBuilder(
                             builder: (context, constraints) {
