@@ -23,11 +23,11 @@ class IndexPage extends StatefulWidget {
 
 class _IndexPageState extends State<IndexPage> {
   Map<(IconData, String), WidgetBuilder> get _pages => {
-        (Icons.list_alt_outlined, i18n.postList.short): (context) => const PostListPage(),
-        (Icons.search_outlined, i18n.postSearch.title): (context) => const PostSearchPage(),
-        (Icons.cloud_download_outlined, i18n.downloader.title): (context) => const DownloaderPage(),
-        (Icons.info_outlined, i18n.about.title): (context) => const AboutPage(),
-        (Icons.settings, i18n.settings.title): (context) => const SettingsPage(),
+        (Icons.list_alt_outlined, i18n.postList.short): (context) =>  PostListPage(key: ValueKey(widget.language)),
+        (Icons.search_outlined, i18n.postSearch.title): (context) =>  PostSearchPage(key: ValueKey(widget.language)),
+        (Icons.cloud_download_outlined, i18n.downloader.title): (context) =>  DownloaderPage(key: ValueKey(widget.language)),
+        (Icons.info_outlined, i18n.about.title): (context) =>  AboutPage(key: ValueKey(widget.language)),
+        (Icons.settings, i18n.settings.title): (context) =>  SettingsPage(key: ValueKey(widget.language)),
       };
 
   final controller = PageController();
