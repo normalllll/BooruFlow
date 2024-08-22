@@ -44,7 +44,7 @@ class _PostListPageState extends ConsumerState<PostListPage> {
           children: [
             Expanded(
               child: LoadingMoreCustomScrollView(
-                physics: const BouncingScrollPhysics(),
+                physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                 slivers: [
                   SliverAppBar(
                     floating: isMobile || widget.tags == null,
