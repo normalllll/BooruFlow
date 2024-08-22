@@ -18,12 +18,18 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  Widget buildItem({required Widget title, Widget? subtitle, Function()? onTap}) {
+  Widget buildItem({
+    required Widget title,
+    Widget? subtitle,
+    Widget? leading,
+    Function()? onTap,
+  }) {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),
       child: ListTile(
+        leading: leading,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
@@ -347,6 +353,7 @@ class _SettingsPageState extends State<SettingsPage> {
           children: [
             buildItem(
               title: Text(i18n.settings.language),
+              leading: const Icon(Icons.language),
               subtitle: Text(languageToText(SettingsService.language)),
               onTap: () {
                 _languageDialog();
@@ -354,6 +361,10 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             buildItem(
               title: Text(i18n.settings.theme),
+              leading: switch (Theme.of(context).brightness) {
+                Brightness.dark => const Icon(Icons.dark_mode_outlined),
+                Brightness.light => const Icon(Icons.light_mode_outlined),
+              },
               subtitle: Text(themeModeToText(SettingsService.themeMode)),
               onTap: () {
                 _themeModeDialog();
@@ -361,6 +372,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             buildItem(
               title: Text(i18n.settings.waterfallColumns),
+              leading: const Icon(Icons.view_column_outlined),
               subtitle: Text(waterfallColumns(SettingsService.waterfallColumns)),
               onTap: () {
                 _waterfallColumnsDialog();
@@ -369,6 +381,7 @@ class _SettingsPageState extends State<SettingsPage> {
             if (Platform.isWindows || Platform.isLinux || Platform.isMacOS)
               buildItem(
                 title: Text(i18n.settings.downloadPath),
+                leading: const Icon(Icons.save_alt_outlined),
                 subtitle: Text(SettingsService.downloadPath ?? i18n.settings.platformDefault),
                 onTap: () {
                   _downloadPathDialog();
