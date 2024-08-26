@@ -13,6 +13,7 @@ The Cross-platform GUI for yande.re
 # Discussion
 
 [![Telegram](https://img.shields.io/badge/chat-Telegram-blue.svg)](https://t.me/+ONtNV3HTQ0NhMzVh)
+[![Discord](https://img.shields.io/badge/chat-Discord-blue.svg)](https://discord.gg/jQatz6965H)
 
 If you have any questions or suggestions, you can go to Telegram to discuss or open an [Issue](https://github.com/normalllll/yande_gui/issues/new).
 

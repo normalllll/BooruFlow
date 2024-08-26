@@ -107,6 +107,14 @@ class _AboutPageState extends State<AboutPage> {
               },
             ),
             buildItem(
+              title: i18n.about.discussion,
+              leading: const Icon(Icons.discord),
+              subtitle: 'https://discord.gg/jQatz6965H',
+              onTap: () {
+                launchUrlString('https://discord.gg/jQatz6965H');
+              },
+            ),
+            buildItem(
               title: i18n.about.downloadUpdate,
               leading: const Icon(Icons.save_alt_outlined),
               subtitle: i18n.about.downloadUpdateHint,
