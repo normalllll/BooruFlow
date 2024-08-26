@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -154,6 +155,9 @@ class DownloadTask extends _$DownloadTask {
         state = state.copyWith(type: DownloadTaskStateType.completed);
       } catch (e) {
         EasyLoading.showError(i18n.downloader.messages.saveFailedWith(state.post.id));
+        if(kDebugMode){
+          print(e);
+        }
         state = state.copyWith(type: DownloadTaskStateType.failed);
       }
     }).catchError((e) {
