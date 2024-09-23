@@ -98,6 +98,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                 onTap: () => openUrl(post.source),
                 onLongPress: () {
                   //set clipboard
+                  HapticFeedback.mediumImpact();
                   Clipboard.setData(ClipboardData(text: post.source));
                   EasyLoading.showSuccess(i18n.generic.copiedWithValue(post.source));
                 },
@@ -118,6 +119,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                 behavior: HitTestBehavior.opaque,
                 onTap: () {
                   //set clipboard
+                  HapticFeedback.mediumImpact();
                   Clipboard.setData(ClipboardData(text: post.source));
                   EasyLoading.showSuccess(i18n.generic.copiedWithValue(post.source));
                 },
@@ -145,6 +147,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                         //set clipboard
                         Clipboard.setData(ClipboardData(text: tag));
                         EasyLoading.showSuccess(i18n.generic.copiedWithValue(tag));
+                        HapticFeedback.mediumImpact();
                       },
                       child: TagWidget(
                         text: tag,
