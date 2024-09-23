@@ -89,7 +89,7 @@ class _AboutPageState extends State<AboutPage> {
               subtitle: '${Global.appVersion}+${Global.buildNumber}',
             ),
             buildItem(
-              title: i18n.about.flutterVersion,
+              title: i18n.about.dartVersion,
               leading: const Icon(Icons.verified_outlined),
               subtitle: Platform.version,
             ),

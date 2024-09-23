@@ -62,7 +62,7 @@ about:
   projectUrl: Project URL
   publishPage: Publish page
   appVersion: App version
-  flutterVersion: Flutter version
+  dartVersion: Dart version
   rustVersion: Rust version
   discussion: Discussion
   downloadUpdate: Download update

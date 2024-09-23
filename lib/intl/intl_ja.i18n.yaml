@@ -62,7 +62,7 @@ about:
   projectUrl: プロジェクトURL
   publishPage: 公開ページ
   appVersion: アプリバージョン
-  flutterVersion: Flutterバージョン
+  dartVersion: Dartバージョン
   rustVersion: Rustバージョン
   discussion: 議論
   downloadUpdate: アップデートをダウンロード

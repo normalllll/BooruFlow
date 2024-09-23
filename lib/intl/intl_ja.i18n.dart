@@ -360,9 +360,9 @@ class AboutIntlJa extends AboutIntl {
   String get appVersion => """アプリバージョン""";
 
   /// ```dart
-  /// "Flutterバージョン"
+  /// "Dartバージョン"
   /// ```
-  String get flutterVersion => """Flutterバージョン""";
+  String get dartVersion => """Dartバージョン""";
 
   /// ```dart
   /// "Rustバージョン"
@@ -565,7 +565,7 @@ Map<String, String> get intlJaMap => {
       """about.projectUrl""": """プロジェクトURL""",
       """about.publishPage""": """公開ページ""",
       """about.appVersion""": """アプリバージョン""",
-      """about.flutterVersion""": """Flutterバージョン""",
+      """about.dartVersion""": """Dartバージョン""",
       """about.rustVersion""": """Rustバージョン""",
       """about.discussion""": """議論""",
       """about.downloadUpdate""": """アップデートをダウンロード""",

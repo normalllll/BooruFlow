@@ -355,9 +355,9 @@ class AboutIntlZhTW extends AboutIntl {
   String get appVersion => """應用程式版本""";
 
   /// ```dart
-  /// "Flutter 版本"
+  /// "Dart 版本"
   /// ```
-  String get flutterVersion => """Flutter 版本""";
+  String get dartVersion => """Dart 版本""";
 
   /// ```dart
   /// "Rust 版本"
@@ -560,7 +560,7 @@ Map<String, String> get intlZhTWMap => {
       """about.projectUrl""": """專案網址""",
       """about.publishPage""": """發佈頁面""",
       """about.appVersion""": """應用程式版本""",
-      """about.flutterVersion""": """Flutter 版本""",
+      """about.dartVersion""": """Dart 版本""",
       """about.rustVersion""": """Rust 版本""",
       """about.discussion""": """討論""",
       """about.downloadUpdate""": """下載更新""",

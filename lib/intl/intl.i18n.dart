@@ -361,9 +361,9 @@ class AboutIntl {
   String get appVersion => """App version""";
 
   /// ```dart
-  /// "Flutter version"
+  /// "Dart version"
   /// ```
-  String get flutterVersion => """Flutter version""";
+  String get dartVersion => """Dart version""";
 
   /// ```dart
   /// "Rust version"
@@ -569,7 +569,7 @@ Map<String, String> get intlMap => {
       """about.projectUrl""": """Project URL""",
       """about.publishPage""": """Publish page""",
       """about.appVersion""": """App version""",
-      """about.flutterVersion""": """Flutter version""",
+      """about.dartVersion""": """Dart version""",
       """about.rustVersion""": """Rust version""",
       """about.discussion""": """Discussion""",
       """about.downloadUpdate""": """Download update""",
