@@ -293,7 +293,11 @@ class _SettingsPageState extends State<SettingsPage> {
     showDialog(
       context: context,
       builder: (context) {
-        double currentSliderValue = ((SettingsService.waterfallColumns ?? -1) - 2).toDouble();
+        double currentSliderValue = ((SettingsService.waterfallColumns ?? 0)).toDouble();
+
+        if (currentSliderValue != 0) {
+          currentSliderValue -= 1;
+        }
 
         return StatefulBuilder(
           builder: (context, setState) {
@@ -304,12 +308,12 @@ class _SettingsPageState extends State<SettingsPage> {
                 children: [
                   Slider(
                     value: currentSliderValue,
-                    min: -1,
-                    max: 8,
+                    min: 0,
+                    max: 9,
                     divisions: 9,
                     label: switch (currentSliderValue) {
-                      -1 => 'Auto',
-                      final value => (value.toInt() + 2).toString(),
+                      0 => 'Auto',
+                      final value => (value.toInt() + 1).toString(),
                     },
                     onChanged: (double value) {
                       setState(() {
@@ -317,14 +321,14 @@ class _SettingsPageState extends State<SettingsPage> {
                       });
                     },
                     onChangeEnd: (double value) {
-                      SettingsService.waterfallColumns = value == -1 ? null : value.toInt() + 2;
+                      SettingsService.waterfallColumns = value == 0 ? null : value.toInt() + 1;
                       rootUpdateController.add(null);
                     },
                   ),
                   Text(
                     i18n.settings.setWaterfallColumnsDialog.current(switch (currentSliderValue) {
-                      -1 => 'Auto',
-                      final value => (value.toInt() + 2).toString(),
+                      0 => 'Auto',
+                      final value => (value.toInt() + 1).toString(),
                     }),
                   ),
                 ],
