@@ -35,17 +35,6 @@ Join the discussion and connect with other users and developers!
 
 ---
 
-
-## Supported Platforms
-
-| Platform | View | Download | Verified | Notes          |
-|----------|------|----------|----------|----------------|
-| Android  | ✅    | ✅        | ✅        |                |
-| Windows  | ✅    | ✅        | ✅        |                |
-| Linux    | ✅    | ✅        | ✅        |                |
-| macOS    | ✅    | ✅        | ✅        |                |
-| iOS      | ✅    | ✅        | ✅        | iPadOS support |
-
 ## Download for Your Platform
 
 | Architecture | Windows                                                                                 | Linux                                                                                       | Android                                                                                             | macOS                                                                                             | iOS                                                                                      |
