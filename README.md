@@ -1,6 +1,42 @@
 # Yande GUI
 
-The Cross-platform GUI for yande.re
+**A cross-platform graphical user interface for [yande.re](https://yande.re/)**
+
+Yande GUI provides a simple, intuitive interface to browse and interact with yande.re, a well-known image board. The app is available on multiple platforms including Android, iOS, Windows, macOS, and Linux.
+
+![Screenshot](screenshots/0.webp)
+
+---
+
+## Features
+
+- 🌐 **Cross-Platform Support**: Available on Android, iOS, Windows, macOS, and Linux.
+- 🖼️ **Seamless Image Browsing**: A smooth and responsive interface for browsing images.
+- 🚀 **High Performance**: Fast and lightweight, designed for efficiency across platforms.
+
+---
+
+## Contributing
+
+We welcome contributions from the community!
+
+- 🛠 **Bug Reports**: Found a bug? Open an issue on the [issue tracker](https://github.com/normalllll/yande_gui/issues).
+- 🌟 **Feature Requests**: Want to add a new feature? Feel free to propose your ideas!
+- 🎨 **Design Contributions**: We are recruiting artists to draw `icons` for this app. If you're interested, reach out to us!
+
+---
+
+## Community
+
+Join the discussion and connect with other users and developers!
+
+[![Telegram](https://img.shields.io/badge/chat-Telegram-blue.svg)](https://t.me/+ONtNV3HTQ0NhMzVh)
+[![Discord](https://img.shields.io/badge/chat-Discord-blue.svg)](https://discord.gg/jQatz6965H)
+
+---
+
+
+## Supported Platforms
 
 | Platform | View | Download | Verified | Notes          |
 |----------|------|----------|----------|----------------|
@@ -10,32 +46,7 @@ The Cross-platform GUI for yande.re
 | macOS    | ✅    | ✅        | ✅        |                |
 | iOS      | ✅    | ✅        | ✅        | iPadOS support |
 
-# Discussion
-
-[![Telegram](https://img.shields.io/badge/chat-Telegram-blue.svg)](https://t.me/+ONtNV3HTQ0NhMzVh)
-[![Discord](https://img.shields.io/badge/chat-Discord-blue.svg)](https://discord.gg/jQatz6965H)
-
-If you have any questions or suggestions, you can go to Telegram to discuss or open an [Issue](https://github.com/normalllll/yande_gui/issues/new).
-
-We are recruiting artists to draw `icons` for this App
-
-# Screenshots (Desktop)
-
-| ![img0](screenshot/desktop/img0.webp) | ![img1](screenshot/desktop/img1.webp) |
-|---------------------------------------|---------------------------------------|
-
-| ![img2](screenshot/desktop/img2.webp) | ![img3](screenshot/desktop/img3.webp) |
-|---------------------------------------|---------------------------------------|
-
-# Screenshots (Mobile)
-
-| ![img0](screenshot/mobile/img0.webp) | ![img1](screenshot/mobile/img1.webp) |
-|--------------------------------------|--------------------------------------|
-
-| ![img2](screenshot/mobile/img2.webp) | ![img3](screenshot/mobile/img3.webp) |
-|--------------------------------------|--------------------------------------|
-
-# Which to download?
+## Download for Your Platform
 
 | Architecture | Windows                                                                                 | Linux                                                                                       | Android                                                                                             | macOS                                                                                             | iOS                                                                                      |
 |--------------|-----------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
@@ -44,32 +55,61 @@ We are recruiting artists to draw `icons` for this App
 | ARM32        |                                                                                         |                                                                                             | [APK](https://github.com/normalllll/yande_gui/releases/latest/download/app-armeabi-v7a-release.apk) |                                                                                                   |                                                                                          |
 | Universal    |                                                                                         |                                                                                             | [APK](https://github.com/normalllll/yande_gui/releases/latest/download/app-universal-release.apk)   |                                                                                                   |                                                                                          |
 
+Visit the [releases page](https://github.com/normalllll/yande_gui/releases) for more details on the latest versions.
 
-### For Android
-Now, mainstream Android devices are generally ARM64. Old Android tablets may be x86-64, and old phones may be ARM32.
-
-Generally, you can download the ARM64 version. If you cannot install it or do not know the architecture of your device, download the universal APK.
+---
 
 
-### For Windows
+## Getting Started
 
-Just decompress
+### Prerequisites
 
-### For Linux
+Before building or running the Yande GUI, you will need the following dependencies installed:
 
-Decompress and run the following command to grant execution permissions.
-```shell
-sudo chmod +x yande_gui
-```
+- [Flutter](https://flutter.dev/docs/get-started/install): A cross-platform UI toolkit.
+- [Rust](https://www.rust-lang.org/tools/install): A powerful, performance-oriented programming language.
+- [flutter_rust_bridge](https://github.com/fzyzcjy/flutter_rust_bridge): A tool for integrating Flutter and Rust.
 
-### For macOS
+### Installation
 
-Decompress and run the following command to remove the quarantine attribute.
-```shell
-sudo xattr -r -d com.apple.quarantine yande_gui.app
-```
+1. **Install Flutter** by following the [official guide](https://flutter.dev/docs/get-started/install).
+2. **Install Rust** using `rustup` by following the [official guide](https://www.rust-lang.org/tools/install).
+3. **Install flutter_rust_bridge** by running the following command:
 
-### For iOS
+    ```bash
+    cargo install flutter_rust_bridge_codegen
+    ```
 
-Please sign the IPA file and install it manually.
+4. Clone the repository:
 
+    ```bash
+    git clone https://github.com/normalllll/yande_gui.git
+    cd yande_gui
+    ```
+
+5. Run the app:
+
+    ```bash
+    flutter run
+    ```
+
+---
+
+## Screenshots
+
+### Desktop
+
+| ![Desktop Screenshot 1](screenshots/desktop/img0.webp) | ![Desktop Screenshot 2](screenshots/desktop/img1.webp) |
+|--------------------------------------------------------|--------------------------------------------------------|
+
+### Mobile
+
+| ![Mobile Screenshot 1](screenshots/mobile/img0.webp) | ![Mobile Screenshot 2](screenshots/mobile/img1.webp) |
+|------------------------------------------------------|------------------------------------------------------|
+
+---
+
+
+## License
+
+This project is licensed under the **GNU General Public License v3.0**. See the [LICENSE](https://github.com/normalllll/yande_gui/blob/main/LICENSE) file for more details.
