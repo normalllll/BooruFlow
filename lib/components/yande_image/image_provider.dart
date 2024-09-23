@@ -176,28 +176,28 @@ class YandeExtendedImageProvider extends ImageProvider<ExtendedNetworkImageProvi
     StreamController<ImageChunkEvent>? chunkEvents,
     String md5Key,
   ) async {
-    final Directory _cacheImagesDirectory = Directory(join((await getTemporaryDirectory()).path, cacheImageFolderName));
+    final Directory cacheImagesDirectory = Directory(join((await getTemporaryDirectory()).path, cacheImageFolderName));
     Uint8List? data;
     // exist, try to find cache image file
-    if (_cacheImagesDirectory.existsSync()) {
-      final File cacheFlie = File(join(_cacheImagesDirectory.path, md5Key));
-      if (cacheFlie.existsSync()) {
+    if (cacheImagesDirectory.existsSync()) {
+      final File cacheFile = File(join(cacheImagesDirectory.path, md5Key));
+      if (cacheFile.existsSync()) {
         if (key.cacheMaxAge != null) {
           final DateTime now = DateTime.now();
-          final FileStat fs = cacheFlie.statSync();
+          final FileStat fs = cacheFile.statSync();
           if (now.subtract(key.cacheMaxAge!).isAfter(fs.changed)) {
-            cacheFlie.deleteSync(recursive: true);
+            cacheFile.deleteSync(recursive: true);
           } else {
-            data = await cacheFlie.readAsBytes();
+            data = await cacheFile.readAsBytes();
           }
         } else {
-          data = await cacheFlie.readAsBytes();
+          data = await cacheFile.readAsBytes();
         }
       }
     }
     // create folder
     else {
-      await _cacheImagesDirectory.create();
+      await cacheImagesDirectory.create();
     }
     // load from network
     if (data == null) {
@@ -207,7 +207,7 @@ class YandeExtendedImageProvider extends ImageProvider<ExtendedNetworkImageProvi
       );
       if (data != null) {
         // cache image file
-        await File(join(_cacheImagesDirectory.path, md5Key)).writeAsBytes(data);
+        await File(join(cacheImagesDirectory.path, md5Key)).writeAsBytes(data);
       }
     }
 
