@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yande_gui/components/yande_image/yande_image.dart';
 import 'package:yande_gui/i18n.dart';
@@ -41,10 +42,13 @@ class _PostSimilarWidgetState extends ConsumerState<PostSimilarWidget> {
     }
     return GestureDetector(
       onTap: () {
+        if (post.fileUrl != null) {
+          EasyLoading.showError('This item is not ');
+        }
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => ImageZoomPage(
-              url: post.fileUrl,
+              url: post.fileUrl ?? post.jpegUrl,
               width: post.width.toDouble(),
               height: post.height.toDouble(),
             ),

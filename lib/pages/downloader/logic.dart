@@ -148,14 +148,14 @@ class DownloadTask extends _$DownloadTask {
     } else {
       EasyLoading.showToast(i18n.downloader.messages.downloadStartWithId(state.post.id));
     }
-    yandeClient.downloadToMemory(url: state.post.fileUrl, progressCallback: (received, total) => updateProgress(received, total)).then((bytes) {
+    yandeClient.downloadToMemory(url: state.post.fileUrl ?? state.post.jpegUrl, progressCallback: (received, total) => updateProgress(received, total)).then((bytes) {
       try {
         ImageSaver.saveImage(bytes, '${state.post.id}.${state.post.fileExt}');
         EasyLoading.showSuccess(i18n.downloader.messages.downloadCompletedWithId(state.post.id));
         state = state.copyWith(type: DownloadTaskStateType.completed);
       } catch (e) {
         EasyLoading.showError(i18n.downloader.messages.saveFailedWith(state.post.id));
-        if(kDebugMode){
+        if (kDebugMode) {
           print(e);
         }
         state = state.copyWith(type: DownloadTaskStateType.failed);

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:yande_gui/global.dart';
 import 'package:yande_gui/i18n.dart';
 import 'package:yande_gui/pages/post_list/post_list_page.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';

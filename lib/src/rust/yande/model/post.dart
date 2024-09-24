@@ -11,7 +11,7 @@ class Post {
   final String tags;
   final PlatformInt64 createdAt;
   final PlatformInt64 updatedAt;
-  final PlatformInt64 creatorId;
+  final PlatformInt64? creatorId;
   final String author;
   final PlatformInt64 change;
   final String source;
@@ -19,7 +19,7 @@ class Post {
   final String md5;
   final PlatformInt64 fileSize;
   final String fileExt;
-  final String fileUrl;
+  final String? fileUrl;
   final bool isShownInIndex;
   final String previewUrl;
   final PlatformInt64 previewWidth;
@@ -50,7 +50,7 @@ class Post {
     required this.tags,
     required this.createdAt,
     required this.updatedAt,
-    required this.creatorId,
+    this.creatorId,
     required this.author,
     required this.change,
     required this.source,
@@ -58,7 +58,7 @@ class Post {
     required this.md5,
     required this.fileSize,
     required this.fileExt,
-    required this.fileUrl,
+    this.fileUrl,
     required this.isShownInIndex,
     required this.previewUrl,
     required this.previewWidth,

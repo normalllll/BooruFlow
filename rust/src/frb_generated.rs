@@ -519,6 +519,17 @@ impl SseDecode for Vec<u8> {
     }
 }
 
+impl SseDecode for Option<String> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<String>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
 impl SseDecode for Option<[String; 3]> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -548,7 +559,7 @@ impl SseDecode for crate::yande::model::post::Post {
         let mut var_tags = <String>::sse_decode(deserializer);
         let mut var_createdAt = <i64>::sse_decode(deserializer);
         let mut var_updatedAt = <i64>::sse_decode(deserializer);
-        let mut var_creatorId = <i64>::sse_decode(deserializer);
+        let mut var_creatorId = <Option<i64>>::sse_decode(deserializer);
         let mut var_author = <String>::sse_decode(deserializer);
         let mut var_change = <i64>::sse_decode(deserializer);
         let mut var_source = <String>::sse_decode(deserializer);
@@ -556,7 +567,7 @@ impl SseDecode for crate::yande::model::post::Post {
         let mut var_md5 = <String>::sse_decode(deserializer);
         let mut var_fileSize = <i64>::sse_decode(deserializer);
         let mut var_fileExt = <String>::sse_decode(deserializer);
-        let mut var_fileUrl = <String>::sse_decode(deserializer);
+        let mut var_fileUrl = <Option<String>>::sse_decode(deserializer);
         let mut var_isShownInIndex = <bool>::sse_decode(deserializer);
         let mut var_previewUrl = <String>::sse_decode(deserializer);
         let mut var_previewWidth = <i64>::sse_decode(deserializer);
@@ -922,6 +933,16 @@ impl SseEncode for Vec<u8> {
     }
 }
 
+impl SseEncode for Option<String> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <String>::sse_encode(value, serializer);
+        }
+    }
+}
+
 impl SseEncode for Option<[String; 3]> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -949,7 +970,7 @@ impl SseEncode for crate::yande::model::post::Post {
         <String>::sse_encode(self.tags, serializer);
         <i64>::sse_encode(self.created_at, serializer);
         <i64>::sse_encode(self.updated_at, serializer);
-        <i64>::sse_encode(self.creator_id, serializer);
+        <Option<i64>>::sse_encode(self.creator_id, serializer);
         <String>::sse_encode(self.author, serializer);
         <i64>::sse_encode(self.change, serializer);
         <String>::sse_encode(self.source, serializer);
@@ -957,7 +978,7 @@ impl SseEncode for crate::yande::model::post::Post {
         <String>::sse_encode(self.md5, serializer);
         <i64>::sse_encode(self.file_size, serializer);
         <String>::sse_encode(self.file_ext, serializer);
-        <String>::sse_encode(self.file_url, serializer);
+        <Option<String>>::sse_encode(self.file_url, serializer);
         <bool>::sse_encode(self.is_shown_in_index, serializer);
         <String>::sse_encode(self.preview_url, serializer);
         <i64>::sse_encode(self.preview_width, serializer);

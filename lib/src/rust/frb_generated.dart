@@ -437,6 +437,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  String? dco_decode_opt_String(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_String(raw);
+  }
+
+  @protected
   StringArray3? dco_decode_opt_String_array_3(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_String_array_3(raw);
@@ -459,7 +465,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       tags: dco_decode_String(arr[1]),
       createdAt: dco_decode_i_64(arr[2]),
       updatedAt: dco_decode_i_64(arr[3]),
-      creatorId: dco_decode_i_64(arr[4]),
+      creatorId: dco_decode_opt_box_autoadd_i_64(arr[4]),
       author: dco_decode_String(arr[5]),
       change: dco_decode_i_64(arr[6]),
       source: dco_decode_String(arr[7]),
@@ -467,7 +473,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       md5: dco_decode_String(arr[9]),
       fileSize: dco_decode_i_64(arr[10]),
       fileExt: dco_decode_String(arr[11]),
-      fileUrl: dco_decode_String(arr[12]),
+      fileUrl: dco_decode_opt_String(arr[12]),
       isShownInIndex: dco_decode_bool(arr[13]),
       previewUrl: dco_decode_String(arr[14]),
       previewWidth: dco_decode_i_64(arr[15]),
@@ -642,6 +648,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  String? sse_decode_opt_String(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_String(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   StringArray3? sse_decode_opt_String_array_3(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -670,7 +687,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_tags = sse_decode_String(deserializer);
     var var_createdAt = sse_decode_i_64(deserializer);
     var var_updatedAt = sse_decode_i_64(deserializer);
-    var var_creatorId = sse_decode_i_64(deserializer);
+    var var_creatorId = sse_decode_opt_box_autoadd_i_64(deserializer);
     var var_author = sse_decode_String(deserializer);
     var var_change = sse_decode_i_64(deserializer);
     var var_source = sse_decode_String(deserializer);
@@ -678,7 +695,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_md5 = sse_decode_String(deserializer);
     var var_fileSize = sse_decode_i_64(deserializer);
     var var_fileExt = sse_decode_String(deserializer);
-    var var_fileUrl = sse_decode_String(deserializer);
+    var var_fileUrl = sse_decode_opt_String(deserializer);
     var var_isShownInIndex = sse_decode_bool(deserializer);
     var var_previewUrl = sse_decode_String(deserializer);
     var var_previewWidth = sse_decode_i_64(deserializer);
@@ -897,6 +914,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_String(String? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_String(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_String_array_3(
       StringArray3? self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -925,7 +952,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.tags, serializer);
     sse_encode_i_64(self.createdAt, serializer);
     sse_encode_i_64(self.updatedAt, serializer);
-    sse_encode_i_64(self.creatorId, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.creatorId, serializer);
     sse_encode_String(self.author, serializer);
     sse_encode_i_64(self.change, serializer);
     sse_encode_String(self.source, serializer);
@@ -933,7 +960,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.md5, serializer);
     sse_encode_i_64(self.fileSize, serializer);
     sse_encode_String(self.fileExt, serializer);
-    sse_encode_String(self.fileUrl, serializer);
+    sse_encode_opt_String(self.fileUrl, serializer);
     sse_encode_bool(self.isShownInIndex, serializer);
     sse_encode_String(self.previewUrl, serializer);
     sse_encode_i_64(self.previewWidth, serializer);
