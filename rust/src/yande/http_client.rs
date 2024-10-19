@@ -10,7 +10,7 @@ pub struct HttpClient {
 
 
 impl HttpClient {
-    pub fn new(ips: Option<[String;3]>) -> Self {
+    pub fn new(ips: Option<[String; 3]>) -> Self {
         //107.189.2.17
         if let Some(ips) = ips {
             // if let Ok(socket) = format!("{}:443", ip).parse() {
@@ -71,17 +71,24 @@ impl HttpClient {
         let resp = self.get(url, None).await?;
 
 
-        let total_size = resp.content_length().ok_or("No content length").map_err(|e| anyhow::anyhow!(e))?;
+        let total_size = resp.content_length().ok_or("No content length").map_err(|e| anyhow::anyhow!(e))? as usize;
+        let part_offset = total_size / 50;
+
         let mut received = 0;
+        let mut next_threshold = part_offset;
 
         let mut bytes_stream = resp.bytes_stream();
 
-        let mut bytes = Vec::with_capacity(total_size as usize);
+        let mut bytes = Vec::with_capacity(total_size);
 
         while let Some(item) = bytes_stream.next().await {
             let chunk = item?;
             received += chunk.len();
-            progress_callback(received, total_size as usize).await;
+
+            if received >= next_threshold || received == total_size {
+                progress_callback(received, total_size).await;
+                next_threshold += part_offset;
+            }
 
             bytes.extend_from_slice(&chunk);
         }
