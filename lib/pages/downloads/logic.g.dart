@@ -21,7 +21,7 @@ final downloaderProvider =
 );
 
 typedef _$Downloader = Notifier<DownloaderState>;
-String _$downloadTaskHash() => r'ec43500e3d4adcb9562c2b2b7cae178b3d76a962';
+String _$downloadTaskHash() => r'7fc2fe73049ea87855803498fa10f3a474b997cb';
 
 /// Copied from Dart SDK
 class _SystemHash {

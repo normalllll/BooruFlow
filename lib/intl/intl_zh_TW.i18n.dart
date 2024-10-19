@@ -72,7 +72,7 @@ class IntlZhTW extends Intl {
   PostDetailIntlZhTW get postDetail => PostDetailIntlZhTW(this);
   PostSearchIntlZhTW get postSearch => PostSearchIntlZhTW(this);
   ImageZoomIntlZhTW get imageZoom => ImageZoomIntlZhTW(this);
-  DownloaderIntlZhTW get downloader => DownloaderIntlZhTW(this);
+  DownloadsIntlZhTW get downloads => DownloadsIntlZhTW(this);
   AboutIntlZhTW get about => AboutIntlZhTW(this);
   SettingsIntlZhTW get settings => SettingsIntlZhTW(this);
 }
@@ -254,20 +254,20 @@ class ImageZoomIntlZhTW extends ImageZoomIntl {
   String get title => """縮放圖片""";
 }
 
-class DownloaderIntlZhTW extends DownloaderIntl {
+class DownloadsIntlZhTW extends DownloadsIntl {
   final IntlZhTW _parent;
-  const DownloaderIntlZhTW(this._parent) : super(_parent);
+  const DownloadsIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
-  /// "下載器"
+  /// "下載項"
   /// ```
-  String get title => """下載器""";
-  MessagesDownloaderIntlZhTW get messages => MessagesDownloaderIntlZhTW(this);
+  String get title => """下載項""";
+  MessagesDownloadsIntlZhTW get messages => MessagesDownloadsIntlZhTW(this);
 }
 
-class MessagesDownloaderIntlZhTW extends MessagesDownloaderIntl {
-  final DownloaderIntlZhTW _parent;
-  const MessagesDownloaderIntlZhTW(this._parent) : super(_parent);
+class MessagesDownloadsIntlZhTW extends MessagesDownloadsIntl {
+  final DownloadsIntlZhTW _parent;
+  const MessagesDownloadsIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
   /// "您已永久拒絕存儲權限。\n請在設定中手動啟用存儲權限。"
@@ -546,16 +546,16 @@ Map<String, String> get intlZhTWMap => {
       """postDetail.childPost""": """子帖子""",
       """postSearch.title""": """搜尋""",
       """imageZoom.title""": """縮放圖片""",
-      """downloader.title""": """下載器""",
-      """downloader.messages.storagePermanentlyDenied""":
+      """downloads.title""": """下載項""",
+      """downloads.messages.storagePermanentlyDenied""":
           """您已永久拒絕存儲權限。\n請在設定中手動啟用存儲權限。""",
-      """downloader.messages.storageDenied""": """您已拒絕存儲權限。""",
-      """downloader.messages.deviceInfoError""": """無法解析設備資訊。""",
-      """downloader.messages.photosPermanentlyDenied""":
+      """downloads.messages.storageDenied""": """您已拒絕存儲權限。""",
+      """downloads.messages.deviceInfoError""": """無法解析設備資訊。""",
+      """downloads.messages.photosPermanentlyDenied""":
           """您已永久拒絕照片權限。\n請在設定中手動啟用照片權限。""",
-      """downloader.messages.photosDenied""": """您已拒絕照片權限。""",
-      """downloader.messages.downloadTaskExists""": """下載任務已經存在。""",
-      """downloader.messages.imageFileExists""": """圖片檔案已經存在。""",
+      """downloads.messages.photosDenied""": """您已拒絕照片權限。""",
+      """downloads.messages.downloadTaskExists""": """下載任務已經存在。""",
+      """downloads.messages.imageFileExists""": """圖片檔案已經存在。""",
       """about.title""": """關於""",
       """about.projectUrl""": """專案網址""",
       """about.publishPage""": """發佈頁面""",

@@ -9,7 +9,7 @@ import 'package:yande_gui/components/yande_image/yande_image.dart';
 import 'package:yande_gui/enums.dart';
 import 'package:yande_gui/global.dart';
 import 'package:yande_gui/i18n.dart';
-import 'package:yande_gui/pages/downloader/logic.dart';
+import 'package:yande_gui/pages/downloads/logic.dart';
 import 'package:yande_gui/pages/post_detail/post_detail_page.dart';
 import 'package:yande_gui/services/settings_service.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';

@@ -71,7 +71,7 @@ class Intl {
   PostDetailIntl get postDetail => PostDetailIntl(this);
   PostSearchIntl get postSearch => PostSearchIntl(this);
   ImageZoomIntl get imageZoom => ImageZoomIntl(this);
-  DownloaderIntl get downloader => DownloaderIntl(this);
+  DownloadsIntl get downloads => DownloadsIntl(this);
   AboutIntl get about => AboutIntl(this);
   SettingsIntl get settings => SettingsIntl(this);
 }
@@ -257,20 +257,20 @@ class ImageZoomIntl {
   String get title => """Zoom Image""";
 }
 
-class DownloaderIntl {
+class DownloadsIntl {
   final Intl _parent;
-  const DownloaderIntl(this._parent);
+  const DownloadsIntl(this._parent);
 
   /// ```dart
-  /// "Downloader"
+  /// "Downloads"
   /// ```
-  String get title => """Downloader""";
-  MessagesDownloaderIntl get messages => MessagesDownloaderIntl(this);
+  String get title => """Downloads""";
+  MessagesDownloadsIntl get messages => MessagesDownloadsIntl(this);
 }
 
-class MessagesDownloaderIntl {
-  final DownloaderIntl _parent;
-  const MessagesDownloaderIntl(this._parent);
+class MessagesDownloadsIntl {
+  final DownloadsIntl _parent;
+  const MessagesDownloadsIntl(this._parent);
 
   /// ```dart
   /// "You have permanently denied storage permissions.\nPlease manually enable storage permissions in settings."
@@ -550,20 +550,20 @@ Map<String, String> get intlMap => {
       """postDetail.childPost""": """Child post""",
       """postSearch.title""": """Search""",
       """imageZoom.title""": """Zoom Image""",
-      """downloader.title""": """Downloader""",
-      """downloader.messages.storagePermanentlyDenied""":
+      """downloads.title""": """Downloads""",
+      """downloads.messages.storagePermanentlyDenied""":
           """You have permanently denied storage permissions.\nPlease manually enable storage permissions in settings.""",
-      """downloader.messages.storageDenied""":
+      """downloads.messages.storageDenied""":
           """You have denied storage permissions.""",
-      """downloader.messages.deviceInfoError""":
+      """downloads.messages.deviceInfoError""":
           """Unable to parse device information.""",
-      """downloader.messages.photosPermanentlyDenied""":
+      """downloads.messages.photosPermanentlyDenied""":
           """You have permanently denied photos permissions.\nPlease manually enable photos permissions in settings.""",
-      """downloader.messages.photosDenied""":
+      """downloads.messages.photosDenied""":
           """You have denied photos permissions.""",
-      """downloader.messages.downloadTaskExists""":
+      """downloads.messages.downloadTaskExists""":
           """The download task already exists.""",
-      """downloader.messages.imageFileExists""":
+      """downloads.messages.imageFileExists""":
           """The image file already exists.""",
       """about.title""": """About""",
       """about.projectUrl""": """Project URL""",

@@ -39,8 +39,8 @@ postSearch:
 imageZoom:
   title: 画像をズーム
 
-downloader:
-  title: ダウンローダー
+downloads:
+  title: ダウンロード
   messages:
     storagePermanentlyDenied: ストレージのアクセス許可が永久に拒否されました。\n設定で手動でストレージのアクセス許可を有効にしてください。  # Android
     storageDenied: ストレージのアクセス許可が拒否されました。  # Android

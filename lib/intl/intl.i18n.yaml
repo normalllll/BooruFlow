@@ -39,8 +39,8 @@ postSearch:
 imageZoom:
   title: Zoom Image
 
-downloader:
-  title: Downloader
+downloads:
+  title: Downloads
   messages:
     storagePermanentlyDenied: You have permanently denied storage permissions.\nPlease manually enable storage permissions in settings.  # Android
     storageDenied: You have denied storage permissions.  # Android

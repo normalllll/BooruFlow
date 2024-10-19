@@ -77,7 +77,7 @@ class Downloader extends _$Downloader {
           PermissionStatus status = await Permission.storage.status;
 
           if (status.isPermanentlyDenied) {
-            EasyLoading.showError(i18n.downloader.messages.storagePermanentlyDenied);
+            EasyLoading.showError(i18n.downloads.messages.storagePermanentlyDenied);
             await Future.delayed(const Duration(seconds: 2));
             openAppSettings();
             return null;
@@ -85,20 +85,20 @@ class Downloader extends _$Downloader {
           if (!status.isGranted) {
             status = await Permission.storage.request();
             if (!status.isGranted) {
-              EasyLoading.showError(i18n.downloader.messages.storageDenied);
+              EasyLoading.showError(i18n.downloads.messages.storageDenied);
               return null;
             }
           }
         }
       } catch (e) {
-        EasyLoading.showError(i18n.downloader.messages.deviceInfoError);
+        EasyLoading.showError(i18n.downloads.messages.deviceInfoError);
         return null;
       }
     } else if (Platform.isIOS) {
       PermissionStatus status = await Permission.photos.status;
 
       if (status.isPermanentlyDenied) {
-        EasyLoading.showError(i18n.downloader.messages.photosPermanentlyDenied);
+        EasyLoading.showError(i18n.downloads.messages.photosPermanentlyDenied);
         await Future.delayed(const Duration(seconds: 2));
         openAppSettings();
         return null;
@@ -106,18 +106,18 @@ class Downloader extends _$Downloader {
       if (!status.isGranted) {
         status = await Permission.photos.request();
         if (!status.isGranted) {
-          EasyLoading.showError(i18n.downloader.messages.photosDenied);
+          EasyLoading.showError(i18n.downloads.messages.photosDenied);
           return null;
         }
       }
     }
 
     if (state.tasks.any((provider) => provider.post.id == post.id)) {
-      EasyLoading.showToast(i18n.downloader.messages.downloadTaskExists);
+      EasyLoading.showToast(i18n.downloads.messages.downloadTaskExists);
       return null;
     }
     if (await ImageSaver.existImage('${post.id}.${post.fileExt}', post.fileSize)) {
-      EasyLoading.showToast(i18n.downloader.messages.imageFileExists);
+      EasyLoading.showToast(i18n.downloads.messages.imageFileExists);
       return null;
     }
     final provider = downloadTaskProvider(post: post);
@@ -144,24 +144,24 @@ class DownloadTask extends _$DownloadTask {
   Future<void> doDownload({bool retry = false}) async {
     state = state.copyWith(type: DownloadTaskStateType.busy, progress: 0);
     if (retry) {
-      EasyLoading.showToast(i18n.downloader.messages.downloadRetryWithId(state.post.id));
+      EasyLoading.showToast(i18n.downloads.messages.downloadRetryWithId(state.post.id));
     } else {
-      EasyLoading.showToast(i18n.downloader.messages.downloadStartWithId(state.post.id));
+      EasyLoading.showToast(i18n.downloads.messages.downloadStartWithId(state.post.id));
     }
     yandeClient.downloadToMemory(url: state.post.fileUrl ?? state.post.jpegUrl, progressCallback: (received, total) => updateProgress(received, total)).then((bytes) {
       try {
         ImageSaver.saveImage(bytes, '${state.post.id}.${state.post.fileExt}');
-        EasyLoading.showSuccess(i18n.downloader.messages.downloadCompletedWithId(state.post.id));
+        EasyLoading.showSuccess(i18n.downloads.messages.downloadCompletedWithId(state.post.id));
         state = state.copyWith(type: DownloadTaskStateType.completed);
       } catch (e) {
-        EasyLoading.showError(i18n.downloader.messages.saveFailedWith(state.post.id));
+        EasyLoading.showError(i18n.downloads.messages.saveFailedWith(state.post.id));
         if (kDebugMode) {
           print(e);
         }
         state = state.copyWith(type: DownloadTaskStateType.failed);
       }
     }).catchError((e) {
-      EasyLoading.showError(i18n.downloader.messages.downloadFailedWithId(state.post.id));
+      EasyLoading.showError(i18n.downloads.messages.downloadFailedWithId(state.post.id));
       state = state.copyWith(type: DownloadTaskStateType.failed);
     });
   }

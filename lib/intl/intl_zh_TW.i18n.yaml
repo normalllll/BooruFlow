@@ -39,8 +39,8 @@ postSearch:
 imageZoom:
   title: 縮放圖片
 
-downloader:
-  title: 下載器
+downloads:
+  title: 下載項
   messages:
     storagePermanentlyDenied: 您已永久拒絕存儲權限。\n請在設定中手動啟用存儲權限。  # Android
     storageDenied: 您已拒絕存儲權限。  # Android

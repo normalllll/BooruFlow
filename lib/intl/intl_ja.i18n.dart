@@ -72,7 +72,7 @@ class IntlJa extends Intl {
   PostDetailIntlJa get postDetail => PostDetailIntlJa(this);
   PostSearchIntlJa get postSearch => PostSearchIntlJa(this);
   ImageZoomIntlJa get imageZoom => ImageZoomIntlJa(this);
-  DownloaderIntlJa get downloader => DownloaderIntlJa(this);
+  DownloadsIntlJa get downloads => DownloadsIntlJa(this);
   AboutIntlJa get about => AboutIntlJa(this);
   SettingsIntlJa get settings => SettingsIntlJa(this);
 }
@@ -257,20 +257,20 @@ class ImageZoomIntlJa extends ImageZoomIntl {
   String get title => """画像をズーム""";
 }
 
-class DownloaderIntlJa extends DownloaderIntl {
+class DownloadsIntlJa extends DownloadsIntl {
   final IntlJa _parent;
-  const DownloaderIntlJa(this._parent) : super(_parent);
+  const DownloadsIntlJa(this._parent) : super(_parent);
 
   /// ```dart
-  /// "ダウンローダー"
+  /// "ダウンロード"
   /// ```
-  String get title => """ダウンローダー""";
-  MessagesDownloaderIntlJa get messages => MessagesDownloaderIntlJa(this);
+  String get title => """ダウンロード""";
+  MessagesDownloadsIntlJa get messages => MessagesDownloadsIntlJa(this);
 }
 
-class MessagesDownloaderIntlJa extends MessagesDownloaderIntl {
-  final DownloaderIntlJa _parent;
-  const MessagesDownloaderIntlJa(this._parent) : super(_parent);
+class MessagesDownloadsIntlJa extends MessagesDownloadsIntl {
+  final DownloadsIntlJa _parent;
+  const MessagesDownloadsIntlJa(this._parent) : super(_parent);
 
   /// ```dart
   /// "ストレージのアクセス許可が永久に拒否されました。\n設定で手動でストレージのアクセス許可を有効にしてください。"
@@ -551,16 +551,16 @@ Map<String, String> get intlJaMap => {
       """postDetail.childPost""": """子投稿""",
       """postSearch.title""": """検索""",
       """imageZoom.title""": """画像をズーム""",
-      """downloader.title""": """ダウンローダー""",
-      """downloader.messages.storagePermanentlyDenied""":
+      """downloads.title""": """ダウンロード""",
+      """downloads.messages.storagePermanentlyDenied""":
           """ストレージのアクセス許可が永久に拒否されました。\n設定で手動でストレージのアクセス許可を有効にしてください。""",
-      """downloader.messages.storageDenied""": """ストレージのアクセス許可が拒否されました。""",
-      """downloader.messages.deviceInfoError""": """デバイス情報を解析できません。""",
-      """downloader.messages.photosPermanentlyDenied""":
+      """downloads.messages.storageDenied""": """ストレージのアクセス許可が拒否されました。""",
+      """downloads.messages.deviceInfoError""": """デバイス情報を解析できません。""",
+      """downloads.messages.photosPermanentlyDenied""":
           """写真のアクセス許可が永久に拒否されました。\n設定で手動で写真のアクセス許可を有効にしてください。""",
-      """downloader.messages.photosDenied""": """写真のアクセス許可が拒否されました。""",
-      """downloader.messages.downloadTaskExists""": """ダウンロードタスクは既に存在しています。""",
-      """downloader.messages.imageFileExists""": """画像ファイルは既に存在しています。""",
+      """downloads.messages.photosDenied""": """写真のアクセス許可が拒否されました。""",
+      """downloads.messages.downloadTaskExists""": """ダウンロードタスクは既に存在しています。""",
+      """downloads.messages.imageFileExists""": """画像ファイルは既に存在しています。""",
       """about.title""": """について""",
       """about.projectUrl""": """プロジェクトURL""",
       """about.publishPage""": """公開ページ""",

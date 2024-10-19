@@ -3,7 +3,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:yande_gui/global.dart';
 import 'package:yande_gui/i18n.dart';
 import 'package:yande_gui/pages/about/about_page.dart';
-import 'package:yande_gui/pages/downloader/downloader_page.dart';
+import 'package:yande_gui/pages/downloads/downloads_page.dart';
 import 'package:yande_gui/pages/post_list/post_list_page.dart';
 import 'package:yande_gui/pages/post_search/post_search_page.dart';
 import 'package:yande_gui/pages/settings/settings_page.dart';
@@ -25,7 +25,7 @@ class _IndexPageState extends State<IndexPage> {
   Map<(IconData, String), WidgetBuilder> get _pages => {
         (Icons.list_alt_outlined, i18n.postList.short): (context) =>  PostListPage(key: ValueKey(widget.language)),
         (Icons.search_outlined, i18n.postSearch.title): (context) =>  PostSearchPage(key: ValueKey(widget.language)),
-        (Icons.cloud_download_outlined, i18n.downloader.title): (context) =>  DownloaderPage(key: ValueKey(widget.language)),
+        (Icons.cloud_download_outlined, i18n.downloads.title): (context) =>  DownloadsPage(key: ValueKey(widget.language)),
         (Icons.info_outlined, i18n.about.title): (context) =>  AboutPage(key: ValueKey(widget.language)),
         (Icons.settings, i18n.settings.title): (context) =>  SettingsPage(key: ValueKey(widget.language)),
       };

@@ -7,7 +7,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yande_gui/components/yande_image/yande_image.dart';
 import 'package:yande_gui/i18n.dart';
-import 'package:yande_gui/pages/downloader/logic.dart';
+import 'package:yande_gui/pages/downloads/logic.dart';
 import 'package:yande_gui/pages/image_zoom_page/image_zoom_page.dart';
 import 'package:yande_gui/pages/post_detail/logic.dart';
 import 'package:yande_gui/src/rust/yande/model/post.dart';

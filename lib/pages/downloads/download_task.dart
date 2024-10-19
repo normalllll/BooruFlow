@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yande_gui/components/yande_image/yande_image.dart';
-import 'package:yande_gui/pages/downloader/logic.dart';
+import 'package:yande_gui/pages/downloads/logic.dart';
 import 'package:yande_gui/pages/post_detail/post_detail_page.dart';
 
 class DownloadTaskWidget extends ConsumerWidget {
