@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:yande_gui/global.dart';
 import 'package:yande_gui/i18n.dart';
-
+import 'package:yande_gui/services/tag_translations_service.dart';
 import 'package:yande_gui/src/rust/frb_generated.dart';
 
 import 'pages/index/index_page.dart';
@@ -18,6 +18,8 @@ Future<void> main() async {
   Global.appVersion = packageInfo.version;
   Global.buildNumber = packageInfo.buildNumber;
   await SettingsService.initialize();
+  await TagTranslationsService.loadAll();
+  TagTranslationsService.update(SettingsService.language);
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -34,6 +36,7 @@ class MyApp extends ConsumerWidget {
       stream: rootUpdateController.stream,
       builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
         final locale = I18n.getLocale(SettingsService.language);
+        TagTranslationsService.update(SettingsService.language ?? I18n.getSystemLocaleIndex());
         I18n.update(locale);
         return MaterialApp(
           title: 'Yande GUI',

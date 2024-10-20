@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yande_gui/components/translated_tag/translated_tag.dart';
 import 'package:yande_gui/i18n.dart';
 import 'package:yande_gui/pages/post_list/post_list_page.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
@@ -47,6 +48,7 @@ class _PostSearchPageState extends State<PostSearchPage> {
     'vibrator',
     'ass',
     'anal',
+    'anus',
     'no_bra',
     'nopan',
     'naked',
@@ -141,7 +143,7 @@ class _PostSearchPageState extends State<PostSearchPage> {
                         });
                       }
                     },
-                    child: TagWidget(
+                    child: TranslatedTag(
                       text: tag,
                     ),
                   ),

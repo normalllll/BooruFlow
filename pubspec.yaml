@@ -45,3 +45,6 @@ dev_dependencies:
   riverpod_lint: ^2.3.12
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/tag_translations/

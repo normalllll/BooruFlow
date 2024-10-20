@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yande_gui/components/translated_tag/translated_tag.dart';
 import 'package:yande_gui/components/yande_image/yande_image.dart';
 import 'package:yande_gui/pages/downloads/logic.dart';
 import 'package:yande_gui/pages/post_detail/post_detail_page.dart';
-import 'package:yande_gui/widgets/tag/tag.dart';
 
 class DownloadTaskWidget extends ConsumerWidget {
   final DownloadTaskProvider provider;
@@ -78,7 +78,7 @@ class DownloadTaskWidget extends ConsumerWidget {
                               spacing: 6,
                               children: [
                                 for (final tag in provider.post.tags.split(' '))
-                                  TagWidget(
+                                  TranslatedTag(
                                     text: tag,
                                   ),
                               ],

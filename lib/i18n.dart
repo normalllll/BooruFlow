@@ -26,6 +26,15 @@ class I18n {
       _ => const Locale('en'),
     };
   }
+
+  static int? getSystemLocaleIndex() {
+    return switch (WidgetsBinding.instance.platformDispatcher.locale.languageCode) {
+      'en' => 0,
+      'ja' => 1,
+      'zh' => 2,
+      _ => null,
+    };
+  }
 }
 
 Intl get i18n => I18n._current;
