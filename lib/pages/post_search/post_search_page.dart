@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:yande_gui/components/translated_tag/translated_tag.dart';
 import 'package:yande_gui/i18n.dart';
 import 'package:yande_gui/pages/post_list/post_list_page.dart';
+import 'package:yande_gui/services/tag_translations_service.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
-import 'package:yande_gui/widgets/tag/tag.dart';
-
 class PostSearchPage extends StatefulWidget {
   const PostSearchPage({super.key});
 
@@ -17,61 +16,7 @@ class _PostSearchPageState extends State<PostSearchPage> {
   final ScrollController _textScrollController = ScrollController();
   bool _showClearButton = false;
 
-  static const _tags = [
-    'rating:s',
-    'rating:q',
-    'rating:e',
-    'uncensored',
-    'nekomimi',
-    'animal_ears',
-    'loli',
-    'tail',
-    'indie_virtual_youtuber',
-    'character_design',
-    'hololive',
-    'hololive_english',
-    'azur_lane',
-    'blue_archive',
-    'honkai:_star_rail',
-    'genshin_impact',
-    'breasts',
-    'nipples',
-    'erect_nipples',
-    'cameltoe',
-    'feet',
-    'pussy',
-    'pussy_juice',
-    'masturbation',
-    'bondage',
-    'dildo',
-    'anal_beads',
-    'vibrator',
-    'ass',
-    'anal',
-    'anus',
-    'no_bra',
-    'nopan',
-    'naked',
-    'topless',
-    'bottomless',
-    'stockings',
-    'pantyhose',
-    'swimsuits',
-    'fishnets',
-    'thighhighs',
-    'torn_clothes',
-    'dakimakura',
-    'seifuku',
-    'dress',
-    'bikini',
-    'thong',
-    'pantsu',
-    'open_shirt',
-    'selfie',
-    'see_through',
-    'wet',
-    'yuri',
-  ];
+  static final _tags = TagTranslationsService.knowTags;
 
   Widget _buildSearchField() {
     return TextField(
@@ -152,12 +97,6 @@ class _PostSearchPageState extends State<PostSearchPage> {
           ),
         );
       },
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(MaterialPageRoute(builder: (context) => PostListPage(tags: _textController.text.split(' '))));
-        },
-        child: const Icon(Icons.search_outlined, color: Colors.white),
-      ),
     );
   }
 }

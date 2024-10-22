@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ui';
 
 import 'package:flutter/services.dart';
 
@@ -20,6 +19,8 @@ class TagTranslationsService {
         2 => _zhTW,
         _ => _en,
       };
+
+  static List<String> get knowTags  => _en.entries.map((e)=>e.key).toList();
 
   static Future<void> loadAll() async {
     String enJsonString = await rootBundle.loadString('assets/tag_translations/en.json');

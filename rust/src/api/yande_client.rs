@@ -7,7 +7,7 @@ pub struct YandeClient {
 }
 
 impl YandeClient {
-    pub fn new(ips: Option<[String;3]>) -> Self {
+    pub fn new(ips: Option<[String; 3]>) -> Self {
         Self {
             http: HttpClient::new(ips),
         }
@@ -36,26 +36,13 @@ impl YandeClient {
         Ok(similar)
     }
 
-    pub async fn download_to_file(&self, url: String, file_path: String, progress_callback: impl Fn(usize, usize) -> DartFnFuture<()> + 'static) -> anyhow::Result<()> {
-        self.http.download_to_file(&url, &file_path, progress_callback).await?;
-        Ok(())
-    }
+    // pub async fn download_to_file(&self, url: String, file_path: String, progress_callback: impl Fn(usize, usize) -> DartFnFuture<()> + 'static) -> anyhow::Result<()> {
+    //     self.http.download_to_file(&url, &file_path, progress_callback).await?;
+    //     Ok(())
+    // }
 
-    pub async fn download_to_memory(&self, url: String, progress_callback: impl Fn(usize, usize) -> DartFnFuture<()> + 'static) -> anyhow::Result<Vec<u8>> {
-        let bytes = self.http.download_to_memory(&url, progress_callback).await?;
+    pub async fn download_to_memory(&self, url: &str, auto_multiple_part: bool, progress_callback: impl Fn(usize, usize) -> DartFnFuture<()> + 'static + Send) -> anyhow::Result<Vec<u8>> {
+        let bytes = self.http.download_to_memory(&url, auto_multiple_part, progress_callback).await?;
         Ok(bytes)
     }
 }
-
-
-// lazy_static! {
-//     pub static ref YANDE_CLIENT: YandeClient = YandeClient::new();
-// }
-
-// mod test {
-//     #[tokio::test]
-//     async fn test() {
-//         let posts = crate::api::yande_client::get_posts(vec!["nekomimi".to_string(), "no_bra".to_string()], 10, 1).await.unwrap();
-//         println!("{:?}", posts);
-//     }
-// }
