@@ -7,9 +7,9 @@ pub struct YandeClient {
 }
 
 impl YandeClient {
-    pub fn new(ips: Option<[String; 3]>) -> Self {
+    pub fn new(ips: Option<[String; 3]>, for_large_file: bool) -> Self {
         Self {
-            http: HttpClient::new(ips),
+            http: HttpClient::new(ips, for_large_file),
         }
     }
 }

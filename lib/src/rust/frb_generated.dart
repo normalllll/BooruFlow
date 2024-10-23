@@ -97,7 +97,8 @@ abstract class RustLibApi extends BaseApi {
   Future<Similar> crateApiYandeClientYandeClientGetSimilar(
       {required YandeClient that, required PlatformInt64 postId});
 
-  Future<YandeClient> crateApiYandeClientYandeClientNew({StringArray3? ips});
+  Future<YandeClient> crateApiYandeClientYandeClientNew(
+      {StringArray3? ips, required bool forLargeFile});
 
   RustArcIncrementStrongCountFnType
       get rust_arc_increment_strong_count_YandeClient;
@@ -234,11 +235,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<YandeClient> crateApiYandeClientYandeClientNew({StringArray3? ips}) {
+  Future<YandeClient> crateApiYandeClientYandeClientNew(
+      {StringArray3? ips, required bool forLargeFile}) {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_opt_String_array_3(ips, serializer);
+        sse_encode_bool(forLargeFile, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
             funcId: 5, port: port_);
       },
@@ -248,7 +251,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         decodeErrorData: null,
       ),
       constMeta: kCrateApiYandeClientYandeClientNewConstMeta,
-      argValues: [ips],
+      argValues: [ips, forLargeFile],
       apiImpl: this,
     ));
   }
@@ -256,7 +259,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiYandeClientYandeClientNewConstMeta =>
       const TaskConstMeta(
         debugName: "YandeClient_new",
-        argNames: ["ips"],
+        argNames: ["ips", "forLargeFile"],
       );
 
   Future<void> Function(int, dynamic, dynamic)

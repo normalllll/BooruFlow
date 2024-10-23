@@ -148,7 +148,7 @@ class DownloadTask extends _$DownloadTask {
     } else {
       EasyLoading.showToast(i18n.downloads.messages.downloadStartWithId(state.post.id));
     }
-    yandeClient
+    yandeClientForLargeFile
         .downloadToMemory(
       url: state.post.fileUrl ?? state.post.jpegUrl,
       autoMultiplePart: true,

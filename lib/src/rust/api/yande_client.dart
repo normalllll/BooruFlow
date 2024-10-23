@@ -22,8 +22,10 @@ abstract class YandeClient implements RustOpaqueInterface {
   Future<Similar> getSimilar({required PlatformInt64 postId});
 
   // HINT: Make it `#[frb(sync)]` to let it become the default constructor of Dart class.
-  static Future<YandeClient> newInstance({StringArray3? ips}) =>
-      RustLib.instance.api.crateApiYandeClientYandeClientNew(ips: ips);
+  static Future<YandeClient> newInstance(
+          {StringArray3? ips, required bool forLargeFile}) =>
+      RustLib.instance.api.crateApiYandeClientYandeClientNew(
+          ips: ips, forLargeFile: forLargeFile);
 }
 
 class StringArray3 extends NonGrowableListView<String> {

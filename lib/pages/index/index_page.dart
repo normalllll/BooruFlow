@@ -23,11 +23,11 @@ class IndexPage extends StatefulWidget {
 
 class _IndexPageState extends State<IndexPage> {
   Map<(IconData, String), WidgetBuilder> get _pages => {
-        (Icons.list_alt_outlined, i18n.postList.short): (context) =>  PostListPage(key: ValueKey(widget.language)),
-        (Icons.search_outlined, i18n.postSearch.title): (context) =>  PostSearchPage(key: ValueKey(widget.language)),
-        (Icons.cloud_download_outlined, i18n.downloads.title): (context) =>  DownloadsPage(key: ValueKey(widget.language)),
-        (Icons.info_outlined, i18n.about.title): (context) =>  AboutPage(key: ValueKey(widget.language)),
-        (Icons.settings, i18n.settings.title): (context) =>  SettingsPage(key: ValueKey(widget.language)),
+        (Icons.list_alt_outlined, i18n.postList.short): (context) => PostListPage(key: ValueKey(widget.language)),
+        (Icons.search_outlined, i18n.postSearch.title): (context) => PostSearchPage(key: ValueKey(widget.language)),
+        (Icons.cloud_download_outlined, i18n.downloads.title): (context) => DownloadsPage(key: ValueKey(widget.language)),
+        (Icons.info_outlined, i18n.about.title): (context) => AboutPage(key: ValueKey(widget.language)),
+        (Icons.settings, i18n.settings.title): (context) => SettingsPage(key: ValueKey(widget.language)),
       };
 
   final controller = PageController();
@@ -40,16 +40,20 @@ class _IndexPageState extends State<IndexPage> {
   void initState() {
     Future.delayed(Duration.zero, () async {
       YandeClient instance;
+      YandeClient instanceForLargeFile;
       try {
         final List<String>? dns = await DnsService.fetchDns();
 
         final ips = dns != null ? StringArray3(dns) : null;
-        instance = await YandeClient.newInstance(ips: ips);
+        instance = await YandeClient.newInstance(ips: ips, forLargeFile: false);
+        instanceForLargeFile = await YandeClient.newInstance(ips: ips, forLargeFile: true);
       } catch (e) {
-        instance = await YandeClient.newInstance(ips: null);
+        instance = await YandeClient.newInstance(ips: null, forLargeFile: false);
+        instanceForLargeFile = await YandeClient.newInstance(ips: null, forLargeFile: true);
       }
 
       setYandeClient(instance);
+      setYandeClientForLargeFile(instanceForLargeFile);
 
       setState(() {
         _initialized = true;

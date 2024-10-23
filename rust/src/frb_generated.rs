@@ -289,11 +289,13 @@ fn wire__crate__api__yande_client__YandeClient_new_impl(
             let mut deserializer =
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
             let api_ips = <Option<[String; 3]>>::sse_decode(&mut deserializer);
+            let api_for_large_file = <bool>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| {
                 transform_result_sse::<_, ()>((move || {
-                    let output_ok =
-                        Result::<_, ()>::Ok(crate::api::yande_client::YandeClient::new(api_ips))?;
+                    let output_ok = Result::<_, ()>::Ok(
+                        crate::api::yande_client::YandeClient::new(api_ips, api_for_large_file),
+                    )?;
                     Ok(output_ok)
                 })())
             }

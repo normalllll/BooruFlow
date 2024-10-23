@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use std::time::Duration;
 use flutter_rust_bridge::DartFnFuture;
-
+use futures_util::future::join_all;
 use futures_util::stream::StreamExt;
 use reqwest::Url;
 use tokio::sync::Mutex;
@@ -14,7 +14,25 @@ pub struct HttpClient {
 
 
 impl HttpClient {
-    pub fn new(ips: Option<[String; 3]>) -> Self {
+    pub fn new(ips: Option<[String; 3]>, for_large_file: bool) -> Self {
+        let mut client_builder = reqwest::ClientBuilder::new().
+            http2_prior_knowledge().
+            https_only(true).
+            http2_adaptive_window(true).
+            http2_keep_alive_interval(Duration::from_secs(30)).
+            http2_keep_alive_timeout(Duration::from_secs(60)).
+            http2_keep_alive_while_idle(true);
+
+        if for_large_file {
+            client_builder = client_builder.
+                http2_keep_alive_interval(Duration::from_secs(30)).
+                http2_keep_alive_timeout(Duration::from_secs(120)).
+                http2_initial_connection_window_size(1024 * 1024).
+                http2_initial_stream_window_size(1024 * 1024).
+                http2_max_frame_size(128 * 1024).
+                http2_keep_alive_while_idle(true)
+        }
+
         if let Some(ips) = ips {
             let socket0 = format!("{}:443", ips[0]).parse();
             let socket1 = format!("{}:443", ips[1]).parse();
@@ -22,14 +40,8 @@ impl HttpClient {
 
             if let (Ok(socket0), Ok(socket1), Ok(socket2)) = (socket0, socket1, socket2) {
                 return Self {
-                    client: reqwest::ClientBuilder::new().
+                    client: client_builder.
                         tls_sni(false).
-                        http2_prior_knowledge().
-                        https_only(true).
-                        http2_adaptive_window(true).
-                        http2_keep_alive_interval(Duration::from_secs(30)).
-                        http2_keep_alive_timeout(Duration::from_secs(60)).
-                        http2_keep_alive_while_idle(true).
                         resolve("yande.re", socket0).
                         resolve("files.yande.re", socket1).
                         resolve("assets.yande.re", socket2).
@@ -39,14 +51,7 @@ impl HttpClient {
             }
         }
         Self {
-            client: reqwest::ClientBuilder::new().
-                http2_prior_knowledge().
-                https_only(true).
-                http2_adaptive_window(true).
-                http2_keep_alive_interval(Duration::from_secs(30)).
-                http2_keep_alive_timeout(Duration::from_secs(60)).
-                http2_keep_alive_while_idle(true).
-                build().unwrap(),
+            client: client_builder.build().unwrap(),
         }
     }
 
@@ -150,10 +155,14 @@ impl HttpClient {
                 }
 
                 // Wait for all parts to be downloaded
-                for task in tasks {
-                    let part = task.await??;
+                let results = join_all(tasks).await;
+
+                // Combine all results
+                for result in results {
+                    let part = result??;
                     bytes.extend_from_slice(&part);
                 }
+
                 return Ok(bytes);
             }
         }
