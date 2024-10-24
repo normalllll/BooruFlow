@@ -7,7 +7,7 @@ on:
 
 env:
   FLUTTER_VERSION: '3.24.3'
-  RUST_VERSION: '1.81.0'
+  RUST_VERSION: '1.82.0'
 
 jobs:
   build-and-release:
@@ -31,15 +31,15 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
-          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache
-          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
-          pub-cache-key: "flutter-pub:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache of dart pub get dependencies
-          pub-cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
+          cache-key: flutter-${{ runner.os }}-${{ matrix.flutter-version }}
+          cache-path: ${{ runner.tool_cache }}/flutter/${{ matrix.flutter-version }}
+
 
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin' # See 'Supported distributions' for available options
-          java-version: '17'
+          java-version: '21'
+          cache: 'gradle'
 
       - name: Print outputs
         shell: bash
@@ -98,10 +98,8 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
-          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache
-          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
-          pub-cache-key: "flutter-pub:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache of dart pub get dependencies
-          pub-cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
+          cache-key: flutter-${{ runner.os }}-${{ matrix.flutter-version }}
+          cache-path: ${{ runner.tool_cache }}/flutter/${{ matrix.flutter-version }}
 
       - name: Print outputs
         shell: bash
@@ -157,10 +155,8 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
-          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache
-          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
-          pub-cache-key: "flutter-pub:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache of dart pub get dependencies
-          pub-cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
+          cache-key: flutter-${{ runner.os }}-${{ matrix.flutter-version }}
+          cache-path: ${{ runner.tool_cache }}/flutter/${{ matrix.flutter-version }}
 
       - name: Print outputs
         shell: bash
@@ -212,10 +208,8 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
-          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache
-          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
-          pub-cache-key: "flutter-pub:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache of dart pub get dependencies
-          pub-cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
+          cache-key: flutter-${{ runner.os }}-${{ matrix.flutter-version }}
+          cache-path: ${{ runner.tool_cache }}/flutter/${{ matrix.flutter-version }}
 
       - name: Print outputs
         shell: bash
