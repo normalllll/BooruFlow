@@ -41,6 +41,20 @@ class SettingsService {
     _save();
   }
 
+  static int get maxActiveDownloadTasks => _map['maxActiveDownloadTasks'] as int? ?? 2;
+
+  static set maxActiveDownloadTasks(int value) {
+    _map['maxActiveDownloadTasks'] = value;
+    _save();
+  }
+
+  static int get maxParallelSegmentsPerDownloadTask => _map['maxParallelSegmentsPerDownloadTask'] as int? ?? 3;
+
+  static set maxParallelSegmentsPerDownloadTask(int value) {
+    _map['maxParallelSegmentsPerDownloadTask'] = value;
+    _save();
+  }
+
   static void _save() {
     _file.writeAsStringSync(json.encode(_map));
   }

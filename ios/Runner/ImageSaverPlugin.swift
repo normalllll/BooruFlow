@@ -25,15 +25,15 @@ public class ImageSaverPlugin: NSObject, FlutterPlugin {
             let args = call.arguments as! Dictionary<String, Any>
             DispatchQueue.global(qos: .userInitiated).async {
                 ImageSaverPlugin.saveImage(
-                        imageBytes: (args["imageBytes"] as! FlutterStandardTypedData).data,
-                        filename: args["filename"] as! String
+                        filePath: args["filePath"] as! String,
+                        fileName: args["fileName"] as! String
                 ) { (success: BooleanLiteralType) in
                     result(success)
                 }
             }
         case .imageIsExist:
             let args = call.arguments as! Dictionary<String, Any>
-            result(ImageSaverPlugin.imageIsExist(filename: args["filename"] as! String))
+            result(ImageSaverPlugin.imageIsExist(fileName: args["fileName"] as! String))
 
         }
     }
@@ -46,8 +46,9 @@ public class ImageSaverPlugin: NSObject, FlutterPlugin {
     
 
 
-    static func saveImage(imageBytes: Data, filename: String, completion: ((Bool) -> Void)?) {
+    static func saveImage(filePath: String, fileName: String, completion: ((Bool) -> Void)?) {
         let albumName = "YandeGUI"
+        let fileURL = URL(fileURLWithPath: filePath)
 
         // Check photo library authorization status
         let status = PHPhotoLibrary.authorizationStatus()
@@ -58,7 +59,7 @@ public class ImageSaverPlugin: NSObject, FlutterPlugin {
         } else if status == .notDetermined {
             PHPhotoLibrary.requestAuthorization { newStatus in
                 if newStatus == .authorized {
-                    saveImage(imageBytes: imageBytes, filename: filename, completion: completion)
+                    saveImage(filePath: filePath, fileName: fileName, completion: completion)
                 } else {
                     print("Photo library access not authorized.")
                     completion?(false)
@@ -67,6 +68,7 @@ public class ImageSaverPlugin: NSObject, FlutterPlugin {
             return
         }
 
+        // Fetch the album or create it if it doesn't exist
         var assetAlbum: PHAssetCollection?
         let list = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: nil)
         list.enumerateObjects { (album, _, stop) in
@@ -81,7 +83,7 @@ public class ImageSaverPlugin: NSObject, FlutterPlugin {
                 PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: albumName)
             }) { (isSuccess, error) in
                 if isSuccess {
-                    saveImage(imageBytes: imageBytes, filename: filename, completion: completion)
+                    saveImage(filePath: filePath, fileName: fileName, completion: completion)
                 } else {
                     print("Error creating album: \(error?.localizedDescription ?? "unknown error")")
                     completion?(false)
@@ -90,11 +92,14 @@ public class ImageSaverPlugin: NSObject, FlutterPlugin {
             return
         }
 
+        // Perform the image save action
         PHPhotoLibrary.shared().performChanges({
             let request = PHAssetCreationRequest.forAsset()
-            let createOptions = PHAssetResourceCreationOptions()
-            createOptions.originalFilename = filename
-            request.addResource(with: .photo, data: imageBytes, options: createOptions)
+            let options = PHAssetResourceCreationOptions()
+            options.originalFilename = fileName
+            print(fileName)
+            print(filePath)
+            request.addResource(with: .photo, fileURL: fileURL, options: options)
 
             if let assetPlaceholder = request.placeholderForCreatedAsset, let albumChangeRequest = PHAssetCollectionChangeRequest(for: assetAlbum!) {
                 albumChangeRequest.addAssets([assetPlaceholder] as NSArray)
@@ -103,13 +108,13 @@ public class ImageSaverPlugin: NSObject, FlutterPlugin {
             if isSuccess {
                 completion?(true)
             } else {
-                print("Error saving image: \(error?.localizedDescription ?? "unknown error")")
+                print("Error saving image to photo library: \(error?.localizedDescription ?? "unknown error")")
                 completion?(false)
             }
         }
     }
 
-    static func imageIsExist(filename: String) -> Bool {
+    static func imageIsExist(fileName: String) -> Bool {
         var exist = false
         var assetAlbum: PHAssetCollection?
 
@@ -140,7 +145,7 @@ public class ImageSaverPlugin: NSObject, FlutterPlugin {
             if fetchResult.count > 0 {
                 fetchResult.enumerateObjects { (asset, _, stop) in
                     let resource = PHAssetResource.assetResources(for: asset)
-                    if let originalFilename = resource.first?.originalFilename, filename == originalFilename {
+                    if let originalFilename = resource.first?.originalFilename, fileName == originalFilename {
                         exist = true
                         stop.initialize(to: true)
                     }

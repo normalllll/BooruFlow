@@ -22,16 +22,16 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channel).setMethodCallHandler { call, result ->
             when (call.method) {
                 "saveImage" -> {
-                    val imageBytes = call.argument<ByteArray>("imageBytes")!!
-                    val filename = call.argument<String>("filename")!!
-                    val success = saveImage(imageBytes, filename)
+                    val filePath = call.argument<String>("filePath")!!
+                    val fileName = call.argument<String>("fileName")!!
+                    val success = saveImage(filePath, fileName)
                     result.success(success)
                 }
 
                 "existImage" -> {
-                    val filename = call.argument<String>("filename")!!
+                    val fileName = call.argument<String>("fileName")!!
                     val fileSize = call.argument<Long>("fileSize")!!
-                    val success = imageIsExist(filename, fileSize)
+                    val success = imageIsExist(fileName, fileSize)
                     result.success(success)
                 }
 
@@ -44,19 +44,22 @@ class MainActivity : FlutterActivity() {
 }
 
 
-fun Context.saveImage(imageBytes: ByteArray, filename: String): Boolean {
+fun Context.saveImage(filePath: String, fileName: String): Boolean {
+    val file = File(filePath)
 
+    if (!file.exists()) {
+        return false
+    }
 
-
-    if (imageIsExist(filename, null)) {
+    if (imageIsExist(fileName, null)) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).path + "/Yande/$filename")
-            if (file.exists()) {
-                file.delete()
+            val existingFile = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).path + "/Yande/$fileName")
+            if (existingFile.exists()) {
+                existingFile.delete()
             }
         } else {
             val where = "${MediaStore.Images.Media.RELATIVE_PATH} LIKE ? AND ${MediaStore.Images.Media.DISPLAY_NAME} = ?"
-            val args = arrayOf("%${Environment.DIRECTORY_PICTURES}/Yande%", filename)
+            val args = arrayOf("%${Environment.DIRECTORY_PICTURES}/Yande%", fileName)
             contentResolver.delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, where, args)
         }
     }
@@ -68,7 +71,7 @@ fun Context.saveImage(imageBytes: ByteArray, filename: String): Boolean {
             "Yande"
         )
 
-        val imageFile = File("${saveDirectory.absolutePath}/$filename")
+        val imageFile = File("${saveDirectory.absolutePath}/$fileName")
 
         val parent = imageFile.parentFile ?: return false
 
@@ -76,13 +79,16 @@ fun Context.saveImage(imageBytes: ByteArray, filename: String): Boolean {
             return false
         }
 
-        imageFile.outputStream().use {
-            it.write(imageBytes)
+        file.inputStream().use { input ->
+            imageFile.outputStream().use { output ->
+                input.copyTo(output)
+            }
         }
+
         MediaScannerConnection.scanFile(
             this, arrayOf(imageFile.absolutePath), arrayOf(
                 MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-                    MimeTypeMap.getFileExtensionFromUrl(filename)
+                    MimeTypeMap.getFileExtensionFromUrl(fileName)
                 )
             )
         ) { _, _ ->
@@ -91,43 +97,34 @@ fun Context.saveImage(imageBytes: ByteArray, filename: String): Boolean {
         return true
     }
 
-    val values = ContentValues()
-    values.put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
-
-
-
-    values.put(
-        MediaStore.MediaColumns.MIME_TYPE,
-        MimeTypeMap.getSingleton()
-            .getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(filename))
-    )
-
-
-    values.put(
-        MediaStore.MediaColumns.RELATIVE_PATH,
-        "${Environment.DIRECTORY_PICTURES}/Yande"
-    )
+    val values = ContentValues().apply {
+        put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+        put(MediaStore.MediaColumns.MIME_TYPE, MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(fileName)))
+        put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/Yande")
+    }
 
     var uri: Uri? = null
     return try {
         uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
-        contentResolver.openOutputStream(uri!!)?.use {
-            it.write(imageBytes)
+        contentResolver.openOutputStream(uri!!)?.use { output ->
+            file.inputStream().use { input ->
+                input.copyTo(output)
+            }
         }
         true
     } catch (e: Exception) {
         uri?.let { contentResolver.delete(it, null, null) }
         false
     }
-
 }
 
 
-fun Context.imageIsExist(filename: String, fileSize: Long?): Boolean {
+
+fun Context.imageIsExist(fileName: String, fileSize: Long?): Boolean {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
 
         val dir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Yande")
-        val file = File(dir.absolutePath, filename)
+        val file = File(dir.absolutePath, fileName)
         val sizeCmp = fileSize?.let { file.length() == it }
         return sizeCmp ?: true && dir.exists() && file.exists()
     }
@@ -136,7 +133,7 @@ fun Context.imageIsExist(filename: String, fileSize: Long?): Boolean {
 
     val args = arrayOf(
         "%${Environment.DIRECTORY_PICTURES}/${"Yande"}%",
-        filename,
+        fileName,
     )
 
     contentResolver.query(

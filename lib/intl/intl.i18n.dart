@@ -422,6 +422,16 @@ class SettingsIntl {
   String get waterfallColumns => """Columns per Row""";
 
   /// ```dart
+  /// "Maximum Concurrent Download Tasks"
+  /// ```
+  String get maxActiveDownloadTasks => """Maximum Concurrent Download Tasks""";
+
+  /// ```dart
+  /// "Maximum Parallel Segments"
+  /// ```
+  String get maxParallelSegments => """Maximum Parallel Segments""";
+
+  /// ```dart
   /// "System"
   /// ```
   String get system => """System""";
@@ -443,6 +453,12 @@ class SettingsIntl {
       SelectDownloadPathDialogSettingsIntl(this);
   SetWaterfallColumnsDialogSettingsIntl get setWaterfallColumnsDialog =>
       SetWaterfallColumnsDialogSettingsIntl(this);
+  SetMaxActiveDownloadTasksDialogSettingsIntl
+      get setMaxActiveDownloadTasksDialog =>
+          SetMaxActiveDownloadTasksDialogSettingsIntl(this);
+  SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntl
+      get setMaxParallelSegmentsPerDownloadTaskDialog =>
+          SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntl(this);
 }
 
 class LanguageDialogSettingsIntl {
@@ -516,11 +532,26 @@ class SetWaterfallColumnsDialogSettingsIntl {
   /// "Number of Columns per Row"
   /// ```
   String get title => """Number of Columns per Row""";
+}
+
+class SetMaxActiveDownloadTasksDialogSettingsIntl {
+  final SettingsIntl _parent;
+  const SetMaxActiveDownloadTasksDialogSettingsIntl(this._parent);
 
   /// ```dart
-  /// "Current $value"
+  /// "Set Maximum Concurrent Download Tasks"
   /// ```
-  String current(String value) => """Current $value""";
+  String get title => """Set Maximum Concurrent Download Tasks""";
+}
+
+class SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntl {
+  final SettingsIntl _parent;
+  const SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntl(this._parent);
+
+  /// ```dart
+  /// "Set Maximum Parallel Segments Per Download Task"
+  /// ```
+  String get title => """Set Maximum Parallel Segments Per Download Task""";
 }
 
 Map<String, String> get intlMap => {
@@ -581,6 +612,9 @@ Map<String, String> get intlMap => {
       """settings.downloadPath""": """Download path""",
       """settings.platformDefault""": """Platform Default""",
       """settings.waterfallColumns""": """Columns per Row""",
+      """settings.maxActiveDownloadTasks""":
+          """Maximum Concurrent Download Tasks""",
+      """settings.maxParallelSegments""": """Maximum Parallel Segments""",
       """settings.system""": """System""",
       """settings.light""": """Light""",
       """settings.dark""": """Dark""",
@@ -598,4 +632,8 @@ Map<String, String> get intlMap => {
           """Path is not writable""",
       """settings.setWaterfallColumnsDialog.title""":
           """Number of Columns per Row""",
+      """settings.setMaxActiveDownloadTasksDialog.title""":
+          """Set Maximum Concurrent Download Tasks""",
+      """settings.setMaxParallelSegmentsPerDownloadTaskDialog.title""":
+          """Set Maximum Parallel Segments Per Download Task""",
     };

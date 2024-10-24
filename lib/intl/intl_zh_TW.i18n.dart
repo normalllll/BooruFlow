@@ -415,6 +415,16 @@ class SettingsIntlZhTW extends SettingsIntl {
   String get waterfallColumns => """每行的列數""";
 
   /// ```dart
+  /// "最大同時下載任務數量"
+  /// ```
+  String get maxActiveDownloadTasks => """最大同時下載任務數量""";
+
+  /// ```dart
+  /// "最大分段並行數量"
+  /// ```
+  String get maxParallelSegments => """最大分段並行數量""";
+
+  /// ```dart
   /// "系統預設"
   /// ```
   String get system => """系統預設""";
@@ -436,6 +446,12 @@ class SettingsIntlZhTW extends SettingsIntl {
       SelectDownloadPathDialogSettingsIntlZhTW(this);
   SetWaterfallColumnsDialogSettingsIntlZhTW get setWaterfallColumnsDialog =>
       SetWaterfallColumnsDialogSettingsIntlZhTW(this);
+  SetMaxActiveDownloadTasksDialogSettingsIntlZhTW
+      get setMaxActiveDownloadTasksDialog =>
+          SetMaxActiveDownloadTasksDialogSettingsIntlZhTW(this);
+  SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntlZhTW
+      get setMaxParallelSegmentsPerDownloadTaskDialog =>
+          SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntlZhTW(this);
 }
 
 class LanguageDialogSettingsIntlZhTW extends LanguageDialogSettingsIntl {
@@ -513,11 +529,31 @@ class SetWaterfallColumnsDialogSettingsIntlZhTW
   /// "設定每行的列數"
   /// ```
   String get title => """設定每行的列數""";
+}
+
+class SetMaxActiveDownloadTasksDialogSettingsIntlZhTW
+    extends SetMaxActiveDownloadTasksDialogSettingsIntl {
+  final SettingsIntlZhTW _parent;
+  const SetMaxActiveDownloadTasksDialogSettingsIntlZhTW(this._parent)
+      : super(_parent);
 
   /// ```dart
-  /// "目前 $value"
+  /// "設定最大同時下載任務數量"
   /// ```
-  String current(String value) => """目前 $value""";
+  String get title => """設定最大同時下載任務數量""";
+}
+
+class SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntlZhTW
+    extends SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntl {
+  final SettingsIntlZhTW _parent;
+  const SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntlZhTW(
+      this._parent)
+      : super(_parent);
+
+  /// ```dart
+  /// "設定每個下載任務的最大分段並行數量"
+  /// ```
+  String get title => """設定每個下載任務的最大分段並行數量""";
 }
 
 Map<String, String> get intlZhTWMap => {
@@ -571,6 +607,8 @@ Map<String, String> get intlZhTWMap => {
       """settings.downloadPath""": """下載路徑""",
       """settings.platformDefault""": """平台預設""",
       """settings.waterfallColumns""": """每行的列數""",
+      """settings.maxActiveDownloadTasks""": """最大同時下載任務數量""",
+      """settings.maxParallelSegments""": """最大分段並行數量""",
       """settings.system""": """系統預設""",
       """settings.light""": """淺色模式""",
       """settings.dark""": """深色模式""",
@@ -586,4 +624,7 @@ Map<String, String> get intlZhTWMap => {
       """settings.selectDownloadPathDialog.messages.pathNotWritable""":
           """路徑無法寫入""",
       """settings.setWaterfallColumnsDialog.title""": """設定每行的列數""",
+      """settings.setMaxActiveDownloadTasksDialog.title""": """設定最大同時下載任務數量""",
+      """settings.setMaxParallelSegmentsPerDownloadTaskDialog.title""":
+          """設定每個下載任務的最大分段並行數量""",
     };

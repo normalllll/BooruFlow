@@ -1,3 +1,4 @@
+use std::io::Write;
 use std::sync::Arc;
 use std::time::Duration;
 use flutter_rust_bridge::DartFnFuture;
@@ -75,8 +76,14 @@ impl HttpClient {
         self.client.get(url).send().await.map_err(|e| e.into())
     }
 
-    pub async fn download_to_memory(&self, url: &str, auto_multiple_part: bool, progress_callback: impl Fn(usize, usize) -> DartFnFuture<()> + 'static + Send) -> anyhow::Result<Vec<u8>> {
-        if auto_multiple_part {
+    pub async fn download_to_file(
+        &self,
+        url: &str,
+        file_path: &str,
+        max_task_count: usize,
+        progress_callback: impl Fn(usize, usize) -> DartFnFuture<()> + 'static + Send,
+    ) -> anyhow::Result<()> {
+        if max_task_count > 1 {
             // Send an initial request to check whether the server supports Range requests
             let head_resp = self.client.head(url).send().await?;
 
@@ -87,14 +94,13 @@ impl HttpClient {
                 .get("accept-ranges")
                 .and_then(|v| v.to_str().ok())
                 .unwrap_or("none");
-            let mut bytes = Vec::with_capacity(total_size);
 
             if accept_ranges == "bytes" && total_size > 2 * 1024 * 1024 {
                 let total_received = Arc::new(Mutex::new(0));
                 let progress_callback = Arc::new(Mutex::new(progress_callback));
                 // If the server supports segmented downloads and the file is larger than 2MB, dynamically select the number of coroutines
-                let num_parts = (total_size / (2 * 1024 * 1024)).min(4);
-                println!("num_parts: {}", num_parts);
+                let num_parts = (total_size / (2 * 1024 * 1024)).min(max_task_count);
+
                 let chunk_size = total_size / num_parts;
                 let mut tasks = Vec::new();
 
@@ -157,16 +163,51 @@ impl HttpClient {
                 // Wait for all parts to be downloaded
                 let results = join_all(tasks).await;
 
+
+                std::fs::create_dir_all(std::path::Path::new(file_path).parent().unwrap())?;
+                let mut file = std::fs::File::create(file_path)?;
                 // Combine all results
                 for result in results {
                     let part = result??;
-                    bytes.extend_from_slice(&part);
+                    file.write_all(&part)?;
                 }
-
-                return Ok(bytes);
+                file.flush()?;
+                return Ok(());
             }
         }
 
+        let get_resp = self.get(url, None).await?;
+        let total_size = get_resp.content_length().ok_or("No content length").map_err(|e| anyhow::anyhow!(e))? as usize;
+
+        let mut received = 0;
+        let part_offset = total_size / 50;
+        let mut next_threshold = part_offset;
+
+        let mut bytes_stream = get_resp.bytes_stream();
+
+        std::fs::create_dir_all(std::path::Path::new(file_path).parent().unwrap())?;
+        let mut file = std::fs::File::create(file_path)?;
+        while let Some(item) = bytes_stream.next().await {
+            let chunk = item?;
+            received += chunk.len();
+
+            if received >= next_threshold || received == total_size {
+                progress_callback(received, total_size).await;
+                next_threshold += part_offset;
+            }
+            file.write_all(&chunk)?;
+        }
+
+        file.flush()?;
+
+        Ok(())
+    }
+
+    pub async fn download_to_memory(
+        &self,
+        url: &str,
+        progress_callback: impl Fn(usize, usize) -> DartFnFuture<()> + 'static + Send,
+    ) -> anyhow::Result<Vec<u8>> {
         let get_resp = self.get(url, None).await?;
         let total_size = get_resp.content_length().ok_or("No content length").map_err(|e| anyhow::anyhow!(e))? as usize;
 
@@ -192,28 +233,4 @@ impl HttpClient {
 
         Ok(bytes)
     }
-
-    // pub async fn download_to_file(&self, url: &str, file_path: &str, progress_callback: impl Fn(usize, usize) -> DartFnFuture<()> + 'static) -> anyhow::Result<()> {
-    //     let resp = self.get(url, None).await?;
-    //
-    //
-    //     let total_size = resp.content_length().ok_or("No content length").map_err(|e| anyhow::anyhow!(e))?;
-    //
-    //     let mut bytes_stream = resp.bytes_stream();
-    //
-    //     let mut file = std::fs::File::create(file_path)?;
-    //
-    //     let mut received = 0;
-    //
-    //     while let Some(item) = bytes_stream.next().await {
-    //         let chunk = item?;
-    //         received += chunk.len();
-    //         progress_callback(received, total_size as usize).await;
-    //
-    //         file.write_all(&chunk)?;
-    //         file.flush()?;
-    //     }
-    //
-    //     Ok(())
-    // }
 }

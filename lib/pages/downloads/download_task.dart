@@ -49,7 +49,8 @@ class DownloadTaskWidget extends ConsumerWidget {
                                 },
                                 child: const Icon(Icons.download_outlined),
                               ),
-                            DownloadTaskStateType.busy => const CupertinoActivityIndicator(),
+                            DownloadTaskStateType.waiting => const Icon(Icons.pause_outlined),
+                            DownloadTaskStateType.busying => const CupertinoActivityIndicator(),
                             DownloadTaskStateType.completed => GestureDetector(
                                 behavior: HitTestBehavior.opaque,
                                 onTap: () {

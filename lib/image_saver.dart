@@ -6,37 +6,58 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:yande_gui/services/settings_service.dart';
 
+Future<void> _moveFile(String sourcePath, String targetPath) async {
+  final sourceFile = File(sourcePath);
+  final targetFile = File(targetPath);
+
+  final targetDir = targetFile.parent;
+  if (!await targetDir.exists()) {
+    await targetDir.create(recursive: true);
+  }
+
+  try {
+    await sourceFile.rename(targetPath);
+  } catch (e) {
+    try {
+      await sourceFile.copy(targetPath);
+      await sourceFile.delete();
+    } catch (e) {
+      rethrow;
+    }
+  }
+}
+
 class ImageSaver {
   static const MethodChannel _channel = MethodChannel('io.github.normalllll.yandegui/image_saver');
 
-  static Future<bool> saveImage(Uint8List imageBytes, String filename) async {
-    if (Platform.isAndroid || Platform.isIOS) {
-      try {
+  static Future<bool> saveImage(String filePath, String fileName) async {
+    try {
+      if (Platform.isAndroid || Platform.isIOS) {
         final bool result = await _channel.invokeMethod('saveImage', {
-          'imageBytes': imageBytes,
-          'filename': filename,
+          'filePath': filePath,
+          'fileName': fileName,
         });
         return result;
-      } catch (e) {
-        print(e);
-        return false;
-      }
-    } else {
-      try {
+      } else {
         final downloadDir = await getDownloadsDirectory();
-        final File file;
+        final String targetPath;
         if (SettingsService.downloadPath case String downloadPath) {
-          file = File(path.join(downloadPath, filename));
+          targetPath = path.join(downloadPath, fileName);
         } else {
-          file = File(path.join(downloadDir!.path, 'yande', filename));
+          targetPath = path.join(downloadDir!.path, 'YandeGUI', fileName);
         }
-        await file.create(recursive: true);
-        await file.writeAsBytes(imageBytes);
+        await _moveFile(filePath, targetPath);
         return true;
-      } catch (e) {
-        EasyLoading.showError(e.toString());
-        print(e);
-        return false;
+      }
+    } catch (e) {
+      EasyLoading.showError(e.toString());
+      print(e);
+      return false;
+    } finally {
+      if (Platform.isAndroid || Platform.isIOS) {
+        try {
+          await File(filePath).delete();
+        } catch (_) {}
       }
     }
   }
@@ -45,7 +66,7 @@ class ImageSaver {
     if (Platform.isAndroid) {
       try {
         final bool result = await _channel.invokeMethod('existImage', {
-          'filename': filename,
+          'fileName': filename,
           'fileSize': fileSize,
         });
         return result;
@@ -60,7 +81,7 @@ class ImageSaver {
         if (SettingsService.downloadPath case String downloadPath) {
           file = File(path.join(downloadPath, filename));
         } else {
-          file = File(path.join(downloadDir!.path, 'yande', filename));
+          file = File(path.join(downloadDir!.path, 'YandeGUI', filename));
         }
         return await file.exists() && await file.length() == fileSize;
       } catch (e) {

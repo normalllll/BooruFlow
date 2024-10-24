@@ -420,6 +420,16 @@ class SettingsIntlJa extends SettingsIntl {
   String get waterfallColumns => """行あたりの列数""";
 
   /// ```dart
+  /// "最大同時ダウンロードタスク数"
+  /// ```
+  String get maxActiveDownloadTasks => """最大同時ダウンロードタスク数""";
+
+  /// ```dart
+  /// "最大並列セグメント数"
+  /// ```
+  String get maxParallelSegments => """最大並列セグメント数""";
+
+  /// ```dart
   /// "システム"
   /// ```
   String get system => """システム""";
@@ -441,6 +451,12 @@ class SettingsIntlJa extends SettingsIntl {
       SelectDownloadPathDialogSettingsIntlJa(this);
   SetWaterfallColumnsDialogSettingsIntlJa get setWaterfallColumnsDialog =>
       SetWaterfallColumnsDialogSettingsIntlJa(this);
+  SetMaxActiveDownloadTasksDialogSettingsIntlJa
+      get setMaxActiveDownloadTasksDialog =>
+          SetMaxActiveDownloadTasksDialogSettingsIntlJa(this);
+  SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntlJa
+      get setMaxParallelSegmentsPerDownloadTaskDialog =>
+          SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntlJa(this);
 }
 
 class LanguageDialogSettingsIntlJa extends LanguageDialogSettingsIntl {
@@ -517,11 +533,30 @@ class SetWaterfallColumnsDialogSettingsIntlJa
   /// "行あたりの列数を設定する"
   /// ```
   String get title => """行あたりの列数を設定する""";
+}
+
+class SetMaxActiveDownloadTasksDialogSettingsIntlJa
+    extends SetMaxActiveDownloadTasksDialogSettingsIntl {
+  final SettingsIntlJa _parent;
+  const SetMaxActiveDownloadTasksDialogSettingsIntlJa(this._parent)
+      : super(_parent);
 
   /// ```dart
-  /// "現在 $value"
+  /// "ダウンロードタスクの最大同時実行数を設定"
   /// ```
-  String current(String value) => """現在 $value""";
+  String get title => """ダウンロードタスクの最大同時実行数を設定""";
+}
+
+class SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntlJa
+    extends SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntl {
+  final SettingsIntlJa _parent;
+  const SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntlJa(this._parent)
+      : super(_parent);
+
+  /// ```dart
+  /// "ダウンロードタスクごとの最大並列セグメント数を設定"
+  /// ```
+  String get title => """ダウンロードタスクごとの最大並列セグメント数を設定""";
 }
 
 Map<String, String> get intlJaMap => {
@@ -577,6 +612,8 @@ Map<String, String> get intlJaMap => {
       """settings.downloadPath""": """ダウンロードパス""",
       """settings.platformDefault""": """プラットフォームのデフォルト""",
       """settings.waterfallColumns""": """行あたりの列数""",
+      """settings.maxActiveDownloadTasks""": """最大同時ダウンロードタスク数""",
+      """settings.maxParallelSegments""": """最大並列セグメント数""",
       """settings.system""": """システム""",
       """settings.light""": """ライト""",
       """settings.dark""": """ダーク""",
@@ -592,4 +629,8 @@ Map<String, String> get intlJaMap => {
       """settings.selectDownloadPathDialog.messages.pathNotWritable""":
           """パスに書き込みできません""",
       """settings.setWaterfallColumnsDialog.title""": """行あたりの列数を設定する""",
+      """settings.setMaxActiveDownloadTasksDialog.title""":
+          """ダウンロードタスクの最大同時実行数を設定""",
+      """settings.setMaxParallelSegmentsPerDownloadTaskDialog.title""":
+          """ダウンロードタスクごとの最大並列セグメント数を設定""",
     };

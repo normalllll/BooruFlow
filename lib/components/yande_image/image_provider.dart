@@ -246,7 +246,6 @@ class YandeExtendedImageProvider extends ImageProvider<ExtendedNetworkImageProvi
 
       final Uint8List bytes = await yandeClient.downloadToMemory(
         url: url,
-        autoMultiplePart: false,
         progressCallback: (BigInt received, BigInt total) async {
           // print('received: $received, total: $total');
           chunkEvents?.add(

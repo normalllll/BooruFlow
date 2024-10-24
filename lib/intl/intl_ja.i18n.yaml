@@ -75,6 +75,8 @@ settings:
   downloadPath: ダウンロードパス
   platformDefault: プラットフォームのデフォルト
   waterfallColumns: 行あたりの列数
+  maxActiveDownloadTasks: 最大同時ダウンロードタスク数
+  maxParallelSegments: 最大並列セグメント数
   system: システム
   light: ライト
   dark: ダーク
@@ -92,8 +94,13 @@ settings:
     messages:
       setToPlatformDefault: ダウンロードパスがプラットフォームのデフォルトに設定されました。
       pathNotAbsolute: パスは絶対パスである必要があります。
-      pathNotWritable: パスに書き込みできません
+      pathNotWritable: パスに書き込みできません。
 
   setWaterfallColumnsDialog:
     title: 行あたりの列数を設定する
-    current(String value): "現在 $value"
+
+  setMaxActiveDownloadTasksDialog:
+    title: ダウンロードタスクの最大同時実行数を設定
+
+  setMaxParallelSegmentsPerDownloadTaskDialog:
+    title: ダウンロードタスクごとの最大並列セグメント数を設定

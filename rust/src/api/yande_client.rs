@@ -41,8 +41,22 @@ impl YandeClient {
     //     Ok(())
     // }
 
-    pub async fn download_to_memory(&self, url: &str, auto_multiple_part: bool, progress_callback: impl Fn(usize, usize) -> DartFnFuture<()> + 'static + Send) -> anyhow::Result<Vec<u8>> {
-        let bytes = self.http.download_to_memory(&url, auto_multiple_part, progress_callback).await?;
+    pub async fn download_to_file(
+        &self,
+        url: &str,
+        file_path: &str,
+        max_task_count: u32,
+        progress_callback: impl Fn(usize, usize) -> DartFnFuture<()> + 'static + Send,
+    ) -> anyhow::Result<()> {
+        self.http.download_to_file(url, file_path, max_task_count as _, progress_callback).await
+    }
+
+    pub async fn download_to_memory(
+        &self,
+        url: &str,
+        progress_callback: impl Fn(usize, usize) -> DartFnFuture<()> + 'static + Send,
+    ) -> anyhow::Result<Vec<u8>> {
+        let bytes = self.http.download_to_memory(&url, progress_callback).await?;
         Ok(bytes)
     }
 }

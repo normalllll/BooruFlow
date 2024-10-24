@@ -75,6 +75,8 @@ settings:
   downloadPath: 下載路徑
   platformDefault: 平台預設
   waterfallColumns: 每行的列數
+  maxActiveDownloadTasks: 最大同時下載任務數量
+  maxParallelSegments: 最大分段並行數量
   system: 系統預設
   light: 淺色模式
   dark: 深色模式
@@ -92,8 +94,13 @@ settings:
     messages:
       setToPlatformDefault: 下載路徑已設為平台預設值。
       pathNotAbsolute: 路徑必須為絕對路徑。
-      pathNotWritable: 路徑無法寫入
+      pathNotWritable: 路徑無法寫入。
 
   setWaterfallColumnsDialog:
     title: 設定每行的列數
-    current(String value): "目前 $value"
+
+  setMaxActiveDownloadTasksDialog:
+    title: 設定最大同時下載任務數量
+
+  setMaxParallelSegmentsPerDownloadTaskDialog:
+    title: 設定每個下載任務的最大分段並行數量

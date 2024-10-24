@@ -75,6 +75,8 @@ settings:
   downloadPath: Download path
   platformDefault: Platform Default
   waterfallColumns: Columns per Row
+  maxActiveDownloadTasks: Maximum Concurrent Download Tasks
+  maxParallelSegments: Maximum Parallel Segments
   system: System
   light: Light
   dark: Dark
@@ -92,8 +94,13 @@ settings:
     messages:
       setToPlatformDefault: Download path set to platform default.
       pathNotAbsolute: Path must be absolute.
-      pathNotWritable: Path is not writable
+      pathNotWritable: Path is not writable.
 
   setWaterfallColumnsDialog:
     title: Number of Columns per Row
-    current(String value): "Current $value"
+
+  setMaxActiveDownloadTasksDialog:
+    title: Set maximum concurrent download tasks
+
+  setMaxParallelSegmentsPerDownloadTaskDialog:
+    title: Set maximum parallel segments per download task

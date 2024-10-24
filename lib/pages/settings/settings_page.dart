@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:yande_gui/global.dart';
 import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/pages/downloads/logic.dart';
 import 'package:yande_gui/services/settings_service.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
 import 'package:path/path.dart' as path;
@@ -67,6 +68,14 @@ class _SettingsPageState extends State<SettingsPage> {
       null => 'Auto',
       final value => value.toString(),
     };
+  }
+
+  String maxActiveDownloadTasks(int max) {
+    return max.toString();
+  }
+
+  String maxParallelSegmentsPerDownloadTask(int max) {
+    return max.toString();
   }
 
   void _themeModeDialog() {
@@ -320,22 +329,115 @@ class _SettingsPageState extends State<SettingsPage> {
                         currentSliderValue = value;
                       });
                     },
-                    onChangeEnd: (double value) {
-                      SettingsService.waterfallColumns = value == 0 ? null : value.toInt() + 1;
-                      rootUpdateController.add(null);
+                  ),
+                  Text(switch (currentSliderValue) {
+                    0 => 'Auto',
+                    final value => (value.toInt() + 1).toString(),
+                  }),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    SettingsService.waterfallColumns = currentSliderValue == 0 ? null : currentSliderValue.toInt() + 1;
+                    rootUpdateController.add(null);
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(i18n.generic.confirm),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _maxActiveDownloadTasksDialog() {
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        int currentSliderValue = SettingsService.maxActiveDownloadTasks;
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(i18n.settings.setMaxActiveDownloadTasksDialog.title),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Slider(
+                    value: currentSliderValue.toDouble(),
+                    min: 1,
+                    max: 4,
+                    divisions: 3,
+                    label: currentSliderValue.toString(),
+                    onChanged: (double value) {
+                      setState(() {
+                        currentSliderValue = value.toInt();
+                      });
                     },
                   ),
                   Text(
-                    i18n.settings.setWaterfallColumnsDialog.current(switch (currentSliderValue) {
-                      0 => 'Auto',
-                      final value => (value.toInt() + 1).toString(),
-                    }),
+                    currentSliderValue.toString(),
                   ),
                 ],
               ),
               actions: [
                 TextButton(
                   onPressed: () {
+                    SettingsService.maxActiveDownloadTasks = currentSliderValue.toInt();
+                    Downloader.updateDownloadIsolateMaxActiveDownloadTasks(currentSliderValue.toInt());
+                    rootUpdateController.add(null);
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(i18n.generic.confirm),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _maxParallelSegmentsPerDownloadTaskDialog() {
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        int currentSliderValue = SettingsService.maxParallelSegmentsPerDownloadTask;
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(i18n.settings.setMaxParallelSegmentsPerDownloadTaskDialog.title),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Slider(
+                    value: currentSliderValue.toDouble(),
+                    min: 1,
+                    max: 6,
+                    divisions: 5,
+                    label: currentSliderValue.toString(),
+                    onChanged: (double value) {
+                      setState(() {
+                        currentSliderValue = value.toInt();
+                      });
+                    },
+                  ),
+                  Text(
+                    currentSliderValue.toString(),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    SettingsService.maxParallelSegmentsPerDownloadTask = currentSliderValue.toInt();
+                    rootUpdateController.add(null);
                     Navigator.of(context).pop();
                   },
                   child: Text(i18n.generic.confirm),
@@ -380,6 +482,22 @@ class _SettingsPageState extends State<SettingsPage> {
               subtitle: Text(waterfallColumns(SettingsService.waterfallColumns)),
               onTap: () {
                 _waterfallColumnsDialog();
+              },
+            ),
+            buildItem(
+              title: Text(i18n.settings.maxActiveDownloadTasks),
+              leading: const Icon(Icons.grading_outlined),
+              subtitle: Text(maxActiveDownloadTasks(SettingsService.maxActiveDownloadTasks)),
+              onTap: () {
+                _maxActiveDownloadTasksDialog();
+              },
+            ),
+            buildItem(
+              title: Text(i18n.settings.maxParallelSegments),
+              leading: const Icon(Icons.segment_outlined),
+              subtitle: Text(maxParallelSegmentsPerDownloadTask(SettingsService.maxParallelSegmentsPerDownloadTask)),
+              onTap: () {
+                _maxParallelSegmentsPerDownloadTaskDialog();
               },
             ),
             if (Platform.isWindows || Platform.isLinux || Platform.isMacOS)
