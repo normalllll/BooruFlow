@@ -18,15 +18,7 @@ void setYandeClient(YandeClient client) {
   _yandeClient = client;
 }
 
-
-YandeClient get yandeClientForLargeFile => _yandeClientForLargeFile!;
-
-YandeClient? _yandeClientForLargeFile;
-
-void setYandeClientForLargeFile(YandeClient client) {
-  _yandeClientForLargeFile = client;
-}
-
+List<String>? realIps;
 
 bool get isDesktop => Platform.isWindows || Platform.isLinux || Platform.isMacOS;
 

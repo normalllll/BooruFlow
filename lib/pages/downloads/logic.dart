@@ -7,6 +7,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yande_gui/global.dart';
 import 'package:yande_gui/i18n.dart';
 import 'package:yande_gui/image_saver.dart';
 import 'package:yande_gui/services/settings_service.dart';
@@ -79,7 +80,8 @@ class Downloader extends _$Downloader {
   static Future<void> initIsolate() async {
     if (isolateSendPort == null) {
       final receivePort = ReceivePort();
-      await Isolate.spawn(_isolateDownloader, _DownloadIsolateConfig(ips: [], maxActiveDownloadTasks: SettingsService.maxActiveDownloadTasks, mainSendPort: receivePort.sendPort));
+      await Isolate.spawn(
+          _isolateDownloader, _DownloadIsolateConfig(ips: realIps, maxActiveDownloadTasks: SettingsService.maxActiveDownloadTasks, mainSendPort: receivePort.sendPort));
 
       isolateSendPort = await receivePort.first as SendPort;
     }
@@ -220,15 +222,18 @@ void _isolateDownloader(_DownloadIsolateConfig args) async {
   args.mainSendPort.send(receivePort.sendPort);
 
   await RustLib.init();
-  final downloadClient = await YandeClient.newInstance(forLargeFile: true);
-
+  final downloadClient = await YandeClient.newInstance(
+      ips: switch (args.ips) {
+        final ips? => StringArray3(ips),
+        _ => null,
+      },
+      forLargeFile: true);
 
   int maxActiveDownloadTasks = args.maxActiveDownloadTasks;
 
   int activeDownloadTasks = 0;
 
   final taskQueue = <_DownloadTaskArgs>[];
-
 
   Future<void> processDownloadTask(_DownloadTaskArgs task) async {
     final String url = task.url;
@@ -289,7 +294,7 @@ void _isolateDownloader(_DownloadIsolateConfig args) async {
 }
 
 class _DownloadIsolateConfig {
-  final List<String> ips;
+  final List<String>? ips;
   final int maxActiveDownloadTasks;
   final SendPort mainSendPort;
 

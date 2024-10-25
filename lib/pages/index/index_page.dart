@@ -40,20 +40,16 @@ class _IndexPageState extends State<IndexPage> {
   void initState() {
     Future.delayed(Duration.zero, () async {
       YandeClient instance;
-      YandeClient instanceForLargeFile;
       try {
         final List<String>? dns = await DnsService.fetchDns();
-
+        realIps = dns;
         final ips = dns != null ? StringArray3(dns) : null;
         instance = await YandeClient.newInstance(ips: ips, forLargeFile: false);
-        instanceForLargeFile = await YandeClient.newInstance(ips: ips, forLargeFile: true);
       } catch (e) {
         instance = await YandeClient.newInstance(ips: null, forLargeFile: false);
-        instanceForLargeFile = await YandeClient.newInstance(ips: null, forLargeFile: true);
       }
 
       setYandeClient(instance);
-      setYandeClientForLargeFile(instanceForLargeFile);
 
       setState(() {
         _initialized = true;
