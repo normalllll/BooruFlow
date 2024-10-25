@@ -27,7 +27,7 @@ class DownloadTaskWidget extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               YandeImage(provider.post.previewUrl, width: 150, height: 150),
-              const SizedBox(width: 20),
+              const SizedBox(width: 8),
               Expanded(
                 child: SizedBox(
                   height: 150,
@@ -38,9 +38,14 @@ class DownloadTaskWidget extends ConsumerWidget {
                         children: [
                           Text(
                             'ID:${provider.post.id}',
-                            style: const TextStyle(fontSize: 20),
+                            style: const TextStyle(fontSize: 16),
                           ),
-                          const SizedBox(width: 20),
+                          const SizedBox(width: 5),
+                          Text(
+                            '${(provider.post.fileSize / 1024 / 1024).toStringAsFixed(2)}MB',
+                            style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.secondary),
+                          ),
+                          const SizedBox(width: 5),
                           switch (state.type) {
                             DownloadTaskStateType.idle => GestureDetector(
                                 behavior: HitTestBehavior.opaque,
