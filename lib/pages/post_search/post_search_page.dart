@@ -49,7 +49,7 @@ class _PostSearchPageState extends State<PostSearchPage> {
           borderRadius: BorderRadius.circular(30.0),
           borderSide: BorderSide.none,
         ),
-        contentPadding: const EdgeInsets.all(10.0),
+        contentPadding: const EdgeInsets.all(8),
       ),
     );
   }
@@ -57,44 +57,53 @@ class _PostSearchPageState extends State<PostSearchPage> {
   @override
   Widget build(BuildContext context) {
     return AutoScaffold(
-      titleWidget: _buildSearchField(),
       builder: (context, horizontal) {
-        return SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Wrap(
-              runSpacing: 6,
-              spacing: 6,
-              children: [
-                for (final tag in _tags)
-                  GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      final text = _textController.text;
-                      if (!text.split(' ').contains(tag)) {
-                        _textController.text = '${text.trim()} $tag';
-                        if (!_showClearButton) {
-                          setState(() {
-                            _showClearButton = true;
-                          });
-                        }
-                        _textController.selection = TextSelection.fromPosition(
-                          TextPosition(offset: _textController.text.length),
-                        );
-                        Future.delayed(const Duration(milliseconds: 100), () {
-                          if (_textScrollController.hasClients) {
-                            _textScrollController.jumpTo(_textScrollController.position.maxScrollExtent);
-                          }
-                        });
-                      }
-                    },
-                    child: TranslatedTag(
-                      text: tag,
-                    ),
-                  ),
-              ],
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8,vertical: 4),
+              child: _buildSearchField(),
             ),
-          ),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Wrap(
+                    runSpacing: 6,
+                    spacing: 6,
+                    children: [
+                      for (final tag in _tags)
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            final text = _textController.text;
+                            if (!text.split(' ').contains(tag)) {
+                              _textController.text = '${text.trim()} $tag';
+                              if (!_showClearButton) {
+                                setState(() {
+                                  _showClearButton = true;
+                                });
+                              }
+                              _textController.selection = TextSelection.fromPosition(
+                                TextPosition(offset: _textController.text.length),
+                              );
+                              Future.delayed(const Duration(milliseconds: 100), () {
+                                if (_textScrollController.hasClients) {
+                                  _textScrollController.jumpTo(_textScrollController.position.maxScrollExtent);
+                                }
+                              });
+                            }
+                          },
+                          child: TranslatedTag(
+                            text: tag,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         );
       },
     );
