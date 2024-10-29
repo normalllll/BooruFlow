@@ -20,7 +20,7 @@ class DnsService {
   static Future<Map<String, dynamic>> _fetchDnsByGithub() async {
     HttpClient client = HttpClient();
 
-    final request = await client.getUrl(Uri.parse('https://cdn.jsdelivr.net/gh/normalllll/yande_gui@main/DNS'));
+    final request = await client.getUrl(Uri.parse('https://cdn.jsdelivr.net/gh/normalllll/yande_gui@main/DNS.json'));
     final response = await request.close();
     if (response.statusCode == 200) {
       final body = await response.transform(utf8.decoder).join();
@@ -44,8 +44,8 @@ class DnsService {
     try {
       final json = await _fetchDnsByGithub();
       return [json['yande.re'], json['files.yande.re'], json['assets.yande.re']];
-    } catch (_) {
-      print(_);
+    } catch (e) {
+      print(e);
     }
     return null;
   }
