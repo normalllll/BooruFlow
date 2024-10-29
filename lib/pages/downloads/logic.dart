@@ -81,7 +81,13 @@ class Downloader extends _$Downloader {
     if (isolateSendPort == null) {
       final receivePort = ReceivePort();
       await Isolate.spawn(
-          _isolateDownloader, _DownloadIsolateConfig(ips: realIps, maxActiveDownloadTasks: SettingsService.maxActiveDownloadTasks, mainSendPort: receivePort.sendPort));
+        _isolateDownloader,
+        _DownloadIsolateConfig(
+          ips: realIps,
+          maxActiveDownloadTasks: SettingsService.maxActiveDownloadTasks,
+          mainSendPort: receivePort.sendPort,
+        ),
+      );
 
       isolateSendPort = await receivePort.first as SendPort;
     }
@@ -167,6 +173,11 @@ class DownloadTask extends _$DownloadTask {
 
   Future<void> doDownload({bool retry = false}) async {
     if (retry) {
+      if (state.type != DownloadTaskStateType.failed) {
+        return;
+      }
+      state = state.copyWith(type: DownloadTaskStateType.waiting);
+
       EasyLoading.showToast(i18n.downloads.messages.downloadRetryWithId(state.post.id));
     } else {
       EasyLoading.showToast(i18n.downloads.messages.downloadStartWithId(state.post.id));
