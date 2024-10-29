@@ -226,6 +226,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 onChanged: (v) {
                   SettingsService.prefetchDns = v ?? false;
                   rootUpdateController.add(null);
+                  Navigator.of(context).pop();
                 },
               )
             ],
