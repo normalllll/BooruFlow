@@ -40,7 +40,7 @@ class _IndexPageState extends State<IndexPage> {
   @override
   void initState() {
     Future.delayed(Duration.zero, () async {
-      if (_initialized) {
+      if (!_initialized) {
         YandeClient instance;
         try {
           final List<String>? dns = await DnsService.fetchDns();
