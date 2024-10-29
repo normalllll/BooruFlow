@@ -79,10 +79,11 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _themeModeDialog() {
-    showDialog(
+    showCupertinoDialog(
       context: context,
+      barrierDismissible: true,
       builder: (context) {
-        return AlertDialog(
+        return CupertinoAlertDialog(
           title: Text(i18n.settings.themeModeDialog.title),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -120,11 +121,12 @@ class _SettingsPageState extends State<SettingsPage> {
             ],
           ),
           actions: [
-            TextButton(
+            CupertinoDialogAction(
+              isDestructiveAction: true,
+              child: Text(i18n.generic.cancel),
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text(i18n.generic.cancel),
             ),
           ],
         );
@@ -133,10 +135,11 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _languageDialog() {
-    showDialog(
+    showCupertinoDialog(
       context: context,
+      barrierDismissible: true,
       builder: (context) {
-        return AlertDialog(
+        return CupertinoAlertDialog(
           title: Text(i18n.settings.languageDialog.title),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -188,11 +191,52 @@ class _SettingsPageState extends State<SettingsPage> {
             ],
           ),
           actions: [
-            TextButton(
+            CupertinoDialogAction(
+              isDestructiveAction: true,
+              child: Text(i18n.generic.cancel),
               onPressed: () {
                 Navigator.of(context).pop();
               },
+            ),
+            CupertinoDialogAction(
+              child: Text(i18n.generic.confirm),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _dnsPrefetchDialog() {
+    showCupertinoDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return CupertinoAlertDialog(
+          title: Text(i18n.settings.dnsPrefetchDialog.title),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CheckboxListTile(
+                value: SettingsService.prefetchDns,
+                title: Text(i18n.generic.enabled),
+                onChanged: (v) {
+                  SettingsService.prefetchDns = v ?? false;
+                  rootUpdateController.add(null);
+                },
+              )
+            ],
+          ),
+          actions: [
+            CupertinoDialogAction(
+              isDestructiveAction: true,
               child: Text(i18n.generic.cancel),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
             ),
           ],
         );
@@ -251,13 +295,13 @@ class _SettingsPageState extends State<SettingsPage> {
           actions: [
             CupertinoDialogAction(
               isDestructiveAction: true,
-              child: const Text('Cancel'),
+              child: Text(i18n.generic.cancel),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             CupertinoDialogAction(
-              child: const Text('Confirm'),
+              child: Text(i18n.generic.confirm),
               onPressed: () {
                 final dir = textController.text;
 
@@ -298,9 +342,10 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _waterfallColumnsDialog() {
-    showDialog(
+  void _columnsPerRowDialog() {
+    showCupertinoDialog(
       context: context,
+      barrierDismissible: true,
       builder: (context) {
         double currentSliderValue = ((SettingsService.waterfallColumns ?? 0)).toDouble();
 
@@ -310,8 +355,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
         return StatefulBuilder(
           builder: (context, setState) {
-            return AlertDialog(
-              title: Text(i18n.settings.setWaterfallColumnsDialog.title),
+            return CupertinoAlertDialog(
+              title: Text(i18n.settings.columnsPerRowDialog.title),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -337,13 +382,20 @@ class _SettingsPageState extends State<SettingsPage> {
                 ],
               ),
               actions: [
-                TextButton(
+                CupertinoDialogAction(
+                  isDestructiveAction: true,
+                  child: Text(i18n.generic.cancel),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                CupertinoDialogAction(
+                  child: Text(i18n.generic.confirm),
                   onPressed: () {
                     SettingsService.waterfallColumns = currentSliderValue == 0 ? null : currentSliderValue.toInt() + 1;
                     rootUpdateController.add(null);
                     Navigator.of(context).pop();
                   },
-                  child: Text(i18n.generic.confirm),
                 ),
               ],
             );
@@ -353,17 +405,17 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _maxActiveDownloadTasksDialog() {
-
-    showDialog(
+  void _maxConcurrentDownloadsDialog() {
+    showCupertinoDialog(
       context: context,
+      barrierDismissible: true,
       builder: (context) {
-        int currentSliderValue = SettingsService.maxActiveDownloadTasks;
+        int currentSliderValue = SettingsService.maxConcurrentDownloads;
 
         return StatefulBuilder(
           builder: (context, setState) {
-            return AlertDialog(
-              title: Text(i18n.settings.setMaxActiveDownloadTasksDialog.title),
+            return CupertinoAlertDialog(
+              title: Text(i18n.settings.maxConcurrentDownloadsDialog.title),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -385,14 +437,21 @@ class _SettingsPageState extends State<SettingsPage> {
                 ],
               ),
               actions: [
-                TextButton(
+                CupertinoDialogAction(
+                  isDestructiveAction: true,
+                  child: Text(i18n.generic.cancel),
                   onPressed: () {
-                    SettingsService.maxActiveDownloadTasks = currentSliderValue.toInt();
+                    Navigator.of(context).pop();
+                  },
+                ),
+                CupertinoDialogAction(
+                  child: Text(i18n.generic.confirm),
+                  onPressed: () {
+                    SettingsService.maxConcurrentDownloads = currentSliderValue.toInt();
                     Downloader.updateDownloadIsolateMaxActiveDownloadTasks(currentSliderValue.toInt());
                     rootUpdateController.add(null);
                     Navigator.of(context).pop();
                   },
-                  child: Text(i18n.generic.confirm),
                 ),
               ],
             );
@@ -402,17 +461,17 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _maxParallelSegmentsPerDownloadTaskDialog() {
-
-    showDialog(
+  void _maxSegmentsPerTaskDialog() {
+    showCupertinoDialog(
       context: context,
+      barrierDismissible: true,
       builder: (context) {
-        int currentSliderValue = SettingsService.maxParallelSegmentsPerDownloadTask;
+        int currentSliderValue = SettingsService.maxSegmentsPerTask;
 
         return StatefulBuilder(
           builder: (context, setState) {
-            return AlertDialog(
-              title: Text(i18n.settings.setMaxParallelSegmentsPerDownloadTaskDialog.title),
+            return CupertinoAlertDialog(
+              title: Text(i18n.settings.maxSegmentsPerTaskDialog.title),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -434,13 +493,20 @@ class _SettingsPageState extends State<SettingsPage> {
                 ],
               ),
               actions: [
-                TextButton(
+                CupertinoDialogAction(
+                  isDestructiveAction: true,
+                  child: Text(i18n.generic.cancel),
                   onPressed: () {
-                    SettingsService.maxParallelSegmentsPerDownloadTask = currentSliderValue.toInt();
+                    Navigator.of(context).pop();
+                  },
+                ),
+                CupertinoDialogAction(
+                  child: Text(i18n.generic.confirm),
+                  onPressed: () {
+                    SettingsService.maxSegmentsPerTask = currentSliderValue.toInt();
                     rootUpdateController.add(null);
                     Navigator.of(context).pop();
                   },
-                  child: Text(i18n.generic.confirm),
                 ),
               ],
             );
@@ -477,32 +543,40 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
             buildItem(
-              title: Text(i18n.settings.waterfallColumns),
+              title: Text(i18n.settings.prefetchDns),
+              leading: const Icon(Icons.network_check_outlined),
+              subtitle: Text(SettingsService.prefetchDns ? i18n.generic.enabled : i18n.generic.disabled),
+              onTap: () {
+                _dnsPrefetchDialog();
+              },
+            ),
+            buildItem(
+              title: Text(i18n.settings.columnsPerRow),
               leading: const Icon(Icons.view_column_outlined),
               subtitle: Text(waterfallColumns(SettingsService.waterfallColumns)),
               onTap: () {
-                _waterfallColumnsDialog();
+                _columnsPerRowDialog();
               },
             ),
             buildItem(
-              title: Text(i18n.settings.maxActiveDownloadTasks),
+              title: Text(i18n.settings.maxConcurrentDownloads),
               leading: const Icon(Icons.grading_outlined),
-              subtitle: Text(maxActiveDownloadTasks(SettingsService.maxActiveDownloadTasks)),
+              subtitle: Text(maxActiveDownloadTasks(SettingsService.maxConcurrentDownloads)),
               onTap: () {
-                _maxActiveDownloadTasksDialog();
+                _maxConcurrentDownloadsDialog();
               },
             ),
             buildItem(
-              title: Text(i18n.settings.maxParallelSegments),
+              title: Text(i18n.settings.maxSegmentsPerTask),
               leading: const Icon(Icons.segment_outlined),
-              subtitle: Text(maxParallelSegmentsPerDownloadTask(SettingsService.maxParallelSegmentsPerDownloadTask)),
+              subtitle: Text(maxParallelSegmentsPerDownloadTask(SettingsService.maxSegmentsPerTask)),
               onTap: () {
-                _maxParallelSegmentsPerDownloadTaskDialog();
+                _maxSegmentsPerTaskDialog();
               },
             ),
             if (Platform.isWindows || Platform.isLinux || Platform.isMacOS)
               buildItem(
-                title: Text(i18n.settings.downloadPath),
+                title: Text(i18n.settings.downloadDirectory),
                 leading: const Icon(Icons.save_alt_outlined),
                 subtitle: Text(SettingsService.downloadPath ?? i18n.settings.platformDefault),
                 onTap: () {

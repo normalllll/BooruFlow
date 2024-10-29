@@ -3,6 +3,8 @@ generic:
   cancel: 取消
   clear: 清除
   confirm: 確認
+  enabled: 啟用
+  disabled: 停用
   copiedWithValue(String value): "已複製到剪貼簿: $value"
   errorWithValue(String value): "發生錯誤: $value"
 
@@ -72,35 +74,40 @@ settings:
   title: 設定
   theme: 主題
   language: 語言
-  downloadPath: 下載路徑
+  prefetchDns: 預抓取 DNS
+  downloadDirectory: 下載目錄
+  defaultToPlatformSettings: 使用系統預設
+  columnsPerRow: 每行列數
+  maxConcurrentDownloads: 最大同時下載任務數
+  maxSegmentsPerTask: 每個下載任務的最大分段數
   platformDefault: 平台預設
-  waterfallColumns: 每行的列數
-  maxActiveDownloadTasks: 最大同時下載任務數量
-  maxParallelSegments: 最大分段並行數量
-  system: 系統預設
+  system: 系統
   light: 淺色模式
   dark: 深色模式
 
   languageDialog:
-    title: 選擇語言
+    title: 語言
 
   themeModeDialog:
-    title: 選擇主題
+    title: 主題模式
 
-  selectDownloadPathDialog:
-    title: 選擇下載路徑
-    pickerTitle: 選擇資料夾
-    pick: 選擇資料夾
+  downloadDirectoryDialog:
+    title: 下載目錄
+    pickerTitle: 選擇目錄
+    pick: 選擇目錄
     messages:
-      setToPlatformDefault: 下載路徑已設為平台預設值。
-      pathNotAbsolute: 路徑必須為絕對路徑。
-      pathNotWritable: 路徑無法寫入。
+      setToPlatformDefault: 下載目錄已設為系統預設。
+      pathNotAbsolute: 路徑必須是絕對路徑。
+      pathNotWritable: 路徑不可寫入。
 
-  setWaterfallColumnsDialog:
-    title: 設定每行的列數
+  dnsPrefetchDialog:
+    title: DNS 預抓取
 
-  setMaxActiveDownloadTasksDialog:
-    title: 設定最大同時下載任務數量
+  columnsPerRowDialog:
+    title: 每行列數
 
-  setMaxParallelSegmentsPerDownloadTaskDialog:
-    title: 設定每個下載任務的最大分段並行數量
+  maxConcurrentDownloadsDialog:
+    title: 最大同時下載任務數
+
+  maxSegmentsPerTaskDialog:
+    title: 每個下載任務的最大分段數

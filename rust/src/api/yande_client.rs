@@ -7,6 +7,7 @@ pub struct YandeClient {
 }
 
 impl YandeClient {
+    #[flutter_rust_bridge::frb(sync)]
     pub fn new(ips: Option<[String; 3]>, for_large_file: bool) -> Self {
         Self {
             http: HttpClient::new(ips, for_large_file),

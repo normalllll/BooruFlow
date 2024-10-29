@@ -8,6 +8,7 @@ import 'package:yande_gui/pages/post_list/post_list_page.dart';
 import 'package:yande_gui/pages/post_search/post_search_page.dart';
 import 'package:yande_gui/pages/settings/settings_page.dart';
 import 'package:yande_gui/services/dns_service.dart';
+import 'package:yande_gui/services/settings_service.dart';
 import 'package:yande_gui/services/updater_service.dart';
 import 'package:yande_gui/src/rust/api/yande_client.dart';
 import 'package:yande_gui/widgets/lazy_indexed_stack/lazy_indexed_stack.dart';
@@ -34,26 +35,27 @@ class _IndexPageState extends State<IndexPage> {
 
   int _selectedIndex = 0;
 
-  bool _initialized = false;
+  bool _initialized = !SettingsService.prefetchDns;
 
   @override
   void initState() {
     Future.delayed(Duration.zero, () async {
-      YandeClient instance;
-      try {
-        final List<String>? dns = await DnsService.fetchDns();
-        realIps = dns;
-        final ips = dns != null ? StringArray3(dns) : null;
-        instance = await YandeClient.newInstance(ips: ips, forLargeFile: false);
-      } catch (e) {
-        instance = await YandeClient.newInstance(ips: null, forLargeFile: false);
+      if (_initialized) {
+        YandeClient instance;
+        try {
+          final List<String>? dns = await DnsService.fetchDns();
+          realIps = dns;
+          final ips = dns != null ? StringArray3(dns) : null;
+          instance = YandeClient(ips: ips, forLargeFile: false);
+        } catch (e) {
+          instance = YandeClient(ips: null, forLargeFile: false);
+        }
+
+        setYandeClient(instance);
+        setState(() {
+          _initialized = true;
+        });
       }
-
-      setYandeClient(instance);
-
-      setState(() {
-        _initialized = true;
-      });
 
       UpdaterService.checkForUpdate().then((result) {
         if (result != null) {
@@ -83,7 +85,7 @@ class _IndexPageState extends State<IndexPage> {
               children: [
                 CircularProgressIndicator(),
                 SizedBox(height: 16),
-                Text('Fetching DNS...'),
+                Text('Initializing...'),
               ],
             ),
           ),

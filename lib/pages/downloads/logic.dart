@@ -84,7 +84,7 @@ class Downloader extends _$Downloader {
         _isolateDownloader,
         _DownloadIsolateConfig(
           ips: realIps,
-          maxActiveDownloadTasks: SettingsService.maxActiveDownloadTasks,
+          maxActiveDownloadTasks: SettingsService.maxConcurrentDownloads,
           mainSendPort: receivePort.sendPort,
         ),
       );
@@ -94,7 +94,7 @@ class Downloader extends _$Downloader {
   }
 
   static void updateDownloadIsolateMaxActiveDownloadTasks(int value) {
-    isolateSendPort?.send(_DownloadIsolateUpdate(maxActiveDownloadTasks: value));
+    isolateSendPort?.send(_DownloadIsolateUpdate(maxConcurrentDownloads: value));
   }
 
   Future<DownloadTaskProvider?> addTask(Post post) async {
@@ -195,7 +195,7 @@ class DownloadTask extends _$DownloadTask {
       _DownloadTaskArgs(
         url: state.post.fileUrl ?? state.post.jpegUrl,
         filePath: filePath,
-        maxParallelSegmentsPerDownloadTask: SettingsService.maxParallelSegmentsPerDownloadTask,
+        maxSegmentsPerTask: SettingsService.maxSegmentsPerTask,
         taskSendPort: receivePort.sendPort,
       ),
     );
@@ -233,14 +233,14 @@ void _isolateDownloader(_DownloadIsolateConfig args) async {
   args.mainSendPort.send(receivePort.sendPort);
 
   await RustLib.init();
-  final downloadClient = await YandeClient.newInstance(
+  final downloadClient = YandeClient(
       ips: switch (args.ips) {
         final ips? => StringArray3(ips),
         _ => null,
       },
       forLargeFile: true);
 
-  int maxActiveDownloadTasks = args.maxActiveDownloadTasks;
+  int maxConcurrentDownloads = args.maxActiveDownloadTasks;
 
   int activeDownloadTasks = 0;
 
@@ -257,7 +257,7 @@ void _isolateDownloader(_DownloadIsolateConfig args) async {
       await downloadClient.downloadToFile(
         url: url,
         filePath: savePath,
-        maxTaskCount: task.maxParallelSegmentsPerDownloadTask,
+        maxTaskCount: task.maxSegmentsPerTask,
         progressCallback: (received, total) {
           taskSendPort.send(_DownloadProgress(total == BigInt.zero ? 0 : received / total));
         },
@@ -273,7 +273,7 @@ void _isolateDownloader(_DownloadIsolateConfig args) async {
   // Function to schedule tasks, ensuring the maximum download task limit is respected
   Future<void> scheduleTasks() async {
     // If the maximum limit is reached or no tasks are left, return
-    if (activeDownloadTasks >= maxActiveDownloadTasks || taskQueue.isEmpty) {
+    if (activeDownloadTasks >= maxConcurrentDownloads || taskQueue.isEmpty) {
       return;
     }
     // Dequeue a task and increment the number of active tasks
@@ -298,7 +298,7 @@ void _isolateDownloader(_DownloadIsolateConfig args) async {
       // Check if new tasks can be executed
       scheduleTasks();
     } else if (message is _DownloadIsolateUpdate) {
-      maxActiveDownloadTasks = message.maxActiveDownloadTasks;
+      maxConcurrentDownloads = message.maxConcurrentDownloads;
       scheduleTasks();
     }
   }
@@ -313,21 +313,21 @@ class _DownloadIsolateConfig {
 }
 
 class _DownloadIsolateUpdate {
-  final int maxActiveDownloadTasks;
+  final int maxConcurrentDownloads;
 
-  _DownloadIsolateUpdate({required this.maxActiveDownloadTasks});
+  _DownloadIsolateUpdate({required this.maxConcurrentDownloads});
 }
 
 class _DownloadTaskArgs {
   final String url;
   final String filePath;
-  final int maxParallelSegmentsPerDownloadTask;
+  final int maxSegmentsPerTask;
   final SendPort taskSendPort;
 
   _DownloadTaskArgs({
     required this.url,
     required this.filePath,
-    required this.maxParallelSegmentsPerDownloadTask,
+    required this.maxSegmentsPerTask,
     required this.taskSendPort,
   });
 }

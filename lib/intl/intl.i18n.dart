@@ -101,6 +101,16 @@ class GenericIntl {
   String get confirm => """Confirm""";
 
   /// ```dart
+  /// "Enabled"
+  /// ```
+  String get enabled => """Enabled""";
+
+  /// ```dart
+  /// "Disabled"
+  /// ```
+  String get disabled => """Disabled""";
+
+  /// ```dart
   /// "Copied to clipboard: $value"
   /// ```
   String copiedWithValue(String value) => """Copied to clipboard: $value""";
@@ -407,29 +417,39 @@ class SettingsIntl {
   String get language => """Language""";
 
   /// ```dart
-  /// "Download path"
+  /// "Prefetch DNS"
   /// ```
-  String get downloadPath => """Download path""";
+  String get prefetchDns => """Prefetch DNS""";
 
   /// ```dart
-  /// "Platform Default"
+  /// "Download Directory"
   /// ```
-  String get platformDefault => """Platform Default""";
+  String get downloadDirectory => """Download Directory""";
+
+  /// ```dart
+  /// "Default to Platform Settings"
+  /// ```
+  String get defaultToPlatformSettings => """Default to Platform Settings""";
 
   /// ```dart
   /// "Columns per Row"
   /// ```
-  String get waterfallColumns => """Columns per Row""";
+  String get columnsPerRow => """Columns per Row""";
 
   /// ```dart
-  /// "Maximum Concurrent Download Tasks"
+  /// "Max Concurrent Download Tasks"
   /// ```
-  String get maxActiveDownloadTasks => """Maximum Concurrent Download Tasks""";
+  String get maxConcurrentDownloads => """Max Concurrent Download Tasks""";
 
   /// ```dart
-  /// "Maximum Parallel Segments"
+  /// "Max Segments per Download Task"
   /// ```
-  String get maxParallelSegments => """Maximum Parallel Segments""";
+  String get maxSegmentsPerTask => """Max Segments per Download Task""";
+
+  /// ```dart
+  /// "Platform default"
+  /// ```
+  String get platformDefault => """Platform default""";
 
   /// ```dart
   /// "System"
@@ -449,16 +469,16 @@ class SettingsIntl {
       LanguageDialogSettingsIntl(this);
   ThemeModeDialogSettingsIntl get themeModeDialog =>
       ThemeModeDialogSettingsIntl(this);
-  SelectDownloadPathDialogSettingsIntl get selectDownloadPathDialog =>
-      SelectDownloadPathDialogSettingsIntl(this);
-  SetWaterfallColumnsDialogSettingsIntl get setWaterfallColumnsDialog =>
-      SetWaterfallColumnsDialogSettingsIntl(this);
-  SetMaxActiveDownloadTasksDialogSettingsIntl
-      get setMaxActiveDownloadTasksDialog =>
-          SetMaxActiveDownloadTasksDialogSettingsIntl(this);
-  SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntl
-      get setMaxParallelSegmentsPerDownloadTaskDialog =>
-          SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntl(this);
+  DownloadDirectoryDialogSettingsIntl get downloadDirectoryDialog =>
+      DownloadDirectoryDialogSettingsIntl(this);
+  DnsPrefetchDialogSettingsIntl get dnsPrefetchDialog =>
+      DnsPrefetchDialogSettingsIntl(this);
+  ColumnsPerRowDialogSettingsIntl get columnsPerRowDialog =>
+      ColumnsPerRowDialogSettingsIntl(this);
+  MaxConcurrentDownloadsDialogSettingsIntl get maxConcurrentDownloadsDialog =>
+      MaxConcurrentDownloadsDialogSettingsIntl(this);
+  MaxSegmentsPerTaskDialogSettingsIntl get maxSegmentsPerTaskDialog =>
+      MaxSegmentsPerTaskDialogSettingsIntl(this);
 }
 
 class LanguageDialogSettingsIntl {
@@ -466,9 +486,9 @@ class LanguageDialogSettingsIntl {
   const LanguageDialogSettingsIntl(this._parent);
 
   /// ```dart
-  /// "Select Language"
+  /// "Language"
   /// ```
-  String get title => """Select Language""";
+  String get title => """Language""";
 }
 
 class ThemeModeDialogSettingsIntl {
@@ -476,82 +496,91 @@ class ThemeModeDialogSettingsIntl {
   const ThemeModeDialogSettingsIntl(this._parent);
 
   /// ```dart
-  /// "Select Theme Mode"
+  /// "Theme Mode"
   /// ```
-  String get title => """Select Theme Mode""";
+  String get title => """Theme Mode""";
 }
 
-class SelectDownloadPathDialogSettingsIntl {
+class DownloadDirectoryDialogSettingsIntl {
   final SettingsIntl _parent;
-  const SelectDownloadPathDialogSettingsIntl(this._parent);
+  const DownloadDirectoryDialogSettingsIntl(this._parent);
 
   /// ```dart
-  /// "Select download path"
+  /// "Download Directory"
   /// ```
-  String get title => """Select download path""";
+  String get title => """Download Directory""";
 
   /// ```dart
-  /// "Select a directory"
+  /// "Choose Directory"
   /// ```
-  String get pickerTitle => """Select a directory""";
+  String get pickerTitle => """Choose Directory""";
 
   /// ```dart
-  /// "Pick a directory"
+  /// "Choose Directory"
   /// ```
-  String get pick => """Pick a directory""";
-  MessagesSelectDownloadPathDialogSettingsIntl get messages =>
-      MessagesSelectDownloadPathDialogSettingsIntl(this);
+  String get pick => """Choose Directory""";
+  MessagesDownloadDirectoryDialogSettingsIntl get messages =>
+      MessagesDownloadDirectoryDialogSettingsIntl(this);
 }
 
-class MessagesSelectDownloadPathDialogSettingsIntl {
-  final SelectDownloadPathDialogSettingsIntl _parent;
-  const MessagesSelectDownloadPathDialogSettingsIntl(this._parent);
+class MessagesDownloadDirectoryDialogSettingsIntl {
+  final DownloadDirectoryDialogSettingsIntl _parent;
+  const MessagesDownloadDirectoryDialogSettingsIntl(this._parent);
 
   /// ```dart
-  /// "Download path set to platform default."
+  /// "Directory set to platform default."
   /// ```
-  String get setToPlatformDefault =>
-      """Download path set to platform default.""";
+  String get setToPlatformDefault => """Directory set to platform default.""";
 
   /// ```dart
-  /// "Path must be absolute."
+  /// "Directory path must be absolute."
   /// ```
-  String get pathNotAbsolute => """Path must be absolute.""";
+  String get pathNotAbsolute => """Directory path must be absolute.""";
 
   /// ```dart
-  /// "Path is not writable"
+  /// "Directory path is not writable."
   /// ```
-  String get pathNotWritable => """Path is not writable""";
+  String get pathNotWritable => """Directory path is not writable.""";
 }
 
-class SetWaterfallColumnsDialogSettingsIntl {
+class DnsPrefetchDialogSettingsIntl {
   final SettingsIntl _parent;
-  const SetWaterfallColumnsDialogSettingsIntl(this._parent);
+  const DnsPrefetchDialogSettingsIntl(this._parent);
 
   /// ```dart
-  /// "Number of Columns per Row"
+  /// "DNS Prefetch"
   /// ```
-  String get title => """Number of Columns per Row""";
+  String get title => """DNS Prefetch""";
 }
 
-class SetMaxActiveDownloadTasksDialogSettingsIntl {
+class ColumnsPerRowDialogSettingsIntl {
   final SettingsIntl _parent;
-  const SetMaxActiveDownloadTasksDialogSettingsIntl(this._parent);
+  const ColumnsPerRowDialogSettingsIntl(this._parent);
 
   /// ```dart
-  /// "Set Maximum Concurrent Download Tasks"
+  /// "Columns per Row"
   /// ```
-  String get title => """Set Maximum Concurrent Download Tasks""";
+  String get title => """Columns per Row""";
 }
 
-class SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntl {
+class MaxConcurrentDownloadsDialogSettingsIntl {
   final SettingsIntl _parent;
-  const SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntl(this._parent);
+  const MaxConcurrentDownloadsDialogSettingsIntl(this._parent);
 
   /// ```dart
-  /// "Set Maximum Parallel Segments Per Download Task"
+  /// "Max Concurrent Download Tasks"
   /// ```
-  String get title => """Set Maximum Parallel Segments Per Download Task""";
+  String get title => """Max Concurrent Download Tasks""";
+}
+
+class MaxSegmentsPerTaskDialogSettingsIntl {
+  final SettingsIntl _parent;
+  const MaxSegmentsPerTaskDialogSettingsIntl(this._parent);
+
+  /// ```dart
+  /// "Max Segments per Download Task"
+  /// ```
+  String get title => """Max Segments per Download Task""";
 }
 
 Map<String, String> get intlMap => {
@@ -559,6 +588,8 @@ Map<String, String> get intlMap => {
       """generic.cancel""": """Cancel""",
       """generic.clear""": """Clear""",
       """generic.confirm""": """Confirm""",
+      """generic.enabled""": """Enabled""",
+      """generic.disabled""": """Disabled""",
       """update.checkUpdateStart""": """Checking for updates...""",
       """update.checkUpdateFailed""":
           """Failed to check for updates. Please check your Internet connection.""",
@@ -609,31 +640,34 @@ Map<String, String> get intlMap => {
       """settings.title""": """Settings""",
       """settings.theme""": """Theme""",
       """settings.language""": """Language""",
-      """settings.downloadPath""": """Download path""",
-      """settings.platformDefault""": """Platform Default""",
-      """settings.waterfallColumns""": """Columns per Row""",
-      """settings.maxActiveDownloadTasks""":
-          """Maximum Concurrent Download Tasks""",
-      """settings.maxParallelSegments""": """Maximum Parallel Segments""",
+      """settings.prefetchDns""": """Prefetch DNS""",
+      """settings.downloadDirectory""": """Download Directory""",
+      """settings.defaultToPlatformSettings""":
+          """Default to Platform Settings""",
+      """settings.columnsPerRow""": """Columns per Row""",
+      """settings.maxConcurrentDownloads""":
+          """Max Concurrent Download Tasks""",
+      """settings.maxSegmentsPerTask""": """Max Segments per Download Task""",
+      """settings.platformDefault""": """Platform default""",
       """settings.system""": """System""",
       """settings.light""": """Light""",
       """settings.dark""": """Dark""",
-      """settings.languageDialog.title""": """Select Language""",
-      """settings.themeModeDialog.title""": """Select Theme Mode""",
-      """settings.selectDownloadPathDialog.title""": """Select download path""",
-      """settings.selectDownloadPathDialog.pickerTitle""":
-          """Select a directory""",
-      """settings.selectDownloadPathDialog.pick""": """Pick a directory""",
-      """settings.selectDownloadPathDialog.messages.setToPlatformDefault""":
-          """Download path set to platform default.""",
-      """settings.selectDownloadPathDialog.messages.pathNotAbsolute""":
-          """Path must be absolute.""",
-      """settings.selectDownloadPathDialog.messages.pathNotWritable""":
-          """Path is not writable""",
-      """settings.setWaterfallColumnsDialog.title""":
-          """Number of Columns per Row""",
-      """settings.setMaxActiveDownloadTasksDialog.title""":
-          """Set Maximum Concurrent Download Tasks""",
-      """settings.setMaxParallelSegmentsPerDownloadTaskDialog.title""":
-          """Set Maximum Parallel Segments Per Download Task""",
+      """settings.languageDialog.title""": """Language""",
+      """settings.themeModeDialog.title""": """Theme Mode""",
+      """settings.downloadDirectoryDialog.title""": """Download Directory""",
+      """settings.downloadDirectoryDialog.pickerTitle""":
+          """Choose Directory""",
+      """settings.downloadDirectoryDialog.pick""": """Choose Directory""",
+      """settings.downloadDirectoryDialog.messages.setToPlatformDefault""":
+          """Directory set to platform default.""",
+      """settings.downloadDirectoryDialog.messages.pathNotAbsolute""":
+          """Directory path must be absolute.""",
+      """settings.downloadDirectoryDialog.messages.pathNotWritable""":
+          """Directory path is not writable.""",
+      """settings.dnsPrefetchDialog.title""": """DNS Prefetch""",
+      """settings.columnsPerRowDialog.title""": """Columns per Row""",
+      """settings.maxConcurrentDownloadsDialog.title""":
+          """Max Concurrent Download Tasks""",
+      """settings.maxSegmentsPerTaskDialog.title""":
+          """Max Segments per Download Task""",
     };

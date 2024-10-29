@@ -102,6 +102,16 @@ class GenericIntlZhTW extends GenericIntl {
   String get confirm => """確認""";
 
   /// ```dart
+  /// "啟用"
+  /// ```
+  String get enabled => """啟用""";
+
+  /// ```dart
+  /// "停用"
+  /// ```
+  String get disabled => """停用""";
+
+  /// ```dart
   /// "已複製到剪貼簿: $value"
   /// ```
   String copiedWithValue(String value) => """已複製到剪貼簿: $value""";
@@ -400,9 +410,34 @@ class SettingsIntlZhTW extends SettingsIntl {
   String get language => """語言""";
 
   /// ```dart
-  /// "下載路徑"
+  /// "預抓取 DNS"
   /// ```
-  String get downloadPath => """下載路徑""";
+  String get prefetchDns => """預抓取 DNS""";
+
+  /// ```dart
+  /// "下載目錄"
+  /// ```
+  String get downloadDirectory => """下載目錄""";
+
+  /// ```dart
+  /// "使用系統預設"
+  /// ```
+  String get defaultToPlatformSettings => """使用系統預設""";
+
+  /// ```dart
+  /// "每行列數"
+  /// ```
+  String get columnsPerRow => """每行列數""";
+
+  /// ```dart
+  /// "最大同時下載任務數"
+  /// ```
+  String get maxConcurrentDownloads => """最大同時下載任務數""";
+
+  /// ```dart
+  /// "每個下載任務的最大分段數"
+  /// ```
+  String get maxSegmentsPerTask => """每個下載任務的最大分段數""";
 
   /// ```dart
   /// "平台預設"
@@ -410,24 +445,9 @@ class SettingsIntlZhTW extends SettingsIntl {
   String get platformDefault => """平台預設""";
 
   /// ```dart
-  /// "每行的列數"
+  /// "系統"
   /// ```
-  String get waterfallColumns => """每行的列數""";
-
-  /// ```dart
-  /// "最大同時下載任務數量"
-  /// ```
-  String get maxActiveDownloadTasks => """最大同時下載任務數量""";
-
-  /// ```dart
-  /// "最大分段並行數量"
-  /// ```
-  String get maxParallelSegments => """最大分段並行數量""";
-
-  /// ```dart
-  /// "系統預設"
-  /// ```
-  String get system => """系統預設""";
+  String get system => """系統""";
 
   /// ```dart
   /// "淺色模式"
@@ -442,16 +462,17 @@ class SettingsIntlZhTW extends SettingsIntl {
       LanguageDialogSettingsIntlZhTW(this);
   ThemeModeDialogSettingsIntlZhTW get themeModeDialog =>
       ThemeModeDialogSettingsIntlZhTW(this);
-  SelectDownloadPathDialogSettingsIntlZhTW get selectDownloadPathDialog =>
-      SelectDownloadPathDialogSettingsIntlZhTW(this);
-  SetWaterfallColumnsDialogSettingsIntlZhTW get setWaterfallColumnsDialog =>
-      SetWaterfallColumnsDialogSettingsIntlZhTW(this);
-  SetMaxActiveDownloadTasksDialogSettingsIntlZhTW
-      get setMaxActiveDownloadTasksDialog =>
-          SetMaxActiveDownloadTasksDialogSettingsIntlZhTW(this);
-  SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntlZhTW
-      get setMaxParallelSegmentsPerDownloadTaskDialog =>
-          SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntlZhTW(this);
+  DownloadDirectoryDialogSettingsIntlZhTW get downloadDirectoryDialog =>
+      DownloadDirectoryDialogSettingsIntlZhTW(this);
+  DnsPrefetchDialogSettingsIntlZhTW get dnsPrefetchDialog =>
+      DnsPrefetchDialogSettingsIntlZhTW(this);
+  ColumnsPerRowDialogSettingsIntlZhTW get columnsPerRowDialog =>
+      ColumnsPerRowDialogSettingsIntlZhTW(this);
+  MaxConcurrentDownloadsDialogSettingsIntlZhTW
+      get maxConcurrentDownloadsDialog =>
+          MaxConcurrentDownloadsDialogSettingsIntlZhTW(this);
+  MaxSegmentsPerTaskDialogSettingsIntlZhTW get maxSegmentsPerTaskDialog =>
+      MaxSegmentsPerTaskDialogSettingsIntlZhTW(this);
 }
 
 class LanguageDialogSettingsIntlZhTW extends LanguageDialogSettingsIntl {
@@ -459,9 +480,9 @@ class LanguageDialogSettingsIntlZhTW extends LanguageDialogSettingsIntl {
   const LanguageDialogSettingsIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
-  /// "選擇語言"
+  /// "語言"
   /// ```
-  String get title => """選擇語言""";
+  String get title => """語言""";
 }
 
 class ThemeModeDialogSettingsIntlZhTW extends ThemeModeDialogSettingsIntl {
@@ -469,91 +490,98 @@ class ThemeModeDialogSettingsIntlZhTW extends ThemeModeDialogSettingsIntl {
   const ThemeModeDialogSettingsIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
-  /// "選擇主題"
+  /// "主題模式"
   /// ```
-  String get title => """選擇主題""";
+  String get title => """主題模式""";
 }
 
-class SelectDownloadPathDialogSettingsIntlZhTW
-    extends SelectDownloadPathDialogSettingsIntl {
+class DownloadDirectoryDialogSettingsIntlZhTW
+    extends DownloadDirectoryDialogSettingsIntl {
   final SettingsIntlZhTW _parent;
-  const SelectDownloadPathDialogSettingsIntlZhTW(this._parent) : super(_parent);
+  const DownloadDirectoryDialogSettingsIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
-  /// "選擇下載路徑"
+  /// "下載目錄"
   /// ```
-  String get title => """選擇下載路徑""";
+  String get title => """下載目錄""";
 
   /// ```dart
-  /// "選擇資料夾"
+  /// "選擇目錄"
   /// ```
-  String get pickerTitle => """選擇資料夾""";
+  String get pickerTitle => """選擇目錄""";
 
   /// ```dart
-  /// "選擇資料夾"
+  /// "選擇目錄"
   /// ```
-  String get pick => """選擇資料夾""";
-  MessagesSelectDownloadPathDialogSettingsIntlZhTW get messages =>
-      MessagesSelectDownloadPathDialogSettingsIntlZhTW(this);
+  String get pick => """選擇目錄""";
+  MessagesDownloadDirectoryDialogSettingsIntlZhTW get messages =>
+      MessagesDownloadDirectoryDialogSettingsIntlZhTW(this);
 }
 
-class MessagesSelectDownloadPathDialogSettingsIntlZhTW
-    extends MessagesSelectDownloadPathDialogSettingsIntl {
-  final SelectDownloadPathDialogSettingsIntlZhTW _parent;
-  const MessagesSelectDownloadPathDialogSettingsIntlZhTW(this._parent)
+class MessagesDownloadDirectoryDialogSettingsIntlZhTW
+    extends MessagesDownloadDirectoryDialogSettingsIntl {
+  final DownloadDirectoryDialogSettingsIntlZhTW _parent;
+  const MessagesDownloadDirectoryDialogSettingsIntlZhTW(this._parent)
       : super(_parent);
 
   /// ```dart
-  /// "下載路徑已設為平台預設值。"
+  /// "下載目錄已設為系統預設。"
   /// ```
-  String get setToPlatformDefault => """下載路徑已設為平台預設值。""";
+  String get setToPlatformDefault => """下載目錄已設為系統預設。""";
 
   /// ```dart
-  /// "路徑必須為絕對路徑。"
+  /// "路徑必須是絕對路徑。"
   /// ```
-  String get pathNotAbsolute => """路徑必須為絕對路徑。""";
+  String get pathNotAbsolute => """路徑必須是絕對路徑。""";
 
   /// ```dart
-  /// "路徑無法寫入"
+  /// "路徑不可寫入。"
   /// ```
-  String get pathNotWritable => """路徑無法寫入""";
+  String get pathNotWritable => """路徑不可寫入。""";
 }
 
-class SetWaterfallColumnsDialogSettingsIntlZhTW
-    extends SetWaterfallColumnsDialogSettingsIntl {
+class DnsPrefetchDialogSettingsIntlZhTW extends DnsPrefetchDialogSettingsIntl {
   final SettingsIntlZhTW _parent;
-  const SetWaterfallColumnsDialogSettingsIntlZhTW(this._parent)
+  const DnsPrefetchDialogSettingsIntlZhTW(this._parent) : super(_parent);
+
+  /// ```dart
+  /// "DNS 預抓取"
+  /// ```
+  String get title => """DNS 預抓取""";
+}
+
+class ColumnsPerRowDialogSettingsIntlZhTW
+    extends ColumnsPerRowDialogSettingsIntl {
+  final SettingsIntlZhTW _parent;
+  const ColumnsPerRowDialogSettingsIntlZhTW(this._parent) : super(_parent);
+
+  /// ```dart
+  /// "每行列數"
+  /// ```
+  String get title => """每行列數""";
+}
+
+class MaxConcurrentDownloadsDialogSettingsIntlZhTW
+    extends MaxConcurrentDownloadsDialogSettingsIntl {
+  final SettingsIntlZhTW _parent;
+  const MaxConcurrentDownloadsDialogSettingsIntlZhTW(this._parent)
       : super(_parent);
 
   /// ```dart
-  /// "設定每行的列數"
+  /// "最大同時下載任務數"
   /// ```
-  String get title => """設定每行的列數""";
+  String get title => """最大同時下載任務數""";
 }
 
-class SetMaxActiveDownloadTasksDialogSettingsIntlZhTW
-    extends SetMaxActiveDownloadTasksDialogSettingsIntl {
+class MaxSegmentsPerTaskDialogSettingsIntlZhTW
+    extends MaxSegmentsPerTaskDialogSettingsIntl {
   final SettingsIntlZhTW _parent;
-  const SetMaxActiveDownloadTasksDialogSettingsIntlZhTW(this._parent)
-      : super(_parent);
+  const MaxSegmentsPerTaskDialogSettingsIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
-  /// "設定最大同時下載任務數量"
+  /// "每個下載任務的最大分段數"
   /// ```
-  String get title => """設定最大同時下載任務數量""";
-}
-
-class SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntlZhTW
-    extends SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntl {
-  final SettingsIntlZhTW _parent;
-  const SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntlZhTW(
-      this._parent)
-      : super(_parent);
-
-  /// ```dart
-  /// "設定每個下載任務的最大分段並行數量"
-  /// ```
-  String get title => """設定每個下載任務的最大分段並行數量""";
+  String get title => """每個下載任務的最大分段數""";
 }
 
 Map<String, String> get intlZhTWMap => {
@@ -561,6 +589,8 @@ Map<String, String> get intlZhTWMap => {
       """generic.cancel""": """取消""",
       """generic.clear""": """清除""",
       """generic.confirm""": """確認""",
+      """generic.enabled""": """啟用""",
+      """generic.disabled""": """停用""",
       """update.checkUpdateStart""": """正在檢查更新...""",
       """update.checkUpdateFailed""": """檢查更新失敗，請檢查您的網路連線。""",
       """update.selectDownloadUrlFailed""":
@@ -604,27 +634,29 @@ Map<String, String> get intlZhTWMap => {
       """settings.title""": """設定""",
       """settings.theme""": """主題""",
       """settings.language""": """語言""",
-      """settings.downloadPath""": """下載路徑""",
+      """settings.prefetchDns""": """預抓取 DNS""",
+      """settings.downloadDirectory""": """下載目錄""",
+      """settings.defaultToPlatformSettings""": """使用系統預設""",
+      """settings.columnsPerRow""": """每行列數""",
+      """settings.maxConcurrentDownloads""": """最大同時下載任務數""",
+      """settings.maxSegmentsPerTask""": """每個下載任務的最大分段數""",
       """settings.platformDefault""": """平台預設""",
-      """settings.waterfallColumns""": """每行的列數""",
-      """settings.maxActiveDownloadTasks""": """最大同時下載任務數量""",
-      """settings.maxParallelSegments""": """最大分段並行數量""",
-      """settings.system""": """系統預設""",
+      """settings.system""": """系統""",
       """settings.light""": """淺色模式""",
       """settings.dark""": """深色模式""",
-      """settings.languageDialog.title""": """選擇語言""",
-      """settings.themeModeDialog.title""": """選擇主題""",
-      """settings.selectDownloadPathDialog.title""": """選擇下載路徑""",
-      """settings.selectDownloadPathDialog.pickerTitle""": """選擇資料夾""",
-      """settings.selectDownloadPathDialog.pick""": """選擇資料夾""",
-      """settings.selectDownloadPathDialog.messages.setToPlatformDefault""":
-          """下載路徑已設為平台預設值。""",
-      """settings.selectDownloadPathDialog.messages.pathNotAbsolute""":
-          """路徑必須為絕對路徑。""",
-      """settings.selectDownloadPathDialog.messages.pathNotWritable""":
-          """路徑無法寫入""",
-      """settings.setWaterfallColumnsDialog.title""": """設定每行的列數""",
-      """settings.setMaxActiveDownloadTasksDialog.title""": """設定最大同時下載任務數量""",
-      """settings.setMaxParallelSegmentsPerDownloadTaskDialog.title""":
-          """設定每個下載任務的最大分段並行數量""",
+      """settings.languageDialog.title""": """語言""",
+      """settings.themeModeDialog.title""": """主題模式""",
+      """settings.downloadDirectoryDialog.title""": """下載目錄""",
+      """settings.downloadDirectoryDialog.pickerTitle""": """選擇目錄""",
+      """settings.downloadDirectoryDialog.pick""": """選擇目錄""",
+      """settings.downloadDirectoryDialog.messages.setToPlatformDefault""":
+          """下載目錄已設為系統預設。""",
+      """settings.downloadDirectoryDialog.messages.pathNotAbsolute""":
+          """路徑必須是絕對路徑。""",
+      """settings.downloadDirectoryDialog.messages.pathNotWritable""":
+          """路徑不可寫入。""",
+      """settings.dnsPrefetchDialog.title""": """DNS 預抓取""",
+      """settings.columnsPerRowDialog.title""": """每行列數""",
+      """settings.maxConcurrentDownloadsDialog.title""": """最大同時下載任務數""",
+      """settings.maxSegmentsPerTaskDialog.title""": """每個下載任務的最大分段數""",
     };

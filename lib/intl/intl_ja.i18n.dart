@@ -102,6 +102,16 @@ class GenericIntlJa extends GenericIntl {
   String get confirm => """確認""";
 
   /// ```dart
+  /// "有効"
+  /// ```
+  String get enabled => """有効""";
+
+  /// ```dart
+  /// "無効"
+  /// ```
+  String get disabled => """無効""";
+
+  /// ```dart
   /// "$value をクリップボードにコピーしました"
   /// ```
   String copiedWithValue(String value) => """$value をクリップボードにコピーしました""";
@@ -405,29 +415,39 @@ class SettingsIntlJa extends SettingsIntl {
   String get language => """言語""";
 
   /// ```dart
-  /// "ダウンロードパス"
+  /// "DNS のプリフェッチ"
   /// ```
-  String get downloadPath => """ダウンロードパス""";
+  String get prefetchDns => """DNS のプリフェッチ""";
+
+  /// ```dart
+  /// "ダウンロードディレクトリ"
+  /// ```
+  String get downloadDirectory => """ダウンロードディレクトリ""";
+
+  /// ```dart
+  /// "プラットフォームのデフォルトを使用"
+  /// ```
+  String get defaultToPlatformSettings => """プラットフォームのデフォルトを使用""";
+
+  /// ```dart
+  /// "各行の列数"
+  /// ```
+  String get columnsPerRow => """各行の列数""";
+
+  /// ```dart
+  /// "最大同時ダウンロードタスク数"
+  /// ```
+  String get maxConcurrentDownloads => """最大同時ダウンロードタスク数""";
+
+  /// ```dart
+  /// "各ダウンロードタスクの最大セグメント数"
+  /// ```
+  String get maxSegmentsPerTask => """各ダウンロードタスクの最大セグメント数""";
 
   /// ```dart
   /// "プラットフォームのデフォルト"
   /// ```
   String get platformDefault => """プラットフォームのデフォルト""";
-
-  /// ```dart
-  /// "行あたりの列数"
-  /// ```
-  String get waterfallColumns => """行あたりの列数""";
-
-  /// ```dart
-  /// "最大同時ダウンロードタスク数"
-  /// ```
-  String get maxActiveDownloadTasks => """最大同時ダウンロードタスク数""";
-
-  /// ```dart
-  /// "最大並列セグメント数"
-  /// ```
-  String get maxParallelSegments => """最大並列セグメント数""";
 
   /// ```dart
   /// "システム"
@@ -447,16 +467,16 @@ class SettingsIntlJa extends SettingsIntl {
       LanguageDialogSettingsIntlJa(this);
   ThemeModeDialogSettingsIntlJa get themeModeDialog =>
       ThemeModeDialogSettingsIntlJa(this);
-  SelectDownloadPathDialogSettingsIntlJa get selectDownloadPathDialog =>
-      SelectDownloadPathDialogSettingsIntlJa(this);
-  SetWaterfallColumnsDialogSettingsIntlJa get setWaterfallColumnsDialog =>
-      SetWaterfallColumnsDialogSettingsIntlJa(this);
-  SetMaxActiveDownloadTasksDialogSettingsIntlJa
-      get setMaxActiveDownloadTasksDialog =>
-          SetMaxActiveDownloadTasksDialogSettingsIntlJa(this);
-  SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntlJa
-      get setMaxParallelSegmentsPerDownloadTaskDialog =>
-          SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntlJa(this);
+  DownloadDirectoryDialogSettingsIntlJa get downloadDirectoryDialog =>
+      DownloadDirectoryDialogSettingsIntlJa(this);
+  DnsPrefetchDialogSettingsIntlJa get dnsPrefetchDialog =>
+      DnsPrefetchDialogSettingsIntlJa(this);
+  ColumnsPerRowDialogSettingsIntlJa get columnsPerRowDialog =>
+      ColumnsPerRowDialogSettingsIntlJa(this);
+  MaxConcurrentDownloadsDialogSettingsIntlJa get maxConcurrentDownloadsDialog =>
+      MaxConcurrentDownloadsDialogSettingsIntlJa(this);
+  MaxSegmentsPerTaskDialogSettingsIntlJa get maxSegmentsPerTaskDialog =>
+      MaxSegmentsPerTaskDialogSettingsIntlJa(this);
 }
 
 class LanguageDialogSettingsIntlJa extends LanguageDialogSettingsIntl {
@@ -464,9 +484,9 @@ class LanguageDialogSettingsIntlJa extends LanguageDialogSettingsIntl {
   const LanguageDialogSettingsIntlJa(this._parent) : super(_parent);
 
   /// ```dart
-  /// "言語を選択"
+  /// "言語"
   /// ```
-  String get title => """言語を選択""";
+  String get title => """言語""";
 }
 
 class ThemeModeDialogSettingsIntlJa extends ThemeModeDialogSettingsIntl {
@@ -474,20 +494,20 @@ class ThemeModeDialogSettingsIntlJa extends ThemeModeDialogSettingsIntl {
   const ThemeModeDialogSettingsIntlJa(this._parent) : super(_parent);
 
   /// ```dart
-  /// "テーマモードを選択"
+  /// "テーマモード"
   /// ```
-  String get title => """テーマモードを選択""";
+  String get title => """テーマモード""";
 }
 
-class SelectDownloadPathDialogSettingsIntlJa
-    extends SelectDownloadPathDialogSettingsIntl {
+class DownloadDirectoryDialogSettingsIntlJa
+    extends DownloadDirectoryDialogSettingsIntl {
   final SettingsIntlJa _parent;
-  const SelectDownloadPathDialogSettingsIntlJa(this._parent) : super(_parent);
+  const DownloadDirectoryDialogSettingsIntlJa(this._parent) : super(_parent);
 
   /// ```dart
-  /// "ダウンロードパスを選択"
+  /// "ダウンロードディレクトリ"
   /// ```
-  String get title => """ダウンロードパスを選択""";
+  String get title => """ダウンロードディレクトリ""";
 
   /// ```dart
   /// "ディレクトリを選択"
@@ -498,20 +518,21 @@ class SelectDownloadPathDialogSettingsIntlJa
   /// "ディレクトリを選択"
   /// ```
   String get pick => """ディレクトリを選択""";
-  MessagesSelectDownloadPathDialogSettingsIntlJa get messages =>
-      MessagesSelectDownloadPathDialogSettingsIntlJa(this);
+  MessagesDownloadDirectoryDialogSettingsIntlJa get messages =>
+      MessagesDownloadDirectoryDialogSettingsIntlJa(this);
 }
 
-class MessagesSelectDownloadPathDialogSettingsIntlJa
-    extends MessagesSelectDownloadPathDialogSettingsIntl {
-  final SelectDownloadPathDialogSettingsIntlJa _parent;
-  const MessagesSelectDownloadPathDialogSettingsIntlJa(this._parent)
+class MessagesDownloadDirectoryDialogSettingsIntlJa
+    extends MessagesDownloadDirectoryDialogSettingsIntl {
+  final DownloadDirectoryDialogSettingsIntlJa _parent;
+  const MessagesDownloadDirectoryDialogSettingsIntlJa(this._parent)
       : super(_parent);
 
   /// ```dart
-  /// "ダウンロードパスがプラットフォームのデフォルトに設定されました。"
+  /// "ダウンロードディレクトリはプラットフォームのデフォルトに設定されています。"
   /// ```
-  String get setToPlatformDefault => """ダウンロードパスがプラットフォームのデフォルトに設定されました。""";
+  String get setToPlatformDefault =>
+      """ダウンロードディレクトリはプラットフォームのデフォルトに設定されています。""";
 
   /// ```dart
   /// "パスは絶対パスである必要があります。"
@@ -519,44 +540,53 @@ class MessagesSelectDownloadPathDialogSettingsIntlJa
   String get pathNotAbsolute => """パスは絶対パスである必要があります。""";
 
   /// ```dart
-  /// "パスに書き込みできません"
+  /// "パスに書き込みできません。"
   /// ```
-  String get pathNotWritable => """パスに書き込みできません""";
+  String get pathNotWritable => """パスに書き込みできません。""";
 }
 
-class SetWaterfallColumnsDialogSettingsIntlJa
-    extends SetWaterfallColumnsDialogSettingsIntl {
+class DnsPrefetchDialogSettingsIntlJa extends DnsPrefetchDialogSettingsIntl {
   final SettingsIntlJa _parent;
-  const SetWaterfallColumnsDialogSettingsIntlJa(this._parent) : super(_parent);
+  const DnsPrefetchDialogSettingsIntlJa(this._parent) : super(_parent);
 
   /// ```dart
-  /// "行あたりの列数を設定する"
+  /// "DNS プリフェッチ"
   /// ```
-  String get title => """行あたりの列数を設定する""";
+  String get title => """DNS プリフェッチ""";
 }
 
-class SetMaxActiveDownloadTasksDialogSettingsIntlJa
-    extends SetMaxActiveDownloadTasksDialogSettingsIntl {
+class ColumnsPerRowDialogSettingsIntlJa
+    extends ColumnsPerRowDialogSettingsIntl {
   final SettingsIntlJa _parent;
-  const SetMaxActiveDownloadTasksDialogSettingsIntlJa(this._parent)
+  const ColumnsPerRowDialogSettingsIntlJa(this._parent) : super(_parent);
+
+  /// ```dart
+  /// "各行の列数"
+  /// ```
+  String get title => """各行の列数""";
+}
+
+class MaxConcurrentDownloadsDialogSettingsIntlJa
+    extends MaxConcurrentDownloadsDialogSettingsIntl {
+  final SettingsIntlJa _parent;
+  const MaxConcurrentDownloadsDialogSettingsIntlJa(this._parent)
       : super(_parent);
 
   /// ```dart
-  /// "ダウンロードタスクの最大同時実行数を設定"
+  /// "最大同時ダウンロードタスク数"
   /// ```
-  String get title => """ダウンロードタスクの最大同時実行数を設定""";
+  String get title => """最大同時ダウンロードタスク数""";
 }
 
-class SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntlJa
-    extends SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntl {
+class MaxSegmentsPerTaskDialogSettingsIntlJa
+    extends MaxSegmentsPerTaskDialogSettingsIntl {
   final SettingsIntlJa _parent;
-  const SetMaxParallelSegmentsPerDownloadTaskDialogSettingsIntlJa(this._parent)
-      : super(_parent);
+  const MaxSegmentsPerTaskDialogSettingsIntlJa(this._parent) : super(_parent);
 
   /// ```dart
-  /// "ダウンロードタスクごとの最大並列セグメント数を設定"
+  /// "各ダウンロードタスクの最大セグメント数"
   /// ```
-  String get title => """ダウンロードタスクごとの最大並列セグメント数を設定""";
+  String get title => """各ダウンロードタスクの最大セグメント数""";
 }
 
 Map<String, String> get intlJaMap => {
@@ -564,6 +594,8 @@ Map<String, String> get intlJaMap => {
       """generic.cancel""": """キャンセル""",
       """generic.clear""": """クリア""",
       """generic.confirm""": """確認""",
+      """generic.enabled""": """有効""",
+      """generic.disabled""": """無効""",
       """update.checkUpdateStart""": """アップデートを確認中…""",
       """update.checkUpdateFailed""":
           """アップデートの確認に失敗しました。インターネット接続を確認してください。""",
@@ -609,28 +641,29 @@ Map<String, String> get intlJaMap => {
       """settings.title""": """設定""",
       """settings.theme""": """テーマ""",
       """settings.language""": """言語""",
-      """settings.downloadPath""": """ダウンロードパス""",
+      """settings.prefetchDns""": """DNS のプリフェッチ""",
+      """settings.downloadDirectory""": """ダウンロードディレクトリ""",
+      """settings.defaultToPlatformSettings""": """プラットフォームのデフォルトを使用""",
+      """settings.columnsPerRow""": """各行の列数""",
+      """settings.maxConcurrentDownloads""": """最大同時ダウンロードタスク数""",
+      """settings.maxSegmentsPerTask""": """各ダウンロードタスクの最大セグメント数""",
       """settings.platformDefault""": """プラットフォームのデフォルト""",
-      """settings.waterfallColumns""": """行あたりの列数""",
-      """settings.maxActiveDownloadTasks""": """最大同時ダウンロードタスク数""",
-      """settings.maxParallelSegments""": """最大並列セグメント数""",
       """settings.system""": """システム""",
       """settings.light""": """ライト""",
       """settings.dark""": """ダーク""",
-      """settings.languageDialog.title""": """言語を選択""",
-      """settings.themeModeDialog.title""": """テーマモードを選択""",
-      """settings.selectDownloadPathDialog.title""": """ダウンロードパスを選択""",
-      """settings.selectDownloadPathDialog.pickerTitle""": """ディレクトリを選択""",
-      """settings.selectDownloadPathDialog.pick""": """ディレクトリを選択""",
-      """settings.selectDownloadPathDialog.messages.setToPlatformDefault""":
-          """ダウンロードパスがプラットフォームのデフォルトに設定されました。""",
-      """settings.selectDownloadPathDialog.messages.pathNotAbsolute""":
+      """settings.languageDialog.title""": """言語""",
+      """settings.themeModeDialog.title""": """テーマモード""",
+      """settings.downloadDirectoryDialog.title""": """ダウンロードディレクトリ""",
+      """settings.downloadDirectoryDialog.pickerTitle""": """ディレクトリを選択""",
+      """settings.downloadDirectoryDialog.pick""": """ディレクトリを選択""",
+      """settings.downloadDirectoryDialog.messages.setToPlatformDefault""":
+          """ダウンロードディレクトリはプラットフォームのデフォルトに設定されています。""",
+      """settings.downloadDirectoryDialog.messages.pathNotAbsolute""":
           """パスは絶対パスである必要があります。""",
-      """settings.selectDownloadPathDialog.messages.pathNotWritable""":
-          """パスに書き込みできません""",
-      """settings.setWaterfallColumnsDialog.title""": """行あたりの列数を設定する""",
-      """settings.setMaxActiveDownloadTasksDialog.title""":
-          """ダウンロードタスクの最大同時実行数を設定""",
-      """settings.setMaxParallelSegmentsPerDownloadTaskDialog.title""":
-          """ダウンロードタスクごとの最大並列セグメント数を設定""",
+      """settings.downloadDirectoryDialog.messages.pathNotWritable""":
+          """パスに書き込みできません。""",
+      """settings.dnsPrefetchDialog.title""": """DNS プリフェッチ""",
+      """settings.columnsPerRowDialog.title""": """各行の列数""",
+      """settings.maxConcurrentDownloadsDialog.title""": """最大同時ダウンロードタスク数""",
+      """settings.maxSegmentsPerTaskDialog.title""": """各ダウンロードタスクの最大セグメント数""",
     };

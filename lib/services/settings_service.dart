@@ -27,6 +27,13 @@ class SettingsService {
     _save();
   }
 
+  static bool get prefetchDns => _map['prefetchDns'] as bool? ?? true;
+
+  static set prefetchDns(bool value) {
+    _map['prefetchDns'] = value;
+    _save();
+  }
+
   static int? get waterfallColumns => _map['waterfallColumns'] as int?;
 
   static set waterfallColumns(int? value) {
@@ -41,17 +48,17 @@ class SettingsService {
     _save();
   }
 
-  static int get maxActiveDownloadTasks => _map['maxActiveDownloadTasks'] as int? ?? 2;
+  static int get maxConcurrentDownloads => _map['maxConcurrentDownloads'] as int? ?? 2;
 
-  static set maxActiveDownloadTasks(int value) {
-    _map['maxActiveDownloadTasks'] = value;
+  static set maxConcurrentDownloads(int value) {
+    _map['maxConcurrentDownloads'] = value;
     _save();
   }
 
-  static int get maxParallelSegmentsPerDownloadTask => _map['maxParallelSegmentsPerDownloadTask'] as int? ?? 3;
+  static int get maxSegmentsPerTask => _map['maxSegmentsPerTask'] as int? ?? 3;
 
-  static set maxParallelSegmentsPerDownloadTask(int value) {
-    _map['maxParallelSegmentsPerDownloadTask'] = value;
+  static set maxSegmentsPerTask(int value) {
+    _map['maxSegmentsPerTask'] = value;
     _save();
   }
 

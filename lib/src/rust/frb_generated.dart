@@ -103,7 +103,7 @@ abstract class RustLibApi extends BaseApi {
   Future<Similar> crateApiYandeClientYandeClientGetSimilar(
       {required YandeClient that, required PlatformInt64 postId});
 
-  Future<YandeClient> crateApiYandeClientYandeClientNew(
+  YandeClient crateApiYandeClientYandeClientNew(
       {StringArray3? ips, required bool forLargeFile});
 
   RustArcIncrementStrongCountFnType
@@ -281,15 +281,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<YandeClient> crateApiYandeClientYandeClientNew(
+  YandeClient crateApiYandeClientYandeClientNew(
       {StringArray3? ips, required bool forLargeFile}) {
-    return handler.executeNormal(NormalTask(
-      callFfi: (port_) {
+    return handler.executeSync(SyncTask(
+      callFfi: () {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_opt_String_array_3(ips, serializer);
         sse_encode_bool(forLargeFile, serializer);
-        pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 6, port: port_);
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 6)!;
       },
       codec: SseCodec(
         decodeSuccessData:

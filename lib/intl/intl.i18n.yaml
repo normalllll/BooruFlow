@@ -3,6 +3,8 @@ generic:
   cancel: Cancel
   clear: Clear
   confirm: Confirm
+  enabled: Enabled
+  disabled: Disabled
   copiedWithValue(String value): "Copied to clipboard: $value"
   errorWithValue(String value): "An error occurred: $value"
 
@@ -72,35 +74,40 @@ settings:
   title: Settings
   theme: Theme
   language: Language
-  downloadPath: Download path
-  platformDefault: Platform Default
-  waterfallColumns: Columns per Row
-  maxActiveDownloadTasks: Maximum Concurrent Download Tasks
-  maxParallelSegments: Maximum Parallel Segments
+  prefetchDns: Prefetch DNS
+  downloadDirectory: Download Directory
+  defaultToPlatformSettings: Default to Platform Settings
+  columnsPerRow: Columns per Row
+  maxConcurrentDownloads: Max Concurrent Download Tasks
+  maxSegmentsPerTask: Max Segments per Download Task
+  platformDefault: Platform default
   system: System
   light: Light
   dark: Dark
 
   languageDialog:
-    title: Select Language
+    title: Language
 
   themeModeDialog:
-    title: Select Theme Mode
+    title: Theme Mode
 
-  selectDownloadPathDialog:
-    title: Select download path
-    pickerTitle: Select a directory
-    pick: Pick a directory
+  downloadDirectoryDialog:
+    title: Download Directory
+    pickerTitle: Choose Directory
+    pick: Choose Directory
     messages:
-      setToPlatformDefault: Download path set to platform default.
-      pathNotAbsolute: Path must be absolute.
-      pathNotWritable: Path is not writable.
+      setToPlatformDefault: Directory set to platform default.
+      pathNotAbsolute: Directory path must be absolute.
+      pathNotWritable: Directory path is not writable.
 
-  setWaterfallColumnsDialog:
-    title: Number of Columns per Row
+  dnsPrefetchDialog:
+    title: DNS Prefetch
 
-  setMaxActiveDownloadTasksDialog:
-    title: Set maximum concurrent download tasks
+  columnsPerRowDialog:
+    title: Columns per Row
 
-  setMaxParallelSegmentsPerDownloadTaskDialog:
-    title: Set maximum parallel segments per download task
+  maxConcurrentDownloadsDialog:
+    title: Max Concurrent Download Tasks
+
+  maxSegmentsPerTaskDialog:
+    title: Max Segments per Download Task

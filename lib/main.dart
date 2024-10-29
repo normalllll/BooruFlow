@@ -6,6 +6,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:yande_gui/global.dart';
 import 'package:yande_gui/i18n.dart';
 import 'package:yande_gui/services/tag_translations_service.dart';
+import 'package:yande_gui/src/rust/api/yande_client.dart';
 import 'package:yande_gui/src/rust/frb_generated.dart';
 
 import 'pages/index/index_page.dart';
@@ -20,6 +21,9 @@ Future<void> main() async {
   await SettingsService.initialize();
   await TagTranslationsService.loadAll();
   TagTranslationsService.update(SettingsService.language);
+  if (!SettingsService.prefetchDns) {
+    setYandeClient(YandeClient(ips: null, forLargeFile: false));
+  }
   runApp(const ProviderScope(child: MyApp()));
 }
 

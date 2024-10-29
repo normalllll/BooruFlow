@@ -3,6 +3,8 @@ generic:
   cancel: キャンセル
   clear: クリア
   confirm: 確認
+  enabled: 有効
+  disabled: 無効
   copiedWithValue(String value): "$value をクリップボードにコピーしました"
   errorWithValue(String value): "エラーが発生しました: $value"
 
@@ -72,35 +74,40 @@ settings:
   title: 設定
   theme: テーマ
   language: 言語
-  downloadPath: ダウンロードパス
+  prefetchDns: DNS のプリフェッチ
+  downloadDirectory: ダウンロードディレクトリ
+  defaultToPlatformSettings: プラットフォームのデフォルトを使用
+  columnsPerRow: 各行の列数
+  maxConcurrentDownloads: 最大同時ダウンロードタスク数
+  maxSegmentsPerTask: 各ダウンロードタスクの最大セグメント数
   platformDefault: プラットフォームのデフォルト
-  waterfallColumns: 行あたりの列数
-  maxActiveDownloadTasks: 最大同時ダウンロードタスク数
-  maxParallelSegments: 最大並列セグメント数
   system: システム
   light: ライト
   dark: ダーク
 
   languageDialog:
-    title: 言語を選択
+    title: 言語
 
   themeModeDialog:
-    title: テーマモードを選択
+    title: テーマモード
 
-  selectDownloadPathDialog:
-    title: ダウンロードパスを選択
+  downloadDirectoryDialog:
+    title: ダウンロードディレクトリ
     pickerTitle: ディレクトリを選択
     pick: ディレクトリを選択
     messages:
-      setToPlatformDefault: ダウンロードパスがプラットフォームのデフォルトに設定されました。
+      setToPlatformDefault: ダウンロードディレクトリはプラットフォームのデフォルトに設定されています。
       pathNotAbsolute: パスは絶対パスである必要があります。
       pathNotWritable: パスに書き込みできません。
 
-  setWaterfallColumnsDialog:
-    title: 行あたりの列数を設定する
+  dnsPrefetchDialog:
+    title: DNS プリフェッチ
 
-  setMaxActiveDownloadTasksDialog:
-    title: ダウンロードタスクの最大同時実行数を設定
+  columnsPerRowDialog:
+    title: 各行の列数
 
-  setMaxParallelSegmentsPerDownloadTaskDialog:
-    title: ダウンロードタスクごとの最大並列セグメント数を設定
+  maxConcurrentDownloadsDialog:
+    title: 最大同時ダウンロードタスク数
+
+  maxSegmentsPerTaskDialog:
+    title: 各ダウンロードタスクの最大セグメント数

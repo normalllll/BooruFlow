@@ -4,6 +4,7 @@ import 'package:yande_gui/i18n.dart';
 import 'package:yande_gui/pages/post_list/post_list_page.dart';
 import 'package:yande_gui/services/tag_translations_service.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
+
 class PostSearchPage extends StatefulWidget {
   const PostSearchPage({super.key});
 
@@ -14,43 +15,54 @@ class PostSearchPage extends StatefulWidget {
 class _PostSearchPageState extends State<PostSearchPage> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _textScrollController = ScrollController();
-  bool _showClearButton = false;
+  bool _hasTextContent = false;
 
   static final _tags = TagTranslationsService.knowTags;
 
   Widget _buildSearchField() {
-    return TextField(
-      controller: _textController,
-      scrollController: _textScrollController,
-      onChanged: (text) {
-        setState(() {
-          _showClearButton = text.isNotEmpty;
-        });
-      },
-      onSubmitted: (value) {
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) => PostListPage(tags: value.split(' '))));
-      },
-      decoration: InputDecoration(
-        filled: true,
-        hintText: i18n.postSearch.title,
-        prefixIcon: Icon(Icons.search, color: Theme.of(context).inputDecorationTheme.hintStyle?.color),
-        suffixIcon: _showClearButton
-            ? IconButton(
-                icon: Icon(Icons.cancel, color: Theme.of(context).inputDecorationTheme.hintStyle?.color),
-                onPressed: () {
-                  _textController.clear();
-                  setState(() {
-                    _showClearButton = false;
-                  });
-                },
-              )
-            : null,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30.0),
-          borderSide: BorderSide.none,
+    return Row(
+      children: [
+        Expanded(
+          child: TextField(
+            controller: _textController,
+            scrollController: _textScrollController,
+            onChanged: (text) {
+              if (text.isEmpty == _hasTextContent) {
+                setState(() {
+                  _hasTextContent = text.isNotEmpty;
+                });
+              }
+            },
+            onSubmitted: (value) {
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) => PostListPage(tags: value.trim().split(' '))));
+            },
+            decoration: InputDecoration(
+              filled: true,
+              hintText: i18n.postSearch.title,
+              prefixIcon: Icon(Icons.search, color: Theme.of(context).inputDecorationTheme.hintStyle?.color),
+              suffixIcon: _hasTextContent
+                  ? IconButton(
+                      icon: Icon(Icons.cancel, color: Theme.of(context).inputDecorationTheme.hintStyle?.color),
+                      onPressed: () {
+                        _textController.clear();
+                        setState(() {
+                          _hasTextContent = false;
+                        });
+                      },
+                    )
+                  : null,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30.0),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.all(8),
+            ),
+          ),
         ),
-        contentPadding: const EdgeInsets.all(8),
-      ),
+        if (_hasTextContent) IconButton(onPressed: () {
+          Navigator.of(context).push(MaterialPageRoute(builder: (context) => PostListPage(tags: _textController.text.trim().split(' '))));
+        }, icon: const Icon(Icons.search))
+      ],
     );
   }
 
@@ -61,7 +73,7 @@ class _PostSearchPageState extends State<PostSearchPage> {
         return Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8,vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               child: _buildSearchField(),
             ),
             Expanded(
@@ -79,9 +91,9 @@ class _PostSearchPageState extends State<PostSearchPage> {
                             final text = _textController.text;
                             if (!text.split(' ').contains(tag)) {
                               _textController.text = '${text.trim()} $tag';
-                              if (!_showClearButton) {
+                              if (!_hasTextContent) {
                                 setState(() {
-                                  _showClearButton = true;
+                                  _hasTextContent = true;
                                 });
                               }
                               _textController.selection = TextSelection.fromPosition(
