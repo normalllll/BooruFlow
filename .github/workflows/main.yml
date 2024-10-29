@@ -224,6 +224,9 @@ jobs:
         with:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+          cache-key: flutter-${{ runner.os }}-${{ matrix.flutter-version }}
+          cache-path: ${{ runner.tool_cache }}/flutter/${{ matrix.flutter-version }}
 
       - name: Get Flutter Dependencies
         run: flutter pub get
