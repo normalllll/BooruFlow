@@ -25,7 +25,7 @@ pub struct Post {
     pub preview_height: i64,
     pub actual_preview_width: i64,
     pub actual_preview_height: i64,
-    pub sample_url: String,
+    pub sample_url: Option<String>,
     pub sample_width: i64,
     pub sample_height: i64,
     pub sample_file_size: i64,

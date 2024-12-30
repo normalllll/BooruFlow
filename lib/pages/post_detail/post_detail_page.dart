@@ -192,7 +192,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
           child: Hero(
             tag: post.id,
             child: YandeImage(
-              post.sampleUrl,
+              post.sampleUrl ?? post.previewUrl,
               width: width,
               height: height >= width ? null : height,
               placeholderWidget: YandeImage(

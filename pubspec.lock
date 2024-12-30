@@ -387,10 +387,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_rust_bridge
-      sha256: "5fe868d3cb8cbc4d83091748552e03f00ccfa41b8e44691bc382611f831d5f8b"
+      sha256: "35c257fc7f98e34c1314d6c145e5ed54e7c94e8a9f469947e31c9298177d546f"
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.1"
+    version: "2.7.0"
   flutter_shaders:
     dependency: transitive
     description:

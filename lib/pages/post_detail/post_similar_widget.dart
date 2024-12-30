@@ -68,7 +68,7 @@ class _PostSimilarWidgetState extends ConsumerState<PostSimilarWidget> {
           width: calcWidth,
           height: calcHeight >= calcWidth ? null : calcHeight,
           child: YandeImage(
-            post.sampleUrl,
+            post.sampleUrl ?? post.previewUrl,
             width: calcWidth,
             height: calcHeight >= calcWidth ? null : calcHeight,
             placeholderWidget: YandeImage(

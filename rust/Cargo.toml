@@ -12,7 +12,7 @@ rustc_version = "0.4"
 
 
 [dependencies]
-flutter_rust_bridge = "=2.5.1"
+flutter_rust_bridge = "=2.7.0"
 anyhow = "*"
 lazy_static = "*"
 url = "*"
