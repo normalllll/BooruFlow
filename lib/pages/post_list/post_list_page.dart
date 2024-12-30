@@ -66,7 +66,7 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                           onTap: () {
                             Navigator.of(context).push(MaterialPageRoute(builder: (context) => PostDetailPage(post: item)));
                           },
-                          onLongPress: (){
+                          onLongPress: () {
                             HapticFeedback.mediumImpact();
                             ref.read(downloaderProvider.notifier).addTask(item).then((downloadTaskProvider) {
                               if (downloadTaskProvider != null) {
@@ -161,6 +161,7 @@ class _PostListPageState extends ConsumerState<PostListPage> {
       },
       floatingActionButton: isDesktop
           ? FloatingActionButton(
+              heroTag: '${runtimeType}FloatingActionButton',
               onPressed: () {
                 state.source.refresh(true);
               },

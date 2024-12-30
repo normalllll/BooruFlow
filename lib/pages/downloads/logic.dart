@@ -154,6 +154,13 @@ class Downloader extends _$Downloader {
     state = state.copyWith(tasks: [...state.tasks, provider]);
     return provider;
   }
+
+  void doRetryAll() {
+    for (final task in state.tasks) {
+      final inner = ref.read(task.notifier);
+      inner.doDownload(retry: true);
+    }
+  }
 }
 
 @Riverpod(keepAlive: true)

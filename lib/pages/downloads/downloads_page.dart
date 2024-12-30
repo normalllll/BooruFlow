@@ -15,6 +15,13 @@ class DownloadsPage extends ConsumerWidget {
     final state = ref.watch(provider);
     return AutoScaffold(
       verticalOnlyTitleWidget: Text(i18n.downloads.title),
+      floatingActionButton: FloatingActionButton(
+        heroTag: '${runtimeType}FloatingActionButton',
+        onPressed: () {
+          ref.read(downloaderProvider.notifier).doRetryAll();
+        },
+        child: const Icon(Icons.refresh, color: Colors.white),
+      ),
       builder: (context, horizontal) {
         return ListView.builder(
           itemCount: state.tasks.length,
