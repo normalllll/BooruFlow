@@ -1,8 +1,8 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:yande_gui/global.dart';
 
-import 'image_provider.dart';
 
 class YandeImage extends StatelessWidget {
   final String url;
@@ -20,25 +20,23 @@ class YandeImage extends StatelessWidget {
 
   final Widget? placeholderWidget;
 
-  const YandeImage(
-    this.url, {
-    super.key,
-    this.color,
-    this.colorBlendMode,
-    this.width,
-    this.height,
-    this.fit,
-    this.imageBuilder,
-    this.placeholderWidget,
-  });
+  const YandeImage(this.url, {super.key, this.color, this.colorBlendMode, this.width, this.height, this.fit, this.imageBuilder, this.placeholderWidget});
 
   @override
   Widget build(BuildContext context) {
     return ExtendedImage(
-      image: YandeExtendedImageProvider(
+      image: ExtendedNetworkImageProvider(
         url,
         cache: true,
         printError: false,
+        bytesLoader: (void Function(ImageChunkEvent event) chunkEvent) async {
+          return await yandeClient.downloadToMemory(
+            url: url,
+            progressCallback: (BigInt received, BigInt total) {
+              chunkEvent(ImageChunkEvent(cumulativeBytesLoaded: received.toInt(), expectedTotalBytes: total.toInt()));
+            },
+          );
+        },
       ),
       handleLoadingProgress: true,
       loadStateChanged: (ExtendedImageState state) {
@@ -51,38 +49,19 @@ class YandeImage extends StatelessWidget {
                   false => event.cumulativeBytesLoaded / total,
                 };
                 if (placeholderWidget case Widget widget?) {
-                  return Stack(
-                    children: [
-                      widget,
-                      Positioned(left: 0, top: 0, right: 0, child: LinearProgressIndicator(value: progress)),
-                    ],
-                  );
+                  return Stack(children: [widget, Positioned(left: 0, top: 0, right: 0, child: LinearProgressIndicator(value: progress))]);
                 } else {
-                  return Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Center(child: CircularProgressIndicator(value: progress)),
-                  );
+                  return Padding(padding: const EdgeInsets.all(5), child: Center(child: CircularProgressIndicator(value: progress)));
                 }
               }
             } else {
               if (placeholderWidget case Widget widget?) {
-                return Stack(
-                  children: [
-                    widget,
-                    const Positioned(left: 0, top: 0, right: 0, child: LinearProgressIndicator()),
-                  ],
-                );
+                return Stack(children: [widget, const Positioned(left: 0, top: 0, right: 0, child: LinearProgressIndicator())]);
               } else {
-                return const Padding(
-                  padding: EdgeInsets.all(5),
-                  child: Center(child: CupertinoActivityIndicator()),
-                );
+                return const Padding(padding: EdgeInsets.all(5), child: Center(child: CupertinoActivityIndicator()));
               }
             }
-            return const Padding(
-              padding: EdgeInsets.all(5),
-              child: Center(child: CupertinoActivityIndicator()),
-            );
+            return const Padding(padding: EdgeInsets.all(5), child: Center(child: CupertinoActivityIndicator()));
           case LoadState.completed:
             return imageBuilder?.call(state.completedWidget);
           case LoadState.failed:
@@ -91,7 +70,7 @@ class YandeImage extends StatelessWidget {
       },
       color: color,
       colorBlendMode: colorBlendMode,
-      enableMemoryCache: true,
+      clearMemoryCacheWhenDispose: false,
       width: width,
       height: height,
       fit: fit ?? BoxFit.fitWidth,
