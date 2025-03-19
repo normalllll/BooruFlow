@@ -38,7 +38,7 @@ class DnsService {
 
       return [dns0['Answer'][0]['data'], dns1['Answer'][0]['data'], dns2['Answer'][0]['data']];
     } catch (_) {
-      print(_);
+      // print(_);
     }
 
     try {

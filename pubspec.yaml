@@ -5,8 +5,8 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 0.6.4+29
 
 environment:
-  sdk: '>=3.6.0 <4.0.0'
-  flutter: '>=3.27.1 <4.0.0'
+  sdk: '>=3.7.2 <4.0.0'
+  flutter: '>=3.29.2 <4.0.0'
 
 dependencies:
   flutter:
@@ -17,24 +17,27 @@ dependencies:
   cupertino_icons: ^1.0.8
   core:
     path: rust_builder
-  flutter_rust_bridge: 2.7.0
-  package_info_plus: ^8.1.2
-  device_info_plus: ^11.2.0
-  permission_handler: ^11.3.1
+  flutter_rust_bridge: 2.9.0
+  package_info_plus: ^8.3.0
+  device_info_plus: ^11.3.3
+  permission_handler: ^11.4.0
 
   flutter_riverpod: ^2.6.1
   riverpod_annotation: ^2.6.1
   path_provider: ^2.1.5
   visibility_detector: ^0.4.0+2
-  path: ^1.9.0
+  path: ^1.9.1
   loading_more_list: ^7.1.0
-  extended_image: ^9.0.9
+  extended_image:
+    git:
+      url: https://github.com/normalllll/extended_image.git
+      ref: master
   flutter_easyloading: ^3.0.5
   url_launcher: ^6.3.1
   vector_math: ^2.1.4
   flutter_animate: ^4.5.2
-  file_picker: ^8.1.7
-  i18n: ^4.2.1
+  file_picker: ^9.2.1
+  i18n: ^4.2.4
 
   collection: any
 dev_dependencies:
