@@ -31,3 +31,6 @@ features = ["rustls-tls", "json", "stream", "http2"]
 [dependencies.serde]
 version = "1.0.219"
 features = ["derive"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }
