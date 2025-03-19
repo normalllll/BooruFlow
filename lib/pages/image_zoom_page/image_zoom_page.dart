@@ -961,7 +961,7 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
                 _doubleTapFocalPoint = event.localPosition;
               },
               child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
+                behavior: HitTestBehavior.translucent,
                 onScaleEnd: _onScaleEnd,
                 onScaleStart: _onScaleStart,
                 onScaleUpdate: _onScaleUpdate,

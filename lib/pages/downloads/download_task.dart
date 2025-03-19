@@ -48,7 +48,7 @@ class DownloadTaskWidget extends ConsumerWidget {
                           const SizedBox(width: 5),
                           switch (state.type) {
                             DownloadTaskStateType.idle => GestureDetector(
-                                behavior: HitTestBehavior.opaque,
+                                behavior: HitTestBehavior.translucent,
                                 onTap: () {
                                   ref.read(provider.notifier).doDownload();
                                 },
@@ -57,14 +57,14 @@ class DownloadTaskWidget extends ConsumerWidget {
                             DownloadTaskStateType.waiting => const Icon(Icons.pause_outlined),
                             DownloadTaskStateType.busying => const CupertinoActivityIndicator(),
                             DownloadTaskStateType.completed => GestureDetector(
-                                behavior: HitTestBehavior.opaque,
+                                behavior: HitTestBehavior.translucent,
                                 onTap: () {
                                   ref.read(provider.notifier).doDownload(retry: true);
                                 },
                                 child: const Icon(Icons.check_outlined),
                               ),
                             DownloadTaskStateType.failed => GestureDetector(
-                                behavior: HitTestBehavior.opaque,
+                                behavior: HitTestBehavior.translucent,
                                 onTap: () {
                                   ref.read(provider.notifier).doDownload(retry: true);
                                 },

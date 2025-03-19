@@ -86,7 +86,7 @@ class _PostSearchPageState extends State<PostSearchPage> {
                     children: [
                       for (final tag in _tags)
                         GestureDetector(
-                          behavior: HitTestBehavior.opaque,
+                          behavior: HitTestBehavior.translucent,
                           onTap: () {
                             final text = _textController.text;
                             if (!text.split(' ').contains(tag)) {

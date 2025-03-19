@@ -46,13 +46,14 @@ class _PostListPageState extends ConsumerState<PostListPage> {
               child: LoadingMoreCustomScrollView(
                 physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                 slivers: [
-                  SliverAppBar(
-                    floating: isMobile || widget.tags == null,
-                    snap: isMobile,
-                    pinned: isDesktop && widget.tags != null,
-                    scrolledUnderElevation: 0,
-                    title: switch (widget.tags) { final tags? => Text(i18n.postList.titleWithTags(tags.join(' '))), _ => Text(i18n.postList.title) },
-                  ),
+                  if (widget.tags != null)
+                    SliverAppBar(
+                      floating: isMobile || widget.tags == null,
+                      snap: isMobile,
+                      pinned: isDesktop && widget.tags != null,
+                      scrolledUnderElevation: 0,
+                      title: switch (widget.tags) { final tags? => Text(i18n.postList.titleWithTags(tags.join(' '))), _ => Text(i18n.postList.title) },
+                    ),
                   CupertinoSliverRefreshControl(
                     onRefresh: () async {
                       await state.source.refresh(false, false);
@@ -102,9 +103,10 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                                         right: 0,
                                         top: 0,
                                         child: Container(
-                                          padding: const EdgeInsets.all(2),
+                                          padding: const EdgeInsets.all(4),
                                           decoration: BoxDecoration(
-                                            color: Colors.black.withOpacity(0.5),
+                                            borderRadius: BorderRadius.only(bottomLeft: Radius.circular(6)),
+                                            color: Colors.black.withAlpha(150),
                                           ),
                                           child: const Icon(Icons.more_outlined, color: Colors.white),
                                         ),
@@ -114,9 +116,10 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                                         right: 0,
                                         top: 0,
                                         child: Container(
-                                          padding: const EdgeInsets.all(2),
+                                          padding: const EdgeInsets.all(4),
                                           decoration: BoxDecoration(
-                                            color: Colors.black.withOpacity(0.5),
+                                            borderRadius: BorderRadius.only(bottomLeft: Radius.circular(6)),
+                                            color: Colors.black.withAlpha(150),
                                           ),
                                           child: const Icon(Icons.more_horiz, color: Colors.white),
                                         ),
@@ -125,9 +128,10 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                                       right: 0,
                                       bottom: 0,
                                       child: Container(
-                                        padding: const EdgeInsets.all(2),
+                                        padding: const EdgeInsets.all(4),
                                         decoration: BoxDecoration(
-                                          color: Colors.black.withOpacity(0.5),
+                                          borderRadius: BorderRadius.only(topLeft: Radius.circular(6)),
+                                          color: Colors.black.withAlpha(150),
                                         ),
                                         child: Text(
                                           '${Resolution.match(item.width * item.height).title} ${item.width} x ${item.height}',

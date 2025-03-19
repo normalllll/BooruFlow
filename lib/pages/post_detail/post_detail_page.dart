@@ -81,58 +81,62 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
     }
   }
 
+  Widget buildDetailRow(String label, String value) {
+    return Row(
+      children: [
+        Text('$label:', style: Theme.of(context).textTheme.bodyMedium),
+        Text(value, style: Theme.of(context).textTheme.labelLarge),
+      ],
+    );
+  }
+
+  Widget buildLinkRow(String label, String url, Function() onTap) {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: onTap,
+      onLongPress: () {
+        HapticFeedback.mediumImpact();
+        Clipboard.setData(ClipboardData(text: url));
+        EasyLoading.showSuccess(i18n.generic.copiedWithValue(post.source));
+      },
+      child: Row(
+        children: [
+          Text('$label: ', style: Theme.of(context).textTheme.bodyMedium),
+          Expanded(
+            child: Text(
+              url,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: Colors.blueAccent,
+                    overflow: TextOverflow.ellipsis,
+                    decoration: TextDecoration.underline,
+                  ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget buildMetadata() {
     return Card(
+      margin: EdgeInsets.all(8),
       child: Padding(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.all(8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('${i18n.postDetail.createdAt}: ${formatIntDateTime(post.createdAt)}'),
-            Text('${i18n.postDetail.author}: ${post.author}'),
-            if (RegExp(
-              r'^(?:http|https)://[\w\-]+(?:\.[\w\-]+)*(?::\d+)?(?:/\S*)?$',
-              caseSensitive: false,
-              multiLine: false,
-            ).hasMatch(post.source))
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => openUrl(post.source),
-                onLongPress: () {
-                  //set clipboard
-                  HapticFeedback.mediumImpact();
-                  Clipboard.setData(ClipboardData(text: post.source));
-                  EasyLoading.showSuccess(i18n.generic.copiedWithValue(post.source));
-                },
-                child: Row(
-                  children: [
-                    Text('${i18n.postDetail.source}: '),
-                    Expanded(
-                      child: Text(
-                        post.source,
-                        style: const TextStyle(color: Colors.blueAccent, overflow: TextOverflow.ellipsis),
-                      ),
-                    )
-                  ],
-                ),
-              )
+            buildDetailRow(i18n.postDetail.createdAt, formatIntDateTime(post.createdAt)),
+            buildDetailRow(i18n.postDetail.author, post.author),
+            if (RegExp(r'^(?:http|https)://[\w\-]+(?:\.[\w\-]+)*(?::\d+)?(?:/\S*)?$', caseSensitive: false).hasMatch(post.source))
+              buildLinkRow(i18n.postDetail.source, post.source, () => openUrl(post.source))
             else
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  //set clipboard
-                  HapticFeedback.mediumImpact();
-                  Clipboard.setData(ClipboardData(text: post.source));
-                  EasyLoading.showSuccess(i18n.generic.copiedWithValue(post.source));
-                },
-                child: Text('${i18n.postDetail.source}: ${post.source}', overflow: TextOverflow.ellipsis),
-              ),
-            Text('${i18n.postDetail.width}: ${post.width}'),
-            Text('${i18n.postDetail.height}: ${post.height}'),
-            Text('${i18n.postDetail.score}: ${post.score}'),
-            Text('${i18n.postDetail.size}: ${(post.fileSize / 1024 / 1024).toStringAsFixed(2)}MB'),
-            Text('${i18n.postDetail.parent}: ${post.parentId}'),
-            Text('${i18n.postDetail.hasChildren}: ${post.hasChildren}'),
+              buildDetailRow(i18n.postDetail.source, post.source),
+            buildDetailRow(i18n.postDetail.width, '${post.width}'),
+            buildDetailRow(i18n.postDetail.height, '${post.height}'),
+            buildDetailRow(i18n.postDetail.score, '${post.score}'),
+            buildDetailRow(i18n.postDetail.size, '${(post.fileSize / 1024 / 1024).toStringAsFixed(2)}MB'),
+            buildDetailRow(i18n.postDetail.parent, '${post.parentId}'),
+            buildDetailRow(i18n.postDetail.hasChildren, '${post.hasChildren}'),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Wrap(
@@ -141,7 +145,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                 children: [
                   for (final tag in post.tags.split(' '))
                     GestureDetector(
-                      behavior: HitTestBehavior.opaque,
+                      behavior: HitTestBehavior.translucent,
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(builder: (context) => PostListPage(tags: [tag])));
                       },
