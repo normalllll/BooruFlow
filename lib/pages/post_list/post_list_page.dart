@@ -40,124 +40,119 @@ class _PostListPageState extends ConsumerState<PostListPage> {
     return AutoScaffold(
       topSafeArea: false,
       builder: (context, horizontal) {
-        return Column(
-          children: [
-            Expanded(
-              child: LoadingMoreCustomScrollView(
-                physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                slivers: [
-                  if (widget.tags != null)
-                    SliverAppBar(
-                      floating: isMobile || widget.tags == null,
-                      snap: isMobile,
-                      pinned: isDesktop && widget.tags != null,
-                      scrolledUnderElevation: 0,
-                      title: switch (widget.tags) { final tags? => Text(i18n.postList.titleWithTags(tags.join(' '))), _ => Text(i18n.postList.title) },
-                    ),
-                  CupertinoSliverRefreshControl(
-                    onRefresh: () async {
-                      await state.source.refresh(false, false);
+        return LoadingMoreCustomScrollView(
+          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+          slivers: [
+            SliverPadding(padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top)),
+            if (widget.tags != null)
+              SliverAppBar(
+                floating: isMobile || widget.tags == null,
+                snap: isMobile,
+                pinned: isDesktop && widget.tags != null,
+                scrolledUnderElevation: 0,
+                title: switch (widget.tags) { final tags? => Text(i18n.postList.titleWithTags(tags.join(' '))), _ => Text(i18n.postList.title) },
+              ),
+            CupertinoSliverRefreshControl(
+              onRefresh: () async {
+                await state.source.refresh(false, false);
+              },
+            ),
+            LoadingMoreSliverList(
+              SliverListConfig(
+                extendedListDelegate: SliverWaterfallFlowDelegateWithFixedCrossAxisCount(crossAxisCount: SettingsService.waterfallColumns ?? columnsMax),
+                itemBuilder: (BuildContext context, item, int index) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => PostDetailPage(post: item)));
                     },
-                  ),
-                  LoadingMoreSliverList(
-                    SliverListConfig(
-                      extendedListDelegate: SliverWaterfallFlowDelegateWithFixedCrossAxisCount(crossAxisCount: SettingsService.waterfallColumns ?? columnsMax),
-                      itemBuilder: (BuildContext context, item, int index) {
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(MaterialPageRoute(builder: (context) => PostDetailPage(post: item)));
-                          },
-                          onLongPress: () {
-                            HapticFeedback.mediumImpact();
-                            ref.read(downloaderProvider.notifier).addTask(item).then((downloadTaskProvider) {
-                              if (downloadTaskProvider != null) {
-                                ref.read(downloadTaskProvider.notifier).doDownload();
-                              }
-                            });
-                          },
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              const padding = 4;
-                              final width = constraints.maxWidth - padding * 2;
-                              final height = (item.height * width / item.width) - padding * 2;
-                              return Padding(
-                                padding: const EdgeInsets.all(4),
-                                child: Stack(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(6),
-                                      child: YandeImage(
-                                        item.previewUrl,
-                                        width: width,
-                                        height: height,
-                                        imageBuilder: (child) {
-                                          return Hero(
-                                            tag: item.id,
-                                            child: child,
-                                          ).animate().fade(duration: 250.ms);
-                                        },
-                                      ),
-                                    ),
-                                    if (item.parentId != null)
-                                      Positioned(
-                                        right: 0,
-                                        top: 0,
-                                        child: Container(
-                                          padding: const EdgeInsets.all(4),
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.only(bottomLeft: Radius.circular(6)),
-                                            color: Colors.black.withAlpha(150),
-                                          ),
-                                          child: const Icon(Icons.more_outlined, color: Colors.white),
-                                        ),
-                                      )
-                                    else if (item.hasChildren)
-                                      Positioned(
-                                        right: 0,
-                                        top: 0,
-                                        child: Container(
-                                          padding: const EdgeInsets.all(4),
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.only(bottomLeft: Radius.circular(6)),
-                                            color: Colors.black.withAlpha(150),
-                                          ),
-                                          child: const Icon(Icons.more_horiz, color: Colors.white),
-                                        ),
-                                      ),
-                                    Positioned(
-                                      right: 0,
-                                      bottom: 0,
-                                      child: Container(
-                                        padding: const EdgeInsets.all(4),
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.only(topLeft: Radius.circular(6)),
-                                          color: Colors.black.withAlpha(150),
-                                        ),
-                                        child: Text(
-                                          '${Resolution.match(item.width * item.height).title} ${item.width} x ${item.height}',
-                                          style: const TextStyle(color: Colors.white),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                    onLongPress: () {
+                      HapticFeedback.mediumImpact();
+                      ref.read(downloaderProvider.notifier).addTask(item).then((downloadTaskProvider) {
+                        if (downloadTaskProvider != null) {
+                          ref.read(downloadTaskProvider.notifier).doDownload();
+                        }
+                      });
+                    },
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        const padding = 4;
+                        final width = constraints.maxWidth - padding * 2;
+                        final height = (item.height * width / item.width) - padding * 2;
+                        return Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(6),
+                                child: YandeImage(
+                                  item.previewUrl,
+                                  width: width,
+                                  height: height,
+                                  imageBuilder: (child) {
+                                    return Hero(
+                                      tag: item.id,
+                                      child: child,
+                                    ).animate().fade(duration: 250.ms);
+                                  },
                                 ),
-                              );
-                            },
+                              ),
+                              if (item.parentId != null)
+                                Positioned(
+                                  right: 0,
+                                  top: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.only(bottomLeft: Radius.circular(6)),
+                                      color: Colors.black.withAlpha(150),
+                                    ),
+                                    child: const Icon(Icons.more_outlined, color: Colors.white),
+                                  ),
+                                )
+                              else if (item.hasChildren)
+                                Positioned(
+                                  right: 0,
+                                  top: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.only(bottomLeft: Radius.circular(6)),
+                                      color: Colors.black.withAlpha(150),
+                                    ),
+                                    child: const Icon(Icons.more_horiz, color: Colors.white),
+                                  ),
+                                ),
+                              Positioned(
+                                right: 0,
+                                bottom: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.only(topLeft: Radius.circular(6)),
+                                    color: Colors.black.withAlpha(150),
+                                  ),
+                                  child: Text(
+                                    '${Resolution.match(item.width * item.height).title} ${item.width} x ${item.height}',
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         );
                       },
-                      sourceList: state.source,
-                      padding: EdgeInsets.zero,
-                      indicatorBuilder: (context, status) => LoadingMoreIndicator(
-                        status: status,
-                        isSliver: true,
-                        errorRefresh: () {
-                          state.source.errorRefresh();
-                        },
-                      ),
                     ),
-                  ),
-                ],
+                  );
+                },
+                sourceList: state.source,
+                padding: EdgeInsets.zero,
+                indicatorBuilder: (context, status) => LoadingMoreIndicator(
+                  status: status,
+                  isSliver: true,
+                  errorRefresh: () {
+                    state.source.errorRefresh();
+                  },
+                ),
               ),
             ),
           ],
