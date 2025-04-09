@@ -30,8 +30,7 @@ class MainActivity : FlutterActivity() {
 
                 "existImage" -> {
                     val fileName = call.argument<String>("fileName")!!
-                    val fileSize = call.argument<Long>("fileSize")!!
-                    val success = imageIsExist(fileName, fileSize)
+                    val success = imageIsExist(fileName, null)
                     result.success(success)
                 }
 
@@ -53,12 +52,14 @@ fun Context.saveImage(filePath: String, fileName: String): Boolean {
 
     if (imageIsExist(fileName, null)) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            val existingFile = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).path + "/Yande/$fileName")
+            val existingFile =
+                File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).path + "/Yande/$fileName")
             if (existingFile.exists()) {
                 existingFile.delete()
             }
         } else {
-            val where = "${MediaStore.Images.Media.RELATIVE_PATH} LIKE ? AND ${MediaStore.Images.Media.DISPLAY_NAME} = ?"
+            val where =
+                "${MediaStore.Images.Media.RELATIVE_PATH} LIKE ? AND ${MediaStore.Images.Media.DISPLAY_NAME} = ?"
             val args = arrayOf("%${Environment.DIRECTORY_PICTURES}/Yande%", fileName)
             contentResolver.delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, where, args)
         }
@@ -99,7 +100,10 @@ fun Context.saveImage(filePath: String, fileName: String): Boolean {
 
     val values = ContentValues().apply {
         put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-        put(MediaStore.MediaColumns.MIME_TYPE, MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(fileName)))
+        put(
+            MediaStore.MediaColumns.MIME_TYPE,
+            MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(fileName))
+        )
         put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/Yande")
     }
 
@@ -117,7 +121,6 @@ fun Context.saveImage(filePath: String, fileName: String): Boolean {
         false
     }
 }
-
 
 
 fun Context.imageIsExist(fileName: String, fileSize: Long?): Boolean {
