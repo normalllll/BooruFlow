@@ -115,7 +115,7 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
           case DownloadEventProgress(:final value):
             FlutterForegroundTask.updateService(
               notificationTitle: 'Yande GUI Downloader',
-              notificationText: '${task.fileName} ${value.toStringAsFixed(2)}%',
+              notificationText: '${task.fileName} ${(value * 100).toStringAsFixed(2)}%',
             );
             task.emit(task.state.copyWith(status: DownloadStatus.busying, progress: value));
             break;
