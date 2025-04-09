@@ -110,18 +110,18 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
         switch (event) {
           case DownloadEventStart():
             FlutterForegroundTask.startService(notificationTitle: 'Yande GUI Downloader', notificationText: 'Downloading...');
-            task.emit(DownloadTaskState(status: DownloadStatus.busying, progress: 0, error: null));
+            task.emit(task.state.copyWith(status: DownloadStatus.busying));
             break;
           case DownloadEventProgress(:final value):
-            FlutterForegroundTask.startService(
+            FlutterForegroundTask.updateService(
               notificationTitle: 'Yande GUI Downloader',
               notificationText: '${task.fileName} ${value.toStringAsFixed(2)}%',
             );
-            EasyLoading.showSuccess(i18n.downloads.messages.downloadCompletedWith(task.fileName));
             task.emit(task.state.copyWith(status: DownloadStatus.busying, progress: value));
             break;
           case DownloadEventSuccess():
             await saveImage(filePath, task.fileName);
+            FlutterForegroundTask.stopService();
             EasyLoading.showSuccess(i18n.downloads.messages.downloadCompletedWith(task.fileName));
             task.emit(task.state.copyWith(status: DownloadStatus.completed));
             break;

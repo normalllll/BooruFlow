@@ -68,7 +68,7 @@ class DownloaderIOS<T> extends DownloaderPlatform<T> {
       onEvent: (event) async {
         switch (event) {
           case DownloadEventStart():
-            task.emit(DownloadTaskState(status: DownloadStatus.busying, progress: 0, error: null));
+            task.emit(task.state.copyWith(status: DownloadStatus.busying));
             break;
           case DownloadEventProgress(:final value):
             task.emit(task.state.copyWith(status: DownloadStatus.busying, progress: value));
