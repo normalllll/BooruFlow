@@ -12,17 +12,16 @@ String _plural(
   String? few,
   String? many,
   String? other,
-}) =>
-    i18n.plural(
-      count,
-      _languageCode,
-      zero: zero,
-      one: one,
-      two: two,
-      few: few,
-      many: many,
-      other: other,
-    );
+}) => i18n.plural(
+  count,
+  _languageCode,
+  zero: zero,
+  one: one,
+  two: two,
+  few: few,
+  many: many,
+  other: other,
+);
 String _ordinal(
   int count, {
   String? zero,
@@ -31,17 +30,16 @@ String _ordinal(
   String? few,
   String? many,
   String? other,
-}) =>
-    i18n.ordinal(
-      count,
-      _languageCode,
-      zero: zero,
-      one: one,
-      two: two,
-      few: few,
-      many: many,
-      other: other,
-    );
+}) => i18n.ordinal(
+  count,
+  _languageCode,
+  zero: zero,
+  one: one,
+  two: two,
+  few: few,
+  many: many,
+  other: other,
+);
 String _cardinal(
   int count, {
   String? zero,
@@ -50,17 +48,16 @@ String _cardinal(
   String? few,
   String? many,
   String? other,
-}) =>
-    i18n.cardinal(
-      count,
-      _languageCode,
-      zero: zero,
-      one: one,
-      two: two,
-      few: few,
-      many: many,
-      other: other,
-    );
+}) => i18n.cardinal(
+  count,
+  _languageCode,
+  zero: zero,
+  one: one,
+  two: two,
+  few: few,
+  many: many,
+  other: other,
+);
 
 class IntlJa extends Intl {
   const IntlJa();
@@ -320,29 +317,29 @@ class MessagesDownloadsIntlJa extends MessagesDownloadsIntl {
   String get imageFileExists => """画像ファイルは既に存在しています。""";
 
   /// ```dart
-  /// "ダウンロードタスクを再試行: $id"
+  /// "ダウンロードタスクを再試行: $name"
   /// ```
-  String downloadRetryWithId(int id) => """ダウンロードタスクを再試行: $id""";
+  String downloadRetryWith(String name) => """ダウンロードタスクを再試行: $name""";
 
   /// ```dart
-  /// "ダウンロードタスクを開始: $id"
+  /// "ダウンロードタスクを開始: $name"
   /// ```
-  String downloadStartWithId(int id) => """ダウンロードタスクを開始: $id""";
+  String downloadStartWith(String name) => """ダウンロードタスクを開始: $name""";
 
   /// ```dart
-  /// "ダウンロード完了: タスク $id"
+  /// "ダウンロード完了: タスク $name"
   /// ```
-  String downloadCompletedWithId(int id) => """ダウンロード完了: タスク $id""";
+  String downloadCompletedWith(String name) => """ダウンロード完了: タスク $name""";
 
   /// ```dart
-  /// "ダウンロード失敗: タスク $id"
+  /// "ダウンロード失敗: タスク $name"
   /// ```
-  String downloadFailedWithId(int id) => """ダウンロード失敗: タスク $id""";
+  String downloadFailedWith(String name) => """ダウンロード失敗: タスク $name""";
 
   /// ```dart
-  /// "保存失敗: タスク $id"
+  /// "保存失敗: タスク $name"
   /// ```
-  String saveFailedWith(int id) => """保存失敗: タスク $id""";
+  String saveFailedWith(String name) => """保存失敗: タスク $name""";
 }
 
 class AboutIntlJa extends AboutIntl {
@@ -526,7 +523,7 @@ class MessagesDownloadDirectoryDialogSettingsIntlJa
     extends MessagesDownloadDirectoryDialogSettingsIntl {
   final DownloadDirectoryDialogSettingsIntlJa _parent;
   const MessagesDownloadDirectoryDialogSettingsIntlJa(this._parent)
-      : super(_parent);
+    : super(_parent);
 
   /// ```dart
   /// "ダウンロードディレクトリはプラットフォームのデフォルトに設定されています。"
@@ -570,7 +567,7 @@ class MaxConcurrentDownloadsDialogSettingsIntlJa
     extends MaxConcurrentDownloadsDialogSettingsIntl {
   final SettingsIntlJa _parent;
   const MaxConcurrentDownloadsDialogSettingsIntlJa(this._parent)
-      : super(_parent);
+    : super(_parent);
 
   /// ```dart
   /// "最大同時ダウンロードタスク数"
@@ -590,80 +587,78 @@ class MaxSegmentsPerTaskDialogSettingsIntlJa
 }
 
 Map<String, String> get intlJaMap => {
-      """generic.ok""": """OK""",
-      """generic.cancel""": """キャンセル""",
-      """generic.clear""": """クリア""",
-      """generic.confirm""": """確認""",
-      """generic.enabled""": """有効""",
-      """generic.disabled""": """無効""",
-      """update.checkUpdateStart""": """アップデートを確認中…""",
-      """update.checkUpdateFailed""":
-          """アップデートの確認に失敗しました。インターネット接続を確認してください。""",
-      """update.selectDownloadUrlFailed""":
-          """ダウンロードURLが見つかりません。\nプロジェクトページにアクセスし、手動で更新するか、プロジェクトのIssueページでヘルプを求めてください。""",
-      """update.noNewVersionFound""": """新しいバージョンが見つかりません。""",
-      """postList.short""": """投稿""",
-      """postList.title""": """投稿リスト""",
-      """postDetail.createdAt""": """作成日時""",
-      """postDetail.author""": """作者""",
-      """postDetail.source""": """ソース""",
-      """postDetail.width""": """幅""",
-      """postDetail.height""": """高さ""",
-      """postDetail.score""": """スコア""",
-      """postDetail.size""": """サイズ""",
-      """postDetail.parent""": """親ID""",
-      """postDetail.hasChildren""": """子投稿があります""",
-      """postDetail.similarPosts""": """類似投稿""",
-      """postDetail.parentPost""": """親投稿""",
-      """postDetail.childPost""": """子投稿""",
-      """postSearch.title""": """検索""",
-      """imageZoom.title""": """画像をズーム""",
-      """downloads.title""": """ダウンロード""",
-      """downloads.messages.storagePermanentlyDenied""":
-          """ストレージのアクセス許可が永久に拒否されました。\n設定で手動でストレージのアクセス許可を有効にしてください。""",
-      """downloads.messages.storageDenied""": """ストレージのアクセス許可が拒否されました。""",
-      """downloads.messages.deviceInfoError""": """デバイス情報を解析できません。""",
-      """downloads.messages.photosPermanentlyDenied""":
-          """写真のアクセス許可が永久に拒否されました。\n設定で手動で写真のアクセス許可を有効にしてください。""",
-      """downloads.messages.photosDenied""": """写真のアクセス許可が拒否されました。""",
-      """downloads.messages.downloadTaskExists""": """ダウンロードタスクは既に存在しています。""",
-      """downloads.messages.imageFileExists""": """画像ファイルは既に存在しています。""",
-      """about.title""": """について""",
-      """about.projectUrl""": """プロジェクトURL""",
-      """about.publishPage""": """公開ページ""",
-      """about.appVersion""": """アプリバージョン""",
-      """about.dartVersion""": """Dartバージョン""",
-      """about.rustVersion""": """Rustバージョン""",
-      """about.discussion""": """議論""",
-      """about.downloadUpdate""": """アップデートをダウンロード""",
-      """about.downloadUpdateHint""":
-          """お使いのデバイス用に最新バージョンをブラウザでダウンロードしてください。""",
-      """settings.title""": """設定""",
-      """settings.theme""": """テーマ""",
-      """settings.language""": """言語""",
-      """settings.prefetchDns""": """DNS のプリフェッチ""",
-      """settings.downloadDirectory""": """ダウンロードディレクトリ""",
-      """settings.defaultToPlatformSettings""": """プラットフォームのデフォルトを使用""",
-      """settings.columnsPerRow""": """各行の列数""",
-      """settings.maxConcurrentDownloads""": """最大同時ダウンロードタスク数""",
-      """settings.maxSegmentsPerTask""": """各ダウンロードタスクの最大セグメント数""",
-      """settings.platformDefault""": """プラットフォームのデフォルト""",
-      """settings.system""": """システム""",
-      """settings.light""": """ライト""",
-      """settings.dark""": """ダーク""",
-      """settings.languageDialog.title""": """言語""",
-      """settings.themeModeDialog.title""": """テーマモード""",
-      """settings.downloadDirectoryDialog.title""": """ダウンロードディレクトリ""",
-      """settings.downloadDirectoryDialog.pickerTitle""": """ディレクトリを選択""",
-      """settings.downloadDirectoryDialog.pick""": """ディレクトリを選択""",
-      """settings.downloadDirectoryDialog.messages.setToPlatformDefault""":
-          """ダウンロードディレクトリはプラットフォームのデフォルトに設定されています。""",
-      """settings.downloadDirectoryDialog.messages.pathNotAbsolute""":
-          """パスは絶対パスである必要があります。""",
-      """settings.downloadDirectoryDialog.messages.pathNotWritable""":
-          """パスに書き込みできません。""",
-      """settings.dnsPrefetchDialog.title""": """DNS プリフェッチ""",
-      """settings.columnsPerRowDialog.title""": """各行の列数""",
-      """settings.maxConcurrentDownloadsDialog.title""": """最大同時ダウンロードタスク数""",
-      """settings.maxSegmentsPerTaskDialog.title""": """各ダウンロードタスクの最大セグメント数""",
-    };
+  """generic.ok""": """OK""",
+  """generic.cancel""": """キャンセル""",
+  """generic.clear""": """クリア""",
+  """generic.confirm""": """確認""",
+  """generic.enabled""": """有効""",
+  """generic.disabled""": """無効""",
+  """update.checkUpdateStart""": """アップデートを確認中…""",
+  """update.checkUpdateFailed""": """アップデートの確認に失敗しました。インターネット接続を確認してください。""",
+  """update.selectDownloadUrlFailed""":
+      """ダウンロードURLが見つかりません。\nプロジェクトページにアクセスし、手動で更新するか、プロジェクトのIssueページでヘルプを求めてください。""",
+  """update.noNewVersionFound""": """新しいバージョンが見つかりません。""",
+  """postList.short""": """投稿""",
+  """postList.title""": """投稿リスト""",
+  """postDetail.createdAt""": """作成日時""",
+  """postDetail.author""": """作者""",
+  """postDetail.source""": """ソース""",
+  """postDetail.width""": """幅""",
+  """postDetail.height""": """高さ""",
+  """postDetail.score""": """スコア""",
+  """postDetail.size""": """サイズ""",
+  """postDetail.parent""": """親ID""",
+  """postDetail.hasChildren""": """子投稿があります""",
+  """postDetail.similarPosts""": """類似投稿""",
+  """postDetail.parentPost""": """親投稿""",
+  """postDetail.childPost""": """子投稿""",
+  """postSearch.title""": """検索""",
+  """imageZoom.title""": """画像をズーム""",
+  """downloads.title""": """ダウンロード""",
+  """downloads.messages.storagePermanentlyDenied""":
+      """ストレージのアクセス許可が永久に拒否されました。\n設定で手動でストレージのアクセス許可を有効にしてください。""",
+  """downloads.messages.storageDenied""": """ストレージのアクセス許可が拒否されました。""",
+  """downloads.messages.deviceInfoError""": """デバイス情報を解析できません。""",
+  """downloads.messages.photosPermanentlyDenied""":
+      """写真のアクセス許可が永久に拒否されました。\n設定で手動で写真のアクセス許可を有効にしてください。""",
+  """downloads.messages.photosDenied""": """写真のアクセス許可が拒否されました。""",
+  """downloads.messages.downloadTaskExists""": """ダウンロードタスクは既に存在しています。""",
+  """downloads.messages.imageFileExists""": """画像ファイルは既に存在しています。""",
+  """about.title""": """について""",
+  """about.projectUrl""": """プロジェクトURL""",
+  """about.publishPage""": """公開ページ""",
+  """about.appVersion""": """アプリバージョン""",
+  """about.dartVersion""": """Dartバージョン""",
+  """about.rustVersion""": """Rustバージョン""",
+  """about.discussion""": """議論""",
+  """about.downloadUpdate""": """アップデートをダウンロード""",
+  """about.downloadUpdateHint""": """お使いのデバイス用に最新バージョンをブラウザでダウンロードしてください。""",
+  """settings.title""": """設定""",
+  """settings.theme""": """テーマ""",
+  """settings.language""": """言語""",
+  """settings.prefetchDns""": """DNS のプリフェッチ""",
+  """settings.downloadDirectory""": """ダウンロードディレクトリ""",
+  """settings.defaultToPlatformSettings""": """プラットフォームのデフォルトを使用""",
+  """settings.columnsPerRow""": """各行の列数""",
+  """settings.maxConcurrentDownloads""": """最大同時ダウンロードタスク数""",
+  """settings.maxSegmentsPerTask""": """各ダウンロードタスクの最大セグメント数""",
+  """settings.platformDefault""": """プラットフォームのデフォルト""",
+  """settings.system""": """システム""",
+  """settings.light""": """ライト""",
+  """settings.dark""": """ダーク""",
+  """settings.languageDialog.title""": """言語""",
+  """settings.themeModeDialog.title""": """テーマモード""",
+  """settings.downloadDirectoryDialog.title""": """ダウンロードディレクトリ""",
+  """settings.downloadDirectoryDialog.pickerTitle""": """ディレクトリを選択""",
+  """settings.downloadDirectoryDialog.pick""": """ディレクトリを選択""",
+  """settings.downloadDirectoryDialog.messages.setToPlatformDefault""":
+      """ダウンロードディレクトリはプラットフォームのデフォルトに設定されています。""",
+  """settings.downloadDirectoryDialog.messages.pathNotAbsolute""":
+      """パスは絶対パスである必要があります。""",
+  """settings.downloadDirectoryDialog.messages.pathNotWritable""":
+      """パスに書き込みできません。""",
+  """settings.dnsPrefetchDialog.title""": """DNS プリフェッチ""",
+  """settings.columnsPerRowDialog.title""": """各行の列数""",
+  """settings.maxConcurrentDownloadsDialog.title""": """最大同時ダウンロードタスク数""",
+  """settings.maxSegmentsPerTaskDialog.title""": """各ダウンロードタスクの最大セグメント数""",
+};

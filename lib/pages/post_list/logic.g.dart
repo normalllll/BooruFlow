@@ -33,10 +33,7 @@ abstract class _$PostList extends BuildlessNotifier<PostListState> {
   late final Type type;
   late final List<String> tags;
 
-  PostListState build(
-    Type type, {
-    required List<String> tags,
-  });
+  PostListState build(Type type, {required List<String> tags});
 }
 
 /// See also [PostList].
@@ -49,24 +46,13 @@ class PostListFamily extends Family<PostListState> {
   const PostListFamily();
 
   /// See also [PostList].
-  PostListProvider call(
-    Type type, {
-    required List<String> tags,
-  }) {
-    return PostListProvider(
-      type,
-      tags: tags,
-    );
+  PostListProvider call(Type type, {required List<String> tags}) {
+    return PostListProvider(type, tags: tags);
   }
 
   @override
-  PostListProvider getProviderOverride(
-    covariant PostListProvider provider,
-  ) {
-    return call(
-      provider.type,
-      tags: provider.tags,
-    );
+  PostListProvider getProviderOverride(covariant PostListProvider provider) {
+    return call(provider.type, tags: provider.tags);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -87,24 +73,23 @@ class PostListFamily extends Family<PostListState> {
 /// See also [PostList].
 class PostListProvider extends NotifierProviderImpl<PostList, PostListState> {
   /// See also [PostList].
-  PostListProvider(
-    Type type, {
-    required List<String> tags,
-  }) : this._internal(
-          () => PostList()
-            ..type = type
-            ..tags = tags,
-          from: postListProvider,
-          name: r'postListProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$postListHash,
-          dependencies: PostListFamily._dependencies,
-          allTransitiveDependencies: PostListFamily._allTransitiveDependencies,
-          type: type,
-          tags: tags,
-        );
+  PostListProvider(Type type, {required List<String> tags})
+    : this._internal(
+        () =>
+            PostList()
+              ..type = type
+              ..tags = tags,
+        from: postListProvider,
+        name: r'postListProvider',
+        debugGetCreateSourceHash:
+            const bool.fromEnvironment('dart.vm.product')
+                ? null
+                : _$postListHash,
+        dependencies: PostListFamily._dependencies,
+        allTransitiveDependencies: PostListFamily._allTransitiveDependencies,
+        type: type,
+        tags: tags,
+      );
 
   PostListProvider._internal(
     super._createNotifier, {
@@ -121,13 +106,8 @@ class PostListProvider extends NotifierProviderImpl<PostList, PostListState> {
   final List<String> tags;
 
   @override
-  PostListState runNotifierBuild(
-    covariant PostList notifier,
-  ) {
-    return notifier.build(
-      type,
-      tags: tags,
-    );
+  PostListState runNotifierBuild(covariant PostList notifier) {
+    return notifier.build(type, tags: tags);
   }
 
   @override
@@ -135,9 +115,10 @@ class PostListProvider extends NotifierProviderImpl<PostList, PostListState> {
     return ProviderOverride(
       origin: this,
       override: PostListProvider._internal(
-        () => create()
-          ..type = type
-          ..tags = tags,
+        () =>
+            create()
+              ..type = type
+              ..tags = tags,
         from: from,
         name: null,
         dependencies: null,
@@ -182,7 +163,8 @@ mixin PostListRef on NotifierProviderRef<PostListState> {
 }
 
 class _PostListProviderElement
-    extends NotifierProviderElement<PostList, PostListState> with PostListRef {
+    extends NotifierProviderElement<PostList, PostListState>
+    with PostListRef {
   _PostListProviderElement(super.provider);
 
   @override
@@ -190,5 +172,6 @@ class _PostListProviderElement
   @override
   List<String> get tags => (origin as PostListProvider).tags;
 }
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

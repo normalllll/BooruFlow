@@ -30,7 +30,7 @@ class Post {
   final PlatformInt64 sampleWidth;
   final PlatformInt64 sampleHeight;
   final PlatformInt64 sampleFileSize;
-  final String jpegUrl;
+  final String? jpegUrl;
   final PlatformInt64 jpegWidth;
   final PlatformInt64 jpegHeight;
   final PlatformInt64 jpegFileSize;
@@ -69,7 +69,7 @@ class Post {
     required this.sampleWidth,
     required this.sampleHeight,
     required this.sampleFileSize,
-    required this.jpegUrl,
+    this.jpegUrl,
     required this.jpegWidth,
     required this.jpegHeight,
     required this.jpegFileSize,

@@ -12,17 +12,16 @@ String _plural(
   String? few,
   String? many,
   String? other,
-}) =>
-    i18n.plural(
-      count,
-      _languageCode,
-      zero: zero,
-      one: one,
-      two: two,
-      few: few,
-      many: many,
-      other: other,
-    );
+}) => i18n.plural(
+  count,
+  _languageCode,
+  zero: zero,
+  one: one,
+  two: two,
+  few: few,
+  many: many,
+  other: other,
+);
 String _ordinal(
   int count, {
   String? zero,
@@ -31,17 +30,16 @@ String _ordinal(
   String? few,
   String? many,
   String? other,
-}) =>
-    i18n.ordinal(
-      count,
-      _languageCode,
-      zero: zero,
-      one: one,
-      two: two,
-      few: few,
-      many: many,
-      other: other,
-    );
+}) => i18n.ordinal(
+  count,
+  _languageCode,
+  zero: zero,
+  one: one,
+  two: two,
+  few: few,
+  many: many,
+  other: other,
+);
 String _cardinal(
   int count, {
   String? zero,
@@ -50,17 +48,16 @@ String _cardinal(
   String? few,
   String? many,
   String? other,
-}) =>
-    i18n.cardinal(
-      count,
-      _languageCode,
-      zero: zero,
-      one: one,
-      two: two,
-      few: few,
-      many: many,
-      other: other,
-    );
+}) => i18n.cardinal(
+  count,
+  _languageCode,
+  zero: zero,
+  one: one,
+  two: two,
+  few: few,
+  many: many,
+  other: other,
+);
 
 class IntlZhTW extends Intl {
   const IntlZhTW();
@@ -315,29 +312,29 @@ class MessagesDownloadsIntlZhTW extends MessagesDownloadsIntl {
   String get imageFileExists => """圖片檔案已經存在。""";
 
   /// ```dart
-  /// "重試下載任務: $id"
+  /// "重試下載任務: $name"
   /// ```
-  String downloadRetryWithId(int id) => """重試下載任務: $id""";
+  String downloadRetryWith(String name) => """重試下載任務: $name""";
 
   /// ```dart
-  /// "開始下載任務: $id"
+  /// "開始下載任務: $name"
   /// ```
-  String downloadStartWithId(int id) => """開始下載任務: $id""";
+  String downloadStartWith(String name) => """開始下載任務: $name""";
 
   /// ```dart
-  /// "下載任務完成: $id"
+  /// "下載任務完成: $name"
   /// ```
-  String downloadCompletedWithId(int id) => """下載任務完成: $id""";
+  String downloadCompletedWith(String name) => """下載任務完成: $name""";
 
   /// ```dart
-  /// "下載任務失敗: $id"
+  /// "下載任務失敗: $name"
   /// ```
-  String downloadFailedWithId(int id) => """下載任務失敗: $id""";
+  String downloadFailedWith(String name) => """下載任務失敗: $name""";
 
   /// ```dart
-  /// "儲存失敗: 任務 $id"
+  /// "儲存失敗: 任務 $name"
   /// ```
-  String saveFailedWith(int id) => """儲存失敗: 任務 $id""";
+  String saveFailedWith(String name) => """儲存失敗: 任務 $name""";
 }
 
 class AboutIntlZhTW extends AboutIntl {
@@ -469,8 +466,8 @@ class SettingsIntlZhTW extends SettingsIntl {
   ColumnsPerRowDialogSettingsIntlZhTW get columnsPerRowDialog =>
       ColumnsPerRowDialogSettingsIntlZhTW(this);
   MaxConcurrentDownloadsDialogSettingsIntlZhTW
-      get maxConcurrentDownloadsDialog =>
-          MaxConcurrentDownloadsDialogSettingsIntlZhTW(this);
+  get maxConcurrentDownloadsDialog =>
+      MaxConcurrentDownloadsDialogSettingsIntlZhTW(this);
   MaxSegmentsPerTaskDialogSettingsIntlZhTW get maxSegmentsPerTaskDialog =>
       MaxSegmentsPerTaskDialogSettingsIntlZhTW(this);
 }
@@ -522,7 +519,7 @@ class MessagesDownloadDirectoryDialogSettingsIntlZhTW
     extends MessagesDownloadDirectoryDialogSettingsIntl {
   final DownloadDirectoryDialogSettingsIntlZhTW _parent;
   const MessagesDownloadDirectoryDialogSettingsIntlZhTW(this._parent)
-      : super(_parent);
+    : super(_parent);
 
   /// ```dart
   /// "下載目錄已設為系統預設。"
@@ -565,7 +562,7 @@ class MaxConcurrentDownloadsDialogSettingsIntlZhTW
     extends MaxConcurrentDownloadsDialogSettingsIntl {
   final SettingsIntlZhTW _parent;
   const MaxConcurrentDownloadsDialogSettingsIntlZhTW(this._parent)
-      : super(_parent);
+    : super(_parent);
 
   /// ```dart
   /// "最大同時下載任務數"
@@ -585,78 +582,78 @@ class MaxSegmentsPerTaskDialogSettingsIntlZhTW
 }
 
 Map<String, String> get intlZhTWMap => {
-      """generic.ok""": """確定""",
-      """generic.cancel""": """取消""",
-      """generic.clear""": """清除""",
-      """generic.confirm""": """確認""",
-      """generic.enabled""": """啟用""",
-      """generic.disabled""": """停用""",
-      """update.checkUpdateStart""": """正在檢查更新...""",
-      """update.checkUpdateFailed""": """檢查更新失敗，請檢查您的網路連線。""",
-      """update.selectDownloadUrlFailed""":
-          """找不到下載連結。\n請訪問專案頁面以手動更新或在專案Issue頁尋求幫助。""",
-      """update.noNewVersionFound""": """沒有新版本。""",
-      """postList.short""": """帖子""",
-      """postList.title""": """帖子列表""",
-      """postDetail.createdAt""": """建立時間""",
-      """postDetail.author""": """作者""",
-      """postDetail.source""": """來源""",
-      """postDetail.width""": """寬度""",
-      """postDetail.height""": """高度""",
-      """postDetail.score""": """評分""",
-      """postDetail.size""": """大小""",
-      """postDetail.parent""": """父ID""",
-      """postDetail.hasChildren""": """有子帖子""",
-      """postDetail.similarPosts""": """相似帖子""",
-      """postDetail.parentPost""": """父帖子""",
-      """postDetail.childPost""": """子帖子""",
-      """postSearch.title""": """搜尋""",
-      """imageZoom.title""": """縮放圖片""",
-      """downloads.title""": """下載項""",
-      """downloads.messages.storagePermanentlyDenied""":
-          """您已永久拒絕存儲權限。\n請在設定中手動啟用存儲權限。""",
-      """downloads.messages.storageDenied""": """您已拒絕存儲權限。""",
-      """downloads.messages.deviceInfoError""": """無法解析設備資訊。""",
-      """downloads.messages.photosPermanentlyDenied""":
-          """您已永久拒絕照片權限。\n請在設定中手動啟用照片權限。""",
-      """downloads.messages.photosDenied""": """您已拒絕照片權限。""",
-      """downloads.messages.downloadTaskExists""": """下載任務已經存在。""",
-      """downloads.messages.imageFileExists""": """圖片檔案已經存在。""",
-      """about.title""": """關於""",
-      """about.projectUrl""": """專案網址""",
-      """about.publishPage""": """發佈頁面""",
-      """about.appVersion""": """應用程式版本""",
-      """about.dartVersion""": """Dart 版本""",
-      """about.rustVersion""": """Rust 版本""",
-      """about.discussion""": """討論""",
-      """about.downloadUpdate""": """下載更新""",
-      """about.downloadUpdateHint""": """透過瀏覽器下載適合您裝置的最新版本。""",
-      """settings.title""": """設定""",
-      """settings.theme""": """主題""",
-      """settings.language""": """語言""",
-      """settings.prefetchDns""": """預抓取 DNS""",
-      """settings.downloadDirectory""": """下載目錄""",
-      """settings.defaultToPlatformSettings""": """使用系統預設""",
-      """settings.columnsPerRow""": """每行列數""",
-      """settings.maxConcurrentDownloads""": """最大同時下載任務數""",
-      """settings.maxSegmentsPerTask""": """每個下載任務的最大分段數""",
-      """settings.platformDefault""": """平台預設""",
-      """settings.system""": """系統""",
-      """settings.light""": """淺色模式""",
-      """settings.dark""": """深色模式""",
-      """settings.languageDialog.title""": """語言""",
-      """settings.themeModeDialog.title""": """主題模式""",
-      """settings.downloadDirectoryDialog.title""": """下載目錄""",
-      """settings.downloadDirectoryDialog.pickerTitle""": """選擇目錄""",
-      """settings.downloadDirectoryDialog.pick""": """選擇目錄""",
-      """settings.downloadDirectoryDialog.messages.setToPlatformDefault""":
-          """下載目錄已設為系統預設。""",
-      """settings.downloadDirectoryDialog.messages.pathNotAbsolute""":
-          """路徑必須是絕對路徑。""",
-      """settings.downloadDirectoryDialog.messages.pathNotWritable""":
-          """路徑不可寫入。""",
-      """settings.dnsPrefetchDialog.title""": """DNS 預抓取""",
-      """settings.columnsPerRowDialog.title""": """每行列數""",
-      """settings.maxConcurrentDownloadsDialog.title""": """最大同時下載任務數""",
-      """settings.maxSegmentsPerTaskDialog.title""": """每個下載任務的最大分段數""",
-    };
+  """generic.ok""": """確定""",
+  """generic.cancel""": """取消""",
+  """generic.clear""": """清除""",
+  """generic.confirm""": """確認""",
+  """generic.enabled""": """啟用""",
+  """generic.disabled""": """停用""",
+  """update.checkUpdateStart""": """正在檢查更新...""",
+  """update.checkUpdateFailed""": """檢查更新失敗，請檢查您的網路連線。""",
+  """update.selectDownloadUrlFailed""":
+      """找不到下載連結。\n請訪問專案頁面以手動更新或在專案Issue頁尋求幫助。""",
+  """update.noNewVersionFound""": """沒有新版本。""",
+  """postList.short""": """帖子""",
+  """postList.title""": """帖子列表""",
+  """postDetail.createdAt""": """建立時間""",
+  """postDetail.author""": """作者""",
+  """postDetail.source""": """來源""",
+  """postDetail.width""": """寬度""",
+  """postDetail.height""": """高度""",
+  """postDetail.score""": """評分""",
+  """postDetail.size""": """大小""",
+  """postDetail.parent""": """父ID""",
+  """postDetail.hasChildren""": """有子帖子""",
+  """postDetail.similarPosts""": """相似帖子""",
+  """postDetail.parentPost""": """父帖子""",
+  """postDetail.childPost""": """子帖子""",
+  """postSearch.title""": """搜尋""",
+  """imageZoom.title""": """縮放圖片""",
+  """downloads.title""": """下載項""",
+  """downloads.messages.storagePermanentlyDenied""":
+      """您已永久拒絕存儲權限。\n請在設定中手動啟用存儲權限。""",
+  """downloads.messages.storageDenied""": """您已拒絕存儲權限。""",
+  """downloads.messages.deviceInfoError""": """無法解析設備資訊。""",
+  """downloads.messages.photosPermanentlyDenied""":
+      """您已永久拒絕照片權限。\n請在設定中手動啟用照片權限。""",
+  """downloads.messages.photosDenied""": """您已拒絕照片權限。""",
+  """downloads.messages.downloadTaskExists""": """下載任務已經存在。""",
+  """downloads.messages.imageFileExists""": """圖片檔案已經存在。""",
+  """about.title""": """關於""",
+  """about.projectUrl""": """專案網址""",
+  """about.publishPage""": """發佈頁面""",
+  """about.appVersion""": """應用程式版本""",
+  """about.dartVersion""": """Dart 版本""",
+  """about.rustVersion""": """Rust 版本""",
+  """about.discussion""": """討論""",
+  """about.downloadUpdate""": """下載更新""",
+  """about.downloadUpdateHint""": """透過瀏覽器下載適合您裝置的最新版本。""",
+  """settings.title""": """設定""",
+  """settings.theme""": """主題""",
+  """settings.language""": """語言""",
+  """settings.prefetchDns""": """預抓取 DNS""",
+  """settings.downloadDirectory""": """下載目錄""",
+  """settings.defaultToPlatformSettings""": """使用系統預設""",
+  """settings.columnsPerRow""": """每行列數""",
+  """settings.maxConcurrentDownloads""": """最大同時下載任務數""",
+  """settings.maxSegmentsPerTask""": """每個下載任務的最大分段數""",
+  """settings.platformDefault""": """平台預設""",
+  """settings.system""": """系統""",
+  """settings.light""": """淺色模式""",
+  """settings.dark""": """深色模式""",
+  """settings.languageDialog.title""": """語言""",
+  """settings.themeModeDialog.title""": """主題模式""",
+  """settings.downloadDirectoryDialog.title""": """下載目錄""",
+  """settings.downloadDirectoryDialog.pickerTitle""": """選擇目錄""",
+  """settings.downloadDirectoryDialog.pick""": """選擇目錄""",
+  """settings.downloadDirectoryDialog.messages.setToPlatformDefault""":
+      """下載目錄已設為系統預設。""",
+  """settings.downloadDirectoryDialog.messages.pathNotAbsolute""":
+      """路徑必須是絕對路徑。""",
+  """settings.downloadDirectoryDialog.messages.pathNotWritable""":
+      """路徑不可寫入。""",
+  """settings.dnsPrefetchDialog.title""": """DNS 預抓取""",
+  """settings.columnsPerRowDialog.title""": """每行列數""",
+  """settings.maxConcurrentDownloadsDialog.title""": """最大同時下載任務數""",
+  """settings.maxSegmentsPerTaskDialog.title""": """每個下載任務的最大分段數""",
+};

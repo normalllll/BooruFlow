@@ -10,6 +10,7 @@ import 'package:yande_gui/src/rust/api/yande_client.dart';
 import 'package:yande_gui/src/rust/frb_generated.dart';
 import 'package:yande_gui/themes.dart';
 
+import 'downloader/downloader.dart';
 import 'pages/index/index_page.dart';
 import 'services/settings_service.dart';
 
@@ -25,6 +26,8 @@ Future<void> main() async {
   if (!SettingsService.prefetchDns) {
     setYandeClient(YandeClient(ips: null, forLargeFile: false));
   }
+
+  Downloader.instance.ensureInitialized();
   runApp(const ProviderScope(child: MyApp()));
 }
 

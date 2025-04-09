@@ -549,7 +549,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       sampleWidth: dco_decode_i_64(arr[20]),
       sampleHeight: dco_decode_i_64(arr[21]),
       sampleFileSize: dco_decode_i_64(arr[22]),
-      jpegUrl: dco_decode_String(arr[23]),
+      jpegUrl: dco_decode_opt_String(arr[23]),
       jpegWidth: dco_decode_i_64(arr[24]),
       jpegHeight: dco_decode_i_64(arr[25]),
       jpegFileSize: dco_decode_i_64(arr[26]),
@@ -780,7 +780,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_sampleWidth = sse_decode_i_64(deserializer);
     var var_sampleHeight = sse_decode_i_64(deserializer);
     var var_sampleFileSize = sse_decode_i_64(deserializer);
-    var var_jpegUrl = sse_decode_String(deserializer);
+    var var_jpegUrl = sse_decode_opt_String(deserializer);
     var var_jpegWidth = sse_decode_i_64(deserializer);
     var var_jpegHeight = sse_decode_i_64(deserializer);
     var var_jpegFileSize = sse_decode_i_64(deserializer);
@@ -1076,7 +1076,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_64(self.sampleWidth, serializer);
     sse_encode_i_64(self.sampleHeight, serializer);
     sse_encode_i_64(self.sampleFileSize, serializer);
-    sse_encode_String(self.jpegUrl, serializer);
+    sse_encode_opt_String(self.jpegUrl, serializer);
     sse_encode_i_64(self.jpegWidth, serializer);
     sse_encode_i_64(self.jpegHeight, serializer);
     sse_encode_i_64(self.jpegFileSize, serializer);

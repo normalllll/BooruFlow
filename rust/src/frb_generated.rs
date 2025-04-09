@@ -580,7 +580,7 @@ impl SseDecode for crate::yande::model::post::Post {
         let mut var_sampleWidth = <i64>::sse_decode(deserializer);
         let mut var_sampleHeight = <i64>::sse_decode(deserializer);
         let mut var_sampleFileSize = <i64>::sse_decode(deserializer);
-        let mut var_jpegUrl = <String>::sse_decode(deserializer);
+        let mut var_jpegUrl = <Option<String>>::sse_decode(deserializer);
         let mut var_jpegWidth = <i64>::sse_decode(deserializer);
         let mut var_jpegHeight = <i64>::sse_decode(deserializer);
         let mut var_jpegFileSize = <i64>::sse_decode(deserializer);
@@ -989,7 +989,7 @@ impl SseEncode for crate::yande::model::post::Post {
         <i64>::sse_encode(self.sample_width, serializer);
         <i64>::sse_encode(self.sample_height, serializer);
         <i64>::sse_encode(self.sample_file_size, serializer);
-        <String>::sse_encode(self.jpeg_url, serializer);
+        <Option<String>>::sse_encode(self.jpeg_url, serializer);
         <i64>::sse_encode(self.jpeg_width, serializer);
         <i64>::sse_encode(self.jpeg_height, serializer);
         <i64>::sse_encode(self.jpeg_file_size, serializer);

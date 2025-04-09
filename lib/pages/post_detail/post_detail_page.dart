@@ -7,15 +7,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:yande_gui/components/translated_tag/translated_tag.dart';
 import 'package:yande_gui/components/yande_image/yande_image.dart';
+import 'package:yande_gui/downloader/downloader.dart';
 import 'package:yande_gui/i18n.dart';
-import 'package:yande_gui/pages/downloads/logic.dart';
 import 'package:yande_gui/pages/image_zoom_page/image_zoom_page.dart';
 import 'package:yande_gui/pages/post_detail/post_similar_widget.dart';
 import 'package:yande_gui/pages/post_list/post_list_page.dart';
-import 'package:yande_gui/services/tag_translations_service.dart';
 import 'package:yande_gui/src/rust/yande/model/post.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
-import 'package:yande_gui/widgets/tag/tag.dart';
 
 class PostDetailPage extends ConsumerStatefulWidget {
   final Post post;
@@ -68,7 +66,10 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
 
     if (schemeUrl case String schemeUrl?) {
       if (Platform.isAndroid) {
-        launchUrlString(schemeUrl, mode: LaunchMode.externalApplication).catchError((e) => launchUrlString(url, mode: LaunchMode.externalApplication));
+        launchUrlString(
+          schemeUrl,
+          mode: LaunchMode.externalApplication,
+        ).catchError((e) => launchUrlString(url, mode: LaunchMode.externalApplication));
       } else {
         if (await canLaunchUrlString(schemeUrl)) {
           launchUrlString(schemeUrl, mode: LaunchMode.externalApplication);
@@ -106,10 +107,10 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
             child: Text(
               url,
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: Colors.blueAccent,
-                    overflow: TextOverflow.ellipsis,
-                    decoration: TextDecoration.underline,
-                  ),
+                color: Colors.blueAccent,
+                overflow: TextOverflow.ellipsis,
+                decoration: TextDecoration.underline,
+              ),
             ),
           ),
         ],
@@ -155,9 +156,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                         EasyLoading.showSuccess(i18n.generic.copiedWithValue(tag));
                         HapticFeedback.mediumImpact();
                       },
-                      child: TranslatedTag(
-                        text: tag,
-                      ),
+                      child: TranslatedTag(text: tag),
                     ),
                 ],
               ),
@@ -173,21 +172,18 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => ImageZoomPage(
-              url: post.fileUrl ?? post.jpegUrl,
-              width: post.width.toDouble(),
-              height: post.height.toDouble(),
-            ),
+            builder:
+                (context) => ImageZoomPage(
+                  url: post.fileUrl ?? post.jpegUrl ?? post.previewUrl,
+                  width: post.width.toDouble(),
+                  height: post.height.toDouble(),
+                ),
           ),
         );
       },
       onLongPress: () {
         HapticFeedback.mediumImpact();
-        ref.read(downloaderProvider.notifier).addTask(post).then((downloadTaskProvider) {
-          if (downloadTaskProvider != null) {
-            ref.read(downloadTaskProvider.notifier).doDownload();
-          }
-        });
+        Downloader.instance.add(post);
       },
       child: Center(
         child: SizedBox(
@@ -223,17 +219,9 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
       calcWidth = calcHeight * post.width / post.height;
     }
     return [
-      SliverToBoxAdapter(
-        child: buildImage(width: calcWidth, height: calcHeight),
-      ),
+      SliverToBoxAdapter(child: buildImage(width: calcWidth, height: calcHeight)),
       if (post.parentId != null || post.hasChildren)
-        SliverToBoxAdapter(
-          child: PostSimilarWidget(
-            id: post.id,
-            maxWidth: maxWidth,
-            maxHeight: maxHeight,
-          ),
-        ),
+        SliverToBoxAdapter(child: PostSimilarWidget(id: post.id, maxWidth: maxWidth, maxHeight: maxHeight)),
     ];
   }
 
@@ -249,16 +237,10 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    width: 400,
-                    child: buildMetadata(),
-                  ),
+                  SizedBox(width: 400, child: buildMetadata()),
                   Expanded(
                     child: CustomScrollView(
-                      slivers: buildImageList(
-                        maxWidth: constraints.maxWidth - 400,
-                        maxHeight: constraints.maxHeight,
-                      ),
+                      slivers: buildImageList(maxWidth: constraints.maxWidth - 400, maxHeight: constraints.maxHeight),
                     ),
                   ),
                 ],
@@ -271,10 +253,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
               return CustomScrollView(
                 slivers: [
                   SliverToBoxAdapter(child: buildMetadata()),
-                  ...buildImageList(
-                    maxWidth: constraints.maxWidth,
-                    maxHeight: constraints.maxHeight,
-                  )
+                  ...buildImageList(maxWidth: constraints.maxWidth, maxHeight: constraints.maxHeight),
                 ],
               );
             },

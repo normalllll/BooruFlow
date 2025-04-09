@@ -39,21 +39,15 @@ class GetSimilarFamily extends Family<AsyncValue<Similar>> {
   const GetSimilarFamily();
 
   /// See also [getSimilar].
-  GetSimilarProvider call({
-    required int id,
-  }) {
-    return GetSimilarProvider(
-      id: id,
-    );
+  GetSimilarProvider call({required int id}) {
+    return GetSimilarProvider(id: id);
   }
 
   @override
   GetSimilarProvider getProviderOverride(
     covariant GetSimilarProvider provider,
   ) {
-    return call(
-      id: provider.id,
-    );
+    return call(id: provider.id);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -74,24 +68,19 @@ class GetSimilarFamily extends Family<AsyncValue<Similar>> {
 /// See also [getSimilar].
 class GetSimilarProvider extends AutoDisposeFutureProvider<Similar> {
   /// See also [getSimilar].
-  GetSimilarProvider({
-    required int id,
-  }) : this._internal(
-          (ref) => getSimilar(
-            ref as GetSimilarRef,
-            id: id,
-          ),
-          from: getSimilarProvider,
-          name: r'getSimilarProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$getSimilarHash,
-          dependencies: GetSimilarFamily._dependencies,
-          allTransitiveDependencies:
-              GetSimilarFamily._allTransitiveDependencies,
-          id: id,
-        );
+  GetSimilarProvider({required int id})
+    : this._internal(
+        (ref) => getSimilar(ref as GetSimilarRef, id: id),
+        from: getSimilarProvider,
+        name: r'getSimilarProvider',
+        debugGetCreateSourceHash:
+            const bool.fromEnvironment('dart.vm.product')
+                ? null
+                : _$getSimilarHash,
+        dependencies: GetSimilarFamily._dependencies,
+        allTransitiveDependencies: GetSimilarFamily._allTransitiveDependencies,
+        id: id,
+      );
 
   GetSimilarProvider._internal(
     super._createNotifier, {
@@ -150,11 +139,13 @@ mixin GetSimilarRef on AutoDisposeFutureProviderRef<Similar> {
 }
 
 class _GetSimilarProviderElement
-    extends AutoDisposeFutureProviderElement<Similar> with GetSimilarRef {
+    extends AutoDisposeFutureProviderElement<Similar>
+    with GetSimilarRef {
   _GetSimilarProviderElement(super.provider);
 
   @override
   int get id => (origin as GetSimilarProvider).id;
 }
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

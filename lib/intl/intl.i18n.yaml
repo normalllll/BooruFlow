@@ -52,12 +52,12 @@ downloads:
     downloadTaskExists: The download task already exists.
     imageFileExists: The image file already exists.
 
-    downloadRetryWithId(int id): "Retry download task $id"
-    downloadStartWithId(int id): "Start download task $id"
+    downloadRetryWith(String name): "Retry download task $name"
+    downloadStartWith(String name): "Start download task $name"
 
-    downloadCompletedWithId(int id): "Download completed for task $id"
-    downloadFailedWithId(int id): "Download failed for task $id"
-    saveFailedWith(int id): "Saving failed for task $id"
+    downloadCompletedWith(String name): "Download completed for task $name"
+    downloadFailedWith(String name): "Download failed for task $name"
+    saveFailedWith(String name): "Saving failed for task $name"
 
 about:
   title: About

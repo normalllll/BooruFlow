@@ -182,6 +182,7 @@ dependencies = [
  "rustc_version",
  "serde",
  "tokio",
+ "tokio-util",
  "url",
 ]
 

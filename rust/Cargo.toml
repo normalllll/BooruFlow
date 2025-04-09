@@ -18,6 +18,7 @@ lazy_static = "*"
 url = "*"
 
 tokio = { version = "1.44.1", features = ["test-util", "full"] }
+tokio-util = "*"
 futures-util = "0.3.31"
 
 [dependencies.reqwest]

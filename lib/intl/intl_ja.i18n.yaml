@@ -52,12 +52,12 @@ downloads:
     downloadTaskExists: ダウンロードタスクは既に存在しています。
     imageFileExists: 画像ファイルは既に存在しています。
 
-    downloadRetryWithId(int id): "ダウンロードタスクを再試行: $id"
-    downloadStartWithId(int id): "ダウンロードタスクを開始: $id"
+    downloadRetryWith(String name): "ダウンロードタスクを再試行: $name"
+    downloadStartWith(String name): "ダウンロードタスクを開始: $name"
 
-    downloadCompletedWithId(int id): "ダウンロード完了: タスク $id"
-    downloadFailedWithId(int id): "ダウンロード失敗: タスク $id"
-    saveFailedWith(int id): "保存失敗: タスク $id"
+    downloadCompletedWith(String name): "ダウンロード完了: タスク $name"
+    downloadFailedWith(String name): "ダウンロード失敗: タスク $name"
+    saveFailedWith(String name): "保存失敗: タスク $name"
 
 about:
   title: について

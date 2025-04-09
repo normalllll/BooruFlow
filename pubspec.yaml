@@ -21,7 +21,9 @@ dependencies:
   package_info_plus: ^8.3.0
   device_info_plus: ^11.3.3
   permission_handler: ^11.4.0
+  flutter_foreground_task: ^8.17.0
 
+  meta:
   flutter_riverpod: ^2.6.1
   riverpod_annotation: ^2.6.1
   path_provider: ^2.1.5

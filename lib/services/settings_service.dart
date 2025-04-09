@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -53,7 +54,12 @@ class SettingsService {
   static set maxConcurrentDownloads(int value) {
     _map['maxConcurrentDownloads'] = value;
     _save();
+    _maxConcurrentDownloadsStreamController.add(null);
   }
+
+  static final _maxConcurrentDownloadsStreamController = StreamController<void>.broadcast();
+
+  static final maxConcurrentDownloadsStream = _maxConcurrentDownloadsStreamController.stream;
 
   static int get maxSegmentsPerTask => _map['maxSegmentsPerTask'] as int? ?? 3;
 

@@ -6,8 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yande_gui/components/yande_image/yande_image.dart';
+import 'package:yande_gui/downloader/downloader.dart';
 import 'package:yande_gui/i18n.dart';
-import 'package:yande_gui/pages/downloads/logic.dart';
 import 'package:yande_gui/pages/image_zoom_page/image_zoom_page.dart';
 import 'package:yande_gui/pages/post_detail/logic.dart';
 import 'package:yande_gui/src/rust/yande/model/post.dart';
@@ -48,7 +48,7 @@ class _PostSimilarWidgetState extends ConsumerState<PostSimilarWidget> {
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => ImageZoomPage(
-              url: post.fileUrl ?? post.jpegUrl,
+              url: post.fileUrl ?? post.jpegUrl ?? post.previewUrl,
               width: post.width.toDouble(),
               height: post.height.toDouble(),
             ),
@@ -57,11 +57,7 @@ class _PostSimilarWidgetState extends ConsumerState<PostSimilarWidget> {
       },
       onLongPress: () {
         HapticFeedback.mediumImpact();
-        ref.read(downloaderProvider.notifier).addTask(post).then((downloadTaskProvider) {
-          if (downloadTaskProvider != null) {
-            ref.read(downloadTaskProvider.notifier).doDownload();
-          }
-        });
+        Downloader.instance.add(post);
       },
       child: Center(
         child: SizedBox(

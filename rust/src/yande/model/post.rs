@@ -29,7 +29,7 @@ pub struct Post {
     pub sample_width: i64,
     pub sample_height: i64,
     pub sample_file_size: i64,
-    pub jpeg_url: String,
+    pub jpeg_url: Option<String>,
     pub jpeg_width: i64,
     pub jpeg_height: i64,
     pub jpeg_file_size: i64,

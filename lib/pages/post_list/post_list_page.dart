@@ -6,10 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_more_list/loading_more_list.dart';
 import 'package:yande_gui/components/loading_more_indicator/loading_more_indicator.dart';
 import 'package:yande_gui/components/yande_image/yande_image.dart';
+import 'package:yande_gui/downloader/downloader.dart';
 import 'package:yande_gui/enums.dart';
 import 'package:yande_gui/global.dart';
 import 'package:yande_gui/i18n.dart';
-import 'package:yande_gui/pages/downloads/logic.dart';
 import 'package:yande_gui/pages/post_detail/post_detail_page.dart';
 import 'package:yande_gui/services/settings_service.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
@@ -67,11 +67,8 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                     },
                     onLongPress: () {
                       HapticFeedback.mediumImpact();
-                      ref.read(downloaderProvider.notifier).addTask(item).then((downloadTaskProvider) {
-                        if (downloadTaskProvider != null) {
-                          ref.read(downloadTaskProvider.notifier).doDownload();
-                        }
-                      });
+
+                      Downloader.instance.add(item);
                     },
                     child: LayoutBuilder(
                       builder: (context, constraints) {

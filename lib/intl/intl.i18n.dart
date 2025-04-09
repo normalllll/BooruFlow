@@ -11,17 +11,16 @@ String _plural(
   String? few,
   String? many,
   String? other,
-}) =>
-    i18n.plural(
-      count,
-      _languageCode,
-      zero: zero,
-      one: one,
-      two: two,
-      few: few,
-      many: many,
-      other: other,
-    );
+}) => i18n.plural(
+  count,
+  _languageCode,
+  zero: zero,
+  one: one,
+  two: two,
+  few: few,
+  many: many,
+  other: other,
+);
 String _ordinal(
   int count, {
   String? zero,
@@ -30,17 +29,16 @@ String _ordinal(
   String? few,
   String? many,
   String? other,
-}) =>
-    i18n.ordinal(
-      count,
-      _languageCode,
-      zero: zero,
-      one: one,
-      two: two,
-      few: few,
-      many: many,
-      other: other,
-    );
+}) => i18n.ordinal(
+  count,
+  _languageCode,
+  zero: zero,
+  one: one,
+  two: two,
+  few: few,
+  many: many,
+  other: other,
+);
 String _cardinal(
   int count, {
   String? zero,
@@ -49,17 +47,16 @@ String _cardinal(
   String? few,
   String? many,
   String? other,
-}) =>
-    i18n.cardinal(
-      count,
-      _languageCode,
-      zero: zero,
-      one: one,
-      two: two,
-      few: few,
-      many: many,
-      other: other,
-    );
+}) => i18n.cardinal(
+  count,
+  _languageCode,
+  zero: zero,
+  one: one,
+  two: two,
+  few: few,
+  many: many,
+  other: other,
+);
 
 class Intl {
   const Intl();
@@ -320,30 +317,31 @@ class MessagesDownloadsIntl {
   String get imageFileExists => """The image file already exists.""";
 
   /// ```dart
-  /// "Retry download task $id"
+  /// "Retry download task $name"
   /// ```
-  String downloadRetryWithId(int id) => """Retry download task $id""";
+  String downloadRetryWith(String name) => """Retry download task $name""";
 
   /// ```dart
-  /// "Start download task $id"
+  /// "Start download task $name"
   /// ```
-  String downloadStartWithId(int id) => """Start download task $id""";
+  String downloadStartWith(String name) => """Start download task $name""";
 
   /// ```dart
-  /// "Download completed for task $id"
+  /// "Download completed for task $name"
   /// ```
-  String downloadCompletedWithId(int id) =>
-      """Download completed for task $id""";
+  String downloadCompletedWith(String name) =>
+      """Download completed for task $name""";
 
   /// ```dart
-  /// "Download failed for task $id"
+  /// "Download failed for task $name"
   /// ```
-  String downloadFailedWithId(int id) => """Download failed for task $id""";
+  String downloadFailedWith(String name) =>
+      """Download failed for task $name""";
 
   /// ```dart
-  /// "Saving failed for task $id"
+  /// "Saving failed for task $name"
   /// ```
-  String saveFailedWith(int id) => """Saving failed for task $id""";
+  String saveFailedWith(String name) => """Saving failed for task $name""";
 }
 
 class AboutIntl {
@@ -584,90 +582,87 @@ class MaxSegmentsPerTaskDialogSettingsIntl {
 }
 
 Map<String, String> get intlMap => {
-      """generic.ok""": """OK""",
-      """generic.cancel""": """Cancel""",
-      """generic.clear""": """Clear""",
-      """generic.confirm""": """Confirm""",
-      """generic.enabled""": """Enabled""",
-      """generic.disabled""": """Disabled""",
-      """update.checkUpdateStart""": """Checking for updates...""",
-      """update.checkUpdateFailed""":
-          """Failed to check for updates. Please check your Internet connection.""",
-      """update.selectDownloadUrlFailed""":
-          """Unable to find download URL.\nPlease visit the project page to manually update or seek help on the project Issue page.""",
-      """update.noNewVersionFound""": """No new version found.""",
-      """postList.short""": """Post""",
-      """postList.title""": """Post List""",
-      """postDetail.createdAt""": """Created at""",
-      """postDetail.author""": """Author""",
-      """postDetail.source""": """Source""",
-      """postDetail.width""": """Width""",
-      """postDetail.height""": """Height""",
-      """postDetail.score""": """Score""",
-      """postDetail.size""": """Size""",
-      """postDetail.parent""": """Parent ID""",
-      """postDetail.hasChildren""": """Has child posts""",
-      """postDetail.similarPosts""": """Similar posts""",
-      """postDetail.parentPost""": """Parent post""",
-      """postDetail.childPost""": """Child post""",
-      """postSearch.title""": """Search""",
-      """imageZoom.title""": """Zoom Image""",
-      """downloads.title""": """Downloads""",
-      """downloads.messages.storagePermanentlyDenied""":
-          """You have permanently denied storage permissions.\nPlease manually enable storage permissions in settings.""",
-      """downloads.messages.storageDenied""":
-          """You have denied storage permissions.""",
-      """downloads.messages.deviceInfoError""":
-          """Unable to parse device information.""",
-      """downloads.messages.photosPermanentlyDenied""":
-          """You have permanently denied photos permissions.\nPlease manually enable photos permissions in settings.""",
-      """downloads.messages.photosDenied""":
-          """You have denied photos permissions.""",
-      """downloads.messages.downloadTaskExists""":
-          """The download task already exists.""",
-      """downloads.messages.imageFileExists""":
-          """The image file already exists.""",
-      """about.title""": """About""",
-      """about.projectUrl""": """Project URL""",
-      """about.publishPage""": """Publish page""",
-      """about.appVersion""": """App version""",
-      """about.dartVersion""": """Dart version""",
-      """about.rustVersion""": """Rust version""",
-      """about.discussion""": """Discussion""",
-      """about.downloadUpdate""": """Download update""",
-      """about.downloadUpdateHint""":
-          """Download the latest version for your device via your browser.""",
-      """settings.title""": """Settings""",
-      """settings.theme""": """Theme""",
-      """settings.language""": """Language""",
-      """settings.prefetchDns""": """Prefetch DNS""",
-      """settings.downloadDirectory""": """Download Directory""",
-      """settings.defaultToPlatformSettings""":
-          """Default to Platform Settings""",
-      """settings.columnsPerRow""": """Columns per Row""",
-      """settings.maxConcurrentDownloads""":
-          """Max Concurrent Download Tasks""",
-      """settings.maxSegmentsPerTask""": """Max Segments per Download Task""",
-      """settings.platformDefault""": """Platform default""",
-      """settings.system""": """System""",
-      """settings.light""": """Light""",
-      """settings.dark""": """Dark""",
-      """settings.languageDialog.title""": """Language""",
-      """settings.themeModeDialog.title""": """Theme Mode""",
-      """settings.downloadDirectoryDialog.title""": """Download Directory""",
-      """settings.downloadDirectoryDialog.pickerTitle""":
-          """Choose Directory""",
-      """settings.downloadDirectoryDialog.pick""": """Choose Directory""",
-      """settings.downloadDirectoryDialog.messages.setToPlatformDefault""":
-          """Directory set to platform default.""",
-      """settings.downloadDirectoryDialog.messages.pathNotAbsolute""":
-          """Directory path must be absolute.""",
-      """settings.downloadDirectoryDialog.messages.pathNotWritable""":
-          """Directory path is not writable.""",
-      """settings.dnsPrefetchDialog.title""": """DNS Prefetch""",
-      """settings.columnsPerRowDialog.title""": """Columns per Row""",
-      """settings.maxConcurrentDownloadsDialog.title""":
-          """Max Concurrent Download Tasks""",
-      """settings.maxSegmentsPerTaskDialog.title""":
-          """Max Segments per Download Task""",
-    };
+  """generic.ok""": """OK""",
+  """generic.cancel""": """Cancel""",
+  """generic.clear""": """Clear""",
+  """generic.confirm""": """Confirm""",
+  """generic.enabled""": """Enabled""",
+  """generic.disabled""": """Disabled""",
+  """update.checkUpdateStart""": """Checking for updates...""",
+  """update.checkUpdateFailed""":
+      """Failed to check for updates. Please check your Internet connection.""",
+  """update.selectDownloadUrlFailed""":
+      """Unable to find download URL.\nPlease visit the project page to manually update or seek help on the project Issue page.""",
+  """update.noNewVersionFound""": """No new version found.""",
+  """postList.short""": """Post""",
+  """postList.title""": """Post List""",
+  """postDetail.createdAt""": """Created at""",
+  """postDetail.author""": """Author""",
+  """postDetail.source""": """Source""",
+  """postDetail.width""": """Width""",
+  """postDetail.height""": """Height""",
+  """postDetail.score""": """Score""",
+  """postDetail.size""": """Size""",
+  """postDetail.parent""": """Parent ID""",
+  """postDetail.hasChildren""": """Has child posts""",
+  """postDetail.similarPosts""": """Similar posts""",
+  """postDetail.parentPost""": """Parent post""",
+  """postDetail.childPost""": """Child post""",
+  """postSearch.title""": """Search""",
+  """imageZoom.title""": """Zoom Image""",
+  """downloads.title""": """Downloads""",
+  """downloads.messages.storagePermanentlyDenied""":
+      """You have permanently denied storage permissions.\nPlease manually enable storage permissions in settings.""",
+  """downloads.messages.storageDenied""":
+      """You have denied storage permissions.""",
+  """downloads.messages.deviceInfoError""":
+      """Unable to parse device information.""",
+  """downloads.messages.photosPermanentlyDenied""":
+      """You have permanently denied photos permissions.\nPlease manually enable photos permissions in settings.""",
+  """downloads.messages.photosDenied""":
+      """You have denied photos permissions.""",
+  """downloads.messages.downloadTaskExists""":
+      """The download task already exists.""",
+  """downloads.messages.imageFileExists""":
+      """The image file already exists.""",
+  """about.title""": """About""",
+  """about.projectUrl""": """Project URL""",
+  """about.publishPage""": """Publish page""",
+  """about.appVersion""": """App version""",
+  """about.dartVersion""": """Dart version""",
+  """about.rustVersion""": """Rust version""",
+  """about.discussion""": """Discussion""",
+  """about.downloadUpdate""": """Download update""",
+  """about.downloadUpdateHint""":
+      """Download the latest version for your device via your browser.""",
+  """settings.title""": """Settings""",
+  """settings.theme""": """Theme""",
+  """settings.language""": """Language""",
+  """settings.prefetchDns""": """Prefetch DNS""",
+  """settings.downloadDirectory""": """Download Directory""",
+  """settings.defaultToPlatformSettings""": """Default to Platform Settings""",
+  """settings.columnsPerRow""": """Columns per Row""",
+  """settings.maxConcurrentDownloads""": """Max Concurrent Download Tasks""",
+  """settings.maxSegmentsPerTask""": """Max Segments per Download Task""",
+  """settings.platformDefault""": """Platform default""",
+  """settings.system""": """System""",
+  """settings.light""": """Light""",
+  """settings.dark""": """Dark""",
+  """settings.languageDialog.title""": """Language""",
+  """settings.themeModeDialog.title""": """Theme Mode""",
+  """settings.downloadDirectoryDialog.title""": """Download Directory""",
+  """settings.downloadDirectoryDialog.pickerTitle""": """Choose Directory""",
+  """settings.downloadDirectoryDialog.pick""": """Choose Directory""",
+  """settings.downloadDirectoryDialog.messages.setToPlatformDefault""":
+      """Directory set to platform default.""",
+  """settings.downloadDirectoryDialog.messages.pathNotAbsolute""":
+      """Directory path must be absolute.""",
+  """settings.downloadDirectoryDialog.messages.pathNotWritable""":
+      """Directory path is not writable.""",
+  """settings.dnsPrefetchDialog.title""": """DNS Prefetch""",
+  """settings.columnsPerRowDialog.title""": """Columns per Row""",
+  """settings.maxConcurrentDownloadsDialog.title""":
+      """Max Concurrent Download Tasks""",
+  """settings.maxSegmentsPerTaskDialog.title""":
+      """Max Segments per Download Task""",
+};

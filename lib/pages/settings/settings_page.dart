@@ -449,7 +449,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: Text(i18n.generic.confirm),
                   onPressed: () {
                     SettingsService.maxConcurrentDownloads = currentSliderValue.toInt();
-                    Downloader.updateDownloadIsolateMaxActiveDownloadTasks(currentSliderValue.toInt());
                     rootUpdateController.add(null);
                     Navigator.of(context).pop();
                   },

@@ -52,12 +52,12 @@ downloads:
     downloadTaskExists: 下載任務已經存在。
     imageFileExists: 圖片檔案已經存在。
 
-    downloadRetryWithId(int id): "重試下載任務: $id"
-    downloadStartWithId(int id): "開始下載任務: $id"
+    downloadRetryWith(String name): "重試下載任務: $name"
+    downloadStartWith(String name): "開始下載任務: $name"
 
-    downloadCompletedWithId(int id): "下載任務完成: $id"
-    downloadFailedWithId(int id): "下載任務失敗: $id"
-    saveFailedWith(int id): "儲存失敗: 任務 $id"
+    downloadCompletedWith(String name): "下載任務完成: $name"
+    downloadFailedWith(String name): "下載任務失敗: $name"
+    saveFailedWith(String name): "儲存失敗: 任務 $name"
 
 about:
   title: 關於
