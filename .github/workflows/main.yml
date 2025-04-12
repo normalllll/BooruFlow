@@ -204,7 +204,7 @@ jobs:
             build/ios/iphoneos/ios-nosigned.ipa
           token: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
 
-  build-and-release-macos-arm64:
+  build-and-release-macos:
     name: Build & Release macOS arm64 & x86_64
     runs-on: macos-latest
 
