@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:yande_gui/download_foreground_service_plugin.dart';
@@ -87,22 +86,6 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
     SettingsService.maxConcurrentDownloadsStream.listen((_) {
       _downloadQueueManager.schedule();
     });
-    FlutterForegroundTask.init(
-      androidNotificationOptions: AndroidNotificationOptions(
-        channelId: 'foreground_service',
-        channelName: 'Foreground Service Notification',
-        channelDescription: 'This notification appears when the foreground service is running.',
-        onlyAlertOnce: true,
-      ),
-      iosNotificationOptions: const IOSNotificationOptions(showNotification: false, playSound: false),
-      foregroundTaskOptions: ForegroundTaskOptions(
-        eventAction: ForegroundTaskEventAction.repeat(5000),
-        autoRunOnBoot: true,
-        autoRunOnMyPackageReplaced: true,
-        allowWakeLock: true,
-        allowWifiLock: true,
-      ),
-    );
   }
 
   @override
@@ -157,10 +140,6 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
             task.emit(task.state.copyWith(status: DownloadStatus.busying));
             break;
           case DownloadEventProgress(:final value):
-            FlutterForegroundTask.updateService(
-              notificationTitle: 'Yande GUI Downloader',
-              notificationText: '${task.fileName} ${(value * 100).toStringAsFixed(2)}%',
-            );
             task.emit(task.state.copyWith(status: DownloadStatus.busying, progress: value));
             break;
           case DownloadEventSuccess():
