@@ -1,9 +1,12 @@
+import 'dart:developer';
+
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:yande_gui/download_foreground_service_plugin.dart';
 import 'package:yande_gui/i18n.dart';
 import 'package:yande_gui/services/settings_service.dart';
 import 'package:path/path.dart' as path;
@@ -13,17 +16,59 @@ import '../downloader_platform.dart';
 import 'download_queue_manger.dart';
 
 class DownloaderAndroid<T> extends DownloaderPlatform<T> {
-  final _downloadQueueManager = DownloadQueueManager(getMaxConcurrentDownloads: () => SettingsService.maxConcurrentDownloads);
+  late final _downloadQueueManager = DownloadQueueManager(
+    getMaxConcurrentDownloads: () => SettingsService.maxConcurrentDownloads,
+    onFirstTaskStarted: onFirstTaskStarted,
+    onAllTasksCompleted: onAllTasksCompleted,
+    onProgressChanged: onProgressChanged,
+  );
 
-  final MethodChannel _channel = MethodChannel('io.github.normalllll.yandegui/image_saver');
+  final MethodChannel _channel = MethodChannel('image_saver');
+
+  Future<void> onFirstTaskStarted() async {
+    try {
+      await DownloadForegroundServicePlugin.startService(title: 'Yande GUI Downloader', text: 'Download start');
+      await Future.delayed(const Duration(milliseconds: 300));
+    } catch (e) {
+      log('onFirstTaskStarted: startService:$e');
+    }
+  }
+
+  Future<void> onAllTasksCompleted() async {
+    try {
+      DownloadForegroundServicePlugin.stopService();
+    } catch (e) {
+      log('onAllTasksCompleted: stopService:$e');
+    }
+  }
+
+  void onProgressChanged(int total, int completed, int failed, int canceled, double overallProgress) {
+    try {
+      DownloadForegroundServicePlugin.updateProgress(
+        title: 'Yande GUI Downloader',
+        text: '🖼️$total ✅$completed ❌$failed ✖️$canceled ${(overallProgress*100).toStringAsFixed(1)}%',
+
+        progress: (overallProgress * 100).toInt(),
+      );
+    } catch (e) {
+      log('onProgressChanged: updateProgress:$e');
+    }
+  }
 
   Future<void> _requestPermissions() async {
-    // Android 13+, you need to allow notification permission to display foreground service notification.
-    //
-    // iOS: If you need notification, ask for permission.
-    final NotificationPermission notificationPermission = await FlutterForegroundTask.checkNotificationPermission();
-    if (notificationPermission != NotificationPermission.granted) {
-      await FlutterForegroundTask.requestNotificationPermission();
+    final status = await Permission.notification.status;
+
+    // TODO openDialog: Tell users what the permission application is for
+    if (status.isPermanentlyDenied) {
+      await openAppSettings();
+      return;
+    }
+
+    if (!status.isGranted) {
+      final result = await Permission.notification.request();
+      if (!result.isGranted) {
+        return;
+      }
     }
   }
 
@@ -109,7 +154,6 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
       onEvent: (event) async {
         switch (event) {
           case DownloadEventStart():
-            FlutterForegroundTask.startService(notificationTitle: 'Yande GUI Downloader', notificationText: 'Downloading...');
             task.emit(task.state.copyWith(status: DownloadStatus.busying));
             break;
           case DownloadEventProgress(:final value):
@@ -121,12 +165,10 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
             break;
           case DownloadEventSuccess():
             await saveImage(filePath, task.fileName);
-            FlutterForegroundTask.stopService();
             EasyLoading.showSuccess(i18n.downloads.messages.downloadCompletedWith(task.fileName));
             task.emit(task.state.copyWith(status: DownloadStatus.completed));
             break;
           case DownloadEventError(:final error):
-            FlutterForegroundTask.stopService();
             EasyLoading.showError(i18n.downloads.messages.downloadFailedWith(task.fileName));
             task.emit(task.state.copyWith(status: DownloadStatus.failed, error: error));
             break;
