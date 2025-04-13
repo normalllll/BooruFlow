@@ -126,8 +126,8 @@ class DownloadQueueManager {
     final taskId = task.taskId;
 
     eventCallback(DownloadEventStart());
+    _taskProgress[taskId] = 0.0;
     _updateProgressThrottled();
-
     try {
       await yandeClient.downloadToFile(
         url: args.url,
@@ -140,13 +140,13 @@ class DownloadQueueManager {
           _updateProgressThrottled();
         },
       );
-      _taskProgress[taskId] = 1.0;
       _completedTaskCount++;
       eventCallback(DownloadEventSuccess());
     } catch (e) {
-      _taskProgress[taskId] = 1.0;
       _failedTaskCount++;
       eventCallback(DownloadEventError(e.toString()));
+    } finally{
+      _taskProgress[taskId] = 1.0;
     }
 
     _activeJobs.remove(taskId);
@@ -171,13 +171,12 @@ class DownloadQueueManager {
 
   void _updateProgress() {
     if (!_foregroundServiceStarted) return;
-
-    final finishedCount = _completedTaskCount + _failedTaskCount + _canceledTaskCount;
-    final activeProgress = _taskProgress.values.fold(0.0, (a, b) => a + b);
+    final total = _totalTaskCount;
+    final completedProgress = _taskProgress.values.fold(0.0, (a, b) => a + b);
 
     double overallProgress = 0.0;
-    if (_totalTaskCount > 0) {
-      overallProgress = (finishedCount + activeProgress) / _totalTaskCount;
+    if (total > 0) {
+      overallProgress = completedProgress / total;
       if (overallProgress > 1.0) overallProgress = 1.0;
     }
 

@@ -45,7 +45,7 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
     try {
       DownloadForegroundServicePlugin.updateProgress(
         title: 'Yande GUI Downloader',
-        text: '🖼️$total ✅$completed ❌$failed ✖️$canceled ${(overallProgress*100).toStringAsFixed(1)}%',
+        text: '🖼️$total ✅$completed ❌$failed ✖️$canceled ${(overallProgress * 100).toStringAsFixed(1)}%',
 
         progress: (overallProgress * 100).toInt(),
       );
@@ -54,7 +54,7 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
     }
   }
 
-  Future<void> _requestPermissions() async {
+  Future<void> _requestNotificationPermissions() async {
     final status = await Permission.notification.status;
 
     // TODO openDialog: Tell users what the permission application is for
@@ -65,6 +65,7 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
 
     if (!status.isGranted) {
       final result = await Permission.notification.request();
+      await Future.delayed(const Duration(milliseconds: 300));
       if (!result.isGranted) {
         return;
       }
@@ -76,7 +77,7 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
     return result;
   }
 
-  Future<bool> existImage(String fileName, int fileSize) async {
+  Future<bool> existImage(String fileName, int? fileSize) async {
     final bool result = await _channel.invokeMethod('existImage', {'fileName': fileName});
     return result;
   }
@@ -91,7 +92,7 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
   @override
   Future<bool> checkPrerequisites(DownloadTask task) async {
     try {
-      await _requestPermissions();
+      await _requestNotificationPermissions();
       final androidInfo = await DeviceInfoPlugin().androidInfo;
 
       if (androidInfo.version.sdkInt < 29) {
@@ -116,7 +117,7 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
       return false;
     }
 
-    if (await existImage(task.fileName, 0)) {
+    if (await existImage(task.fileName, null)) {
       EasyLoading.showError(i18n.downloads.messages.imageFileExists);
     }
     return true;
