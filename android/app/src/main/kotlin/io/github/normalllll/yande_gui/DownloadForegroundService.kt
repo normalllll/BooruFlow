@@ -25,6 +25,14 @@ class DownloadForegroundService : Service() {
         }
     }
 
+    override fun onTimeout(startId: Int) {
+        stopSelf()
+    }
+
+    override fun onTimeout(startId: Int, fgsType: Int) {
+        stopSelf()
+    }
+
     override fun onCreate() {
         super.onCreate()
         instance = this
