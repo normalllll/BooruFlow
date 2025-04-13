@@ -22,8 +22,8 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           cache: true
-          cache-workspaces: |-
-            ./rust
+          cache-workspaces: ./rust
+          cache-key: rust-${{ runner.os }}-${{ hashFiles('rust/Cargo.lock') }}
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -31,8 +31,8 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
-          cache-key: flutter-${{ runner.os }}-${{ matrix.flutter-version }}
-          cache-path: ${{ runner.tool_cache }}/flutter/${{ matrix.flutter-version }}
+          cache-key: flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}
+          cache-path: ${{ runner.tool_cache }}/flutter/${{ env.FLUTTER_VERSION }}
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -44,9 +44,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            ~/android/.gradle/caches
-            ~/android/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+            ./android/.gradle/caches
+            ./android/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('android/gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
 
@@ -87,8 +87,8 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           cache: true
-          cache-workspaces: |-
-            ./rust
+          cache-workspaces: ./rust
+          cache-key: rust-${{ runner.os }}-${{ hashFiles('rust/Cargo.lock') }}
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -96,8 +96,8 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
-          cache-key: flutter-${{ runner.os }}-${{ matrix.flutter-version }}
-          cache-path: ${{ runner.tool_cache }}/flutter/${{ matrix.flutter-version }}
+          cache-key: flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}
+          cache-path: ${{ runner.tool_cache }}/flutter/${{ env.FLUTTER_VERSION }}
 
       - name: Get Flutter Dependencies
         run: flutter pub get
@@ -132,8 +132,8 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           cache: true
-          cache-workspaces: |-
-            ./rust
+          cache-workspaces: ./rust
+          cache-key: rust-${{ runner.os }}-${{ hashFiles('rust/Cargo.lock') }}
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -141,8 +141,8 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
-          cache-key: flutter-${{ runner.os }}-${{ matrix.flutter-version }}
-          cache-path: ${{ runner.tool_cache }}/flutter/${{ matrix.flutter-version }}
+          cache-key: flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}
+          cache-path: ${{ runner.tool_cache }}/flutter/${{ env.FLUTTER_VERSION }}
 
       - name: Get Flutter Dependencies
         run: flutter pub get
@@ -174,8 +174,8 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           cache: true
-          cache-workspaces: |-
-            ./rust
+          cache-workspaces: ./rust
+          cache-key: rust-${{ runner.os }}-${{ hashFiles('rust/Cargo.lock') }}
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -183,8 +183,8 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
-          cache-key: flutter-${{ runner.os }}-${{ matrix.flutter-version }}
-          cache-path: ${{ runner.tool_cache }}/flutter/${{ matrix.flutter-version }}
+          cache-key: flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}
+          cache-path: ${{ runner.tool_cache }}/flutter/${{ env.FLUTTER_VERSION }}
 
       - name: Get Flutter Dependencies
         run: flutter pub get
@@ -216,8 +216,8 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           cache: true
-          cache-workspaces: |-
-            ./rust
+          cache-workspaces: ./rust
+          cache-key: rust-${{ runner.os }}-${{ hashFiles('rust/Cargo.lock') }}
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -225,8 +225,8 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
-          cache-key: flutter-${{ runner.os }}-${{ matrix.flutter-version }}
-          cache-path: ${{ runner.tool_cache }}/flutter/${{ matrix.flutter-version }}
+          cache-key: flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}
+          cache-path: ${{ runner.tool_cache }}/flutter/${{ env.FLUTTER_VERSION }}
 
       - name: Get Flutter Dependencies
         run: flutter pub get
