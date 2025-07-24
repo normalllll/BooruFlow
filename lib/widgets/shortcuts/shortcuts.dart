@@ -9,13 +9,7 @@ class ShortcutsWidget extends StatefulWidget {
 
   final Widget child;
 
-  const ShortcutsWidget({
-    super.key,
-    required this.valueKey,
-    required this.actions,
-    required this.shortcuts,
-    required this.child,
-  });
+  const ShortcutsWidget({super.key, required this.valueKey, required this.actions, required this.shortcuts, required this.child});
 
   @override
   State<ShortcutsWidget> createState() => _ShortcutsWidgetState();

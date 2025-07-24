@@ -80,4 +80,3 @@ abstract class DownloaderPlatform<T> {
     _taskListController.add(_taskMap.values.toList(growable: false));
   }
 }
-

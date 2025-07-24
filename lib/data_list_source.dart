@@ -15,7 +15,10 @@ abstract class DataListSource<T> extends LoadingMoreBase<T> {
   bool nextClear = false;
 
   @override
-  Future<bool> refresh([bool notifyStateChanged = false, bool auto = true]) async {
+  Future<bool> refresh([
+    bool notifyStateChanged = false,
+    bool auto = true,
+  ]) async {
     _hasMore = true;
     _initialized = false;
     _page = 1;

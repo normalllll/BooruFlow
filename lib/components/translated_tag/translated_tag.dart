@@ -19,12 +19,12 @@ class TranslatedTag extends StatelessWidget {
           children: [
             TextSpan(
               text: text,
-              style:  TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600),
+              style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600),
             ),
             if (TagTranslationsService.translate(text) case final transltedText?)
               TextSpan(
                 text: ' #$transltedText',
-                style:  TextStyle(fontSize: 14, fontWeight: FontWeight.w600,color: Theme.of(context).colorScheme.primary),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.primary),
               ),
           ],
         ),

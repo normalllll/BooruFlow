@@ -22,10 +22,7 @@ class LazyIndexedStack extends StatefulWidget {
 
 class _LazyIndexedStackState extends State<LazyIndexedStack> {
   late final Map<int, bool> _innerWidgetMap = Map<int, bool>.fromEntries(
-    List<MapEntry<int, bool>>.generate(
-      widget.children.length,
-      (int i) => MapEntry<int, bool>(i, i == index),
-    ),
+    List<MapEntry<int, bool>>.generate(widget.children.length, (int i) => MapEntry<int, bool>(i, i == index)),
   );
 
   late int index = widget.index;

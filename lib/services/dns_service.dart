@@ -8,7 +8,9 @@ class DnsService {
     HttpClient client = HttpClient();
     client.connectionTimeout = const Duration(seconds: 3);
     client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-    final request = await client.getUrl(Uri.parse('https://doh.sb/dns-query?ct=application/dns-json&name=$domain&type=A&do=false&cd=false'));
+    final request = await client.getUrl(
+      Uri.parse('https://doh.sb/dns-query?ct=application/dns-json&name=$domain&type=A&do=false&cd=false'),
+    );
     final response = await request.close();
     if (response.statusCode == 200) {
       final body = await response.transform(utf8.decoder).join();

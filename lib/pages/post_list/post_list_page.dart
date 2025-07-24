@@ -34,7 +34,7 @@ class _PostListPageState extends ConsumerState<PostListPage> {
 
   bool get needTopPadding => widget.tags == null;
 
-   Widget buildRefreshIndicator(
+  Widget buildRefreshIndicator(
     BuildContext context,
     RefreshIndicatorMode refreshState,
     double pulledExtent,

@@ -69,11 +69,7 @@ class DownloadQueueManager {
       _queue.add(
         _DownloadTaskEntry(
           taskId: taskId,
-          args: _DownloadTaskArgs(
-            url: url,
-            filePath: filePath,
-            maxSegmentsPerTask: maxSegmentsPerTask,
-          ),
+          args: _DownloadTaskArgs(url: url, filePath: filePath, maxSegmentsPerTask: maxSegmentsPerTask),
           callback: onEvent,
         ),
       );
@@ -145,7 +141,7 @@ class DownloadQueueManager {
     } catch (e) {
       _failedTaskCount++;
       eventCallback(DownloadEventError(e.toString()));
-    } finally{
+    } finally {
       _taskProgress[taskId] = 1.0;
     }
 
@@ -180,13 +176,7 @@ class DownloadQueueManager {
       if (overallProgress > 1.0) overallProgress = 1.0;
     }
 
-    onProgressChanged?.call(
-      _totalTaskCount,
-      _completedTaskCount,
-      _failedTaskCount,
-      _canceledTaskCount,
-      overallProgress,
-    );
+    onProgressChanged?.call(_totalTaskCount, _completedTaskCount, _failedTaskCount, _canceledTaskCount, overallProgress);
   }
 
   void resetStats() {
@@ -198,7 +188,6 @@ class DownloadQueueManager {
     _foregroundServiceStarted = false;
   }
 }
-
 
 class _DownloadTaskEntry {
   final String taskId;

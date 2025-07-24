@@ -6,7 +6,7 @@ version: 0.7.2+33
 
 environment:
   sdk: '>=3.7.2 <4.0.0'
-  flutter: '>=3.29.2 <4.0.0'
+  flutter: '>=3.32.7 <4.0.0'
 
 dependencies:
   flutter:
@@ -17,14 +17,14 @@ dependencies:
   cupertino_icons: ^1.0.8
   core:
     path: rust_builder
-  flutter_rust_bridge: 2.9.0
+  flutter_rust_bridge: 2.11.1
   package_info_plus: ^8.3.0
-  device_info_plus: ^11.3.3
-  permission_handler: ^11.4.0
+  device_info_plus: ^11.5.0
+  permission_handler: ^12.0.1
 
   meta:
-  flutter_riverpod: ^2.6.1
-  riverpod_annotation: ^2.6.1
+  flutter_riverpod: ^3.0.0-dev.16
+  riverpod_annotation: ^3.0.0-dev.16
   path_provider: ^2.1.5
   visibility_detector: ^0.4.0+2
   path: ^1.9.1
@@ -34,19 +34,19 @@ dependencies:
       url: https://github.com/normalllll/extended_image.git
       ref: master
   flutter_easyloading: ^3.0.5
-  url_launcher: ^6.3.1
+  url_launcher: ^6.3.2
   vector_math: ^2.1.4
   flutter_animate: ^4.5.2
-  file_picker: ^9.2.1
+  file_picker: ^10.2.0
   i18n: ^4.2.4
 
   collection: any
 dev_dependencies:
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   build_runner:
   custom_lint:
-  riverpod_generator: ^2.6.3
-  riverpod_lint: ^2.6.3
+  riverpod_generator: ^3.0.0-dev.16
+  riverpod_lint: ^3.0.0-dev.16
 flutter:
   uses-material-design: true
 

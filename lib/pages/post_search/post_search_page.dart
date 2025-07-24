@@ -40,28 +40,32 @@ class _PostSearchPageState extends State<PostSearchPage> {
               filled: true,
               hintText: i18n.postSearch.title,
               prefixIcon: Icon(Icons.search, color: Theme.of(context).inputDecorationTheme.hintStyle?.color),
-              suffixIcon: _hasTextContent
-                  ? IconButton(
-                      icon: Icon(Icons.cancel, color: Theme.of(context).inputDecorationTheme.hintStyle?.color),
-                      onPressed: () {
-                        _textController.clear();
-                        setState(() {
-                          _hasTextContent = false;
-                        });
-                      },
-                    )
-                  : null,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30.0),
-                borderSide: BorderSide.none,
-              ),
+              suffixIcon:
+                  _hasTextContent
+                      ? IconButton(
+                        icon: Icon(Icons.cancel, color: Theme.of(context).inputDecorationTheme.hintStyle?.color),
+                        onPressed: () {
+                          _textController.clear();
+                          setState(() {
+                            _hasTextContent = false;
+                          });
+                        },
+                      )
+                      : null,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.0), borderSide: BorderSide.none),
               contentPadding: const EdgeInsets.all(8),
             ),
           ),
         ),
-        if (_hasTextContent) IconButton(onPressed: () {
-          Navigator.of(context).push(MaterialPageRoute(builder: (context) => PostListPage(tags: _textController.text.trim().split(' '))));
-        }, icon: const Icon(Icons.search))
+        if (_hasTextContent)
+          IconButton(
+            onPressed: () {
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (context) => PostListPage(tags: _textController.text.trim().split(' '))));
+            },
+            icon: const Icon(Icons.search),
+          ),
       ],
     );
   }
@@ -72,10 +76,7 @@ class _PostSearchPageState extends State<PostSearchPage> {
       builder: (context, horizontal) {
         return Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: _buildSearchField(),
-            ),
+            Padding(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), child: _buildSearchField()),
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
@@ -96,9 +97,7 @@ class _PostSearchPageState extends State<PostSearchPage> {
                                   _hasTextContent = true;
                                 });
                               }
-                              _textController.selection = TextSelection.fromPosition(
-                                TextPosition(offset: _textController.text.length),
-                              );
+                              _textController.selection = TextSelection.fromPosition(TextPosition(offset: _textController.text.length));
                               Future.delayed(const Duration(milliseconds: 100), () {
                                 if (_textScrollController.hasClients) {
                                   _textScrollController.jumpTo(_textScrollController.position.maxScrollExtent);
@@ -106,9 +105,7 @@ class _PostSearchPageState extends State<PostSearchPage> {
                               });
                             }
                           },
-                          child: TranslatedTag(
-                            text: tag,
-                          ),
+                          child: TranslatedTag(text: tag),
                         ),
                     ],
                   ),

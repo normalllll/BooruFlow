@@ -10,29 +10,17 @@ class PostListState {
 
   final PostListSource source;
 
+  PostListState({required this.tags, required this.source});
 
-  PostListState({
-    required this.tags,
-    required this.source,
-  });
-
-  PostListState copyWith({
-    List<String>? tags,
-    PostListSource? source,
-  }) {
-    return PostListState(
-      tags: tags ?? this.tags,
-      source: source ?? this.source,
-    );
+  PostListState copyWith({List<String>? tags, PostListSource? source}) {
+    return PostListState(tags: tags ?? this.tags, source: source ?? this.source);
   }
 }
 
 class PostListSource extends DataListSource<Post> {
   final List<String> tags;
 
-  PostListSource({
-    this.tags = const [],
-  });
+  PostListSource({this.tags = const []});
 
   @override
   Future<List<Post>> fetchList(int page, int limit) {
@@ -44,10 +32,7 @@ class PostListSource extends DataListSource<Post> {
 class PostList extends _$PostList {
   @override
   PostListState build(Type type, {required List<String> tags}) {
-    return PostListState(
-      tags: tags,
-      source: PostListSource(tags: tags),
-    );
+    return PostListState(tags: tags, source: PostListSource(tags: tags));
   }
 
   void onTagsChanged(List<String> tags) {
@@ -55,6 +40,4 @@ class PostList extends _$PostList {
     state = state.copyWith(tags: tags, source: PostListSource(tags: tags));
     state.source.refresh(true);
   }
-
-
 }

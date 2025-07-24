@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:yande_gui/global.dart';
 
-
 class YandeImage extends StatelessWidget {
   final String url;
   final Color? color;
@@ -20,7 +19,17 @@ class YandeImage extends StatelessWidget {
 
   final Widget? placeholderWidget;
 
-  const YandeImage(this.url, {super.key, this.color, this.colorBlendMode, this.width, this.height, this.fit, this.imageBuilder, this.placeholderWidget});
+  const YandeImage(
+    this.url, {
+    super.key,
+    this.color,
+    this.colorBlendMode,
+    this.width,
+    this.height,
+    this.fit,
+    this.imageBuilder,
+    this.placeholderWidget,
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -34,10 +34,7 @@ class AutoScaffold extends StatelessWidget {
     return Scaffold(
       appBar: title != null ? AppBar(title: title, scrolledUnderElevation: 0) : null,
       resizeToAvoidBottomInset: true,
-      body: SafeArea(
-        top: topSafeArea ?? true,
-        child: child,
-      ),
+      body: SafeArea(top: topSafeArea ?? true, child: child),
       floatingActionButton: floatingActionButton,
     );
   }

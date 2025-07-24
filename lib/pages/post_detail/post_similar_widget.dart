@@ -17,12 +17,7 @@ class PostSimilarWidget extends ConsumerStatefulWidget {
   final double maxWidth;
   final double maxHeight;
 
-  const PostSimilarWidget({
-    super.key,
-    required this.id,
-    required this.maxWidth,
-    required this.maxHeight,
-  });
+  const PostSimilarWidget({super.key, required this.id, required this.maxWidth, required this.maxHeight});
 
   @override
   ConsumerState createState() => _PostSimilarWidgetState();
@@ -47,11 +42,12 @@ class _PostSimilarWidgetState extends ConsumerState<PostSimilarWidget> {
         }
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => ImageZoomPage(
-              url: post.fileUrl ?? post.jpegUrl ?? post.previewUrl,
-              width: post.width.toDouble(),
-              height: post.height.toDouble(),
-            ),
+            builder:
+                (context) => ImageZoomPage(
+                  url: post.fileUrl ?? post.jpegUrl ?? post.previewUrl,
+                  width: post.width.toDouble(),
+                  height: post.height.toDouble(),
+                ),
           ),
         );
       },
@@ -84,29 +80,24 @@ class _PostSimilarWidgetState extends ConsumerState<PostSimilarWidget> {
 
     return switch (ref.watch(provider)) {
       AsyncData(:final value) => Column(
-          children: [
-            Text(i18n.postDetail.similarPosts),
-            for (final post in value.posts) ...[
-              const Divider(),
-              if (post.parentId == widget.id) Text('${i18n.postDetail.parentPost}: ${widget.id}') else Text('${i18n.postDetail.childPost}: ${post.id}'),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: buildPost(post),
-              ),
-            ],
+        children: [
+          Text(i18n.postDetail.similarPosts),
+          for (final post in value.posts) ...[
+            const Divider(),
+            if (post.parentId == widget.id)
+              Text('${i18n.postDetail.parentPost}: ${widget.id}')
+            else
+              Text('${i18n.postDetail.childPost}: ${post.id}'),
+            Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: buildPost(post)),
           ],
-        ),
+        ],
+      ),
       AsyncError(:final error) => GestureDetector(
-          onTap: () => ref.refresh(provider),
-          behavior: HitTestBehavior.translucent,
-          child: Text(i18n.generic.errorWithValue(error.toString())),
-        ),
-      _ => const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 4),
-          child: Center(
-            child: CupertinoActivityIndicator(),
-          ),
-        ),
+        onTap: () => ref.refresh(provider),
+        behavior: HitTestBehavior.translucent,
+        child: Text(i18n.generic.errorWithValue(error.toString())),
+      ),
+      _ => const Padding(padding: EdgeInsets.symmetric(horizontal: 4), child: Center(child: CupertinoActivityIndicator())),
     };
   }
 }

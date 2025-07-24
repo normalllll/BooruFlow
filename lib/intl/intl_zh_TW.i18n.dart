@@ -4,78 +4,45 @@ import 'package:i18n/i18n.dart' as i18n;
 import 'intl.i18n.dart';
 
 String get _languageCode => 'zh';
-String _plural(
-  int count, {
-  String? zero,
-  String? one,
-  String? two,
-  String? few,
-  String? many,
-  String? other,
-}) => i18n.plural(
-  count,
-  _languageCode,
-  zero: zero,
-  one: one,
-  two: two,
-  few: few,
-  many: many,
-  other: other,
-);
-String _ordinal(
-  int count, {
-  String? zero,
-  String? one,
-  String? two,
-  String? few,
-  String? many,
-  String? other,
-}) => i18n.ordinal(
-  count,
-  _languageCode,
-  zero: zero,
-  one: one,
-  two: two,
-  few: few,
-  many: many,
-  other: other,
-);
-String _cardinal(
-  int count, {
-  String? zero,
-  String? one,
-  String? two,
-  String? few,
-  String? many,
-  String? other,
-}) => i18n.cardinal(
-  count,
-  _languageCode,
-  zero: zero,
-  one: one,
-  two: two,
-  few: few,
-  many: many,
-  other: other,
-);
+
+String _plural(int count, {String? zero, String? one, String? two, String? few, String? many, String? other}) =>
+    i18n.plural(count, _languageCode, zero: zero, one: one, two: two, few: few, many: many, other: other);
+
+String _ordinal(int count, {String? zero, String? one, String? two, String? few, String? many, String? other}) =>
+    i18n.ordinal(count, _languageCode, zero: zero, one: one, two: two, few: few, many: many, other: other);
+
+String _cardinal(int count, {String? zero, String? one, String? two, String? few, String? many, String? other}) =>
+    i18n.cardinal(count, _languageCode, zero: zero, one: one, two: two, few: few, many: many, other: other);
 
 class IntlZhTW extends Intl {
   const IntlZhTW();
+
   String get locale => "zh_TW";
+
   String get languageCode => "zh";
+
   GenericIntlZhTW get generic => GenericIntlZhTW(this);
+
   UpdateIntlZhTW get update => UpdateIntlZhTW(this);
+
   PostListIntlZhTW get postList => PostListIntlZhTW(this);
+
   PostDetailIntlZhTW get postDetail => PostDetailIntlZhTW(this);
+
   PostSearchIntlZhTW get postSearch => PostSearchIntlZhTW(this);
+
   ImageZoomIntlZhTW get imageZoom => ImageZoomIntlZhTW(this);
+
   DownloadsIntlZhTW get downloads => DownloadsIntlZhTW(this);
+
   AboutIntlZhTW get about => AboutIntlZhTW(this);
+
   SettingsIntlZhTW get settings => SettingsIntlZhTW(this);
 }
 
 class GenericIntlZhTW extends GenericIntl {
   final IntlZhTW _parent;
+
   const GenericIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
@@ -121,6 +88,7 @@ class GenericIntlZhTW extends GenericIntl {
 
 class UpdateIntlZhTW extends UpdateIntl {
   final IntlZhTW _parent;
+
   const UpdateIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
@@ -136,14 +104,12 @@ class UpdateIntlZhTW extends UpdateIntl {
   /// ```dart
   /// "找不到下載連結。\n請訪問專案頁面以手動更新或在專案Issue頁尋求幫助。"
   /// ```
-  String get selectDownloadUrlFailed =>
-      """找不到下載連結。\n請訪問專案頁面以手動更新或在專案Issue頁尋求幫助。""";
+  String get selectDownloadUrlFailed => """找不到下載連結。\n請訪問專案頁面以手動更新或在專案Issue頁尋求幫助。""";
 
   /// ```dart
   /// "發現新版本: $version。請轉到「關於」頁面並點擊「下載更新」。"
   /// ```
-  String newVersionFound(String version) =>
-      """發現新版本: $version。請轉到「關於」頁面並點擊「下載更新」。""";
+  String newVersionFound(String version) => """發現新版本: $version。請轉到「關於」頁面並點擊「下載更新」。""";
 
   /// ```dart
   /// "沒有新版本。"
@@ -153,6 +119,7 @@ class UpdateIntlZhTW extends UpdateIntl {
 
 class PostListIntlZhTW extends PostListIntl {
   final IntlZhTW _parent;
+
   const PostListIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
@@ -173,6 +140,7 @@ class PostListIntlZhTW extends PostListIntl {
 
 class PostDetailIntlZhTW extends PostDetailIntl {
   final IntlZhTW _parent;
+
   const PostDetailIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
@@ -243,6 +211,7 @@ class PostDetailIntlZhTW extends PostDetailIntl {
 
 class PostSearchIntlZhTW extends PostSearchIntl {
   final IntlZhTW _parent;
+
   const PostSearchIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
@@ -253,6 +222,7 @@ class PostSearchIntlZhTW extends PostSearchIntl {
 
 class ImageZoomIntlZhTW extends ImageZoomIntl {
   final IntlZhTW _parent;
+
   const ImageZoomIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
@@ -263,17 +233,20 @@ class ImageZoomIntlZhTW extends ImageZoomIntl {
 
 class DownloadsIntlZhTW extends DownloadsIntl {
   final IntlZhTW _parent;
+
   const DownloadsIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
   /// "下載項"
   /// ```
   String get title => """下載項""";
+
   MessagesDownloadsIntlZhTW get messages => MessagesDownloadsIntlZhTW(this);
 }
 
 class MessagesDownloadsIntlZhTW extends MessagesDownloadsIntl {
   final DownloadsIntlZhTW _parent;
+
   const MessagesDownloadsIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
@@ -339,6 +312,7 @@ class MessagesDownloadsIntlZhTW extends MessagesDownloadsIntl {
 
 class AboutIntlZhTW extends AboutIntl {
   final IntlZhTW _parent;
+
   const AboutIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
@@ -389,6 +363,7 @@ class AboutIntlZhTW extends AboutIntl {
 
 class SettingsIntlZhTW extends SettingsIntl {
   final IntlZhTW _parent;
+
   const SettingsIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
@@ -455,25 +430,25 @@ class SettingsIntlZhTW extends SettingsIntl {
   /// "深色模式"
   /// ```
   String get dark => """深色模式""";
-  LanguageDialogSettingsIntlZhTW get languageDialog =>
-      LanguageDialogSettingsIntlZhTW(this);
-  ThemeModeDialogSettingsIntlZhTW get themeModeDialog =>
-      ThemeModeDialogSettingsIntlZhTW(this);
-  DownloadDirectoryDialogSettingsIntlZhTW get downloadDirectoryDialog =>
-      DownloadDirectoryDialogSettingsIntlZhTW(this);
-  DnsPrefetchDialogSettingsIntlZhTW get dnsPrefetchDialog =>
-      DnsPrefetchDialogSettingsIntlZhTW(this);
-  ColumnsPerRowDialogSettingsIntlZhTW get columnsPerRowDialog =>
-      ColumnsPerRowDialogSettingsIntlZhTW(this);
-  MaxConcurrentDownloadsDialogSettingsIntlZhTW
-  get maxConcurrentDownloadsDialog =>
-      MaxConcurrentDownloadsDialogSettingsIntlZhTW(this);
-  MaxSegmentsPerTaskDialogSettingsIntlZhTW get maxSegmentsPerTaskDialog =>
-      MaxSegmentsPerTaskDialogSettingsIntlZhTW(this);
+
+  LanguageDialogSettingsIntlZhTW get languageDialog => LanguageDialogSettingsIntlZhTW(this);
+
+  ThemeModeDialogSettingsIntlZhTW get themeModeDialog => ThemeModeDialogSettingsIntlZhTW(this);
+
+  DownloadDirectoryDialogSettingsIntlZhTW get downloadDirectoryDialog => DownloadDirectoryDialogSettingsIntlZhTW(this);
+
+  DnsPrefetchDialogSettingsIntlZhTW get dnsPrefetchDialog => DnsPrefetchDialogSettingsIntlZhTW(this);
+
+  ColumnsPerRowDialogSettingsIntlZhTW get columnsPerRowDialog => ColumnsPerRowDialogSettingsIntlZhTW(this);
+
+  MaxConcurrentDownloadsDialogSettingsIntlZhTW get maxConcurrentDownloadsDialog => MaxConcurrentDownloadsDialogSettingsIntlZhTW(this);
+
+  MaxSegmentsPerTaskDialogSettingsIntlZhTW get maxSegmentsPerTaskDialog => MaxSegmentsPerTaskDialogSettingsIntlZhTW(this);
 }
 
 class LanguageDialogSettingsIntlZhTW extends LanguageDialogSettingsIntl {
   final SettingsIntlZhTW _parent;
+
   const LanguageDialogSettingsIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
@@ -484,6 +459,7 @@ class LanguageDialogSettingsIntlZhTW extends LanguageDialogSettingsIntl {
 
 class ThemeModeDialogSettingsIntlZhTW extends ThemeModeDialogSettingsIntl {
   final SettingsIntlZhTW _parent;
+
   const ThemeModeDialogSettingsIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
@@ -492,9 +468,9 @@ class ThemeModeDialogSettingsIntlZhTW extends ThemeModeDialogSettingsIntl {
   String get title => """主題模式""";
 }
 
-class DownloadDirectoryDialogSettingsIntlZhTW
-    extends DownloadDirectoryDialogSettingsIntl {
+class DownloadDirectoryDialogSettingsIntlZhTW extends DownloadDirectoryDialogSettingsIntl {
   final SettingsIntlZhTW _parent;
+
   const DownloadDirectoryDialogSettingsIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
@@ -511,15 +487,14 @@ class DownloadDirectoryDialogSettingsIntlZhTW
   /// "選擇目錄"
   /// ```
   String get pick => """選擇目錄""";
-  MessagesDownloadDirectoryDialogSettingsIntlZhTW get messages =>
-      MessagesDownloadDirectoryDialogSettingsIntlZhTW(this);
+
+  MessagesDownloadDirectoryDialogSettingsIntlZhTW get messages => MessagesDownloadDirectoryDialogSettingsIntlZhTW(this);
 }
 
-class MessagesDownloadDirectoryDialogSettingsIntlZhTW
-    extends MessagesDownloadDirectoryDialogSettingsIntl {
+class MessagesDownloadDirectoryDialogSettingsIntlZhTW extends MessagesDownloadDirectoryDialogSettingsIntl {
   final DownloadDirectoryDialogSettingsIntlZhTW _parent;
-  const MessagesDownloadDirectoryDialogSettingsIntlZhTW(this._parent)
-    : super(_parent);
+
+  const MessagesDownloadDirectoryDialogSettingsIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
   /// "下載目錄已設為系統預設。"
@@ -539,6 +514,7 @@ class MessagesDownloadDirectoryDialogSettingsIntlZhTW
 
 class DnsPrefetchDialogSettingsIntlZhTW extends DnsPrefetchDialogSettingsIntl {
   final SettingsIntlZhTW _parent;
+
   const DnsPrefetchDialogSettingsIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
@@ -547,9 +523,9 @@ class DnsPrefetchDialogSettingsIntlZhTW extends DnsPrefetchDialogSettingsIntl {
   String get title => """DNS 預抓取""";
 }
 
-class ColumnsPerRowDialogSettingsIntlZhTW
-    extends ColumnsPerRowDialogSettingsIntl {
+class ColumnsPerRowDialogSettingsIntlZhTW extends ColumnsPerRowDialogSettingsIntl {
   final SettingsIntlZhTW _parent;
+
   const ColumnsPerRowDialogSettingsIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
@@ -558,11 +534,10 @@ class ColumnsPerRowDialogSettingsIntlZhTW
   String get title => """每行列數""";
 }
 
-class MaxConcurrentDownloadsDialogSettingsIntlZhTW
-    extends MaxConcurrentDownloadsDialogSettingsIntl {
+class MaxConcurrentDownloadsDialogSettingsIntlZhTW extends MaxConcurrentDownloadsDialogSettingsIntl {
   final SettingsIntlZhTW _parent;
-  const MaxConcurrentDownloadsDialogSettingsIntlZhTW(this._parent)
-    : super(_parent);
+
+  const MaxConcurrentDownloadsDialogSettingsIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
   /// "最大同時下載任務數"
@@ -570,9 +545,9 @@ class MaxConcurrentDownloadsDialogSettingsIntlZhTW
   String get title => """最大同時下載任務數""";
 }
 
-class MaxSegmentsPerTaskDialogSettingsIntlZhTW
-    extends MaxSegmentsPerTaskDialogSettingsIntl {
+class MaxSegmentsPerTaskDialogSettingsIntlZhTW extends MaxSegmentsPerTaskDialogSettingsIntl {
   final SettingsIntlZhTW _parent;
+
   const MaxSegmentsPerTaskDialogSettingsIntlZhTW(this._parent) : super(_parent);
 
   /// ```dart
@@ -590,8 +565,7 @@ Map<String, String> get intlZhTWMap => {
   """generic.disabled""": """停用""",
   """update.checkUpdateStart""": """正在檢查更新...""",
   """update.checkUpdateFailed""": """檢查更新失敗，請檢查您的網路連線。""",
-  """update.selectDownloadUrlFailed""":
-      """找不到下載連結。\n請訪問專案頁面以手動更新或在專案Issue頁尋求幫助。""",
+  """update.selectDownloadUrlFailed""": """找不到下載連結。\n請訪問專案頁面以手動更新或在專案Issue頁尋求幫助。""",
   """update.noNewVersionFound""": """沒有新版本。""",
   """postList.short""": """帖子""",
   """postList.title""": """帖子列表""",
@@ -610,12 +584,10 @@ Map<String, String> get intlZhTWMap => {
   """postSearch.title""": """搜尋""",
   """imageZoom.title""": """縮放圖片""",
   """downloads.title""": """下載項""",
-  """downloads.messages.storagePermanentlyDenied""":
-      """您已永久拒絕存儲權限。\n請在設定中手動啟用存儲權限。""",
+  """downloads.messages.storagePermanentlyDenied""": """您已永久拒絕存儲權限。\n請在設定中手動啟用存儲權限。""",
   """downloads.messages.storageDenied""": """您已拒絕存儲權限。""",
   """downloads.messages.deviceInfoError""": """無法解析設備資訊。""",
-  """downloads.messages.photosPermanentlyDenied""":
-      """您已永久拒絕照片權限。\n請在設定中手動啟用照片權限。""",
+  """downloads.messages.photosPermanentlyDenied""": """您已永久拒絕照片權限。\n請在設定中手動啟用照片權限。""",
   """downloads.messages.photosDenied""": """您已拒絕照片權限。""",
   """downloads.messages.downloadTaskExists""": """下載任務已經存在。""",
   """downloads.messages.imageFileExists""": """圖片檔案已經存在。""",
@@ -646,12 +618,9 @@ Map<String, String> get intlZhTWMap => {
   """settings.downloadDirectoryDialog.title""": """下載目錄""",
   """settings.downloadDirectoryDialog.pickerTitle""": """選擇目錄""",
   """settings.downloadDirectoryDialog.pick""": """選擇目錄""",
-  """settings.downloadDirectoryDialog.messages.setToPlatformDefault""":
-      """下載目錄已設為系統預設。""",
-  """settings.downloadDirectoryDialog.messages.pathNotAbsolute""":
-      """路徑必須是絕對路徑。""",
-  """settings.downloadDirectoryDialog.messages.pathNotWritable""":
-      """路徑不可寫入。""",
+  """settings.downloadDirectoryDialog.messages.setToPlatformDefault""": """下載目錄已設為系統預設。""",
+  """settings.downloadDirectoryDialog.messages.pathNotAbsolute""": """路徑必須是絕對路徑。""",
+  """settings.downloadDirectoryDialog.messages.pathNotWritable""": """路徑不可寫入。""",
   """settings.dnsPrefetchDialog.title""": """DNS 預抓取""",
   """settings.columnsPerRowDialog.title""": """每行列數""",
   """settings.maxConcurrentDownloadsDialog.title""": """最大同時下載任務數""",

@@ -17,21 +17,12 @@ class AboutPage extends StatefulWidget {
 }
 
 class _AboutPageState extends State<AboutPage> {
-  Widget buildItem({
-    required String title,
-    String? subtitle,
-    Widget? leading,
-    Function()? onTap,
-  }) {
+  Widget buildItem({required String title, String? subtitle, Widget? leading, Function()? onTap}) {
     return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: ListTile(
         leading: leading,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         title: Text(title),
         subtitle: subtitle != null ? Text(subtitle) : null,
         onTap: onTap,
@@ -41,23 +32,25 @@ class _AboutPageState extends State<AboutPage> {
 
   void doUpdate() {
     EasyLoading.showToast(i18n.update.checkUpdateStart);
-    UpdaterService.checkForUpdate().then((result) {
-      if (result == null) {
-        EasyLoading.showToast(i18n.update.noNewVersionFound);
-        return;
-      }
+    UpdaterService.checkForUpdate()
+        .then((result) {
+          if (result == null) {
+            EasyLoading.showToast(i18n.update.noNewVersionFound);
+            return;
+          }
 
-      UpdaterService.selectDownloadUrl(result.$3).then((url) {
-        if (url == null) {
-          EasyLoading.showToast(i18n.update.selectDownloadUrlFailed);
-          return;
-        }
+          UpdaterService.selectDownloadUrl(result.$3).then((url) {
+            if (url == null) {
+              EasyLoading.showToast(i18n.update.selectDownloadUrlFailed);
+              return;
+            }
 
-        launchUrlString(url, mode: LaunchMode.externalApplication);
-      });
-    }).catchError((e) {
-      EasyLoading.showToast(i18n.update.checkUpdateFailed);
-    });
+            launchUrlString(url, mode: LaunchMode.externalApplication);
+          });
+        })
+        .catchError((e) {
+          EasyLoading.showToast(i18n.update.checkUpdateFailed);
+        });
   }
 
   @override
@@ -88,16 +81,8 @@ class _AboutPageState extends State<AboutPage> {
               leading: const Icon(Icons.tag_outlined),
               subtitle: '${Global.appVersion}+${Global.buildNumber}',
             ),
-            buildItem(
-              title: i18n.about.dartVersion,
-              leading: const Icon(Icons.verified_outlined),
-              subtitle: Platform.version,
-            ),
-            buildItem(
-              title: i18n.about.rustVersion,
-              leading: const Icon(Icons.verified_outlined),
-              subtitle: rustcVersion(),
-            ),
+            buildItem(title: i18n.about.dartVersion, leading: const Icon(Icons.verified_outlined), subtitle: Platform.version),
+            buildItem(title: i18n.about.rustVersion, leading: const Icon(Icons.verified_outlined), subtitle: rustcVersion()),
             buildItem(
               title: i18n.about.discussion,
               leading: const Icon(Icons.telegram),

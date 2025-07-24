@@ -10,11 +10,7 @@ class DownloadForegroundServicePlugin {
     }
   }
 
-  static Future<void> updateProgress({
-    required String title,
-    required String text,
-    int? progress,
-  }) async {
+  static Future<void> updateProgress({required String title, required String text, int? progress}) async {
     if (Platform.isAndroid) {
       final args = {'title': title, 'text': text, 'progress': progress};
 

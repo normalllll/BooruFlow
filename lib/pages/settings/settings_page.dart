@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:yande_gui/global.dart';
 import 'package:yande_gui/i18n.dart';
-import 'package:yande_gui/pages/downloads/logic.dart';
 import 'package:yande_gui/services/settings_service.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
 import 'package:path/path.dart' as path;
@@ -19,21 +18,12 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  Widget buildItem({
-    required Widget title,
-    Widget? subtitle,
-    Widget? leading,
-    Function()? onTap,
-  }) {
+  Widget buildItem({required Widget title, Widget? subtitle, Widget? leading, Function()? onTap}) {
     return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: ListTile(
         leading: leading,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         title: title,
         subtitle: subtitle,
         onTap: onTap,
@@ -228,7 +218,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   rootUpdateController.add(null);
                   Navigator.of(context).pop();
                 },
-              )
+              ),
             ],
           ),
           actions: [
@@ -260,12 +250,7 @@ class _SettingsPageState extends State<SettingsPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextField(
-                    controller: textController,
-                    decoration: const InputDecoration(
-                      hintText: 'Platform Default',
-                    ),
-                  ),
+                  TextField(controller: textController, decoration: const InputDecoration(hintText: 'Platform Default')),
                   const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -432,9 +417,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       });
                     },
                   ),
-                  Text(
-                    currentSliderValue.toString(),
-                  ),
+                  Text(currentSliderValue.toString()),
                 ],
               ),
               actions: [
@@ -487,9 +470,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       });
                     },
                   ),
-                  Text(
-                    currentSliderValue.toString(),
-                  ),
+                  Text(currentSliderValue.toString()),
                 ],
               ),
               actions: [

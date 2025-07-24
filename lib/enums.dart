@@ -18,9 +18,6 @@ enum Resolution {
   double get px => resolution.toDouble();
 
   static Resolution match(int px) {
-    return Resolution.values.reversed.firstWhere(
-      (res) => px >= res.px,
-      orElse: () => Resolution.zero,
-    );
+    return Resolution.values.reversed.firstWhere((res) => px >= res.px, orElse: () => Resolution.zero);
   }
 }

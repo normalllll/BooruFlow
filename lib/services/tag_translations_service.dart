@@ -14,13 +14,13 @@ class TagTranslationsService {
   static int? _index;
 
   static Map<String, String>? get _translations => switch (_index) {
-        0 => _en,
-        1 => _ja,
-        2 => _zhTW,
-        _ => _en,
-      };
+    0 => _en,
+    1 => _ja,
+    2 => _zhTW,
+    _ => _en,
+  };
 
-  static List<String> get knowTags  => _en.entries.map((e)=>e.key).toList();
+  static List<String> get knowTags => _en.entries.map((e) => e.key).toList();
 
   static Future<void> loadAll() async {
     String enJsonString = await rootBundle.loadString('assets/tag_translations/en.json');
