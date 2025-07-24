@@ -54,7 +54,7 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
     }
   }
 
-  Future<void> _requestNotificationPermissions() async {
+  Future<void> _ensureNotificationPermission() async {
     final status = await Permission.notification.status;
 
     // TODO openDialog: Tell users what the permission application is for
@@ -70,6 +70,26 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
         return;
       }
     }
+  }
+
+  Future<bool> _requestPermission({required Permission permission, required String deniedMsg, required String permanentlyDeniedMsg}) async {
+    var status = await permission.status;
+
+    if (status.isPermanentlyDenied) {
+      EasyLoading.showError(permanentlyDeniedMsg);
+      await Future.delayed(const Duration(seconds: 2));
+      openAppSettings();
+      return false;
+    }
+
+    if (!status.isGranted) {
+      status = await permission.request();
+      if (!status.isGranted) {
+        EasyLoading.showError(deniedMsg);
+        return false;
+      }
+    }
+    return true;
   }
 
   Future<bool> saveImage(String filePath, String fileName) async {
@@ -92,26 +112,24 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
   @override
   Future<bool> checkPrerequisites(DownloadTask task) async {
     try {
-      await _requestNotificationPermissions();
+      await _ensureNotificationPermission();
       final androidInfo = await DeviceInfoPlugin().androidInfo;
 
-      if (androidInfo.version.sdkInt < 29) {
-        PermissionStatus status = await Permission.storage.status;
-
-        if (status.isPermanentlyDenied) {
-          EasyLoading.showError(i18n.downloads.messages.storagePermanentlyDenied);
-          await Future.delayed(const Duration(seconds: 2));
-          openAppSettings();
-          return false;
-        }
-        if (!status.isGranted) {
-          status = await Permission.storage.request();
-          if (!status.isGranted) {
-            EasyLoading.showError(i18n.downloads.messages.storageDenied);
-            return false;
-          }
-        }
+      bool ok;
+      if (androidInfo.version.sdkInt >= 33) {
+        ok = await _requestPermission(
+          permission: Permission.photos, // Android 13+ READ_MEDIA_IMAGES
+          deniedMsg: i18n.downloads.messages.photosDenied,
+          permanentlyDeniedMsg: i18n.downloads.messages.photosPermanentlyDenied,
+        );
+      } else {
+        ok = await _requestPermission(
+          permission: Permission.storage, // READ/WRITE_EXTERNAL_STORAGE
+          deniedMsg: i18n.downloads.messages.storageDenied,
+          permanentlyDeniedMsg: i18n.downloads.messages.storagePermanentlyDenied,
+        );
       }
+      if (!ok) return false;
     } catch (e) {
       EasyLoading.showError(i18n.downloads.messages.deviceInfoError);
       return false;
@@ -119,6 +137,7 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
 
     if (await existImage(task.fileName, null)) {
       EasyLoading.showError(i18n.downloads.messages.imageFileExists);
+      return false;
     }
     return true;
   }
