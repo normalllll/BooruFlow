@@ -23,7 +23,7 @@ ThemeData lightTheme(Color primaryColor) => ThemeData(
   ),
   scaffoldBackgroundColor: const Color(0xFFF7F9FC),
   appBarTheme: AppBarTheme(backgroundColor: const Color(0xffffffff)),
-  bottomAppBarTheme: BottomAppBarTheme(color: const Color(0xfffafafa)),
+  bottomAppBarTheme: BottomAppBarThemeData(color: const Color(0xfffafafa)),
   navigationRailTheme: NavigationRailThemeData(backgroundColor: Color(0xFFF0F3F6), indicatorColor: primaryColor),
   iconTheme: IconThemeData(color: const Color(0xff7B8290)),
   inputDecorationTheme: InputDecorationTheme(
@@ -61,7 +61,7 @@ ThemeData darkTheme(Color primaryColor) => ThemeData(
   ),
   scaffoldBackgroundColor: const Color(0xFF000000),
   appBarTheme: AppBarTheme(backgroundColor: const Color(0xFF000000), elevation: 0),
-  bottomAppBarTheme: BottomAppBarTheme(color: const Color(0xFF1A1A1A)),
+  bottomAppBarTheme: BottomAppBarThemeData(color: const Color(0xFF1A1A1A)),
   navigationRailTheme: NavigationRailThemeData(backgroundColor: Color(0xFF101010), indicatorColor: primaryColor),
   iconTheme: IconThemeData(color: const Color(0xFFD1D1D1)),
   inputDecorationTheme: InputDecorationTheme(

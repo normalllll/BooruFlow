@@ -6,8 +6,8 @@ on:
       - 'v*'
 
 env:
-  FLUTTER_VERSION: '3.32.7'
-  RUST_VERSION: '1.88.0'
+  FLUTTER_VERSION: '3.35.2'
+  RUST_VERSION: '1.89.0'
 
 jobs:
   build-and-release:
