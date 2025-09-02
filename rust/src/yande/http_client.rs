@@ -9,7 +9,6 @@ use std::time::Duration;
 use tokio::io::{AsyncSeekExt, AsyncWriteExt};
 use tokio::sync::Mutex;
 use tokio::task;
-use crate::api::yande_client::YandeClient;
 
 pub struct HttpClient {
     client: reqwest::Client,
