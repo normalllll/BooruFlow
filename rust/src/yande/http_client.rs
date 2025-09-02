@@ -9,6 +9,7 @@ use std::time::Duration;
 use tokio::io::{AsyncSeekExt, AsyncWriteExt};
 use tokio::sync::Mutex;
 use tokio::task;
+use crate::api::yande_client::YandeClient;
 
 pub struct HttpClient {
     client: reqwest::Client,
@@ -18,6 +19,7 @@ impl HttpClient {
     pub fn new(ips: Option<[String; 3]>, for_large_file: bool) -> Self {
         let mut client_builder = reqwest::ClientBuilder::new()
             .http2_prior_knowledge()
+            .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)")
             .https_only(true)
             .http2_adaptive_window(true)
             .http2_keep_alive_interval(Duration::from_secs(30))
