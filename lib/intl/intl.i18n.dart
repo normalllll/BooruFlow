@@ -3,45 +3,78 @@
 import 'package:i18n/i18n.dart' as i18n;
 
 String get _languageCode => 'en';
-
-String _plural(int count, {String? zero, String? one, String? two, String? few, String? many, String? other}) =>
-    i18n.plural(count, _languageCode, zero: zero, one: one, two: two, few: few, many: many, other: other);
-
-String _ordinal(int count, {String? zero, String? one, String? two, String? few, String? many, String? other}) =>
-    i18n.ordinal(count, _languageCode, zero: zero, one: one, two: two, few: few, many: many, other: other);
-
-String _cardinal(int count, {String? zero, String? one, String? two, String? few, String? many, String? other}) =>
-    i18n.cardinal(count, _languageCode, zero: zero, one: one, two: two, few: few, many: many, other: other);
+String _plural(
+  int count, {
+  String? zero,
+  String? one,
+  String? two,
+  String? few,
+  String? many,
+  String? other,
+}) => i18n.plural(
+  count,
+  _languageCode,
+  zero: zero,
+  one: one,
+  two: two,
+  few: few,
+  many: many,
+  other: other,
+);
+String _ordinal(
+  int count, {
+  String? zero,
+  String? one,
+  String? two,
+  String? few,
+  String? many,
+  String? other,
+}) => i18n.ordinal(
+  count,
+  _languageCode,
+  zero: zero,
+  one: one,
+  two: two,
+  few: few,
+  many: many,
+  other: other,
+);
+String _cardinal(
+  int count, {
+  String? zero,
+  String? one,
+  String? two,
+  String? few,
+  String? many,
+  String? other,
+}) => i18n.cardinal(
+  count,
+  _languageCode,
+  zero: zero,
+  one: one,
+  two: two,
+  few: few,
+  many: many,
+  other: other,
+);
 
 class Intl {
   const Intl();
-
   String get locale => "en";
-
   String get languageCode => "en";
-
   GenericIntl get generic => GenericIntl(this);
-
   UpdateIntl get update => UpdateIntl(this);
-
   PostListIntl get postList => PostListIntl(this);
-
   PostDetailIntl get postDetail => PostDetailIntl(this);
-
   PostSearchIntl get postSearch => PostSearchIntl(this);
-
   ImageZoomIntl get imageZoom => ImageZoomIntl(this);
-
   DownloadsIntl get downloads => DownloadsIntl(this);
-
   AboutIntl get about => AboutIntl(this);
-
   SettingsIntl get settings => SettingsIntl(this);
 }
 
 class GenericIntl {
   final Intl _parent;
-
   const GenericIntl(this._parent);
 
   /// ```dart
@@ -87,7 +120,6 @@ class GenericIntl {
 
 class UpdateIntl {
   final Intl _parent;
-
   const UpdateIntl(this._parent);
 
   /// ```dart
@@ -98,7 +130,8 @@ class UpdateIntl {
   /// ```dart
   /// "Failed to check for updates. Please check your Internet connection."
   /// ```
-  String get checkUpdateFailed => """Failed to check for updates. Please check your Internet connection.""";
+  String get checkUpdateFailed =>
+      """Failed to check for updates. Please check your Internet connection.""";
 
   /// ```dart
   /// "Unable to find download URL.\nPlease visit the project page to manually update or seek help on the project Issue page."
@@ -123,7 +156,6 @@ Please go to the About page and click Download update.""";
 
 class PostListIntl {
   final Intl _parent;
-
   const PostListIntl(this._parent);
 
   /// ```dart
@@ -144,7 +176,6 @@ class PostListIntl {
 
 class PostDetailIntl {
   final Intl _parent;
-
   const PostDetailIntl(this._parent);
 
   /// ```dart
@@ -215,7 +246,6 @@ class PostDetailIntl {
 
 class PostSearchIntl {
   final Intl _parent;
-
   const PostSearchIntl(this._parent);
 
   /// ```dart
@@ -226,7 +256,6 @@ class PostSearchIntl {
 
 class ImageZoomIntl {
   final Intl _parent;
-
   const ImageZoomIntl(this._parent);
 
   /// ```dart
@@ -237,20 +266,17 @@ class ImageZoomIntl {
 
 class DownloadsIntl {
   final Intl _parent;
-
   const DownloadsIntl(this._parent);
 
   /// ```dart
   /// "Downloads"
   /// ```
   String get title => """Downloads""";
-
   MessagesDownloadsIntl get messages => MessagesDownloadsIntl(this);
 }
 
 class MessagesDownloadsIntl {
   final DownloadsIntl _parent;
-
   const MessagesDownloadsIntl(this._parent);
 
   /// ```dart
@@ -303,12 +329,14 @@ class MessagesDownloadsIntl {
   /// ```dart
   /// "Download completed for task $name"
   /// ```
-  String downloadCompletedWith(String name) => """Download completed for task $name""";
+  String downloadCompletedWith(String name) =>
+      """Download completed for task $name""";
 
   /// ```dart
   /// "Download failed for task $name"
   /// ```
-  String downloadFailedWith(String name) => """Download failed for task $name""";
+  String downloadFailedWith(String name) =>
+      """Download failed for task $name""";
 
   /// ```dart
   /// "Saving failed for task $name"
@@ -318,7 +346,6 @@ class MessagesDownloadsIntl {
 
 class AboutIntl {
   final Intl _parent;
-
   const AboutIntl(this._parent);
 
   /// ```dart
@@ -364,12 +391,12 @@ class AboutIntl {
   /// ```dart
   /// "Download the latest version for your device via your browser."
   /// ```
-  String get downloadUpdateHint => """Download the latest version for your device via your browser.""";
+  String get downloadUpdateHint =>
+      """Download the latest version for your device via your browser.""";
 }
 
 class SettingsIntl {
   final Intl _parent;
-
   const SettingsIntl(this._parent);
 
   /// ```dart
@@ -436,25 +463,24 @@ class SettingsIntl {
   /// "Dark"
   /// ```
   String get dark => """Dark""";
-
-  LanguageDialogSettingsIntl get languageDialog => LanguageDialogSettingsIntl(this);
-
-  ThemeModeDialogSettingsIntl get themeModeDialog => ThemeModeDialogSettingsIntl(this);
-
-  DownloadDirectoryDialogSettingsIntl get downloadDirectoryDialog => DownloadDirectoryDialogSettingsIntl(this);
-
-  DnsPrefetchDialogSettingsIntl get dnsPrefetchDialog => DnsPrefetchDialogSettingsIntl(this);
-
-  ColumnsPerRowDialogSettingsIntl get columnsPerRowDialog => ColumnsPerRowDialogSettingsIntl(this);
-
-  MaxConcurrentDownloadsDialogSettingsIntl get maxConcurrentDownloadsDialog => MaxConcurrentDownloadsDialogSettingsIntl(this);
-
-  MaxSegmentsPerTaskDialogSettingsIntl get maxSegmentsPerTaskDialog => MaxSegmentsPerTaskDialogSettingsIntl(this);
+  LanguageDialogSettingsIntl get languageDialog =>
+      LanguageDialogSettingsIntl(this);
+  ThemeModeDialogSettingsIntl get themeModeDialog =>
+      ThemeModeDialogSettingsIntl(this);
+  DownloadDirectoryDialogSettingsIntl get downloadDirectoryDialog =>
+      DownloadDirectoryDialogSettingsIntl(this);
+  DnsPrefetchDialogSettingsIntl get dnsPrefetchDialog =>
+      DnsPrefetchDialogSettingsIntl(this);
+  ColumnsPerRowDialogSettingsIntl get columnsPerRowDialog =>
+      ColumnsPerRowDialogSettingsIntl(this);
+  MaxConcurrentDownloadsDialogSettingsIntl get maxConcurrentDownloadsDialog =>
+      MaxConcurrentDownloadsDialogSettingsIntl(this);
+  MaxSegmentsPerTaskDialogSettingsIntl get maxSegmentsPerTaskDialog =>
+      MaxSegmentsPerTaskDialogSettingsIntl(this);
 }
 
 class LanguageDialogSettingsIntl {
   final SettingsIntl _parent;
-
   const LanguageDialogSettingsIntl(this._parent);
 
   /// ```dart
@@ -465,7 +491,6 @@ class LanguageDialogSettingsIntl {
 
 class ThemeModeDialogSettingsIntl {
   final SettingsIntl _parent;
-
   const ThemeModeDialogSettingsIntl(this._parent);
 
   /// ```dart
@@ -476,7 +501,6 @@ class ThemeModeDialogSettingsIntl {
 
 class DownloadDirectoryDialogSettingsIntl {
   final SettingsIntl _parent;
-
   const DownloadDirectoryDialogSettingsIntl(this._parent);
 
   /// ```dart
@@ -493,13 +517,12 @@ class DownloadDirectoryDialogSettingsIntl {
   /// "Choose Directory"
   /// ```
   String get pick => """Choose Directory""";
-
-  MessagesDownloadDirectoryDialogSettingsIntl get messages => MessagesDownloadDirectoryDialogSettingsIntl(this);
+  MessagesDownloadDirectoryDialogSettingsIntl get messages =>
+      MessagesDownloadDirectoryDialogSettingsIntl(this);
 }
 
 class MessagesDownloadDirectoryDialogSettingsIntl {
   final DownloadDirectoryDialogSettingsIntl _parent;
-
   const MessagesDownloadDirectoryDialogSettingsIntl(this._parent);
 
   /// ```dart
@@ -520,7 +543,6 @@ class MessagesDownloadDirectoryDialogSettingsIntl {
 
 class DnsPrefetchDialogSettingsIntl {
   final SettingsIntl _parent;
-
   const DnsPrefetchDialogSettingsIntl(this._parent);
 
   /// ```dart
@@ -531,7 +553,6 @@ class DnsPrefetchDialogSettingsIntl {
 
 class ColumnsPerRowDialogSettingsIntl {
   final SettingsIntl _parent;
-
   const ColumnsPerRowDialogSettingsIntl(this._parent);
 
   /// ```dart
@@ -542,7 +563,6 @@ class ColumnsPerRowDialogSettingsIntl {
 
 class MaxConcurrentDownloadsDialogSettingsIntl {
   final SettingsIntl _parent;
-
   const MaxConcurrentDownloadsDialogSettingsIntl(this._parent);
 
   /// ```dart
@@ -553,7 +573,6 @@ class MaxConcurrentDownloadsDialogSettingsIntl {
 
 class MaxSegmentsPerTaskDialogSettingsIntl {
   final SettingsIntl _parent;
-
   const MaxSegmentsPerTaskDialogSettingsIntl(this._parent);
 
   /// ```dart
@@ -570,7 +589,8 @@ Map<String, String> get intlMap => {
   """generic.enabled""": """Enabled""",
   """generic.disabled""": """Disabled""",
   """update.checkUpdateStart""": """Checking for updates...""",
-  """update.checkUpdateFailed""": """Failed to check for updates. Please check your Internet connection.""",
+  """update.checkUpdateFailed""":
+      """Failed to check for updates. Please check your Internet connection.""",
   """update.selectDownloadUrlFailed""":
       """Unable to find download URL.\nPlease visit the project page to manually update or seek help on the project Issue page.""",
   """update.noNewVersionFound""": """No new version found.""",
@@ -593,13 +613,18 @@ Map<String, String> get intlMap => {
   """downloads.title""": """Downloads""",
   """downloads.messages.storagePermanentlyDenied""":
       """You have permanently denied storage permissions.\nPlease manually enable storage permissions in settings.""",
-  """downloads.messages.storageDenied""": """You have denied storage permissions.""",
-  """downloads.messages.deviceInfoError""": """Unable to parse device information.""",
+  """downloads.messages.storageDenied""":
+      """You have denied storage permissions.""",
+  """downloads.messages.deviceInfoError""":
+      """Unable to parse device information.""",
   """downloads.messages.photosPermanentlyDenied""":
       """You have permanently denied photos permissions.\nPlease manually enable photos permissions in settings.""",
-  """downloads.messages.photosDenied""": """You have denied photos permissions.""",
-  """downloads.messages.downloadTaskExists""": """The download task already exists.""",
-  """downloads.messages.imageFileExists""": """The image file already exists.""",
+  """downloads.messages.photosDenied""":
+      """You have denied photos permissions.""",
+  """downloads.messages.downloadTaskExists""":
+      """The download task already exists.""",
+  """downloads.messages.imageFileExists""":
+      """The image file already exists.""",
   """about.title""": """About""",
   """about.projectUrl""": """Project URL""",
   """about.publishPage""": """Publish page""",
@@ -608,7 +633,8 @@ Map<String, String> get intlMap => {
   """about.rustVersion""": """Rust version""",
   """about.discussion""": """Discussion""",
   """about.downloadUpdate""": """Download update""",
-  """about.downloadUpdateHint""": """Download the latest version for your device via your browser.""",
+  """about.downloadUpdateHint""":
+      """Download the latest version for your device via your browser.""",
   """settings.title""": """Settings""",
   """settings.theme""": """Theme""",
   """settings.language""": """Language""",
@@ -627,11 +653,16 @@ Map<String, String> get intlMap => {
   """settings.downloadDirectoryDialog.title""": """Download Directory""",
   """settings.downloadDirectoryDialog.pickerTitle""": """Choose Directory""",
   """settings.downloadDirectoryDialog.pick""": """Choose Directory""",
-  """settings.downloadDirectoryDialog.messages.setToPlatformDefault""": """Directory set to platform default.""",
-  """settings.downloadDirectoryDialog.messages.pathNotAbsolute""": """Directory path must be absolute.""",
-  """settings.downloadDirectoryDialog.messages.pathNotWritable""": """Directory path is not writable.""",
+  """settings.downloadDirectoryDialog.messages.setToPlatformDefault""":
+      """Directory set to platform default.""",
+  """settings.downloadDirectoryDialog.messages.pathNotAbsolute""":
+      """Directory path must be absolute.""",
+  """settings.downloadDirectoryDialog.messages.pathNotWritable""":
+      """Directory path is not writable.""",
   """settings.dnsPrefetchDialog.title""": """DNS Prefetch""",
   """settings.columnsPerRowDialog.title""": """Columns per Row""",
-  """settings.maxConcurrentDownloadsDialog.title""": """Max Concurrent Download Tasks""",
-  """settings.maxSegmentsPerTaskDialog.title""": """Max Segments per Download Task""",
+  """settings.maxConcurrentDownloadsDialog.title""":
+      """Max Concurrent Download Tasks""",
+  """settings.maxSegmentsPerTaskDialog.title""":
+      """Max Segments per Download Task""",
 };

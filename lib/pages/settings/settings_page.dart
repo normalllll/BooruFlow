@@ -257,7 +257,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          FilePicker.platform.getDirectoryPath(dialogTitle: 'Select a directory').then((value) {
+                          FilePicker.getDirectoryPath(dialogTitle: 'Select a directory').then((value) {
                             if (value != null) {
                               textController.text = value;
                             }

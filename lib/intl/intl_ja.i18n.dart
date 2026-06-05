@@ -4,45 +4,78 @@ import 'package:i18n/i18n.dart' as i18n;
 import 'intl.i18n.dart';
 
 String get _languageCode => 'ja';
-
-String _plural(int count, {String? zero, String? one, String? two, String? few, String? many, String? other}) =>
-    i18n.plural(count, _languageCode, zero: zero, one: one, two: two, few: few, many: many, other: other);
-
-String _ordinal(int count, {String? zero, String? one, String? two, String? few, String? many, String? other}) =>
-    i18n.ordinal(count, _languageCode, zero: zero, one: one, two: two, few: few, many: many, other: other);
-
-String _cardinal(int count, {String? zero, String? one, String? two, String? few, String? many, String? other}) =>
-    i18n.cardinal(count, _languageCode, zero: zero, one: one, two: two, few: few, many: many, other: other);
+String _plural(
+  int count, {
+  String? zero,
+  String? one,
+  String? two,
+  String? few,
+  String? many,
+  String? other,
+}) => i18n.plural(
+  count,
+  _languageCode,
+  zero: zero,
+  one: one,
+  two: two,
+  few: few,
+  many: many,
+  other: other,
+);
+String _ordinal(
+  int count, {
+  String? zero,
+  String? one,
+  String? two,
+  String? few,
+  String? many,
+  String? other,
+}) => i18n.ordinal(
+  count,
+  _languageCode,
+  zero: zero,
+  one: one,
+  two: two,
+  few: few,
+  many: many,
+  other: other,
+);
+String _cardinal(
+  int count, {
+  String? zero,
+  String? one,
+  String? two,
+  String? few,
+  String? many,
+  String? other,
+}) => i18n.cardinal(
+  count,
+  _languageCode,
+  zero: zero,
+  one: one,
+  two: two,
+  few: few,
+  many: many,
+  other: other,
+);
 
 class IntlJa extends Intl {
   const IntlJa();
-
   String get locale => "ja";
-
   String get languageCode => "ja";
-
   GenericIntlJa get generic => GenericIntlJa(this);
-
   UpdateIntlJa get update => UpdateIntlJa(this);
-
   PostListIntlJa get postList => PostListIntlJa(this);
-
   PostDetailIntlJa get postDetail => PostDetailIntlJa(this);
-
   PostSearchIntlJa get postSearch => PostSearchIntlJa(this);
-
   ImageZoomIntlJa get imageZoom => ImageZoomIntlJa(this);
-
   DownloadsIntlJa get downloads => DownloadsIntlJa(this);
-
   AboutIntlJa get about => AboutIntlJa(this);
-
   SettingsIntlJa get settings => SettingsIntlJa(this);
 }
 
 class GenericIntlJa extends GenericIntl {
   final IntlJa _parent;
-
   const GenericIntlJa(this._parent) : super(_parent);
 
   /// ```dart
@@ -88,7 +121,6 @@ class GenericIntlJa extends GenericIntl {
 
 class UpdateIntlJa extends UpdateIntl {
   final IntlJa _parent;
-
   const UpdateIntlJa(this._parent) : super(_parent);
 
   /// ```dart
@@ -104,7 +136,8 @@ class UpdateIntlJa extends UpdateIntl {
   /// ```dart
   /// "ダウンロードURLが見つかりません。\nプロジェクトページにアクセスし、手動で更新するか、プロジェクトのIssueページでヘルプを求めてください。"
   /// ```
-  String get selectDownloadUrlFailed => """ダウンロードURLが見つかりません。\nプロジェクトページにアクセスし、手動で更新するか、プロジェクトのIssueページでヘルプを求めてください。""";
+  String get selectDownloadUrlFailed =>
+      """ダウンロードURLが見つかりません。\nプロジェクトページにアクセスし、手動で更新するか、プロジェクトのIssueページでヘルプを求めてください。""";
 
   /// ```dart
   /// """
@@ -123,7 +156,6 @@ class UpdateIntlJa extends UpdateIntl {
 
 class PostListIntlJa extends PostListIntl {
   final IntlJa _parent;
-
   const PostListIntlJa(this._parent) : super(_parent);
 
   /// ```dart
@@ -144,7 +176,6 @@ class PostListIntlJa extends PostListIntl {
 
 class PostDetailIntlJa extends PostDetailIntl {
   final IntlJa _parent;
-
   const PostDetailIntlJa(this._parent) : super(_parent);
 
   /// ```dart
@@ -215,7 +246,6 @@ class PostDetailIntlJa extends PostDetailIntl {
 
 class PostSearchIntlJa extends PostSearchIntl {
   final IntlJa _parent;
-
   const PostSearchIntlJa(this._parent) : super(_parent);
 
   /// ```dart
@@ -226,7 +256,6 @@ class PostSearchIntlJa extends PostSearchIntl {
 
 class ImageZoomIntlJa extends ImageZoomIntl {
   final IntlJa _parent;
-
   const ImageZoomIntlJa(this._parent) : super(_parent);
 
   /// ```dart
@@ -237,26 +266,24 @@ class ImageZoomIntlJa extends ImageZoomIntl {
 
 class DownloadsIntlJa extends DownloadsIntl {
   final IntlJa _parent;
-
   const DownloadsIntlJa(this._parent) : super(_parent);
 
   /// ```dart
   /// "ダウンロード"
   /// ```
   String get title => """ダウンロード""";
-
   MessagesDownloadsIntlJa get messages => MessagesDownloadsIntlJa(this);
 }
 
 class MessagesDownloadsIntlJa extends MessagesDownloadsIntl {
   final DownloadsIntlJa _parent;
-
   const MessagesDownloadsIntlJa(this._parent) : super(_parent);
 
   /// ```dart
   /// "ストレージのアクセス許可が永久に拒否されました。\n設定で手動でストレージのアクセス許可を有効にしてください。"
   /// ```
-  String get storagePermanentlyDenied => """ストレージのアクセス許可が永久に拒否されました。\n設定で手動でストレージのアクセス許可を有効にしてください。""";
+  String get storagePermanentlyDenied =>
+      """ストレージのアクセス許可が永久に拒否されました。\n設定で手動でストレージのアクセス許可を有効にしてください。""";
 
   /// ```dart
   /// "ストレージのアクセス許可が拒否されました。"
@@ -271,7 +298,8 @@ class MessagesDownloadsIntlJa extends MessagesDownloadsIntl {
   /// ```dart
   /// "写真のアクセス許可が永久に拒否されました。\n設定で手動で写真のアクセス許可を有効にしてください。"
   /// ```
-  String get photosPermanentlyDenied => """写真のアクセス許可が永久に拒否されました。\n設定で手動で写真のアクセス許可を有効にしてください。""";
+  String get photosPermanentlyDenied =>
+      """写真のアクセス許可が永久に拒否されました。\n設定で手動で写真のアクセス許可を有効にしてください。""";
 
   /// ```dart
   /// "写真のアクセス許可が拒否されました。"
@@ -316,7 +344,6 @@ class MessagesDownloadsIntlJa extends MessagesDownloadsIntl {
 
 class AboutIntlJa extends AboutIntl {
   final IntlJa _parent;
-
   const AboutIntlJa(this._parent) : super(_parent);
 
   /// ```dart
@@ -367,7 +394,6 @@ class AboutIntlJa extends AboutIntl {
 
 class SettingsIntlJa extends SettingsIntl {
   final IntlJa _parent;
-
   const SettingsIntlJa(this._parent) : super(_parent);
 
   /// ```dart
@@ -434,25 +460,24 @@ class SettingsIntlJa extends SettingsIntl {
   /// "ダーク"
   /// ```
   String get dark => """ダーク""";
-
-  LanguageDialogSettingsIntlJa get languageDialog => LanguageDialogSettingsIntlJa(this);
-
-  ThemeModeDialogSettingsIntlJa get themeModeDialog => ThemeModeDialogSettingsIntlJa(this);
-
-  DownloadDirectoryDialogSettingsIntlJa get downloadDirectoryDialog => DownloadDirectoryDialogSettingsIntlJa(this);
-
-  DnsPrefetchDialogSettingsIntlJa get dnsPrefetchDialog => DnsPrefetchDialogSettingsIntlJa(this);
-
-  ColumnsPerRowDialogSettingsIntlJa get columnsPerRowDialog => ColumnsPerRowDialogSettingsIntlJa(this);
-
-  MaxConcurrentDownloadsDialogSettingsIntlJa get maxConcurrentDownloadsDialog => MaxConcurrentDownloadsDialogSettingsIntlJa(this);
-
-  MaxSegmentsPerTaskDialogSettingsIntlJa get maxSegmentsPerTaskDialog => MaxSegmentsPerTaskDialogSettingsIntlJa(this);
+  LanguageDialogSettingsIntlJa get languageDialog =>
+      LanguageDialogSettingsIntlJa(this);
+  ThemeModeDialogSettingsIntlJa get themeModeDialog =>
+      ThemeModeDialogSettingsIntlJa(this);
+  DownloadDirectoryDialogSettingsIntlJa get downloadDirectoryDialog =>
+      DownloadDirectoryDialogSettingsIntlJa(this);
+  DnsPrefetchDialogSettingsIntlJa get dnsPrefetchDialog =>
+      DnsPrefetchDialogSettingsIntlJa(this);
+  ColumnsPerRowDialogSettingsIntlJa get columnsPerRowDialog =>
+      ColumnsPerRowDialogSettingsIntlJa(this);
+  MaxConcurrentDownloadsDialogSettingsIntlJa get maxConcurrentDownloadsDialog =>
+      MaxConcurrentDownloadsDialogSettingsIntlJa(this);
+  MaxSegmentsPerTaskDialogSettingsIntlJa get maxSegmentsPerTaskDialog =>
+      MaxSegmentsPerTaskDialogSettingsIntlJa(this);
 }
 
 class LanguageDialogSettingsIntlJa extends LanguageDialogSettingsIntl {
   final SettingsIntlJa _parent;
-
   const LanguageDialogSettingsIntlJa(this._parent) : super(_parent);
 
   /// ```dart
@@ -463,7 +488,6 @@ class LanguageDialogSettingsIntlJa extends LanguageDialogSettingsIntl {
 
 class ThemeModeDialogSettingsIntlJa extends ThemeModeDialogSettingsIntl {
   final SettingsIntlJa _parent;
-
   const ThemeModeDialogSettingsIntlJa(this._parent) : super(_parent);
 
   /// ```dart
@@ -472,9 +496,9 @@ class ThemeModeDialogSettingsIntlJa extends ThemeModeDialogSettingsIntl {
   String get title => """テーマモード""";
 }
 
-class DownloadDirectoryDialogSettingsIntlJa extends DownloadDirectoryDialogSettingsIntl {
+class DownloadDirectoryDialogSettingsIntlJa
+    extends DownloadDirectoryDialogSettingsIntl {
   final SettingsIntlJa _parent;
-
   const DownloadDirectoryDialogSettingsIntlJa(this._parent) : super(_parent);
 
   /// ```dart
@@ -491,19 +515,21 @@ class DownloadDirectoryDialogSettingsIntlJa extends DownloadDirectoryDialogSetti
   /// "ディレクトリを選択"
   /// ```
   String get pick => """ディレクトリを選択""";
-
-  MessagesDownloadDirectoryDialogSettingsIntlJa get messages => MessagesDownloadDirectoryDialogSettingsIntlJa(this);
+  MessagesDownloadDirectoryDialogSettingsIntlJa get messages =>
+      MessagesDownloadDirectoryDialogSettingsIntlJa(this);
 }
 
-class MessagesDownloadDirectoryDialogSettingsIntlJa extends MessagesDownloadDirectoryDialogSettingsIntl {
+class MessagesDownloadDirectoryDialogSettingsIntlJa
+    extends MessagesDownloadDirectoryDialogSettingsIntl {
   final DownloadDirectoryDialogSettingsIntlJa _parent;
-
-  const MessagesDownloadDirectoryDialogSettingsIntlJa(this._parent) : super(_parent);
+  const MessagesDownloadDirectoryDialogSettingsIntlJa(this._parent)
+    : super(_parent);
 
   /// ```dart
   /// "ダウンロードディレクトリはプラットフォームのデフォルトに設定されています。"
   /// ```
-  String get setToPlatformDefault => """ダウンロードディレクトリはプラットフォームのデフォルトに設定されています。""";
+  String get setToPlatformDefault =>
+      """ダウンロードディレクトリはプラットフォームのデフォルトに設定されています。""";
 
   /// ```dart
   /// "パスは絶対パスである必要があります。"
@@ -518,7 +544,6 @@ class MessagesDownloadDirectoryDialogSettingsIntlJa extends MessagesDownloadDire
 
 class DnsPrefetchDialogSettingsIntlJa extends DnsPrefetchDialogSettingsIntl {
   final SettingsIntlJa _parent;
-
   const DnsPrefetchDialogSettingsIntlJa(this._parent) : super(_parent);
 
   /// ```dart
@@ -527,9 +552,9 @@ class DnsPrefetchDialogSettingsIntlJa extends DnsPrefetchDialogSettingsIntl {
   String get title => """DNS プリフェッチ""";
 }
 
-class ColumnsPerRowDialogSettingsIntlJa extends ColumnsPerRowDialogSettingsIntl {
+class ColumnsPerRowDialogSettingsIntlJa
+    extends ColumnsPerRowDialogSettingsIntl {
   final SettingsIntlJa _parent;
-
   const ColumnsPerRowDialogSettingsIntlJa(this._parent) : super(_parent);
 
   /// ```dart
@@ -538,10 +563,11 @@ class ColumnsPerRowDialogSettingsIntlJa extends ColumnsPerRowDialogSettingsIntl 
   String get title => """各行の列数""";
 }
 
-class MaxConcurrentDownloadsDialogSettingsIntlJa extends MaxConcurrentDownloadsDialogSettingsIntl {
+class MaxConcurrentDownloadsDialogSettingsIntlJa
+    extends MaxConcurrentDownloadsDialogSettingsIntl {
   final SettingsIntlJa _parent;
-
-  const MaxConcurrentDownloadsDialogSettingsIntlJa(this._parent) : super(_parent);
+  const MaxConcurrentDownloadsDialogSettingsIntlJa(this._parent)
+    : super(_parent);
 
   /// ```dart
   /// "最大同時ダウンロードタスク数"
@@ -549,9 +575,9 @@ class MaxConcurrentDownloadsDialogSettingsIntlJa extends MaxConcurrentDownloadsD
   String get title => """最大同時ダウンロードタスク数""";
 }
 
-class MaxSegmentsPerTaskDialogSettingsIntlJa extends MaxSegmentsPerTaskDialogSettingsIntl {
+class MaxSegmentsPerTaskDialogSettingsIntlJa
+    extends MaxSegmentsPerTaskDialogSettingsIntl {
   final SettingsIntlJa _parent;
-
   const MaxSegmentsPerTaskDialogSettingsIntlJa(this._parent) : super(_parent);
 
   /// ```dart
@@ -569,7 +595,8 @@ Map<String, String> get intlJaMap => {
   """generic.disabled""": """無効""",
   """update.checkUpdateStart""": """アップデートを確認中…""",
   """update.checkUpdateFailed""": """アップデートの確認に失敗しました。インターネット接続を確認してください。""",
-  """update.selectDownloadUrlFailed""": """ダウンロードURLが見つかりません。\nプロジェクトページにアクセスし、手動で更新するか、プロジェクトのIssueページでヘルプを求めてください。""",
+  """update.selectDownloadUrlFailed""":
+      """ダウンロードURLが見つかりません。\nプロジェクトページにアクセスし、手動で更新するか、プロジェクトのIssueページでヘルプを求めてください。""",
   """update.noNewVersionFound""": """新しいバージョンが見つかりません。""",
   """postList.short""": """投稿""",
   """postList.title""": """投稿リスト""",
@@ -588,10 +615,12 @@ Map<String, String> get intlJaMap => {
   """postSearch.title""": """検索""",
   """imageZoom.title""": """画像をズーム""",
   """downloads.title""": """ダウンロード""",
-  """downloads.messages.storagePermanentlyDenied""": """ストレージのアクセス許可が永久に拒否されました。\n設定で手動でストレージのアクセス許可を有効にしてください。""",
+  """downloads.messages.storagePermanentlyDenied""":
+      """ストレージのアクセス許可が永久に拒否されました。\n設定で手動でストレージのアクセス許可を有効にしてください。""",
   """downloads.messages.storageDenied""": """ストレージのアクセス許可が拒否されました。""",
   """downloads.messages.deviceInfoError""": """デバイス情報を解析できません。""",
-  """downloads.messages.photosPermanentlyDenied""": """写真のアクセス許可が永久に拒否されました。\n設定で手動で写真のアクセス許可を有効にしてください。""",
+  """downloads.messages.photosPermanentlyDenied""":
+      """写真のアクセス許可が永久に拒否されました。\n設定で手動で写真のアクセス許可を有効にしてください。""",
   """downloads.messages.photosDenied""": """写真のアクセス許可が拒否されました。""",
   """downloads.messages.downloadTaskExists""": """ダウンロードタスクは既に存在しています。""",
   """downloads.messages.imageFileExists""": """画像ファイルは既に存在しています。""",
@@ -622,9 +651,12 @@ Map<String, String> get intlJaMap => {
   """settings.downloadDirectoryDialog.title""": """ダウンロードディレクトリ""",
   """settings.downloadDirectoryDialog.pickerTitle""": """ディレクトリを選択""",
   """settings.downloadDirectoryDialog.pick""": """ディレクトリを選択""",
-  """settings.downloadDirectoryDialog.messages.setToPlatformDefault""": """ダウンロードディレクトリはプラットフォームのデフォルトに設定されています。""",
-  """settings.downloadDirectoryDialog.messages.pathNotAbsolute""": """パスは絶対パスである必要があります。""",
-  """settings.downloadDirectoryDialog.messages.pathNotWritable""": """パスに書き込みできません。""",
+  """settings.downloadDirectoryDialog.messages.setToPlatformDefault""":
+      """ダウンロードディレクトリはプラットフォームのデフォルトに設定されています。""",
+  """settings.downloadDirectoryDialog.messages.pathNotAbsolute""":
+      """パスは絶対パスである必要があります。""",
+  """settings.downloadDirectoryDialog.messages.pathNotWritable""":
+      """パスに書き込みできません。""",
   """settings.dnsPrefetchDialog.title""": """DNS プリフェッチ""",
   """settings.columnsPerRowDialog.title""": """各行の列数""",
   """settings.maxConcurrentDownloadsDialog.title""": """最大同時ダウンロードタスク数""",
