@@ -1,6 +1,6 @@
 import 'package:extended_image/extended_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:yande_gui/global.dart';
 
 class YandeImage extends StatelessWidget {
@@ -42,7 +42,12 @@ class YandeImage extends StatelessWidget {
           return await yandeClient.downloadToMemory(
             url: url,
             progressCallback: (BigInt received, BigInt total) {
-              chunkEvent(ImageChunkEvent(cumulativeBytesLoaded: received.toInt(), expectedTotalBytes: total.toInt()));
+              chunkEvent(
+                ImageChunkEvent(
+                  cumulativeBytesLoaded: received.toInt(),
+                  expectedTotalBytes: total.toInt(),
+                ),
+              );
             },
           );
         },
@@ -58,23 +63,48 @@ class YandeImage extends StatelessWidget {
                   false => event.cumulativeBytesLoaded / total,
                 };
                 if (placeholderWidget case Widget widget?) {
-                  return Stack(children: [widget, Positioned(left: 0, top: 0, right: 0, child: LinearProgressIndicator(value: progress))]);
+                  return Stack(
+                    children: [
+                      widget,
+                      Positioned(
+                        left: 0,
+                        top: 0,
+                        right: 0,
+                        child: LinearProgressIndicator(value: progress),
+                      ),
+                    ],
+                  );
                 } else {
-                  return Padding(padding: const EdgeInsets.all(5), child: Center(child: CircularProgressIndicator(value: progress)));
+                  return _buildSkeletonPlaceholder(progress: progress);
                 }
               }
             } else {
               if (placeholderWidget case Widget widget?) {
-                return Stack(children: [widget, const Positioned(left: 0, top: 0, right: 0, child: LinearProgressIndicator())]);
+                return Stack(
+                  children: [
+                    widget,
+                    const Positioned(
+                      left: 0,
+                      top: 0,
+                      right: 0,
+                      child: LinearProgressIndicator(),
+                    ),
+                  ],
+                );
               } else {
-                return const Padding(padding: EdgeInsets.all(5), child: Center(child: CupertinoActivityIndicator()));
+                return _buildSkeletonPlaceholder();
               }
             }
-            return const Padding(padding: EdgeInsets.all(5), child: Center(child: CupertinoActivityIndicator()));
+            return _buildSkeletonPlaceholder();
           case LoadState.completed:
             return imageBuilder?.call(state.completedWidget);
           case LoadState.failed:
-            return Center(child: IconButton(icon: const Icon(Icons.refresh_outlined), onPressed: state.reLoadImage));
+            return Center(
+              child: IconButton(
+                icon: const Icon(Icons.refresh_outlined),
+                onPressed: state.reLoadImage,
+              ),
+            );
         }
       },
       color: color,
@@ -83,6 +113,36 @@ class YandeImage extends StatelessWidget {
       width: width,
       height: height,
       fit: fit ?? BoxFit.fitWidth,
+    );
+  }
+
+  Widget _buildSkeletonPlaceholder({double? progress}) {
+    final skeleton = LayoutBuilder(
+      builder: (context, constraints) {
+        final skeletonWidth =
+            width ?? (constraints.hasBoundedWidth ? constraints.maxWidth : 96.0);
+        final skeletonHeight =
+            height ?? (constraints.hasBoundedHeight ? constraints.maxHeight : skeletonWidth);
+
+        return Skeletonizer.zone(
+          child: Bone(
+            width: skeletonWidth,
+            height: skeletonHeight,
+            borderRadius: BorderRadius.circular(6),
+          ),
+        );
+      },
+    );
+
+    if (progress == null) {
+      return skeleton;
+    }
+
+    return Stack(
+      children: [
+        skeleton,
+        Center(child: CircularProgressIndicator(value: progress)),
+      ],
     );
   }
 }
