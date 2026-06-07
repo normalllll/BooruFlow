@@ -68,6 +68,14 @@ class _SettingsPageState extends State<SettingsPage> {
     return max.toString();
   }
 
+  Widget _dialogListTileMaterial(BuildContext context, Widget child) {
+    return Material(
+      type: MaterialType.transparency,
+      textStyle: DefaultTextStyle.of(context).style,
+      child: child,
+    );
+  }
+
   void _themeModeDialog() {
     showCupertinoDialog(
       context: context,
@@ -75,40 +83,35 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (context) {
         return CupertinoAlertDialog(
           title: Text(i18n.settings.themeModeDialog.title),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              RadioListTile<int?>(
-                title: Text(i18n.settings.system),
-                value: null,
-                groupValue: SettingsService.themeMode,
-                onChanged: (value) {
-                  SettingsService.themeMode = value;
-                  rootUpdateController.add(null);
-                  Navigator.of(context).pop();
-                },
+          content: _dialogListTileMaterial(
+            context,
+            RadioGroup<int?>(
+              groupValue: SettingsService.themeMode,
+              onChanged: (value) {
+                SettingsService.themeMode = value;
+                rootUpdateController.add(null);
+                Navigator.of(context).pop();
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  RadioListTile<int?>(
+                    title: Text(i18n.settings.system),
+                    value: null,
+                  ),
+                  SizedBox(height: 5),
+                  RadioListTile<int?>(
+                    title: Text(i18n.settings.light),
+                    value: 0,
+                  ),
+                  SizedBox(height: 5),
+                  RadioListTile<int?>(
+                    title: Text(i18n.settings.dark),
+                    value: 1,
+                  ),
+                ],
               ),
-              RadioListTile<int>(
-                title: Text(i18n.settings.light),
-                value: 0,
-                groupValue: SettingsService.themeMode,
-                onChanged: (value) {
-                  SettingsService.themeMode = value;
-                  rootUpdateController.add(null);
-                  Navigator.of(context).pop();
-                },
-              ),
-              RadioListTile<int>(
-                title: Text(i18n.settings.dark),
-                value: 1,
-                groupValue: SettingsService.themeMode,
-                onChanged: (value) {
-                  SettingsService.themeMode = value;
-                  rootUpdateController.add(null);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
+            ),
           ),
           actions: [
             CupertinoDialogAction(
@@ -131,54 +134,41 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (context) {
         return CupertinoAlertDialog(
           title: Text(i18n.settings.languageDialog.title),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              RadioListTile<int?>(
-                title: Text(i18n.settings.system),
-                value: null,
-                groupValue: SettingsService.language,
-                onChanged: (value) {
-                  SettingsService.language = value;
-                  I18n.update(I18n.getLocale(value));
-                  rootUpdateController.add(null);
-                  Navigator.of(context).pop();
-                },
+          content: _dialogListTileMaterial(
+            context,
+            RadioGroup<int?>(
+              groupValue: SettingsService.language,
+              onChanged: (value) {
+                SettingsService.language = value;
+                I18n.update(I18n.getLocale(value));
+                rootUpdateController.add(null);
+                Navigator.of(context).pop();
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  RadioListTile<int?>(
+                    title: Text(i18n.settings.system),
+                    value: null,
+                  ),
+                  SizedBox(height: 5),
+                  RadioListTile<int?>(
+                    title: const Text('English'),
+                    value: 0,
+                  ),
+                  SizedBox(height: 5),
+                  RadioListTile<int?>(
+                    title: const Text('日本語'),
+                    value: 1,
+                  ),
+                  SizedBox(height: 5),
+                  RadioListTile<int?>(
+                    title: const Text('繁體中文'),
+                    value: 2,
+                  ),
+                ],
               ),
-              RadioListTile<int>(
-                title: const Text('English'),
-                value: 0,
-                groupValue: SettingsService.language,
-                onChanged: (value) {
-                  SettingsService.language = value;
-                  I18n.update(I18n.getLocale(value));
-                  rootUpdateController.add(null);
-                  Navigator.of(context).pop();
-                },
-              ),
-              RadioListTile<int>(
-                title: const Text('日本語'),
-                value: 1,
-                groupValue: SettingsService.language,
-                onChanged: (value) {
-                  SettingsService.language = value;
-                  I18n.update(I18n.getLocale(value));
-                  rootUpdateController.add(null);
-                  Navigator.of(context).pop();
-                },
-              ),
-              RadioListTile<int>(
-                title: const Text('繁體中文'),
-                value: 2,
-                groupValue: SettingsService.language,
-                onChanged: (value) {
-                  SettingsService.language = value;
-                  I18n.update(I18n.getLocale(value));
-                  rootUpdateController.add(null);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
+            ),
           ),
           actions: [
             CupertinoDialogAction(
@@ -207,19 +197,22 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (context) {
         return CupertinoAlertDialog(
           title: Text(i18n.settings.dnsPrefetchDialog.title),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CheckboxListTile(
-                value: SettingsService.prefetchDns,
-                title: Text(i18n.generic.enabled),
-                onChanged: (v) {
-                  SettingsService.prefetchDns = v ?? false;
-                  rootUpdateController.add(null);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
+          content: _dialogListTileMaterial(
+            context,
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CheckboxListTile(
+                  value: SettingsService.prefetchDns,
+                  title: Text(i18n.generic.enabled),
+                  onChanged: (v) {
+                    SettingsService.prefetchDns = v ?? false;
+                    rootUpdateController.add(null);
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            ),
           ),
           actions: [
             CupertinoDialogAction(

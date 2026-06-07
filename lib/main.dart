@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_ce/hive.dart';
+import 'package:hive_ce_flutter/adapters.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:yande_gui/global.dart';
 import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/services/custom_tags_service.dart';
 import 'package:yande_gui/services/tag_translations_service.dart';
 import 'package:yande_gui/src/rust/api/yande_client.dart';
 import 'package:yande_gui/src/rust/frb_generated.dart';
@@ -20,7 +23,9 @@ Future<void> main() async {
   final packageInfo = await PackageInfo.fromPlatform();
   Global.appVersion = packageInfo.version;
   Global.buildNumber = packageInfo.buildNumber;
+  await Hive.initFlutter();
   await SettingsService.initialize();
+  await CustomTagsService.initialize();
   await TagTranslationsService.loadAll();
   TagTranslationsService.update(SettingsService.language);
   if (!SettingsService.prefetchDns) {
