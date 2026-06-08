@@ -9,6 +9,16 @@ import '../yande/model/similar.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<DownloadCancelToken>>
+abstract class DownloadCancelToken implements RustOpaqueInterface {
+  void cancel();
+
+  bool isCancelled();
+
+  factory DownloadCancelToken() =>
+      RustLib.instance.api.crateApiYandeClientDownloadCancelTokenNew();
+}
+
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<YandeClient>>
 abstract class YandeClient implements RustOpaqueInterface {
   Future<void> downloadToFile({
@@ -21,6 +31,12 @@ abstract class YandeClient implements RustOpaqueInterface {
   Future<Uint8List> downloadToMemory({
     required String url,
     required FutureOr<void> Function(BigInt, BigInt) progressCallback,
+  });
+
+  Future<Uint8List> downloadToMemoryWithCancel({
+    required String url,
+    required FutureOr<void> Function(BigInt, BigInt) progressCallback,
+    required DownloadCancelToken cancelToken,
   });
 
   Future<List<Post>> getPosts({

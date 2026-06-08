@@ -9,6 +9,7 @@ use std::time::Duration;
 use tokio::io::{AsyncSeekExt, AsyncWriteExt};
 use tokio::sync::Mutex;
 use tokio::task;
+use tokio_util::sync::CancellationToken;
 
 pub struct HttpClient {
     client: reqwest::Client,
@@ -18,7 +19,9 @@ impl HttpClient {
     pub fn new(ips: Option<[String; 3]>, for_large_file: bool) -> Self {
         let mut client_builder = reqwest::ClientBuilder::new()
             .http2_prior_knowledge()
-            .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)")
+            .user_agent(
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+            )
             .https_only(true)
             .http2_adaptive_window(true)
             .http2_keep_alive_interval(Duration::from_secs(30))
@@ -303,8 +306,15 @@ impl HttpClient {
         &self,
         url: &str,
         progress_callback: impl Fn(usize, usize) -> DartFnFuture<()> + 'static + Send,
+        cancel_token: CancellationToken,
     ) -> anyhow::Result<Vec<u8>> {
-        let get_resp = self.get(url, None).await?;
+        let get_resp = tokio::select! {
+            _ = cancel_token.cancelled() => {
+                return Err(anyhow::anyhow!("Download cancelled"));
+            }
+            resp = self.get(url, None) => resp?,
+        };
+
         let total_size = get_resp
             .content_length()
             .ok_or("No content length")
@@ -318,8 +328,19 @@ impl HttpClient {
 
         let mut bytes_stream = get_resp.bytes_stream();
 
-        while let Some(item) = bytes_stream.next().await {
-            let chunk = item?;
+        loop {
+            let chunk = tokio::select! {
+                _ = cancel_token.cancelled() => {
+                    return Err(anyhow::anyhow!("Download cancelled"));
+                }
+                item = bytes_stream.next() => {
+                    match item {
+                        Some(chunk) => chunk?,
+                        None => break,
+                    }
+                }
+            };
+
             received += chunk.len();
 
             if received >= next_threshold || received == total_size {

@@ -1,9 +1,33 @@
 use crate::yande::http_client::HttpClient;
 use crate::yande::model::{Post, Similar};
 use flutter_rust_bridge::DartFnFuture;
+use tokio_util::sync::CancellationToken;
 
 pub struct YandeClient {
     http: HttpClient,
+}
+
+pub struct DownloadCancelToken {
+    token: CancellationToken,
+}
+
+impl DownloadCancelToken {
+    #[flutter_rust_bridge::frb(sync)]
+    pub fn new() -> Self {
+        Self {
+            token: CancellationToken::new(),
+        }
+    }
+
+    #[flutter_rust_bridge::frb(sync)]
+    pub fn cancel(&self) {
+        self.token.cancel();
+    }
+
+    #[flutter_rust_bridge::frb(sync)]
+    pub fn is_cancelled(&self) -> bool {
+        self.token.is_cancelled()
+    }
 }
 
 impl YandeClient {
@@ -65,7 +89,7 @@ impl YandeClient {
         url: &str,
         file_path: &str,
         max_task_count: u32,
-        progress_callback: impl Fn(usize, usize) -> DartFnFuture<()> + 'static + Send+Sync,
+        progress_callback: impl Fn(usize, usize) -> DartFnFuture<()> + 'static + Send + Sync,
     ) -> anyhow::Result<()> {
         self.http
             .download_to_file(
@@ -85,7 +109,20 @@ impl YandeClient {
     ) -> anyhow::Result<Vec<u8>> {
         let bytes = self
             .http
-            .download_to_memory(&url, progress_callback)
+            .download_to_memory(&url, progress_callback, CancellationToken::new())
+            .await?;
+        Ok(bytes)
+    }
+
+    pub async fn download_to_memory_with_cancel(
+        &self,
+        url: &str,
+        progress_callback: impl Fn(usize, usize) -> DartFnFuture<()> + 'static + Send,
+        cancel_token: &DownloadCancelToken,
+    ) -> anyhow::Result<Vec<u8>> {
+        let bytes = self
+            .http
+            .download_to_memory(&url, progress_callback, cancel_token.token.clone())
             .await?;
         Ok(bytes)
     }

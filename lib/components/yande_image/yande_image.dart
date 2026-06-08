@@ -2,8 +2,9 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:yande_gui/global.dart';
+import 'package:yande_gui/src/rust/api/yande_client.dart';
 
-class YandeImage extends StatelessWidget {
+class YandeImage extends StatefulWidget {
   final String url;
   final Color? color;
 
@@ -32,14 +33,51 @@ class YandeImage extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return ExtendedImage(
-      image: ExtendedNetworkImageProvider(
-        url,
-        cache: true,
-        printError: false,
-        bytesLoader: (void Function(ImageChunkEvent event) chunkEvent) async {
-          return await yandeClient.downloadToMemory(
+  State<YandeImage> createState() => _YandeImageState();
+}
+
+class _YandeImageState extends State<YandeImage> {
+  late _YandeImageDownloadScope _downloadScope;
+  late ExtendedNetworkImageProvider _imageProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    _downloadScope = _YandeImageDownloadScope.fallback;
+    _imageProvider = _createImageProvider();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final scope = _YandeImageDownloadScope.of(context);
+    if (!identical(_downloadScope, scope)) {
+      _downloadScope = scope;
+      _imageProvider = _createImageProvider();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant YandeImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.url != widget.url) {
+      _imageProvider = _createImageProvider();
+    }
+  }
+
+  ExtendedNetworkImageProvider _createImageProvider() {
+    final url = widget.url;
+    final downloadScope = _downloadScope;
+
+    return ExtendedNetworkImageProvider(
+      url,
+      cache: true,
+      printError: false,
+      bytesLoader: (void Function(ImageChunkEvent event) chunkEvent) async {
+        final cancelToken = downloadScope.createToken();
+
+        try {
+          return await yandeClient.downloadToMemoryWithCancel(
             url: url,
             progressCallback: (BigInt received, BigInt total) {
               chunkEvent(
@@ -49,9 +87,19 @@ class YandeImage extends StatelessWidget {
                 ),
               );
             },
+            cancelToken: cancelToken,
           );
-        },
-      ),
+        } finally {
+          downloadScope.remove(cancelToken);
+        }
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ExtendedImage(
+      image: _imageProvider,
       handleLoadingProgress: true,
       loadStateChanged: (ExtendedImageState state) {
         switch (state.extendedImageLoadState) {
@@ -62,10 +110,10 @@ class YandeImage extends StatelessWidget {
                   true => 1.0,
                   false => event.cumulativeBytesLoaded / total,
                 };
-                if (placeholderWidget case Widget widget?) {
+                if (widget.placeholderWidget case Widget placeholder?) {
                   return Stack(
                     children: [
-                      widget,
+                      placeholder,
                       Positioned(
                         left: 0,
                         top: 0,
@@ -79,10 +127,10 @@ class YandeImage extends StatelessWidget {
                 }
               }
             } else {
-              if (placeholderWidget case Widget widget?) {
+              if (widget.placeholderWidget case Widget placeholder?) {
                 return Stack(
                   children: [
-                    widget,
+                    placeholder,
                     const Positioned(
                       left: 0,
                       top: 0,
@@ -97,7 +145,7 @@ class YandeImage extends StatelessWidget {
             }
             return _buildSkeletonPlaceholder();
           case LoadState.completed:
-            return imageBuilder?.call(state.completedWidget);
+            return widget.imageBuilder?.call(state.completedWidget);
           case LoadState.failed:
             return Center(
               child: IconButton(
@@ -107,12 +155,12 @@ class YandeImage extends StatelessWidget {
             );
         }
       },
-      color: color,
-      colorBlendMode: colorBlendMode,
+      color: widget.color,
+      colorBlendMode: widget.colorBlendMode,
       clearMemoryCacheWhenDispose: false,
-      width: width,
-      height: height,
-      fit: fit ?? BoxFit.fitWidth,
+      width: widget.width,
+      height: widget.height,
+      fit: widget.fit ?? BoxFit.fitWidth,
     );
   }
 
@@ -120,9 +168,13 @@ class YandeImage extends StatelessWidget {
     final skeleton = LayoutBuilder(
       builder: (context, constraints) {
         final skeletonWidth =
-            width ?? (constraints.hasBoundedWidth ? constraints.maxWidth : 96.0);
+            widget.width ??
+            (constraints.hasBoundedWidth ? constraints.maxWidth : 96.0);
         final skeletonHeight =
-            height ?? (constraints.hasBoundedHeight ? constraints.maxHeight : skeletonWidth);
+            widget.height ??
+            (constraints.hasBoundedHeight
+                ? constraints.maxHeight
+                : skeletonWidth);
 
         return Skeletonizer.zone(
           child: Bone(
@@ -144,5 +196,61 @@ class YandeImage extends StatelessWidget {
         Center(child: CircularProgressIndicator(value: progress)),
       ],
     );
+  }
+}
+
+class _YandeImageDownloadScope {
+  static final Map<Route<dynamic>, _YandeImageDownloadScope> _routeScopes = {};
+  static final _YandeImageDownloadScope fallback = _YandeImageDownloadScope();
+
+  final Set<DownloadCancelToken> _tokens = {};
+  bool _isCancelled = false;
+
+  static _YandeImageDownloadScope of(BuildContext context) {
+    final route = ModalRoute.of(context);
+
+    if (route == null) {
+      return fallback;
+    }
+
+    return _routeScopes.putIfAbsent(route, () {
+      final scope = _YandeImageDownloadScope();
+
+      route.completed.whenComplete(() {
+        scope.cancelAll();
+        _routeScopes.remove(route);
+      });
+
+      return scope;
+    });
+  }
+
+  DownloadCancelToken createToken() {
+    final token = DownloadCancelToken();
+    _tokens.add(token);
+
+    if (_isCancelled) {
+      token.cancel();
+    }
+
+    return token;
+  }
+
+  void remove(DownloadCancelToken token) {
+    _tokens.remove(token);
+  }
+
+  void cancelAll() {
+    if (_isCancelled) {
+      return;
+    }
+
+    _isCancelled = true;
+
+    for (final token in _tokens.toList(growable: false)) {
+      token.cancel();
+    }
+
+    _tokens.clear();
   }
 }
