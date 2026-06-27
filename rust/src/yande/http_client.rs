@@ -1,9 +1,11 @@
+use std::future::Future;
 use flutter_rust_bridge::DartFnFuture;
 use futures_util::future::try_join_all;
 use futures_util::stream::StreamExt;
 use reqwest::Url;
 use std::io::Write;
 use std::path::Path;
+use std::pin::Pin;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::io::{AsyncSeekExt, AsyncWriteExt};
@@ -305,7 +307,7 @@ impl HttpClient {
     pub async fn download_to_memory(
         &self,
         url: &str,
-        progress_callback: impl Fn(usize, usize) -> DartFnFuture<()> + 'static + Send,
+        progress_callback: impl Fn(usize, usize) -> Pin<Box<dyn Future<Output = ()> + Send + 'static>> + 'static + Send,
         cancel_token: CancellationToken,
     ) -> anyhow::Result<Vec<u8>> {
         let get_resp = tokio::select! {

@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 env:
   FLUTTER_VERSION: '3.44.1'
   RUST_VERSION: '1.96.0'
@@ -16,14 +19,15 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
+          toolchain: ${{ env.RUST_VERSION }}
           cache: true
-          cache-workspaces: ./rust
-          cache-key: rust-${{ runner.os }}-${{ hashFiles('rust/Cargo.lock') }}
+          cache-workspaces: rust -> rust/target
+          cache-key: rust-${{ runner.os }}-${{ env.RUST_VERSION }}-${{ hashFiles('rust/Cargo.toml', 'rust/Cargo.lock') }}
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -31,24 +35,20 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
-          cache-key: flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}
-          cache-path: ${{ runner.tool_cache }}/flutter/${{ env.FLUTTER_VERSION }}
+          cache-key: flutter-${{ runner.os }}-${{ runner.arch }}-${{ env.FLUTTER_VERSION }}
+          pub-cache-key: pub-${{ runner.os }}-${{ runner.arch }}-${{ env.FLUTTER_VERSION }}
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin' # See 'Supported distributions' for available options
           java-version: '21'
-
-      - name: Cache Gradle Dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ./android/.gradle/caches
-            ./android/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('android/gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          cache: gradle
+          cache-dependency-path: |
+            android/*.gradle.kts
+            android/**/*.gradle.kts
+            android/gradle.properties
+            android/gradle/wrapper/gradle-wrapper.properties
 
       - name: Get Flutter Dependencies
         run: flutter pub get
@@ -66,14 +66,14 @@ jobs:
             --android-project-arg=KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             build/app/outputs/apk/release/app-arm64-v8a-release.apk
             build/app/outputs/apk/release/app-armeabi-v7a-release.apk
             build/app/outputs/apk/release/app-universal-release.apk
             build/app/outputs/apk/release/app-x86_64-release.apk
-          token: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   build-and-release-windows-x64:
     name: Build & Release Windows x64
@@ -81,14 +81,15 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
+          toolchain: ${{ env.RUST_VERSION }}
           cache: true
-          cache-workspaces: ./rust
-          cache-key: rust-${{ runner.os }}-${{ hashFiles('rust/Cargo.lock') }}
+          cache-workspaces: rust -> rust/target
+          cache-key: rust-${{ runner.os }}-${{ env.RUST_VERSION }}-${{ hashFiles('rust/Cargo.toml', 'rust/Cargo.lock') }}
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -96,8 +97,8 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
-          cache-key: flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}
-          cache-path: ${{ runner.tool_cache }}/flutter/${{ env.FLUTTER_VERSION }}
+          cache-key: flutter-${{ runner.os }}-${{ runner.arch }}-${{ env.FLUTTER_VERSION }}
+          pub-cache-key: pub-${{ runner.os }}-${{ runner.arch }}-${{ env.FLUTTER_VERSION }}
 
       - name: Get Flutter Dependencies
         run: flutter pub get
@@ -109,11 +110,11 @@ jobs:
           cd build\windows\x64\runner\Release && 7z a -tzip windows-x64.zip .\*
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             build/windows/x64/runner/Release/windows-x64.zip
-          token: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   build-and-release-linux-x64:
     name: Build & Release Linux x64
@@ -121,7 +122,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install Linux Dependencies
         run: |
@@ -131,9 +132,10 @@ jobs:
       - name: Install Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
+          toolchain: ${{ env.RUST_VERSION }}
           cache: true
-          cache-workspaces: ./rust
-          cache-key: rust-${{ runner.os }}-${{ hashFiles('rust/Cargo.lock') }}
+          cache-workspaces: rust -> rust/target
+          cache-key: rust-${{ runner.os }}-${{ env.RUST_VERSION }}-${{ hashFiles('rust/Cargo.toml', 'rust/Cargo.lock') }}
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -141,8 +143,8 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
-          cache-key: flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}
-          cache-path: ${{ runner.tool_cache }}/flutter/${{ env.FLUTTER_VERSION }}
+          cache-key: flutter-${{ runner.os }}-${{ runner.arch }}-${{ env.FLUTTER_VERSION }}
+          pub-cache-key: pub-${{ runner.os }}-${{ runner.arch }}-${{ env.FLUTTER_VERSION }}
 
       - name: Get Flutter Dependencies
         run: flutter pub get
@@ -156,26 +158,27 @@ jobs:
 
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             build/linux/x64/release/bundle/linux-x64.tar.gz
-          token: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   build-and-release-ios:
     name: Build & Release iOS
-    runs-on: macos-latest
+    runs-on: macos-26
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
+          toolchain: ${{ env.RUST_VERSION }}
           cache: true
-          cache-workspaces: ./rust
-          cache-key: rust-${{ runner.os }}-${{ hashFiles('rust/Cargo.lock') }}
+          cache-workspaces: rust -> rust/target
+          cache-key: rust-${{ runner.os }}-${{ env.RUST_VERSION }}-${{ hashFiles('rust/Cargo.toml', 'rust/Cargo.lock') }}
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -183,8 +186,11 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
-          cache-key: flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}
-          cache-path: ${{ runner.tool_cache }}/flutter/${{ env.FLUTTER_VERSION }}
+          cache-key: flutter-${{ runner.os }}-${{ runner.arch }}-${{ env.FLUTTER_VERSION }}
+          pub-cache-key: pub-${{ runner.os }}-${{ runner.arch }}-${{ env.FLUTTER_VERSION }}
+
+      - name: Disable Flutter Swift Package Manager
+        run: flutter config --no-enable-swift-package-manager
 
       - name: Get Flutter Dependencies
         run: flutter pub get
@@ -198,26 +204,27 @@ jobs:
           zip -r -m ./ios-nosigned.ipa ./Payload
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             build/ios/iphoneos/ios-nosigned.ipa
-          token: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   build-and-release-macos:
     name: Build & Release macOS arm64 & x86_64
-    runs-on: macos-latest
+    runs-on: macos-26
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
+          toolchain: ${{ env.RUST_VERSION }}
           cache: true
-          cache-workspaces: ./rust
-          cache-key: rust-${{ runner.os }}-${{ hashFiles('rust/Cargo.lock') }}
+          cache-workspaces: rust -> rust/target
+          cache-key: rust-${{ runner.os }}-${{ env.RUST_VERSION }}-${{ hashFiles('rust/Cargo.toml', 'rust/Cargo.lock') }}
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -225,8 +232,8 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
-          cache-key: flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}
-          cache-path: ${{ runner.tool_cache }}/flutter/${{ env.FLUTTER_VERSION }}
+          cache-key: flutter-${{ runner.os }}-${{ runner.arch }}-${{ env.FLUTTER_VERSION }}
+          pub-cache-key: pub-${{ runner.os }}-${{ runner.arch }}-${{ env.FLUTTER_VERSION }}
 
       - name: Get Flutter Dependencies
         run: flutter pub get
@@ -243,9 +250,9 @@ jobs:
           ditto -c -k --sequesterRsrc --keepParent build/macos/Build/Products/Release/yande_gui.app macos-x86_64-nosigned.zip
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             macos-arm64-nosigned.zip
             macos-x86_64-nosigned.zip
-          token: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
