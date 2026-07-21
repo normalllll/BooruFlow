@@ -12,25 +12,25 @@ rustc_version = "0.4"
 
 
 [dependencies]
-flutter_rust_bridge = "=2.13.0-beta.4"
-anyhow = "*"
+flutter_rust_bridge = "=2.13.0-beta.5"
+anyhow = "1"
 lazy_static = "*"
-url = "*"
+url = "2.5"
 
-tokio = { version = "1.44.1", features = ["test-util", "full"] }
-tokio-util = "*"
-futures-util = "0.3.31"
+tokio = { version = "1", features = ["test-util", "full"] }
+tokio-util = "0.7"
+futures-util = "0.3"
 
 [dependencies.reqwest]
-version = "0.12.15"
+version = "0.13.4"
 default-features = false
-features = ["rustls-tls", "json", "stream", "http2"]
+features = ["rustls", "json", "stream", "http2"]
 
 #[dependencies.serde_json]
 #version = "1.0.140"
 
 [dependencies.serde]
-version = "1.0.219"
+version = "1"
 features = ["derive"]
 
 [lints.rust]

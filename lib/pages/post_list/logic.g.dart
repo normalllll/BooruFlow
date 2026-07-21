@@ -93,7 +93,7 @@ abstract class _$PostList extends $Notifier<PostListState> {
   PostListState build(Type type, {required List<String> tags});
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<PostListState, PostListState>;
     final element =
         ref.element
@@ -103,6 +103,6 @@ abstract class _$PostList extends $Notifier<PostListState> {
               Object?,
               Object?
             >;
-    element.handleCreate(ref, () => build(_$args.$1, tags: _$args.tags));
+    return element.handleCreate(ref, () => build(_$args.$1, tags: _$args.tags));
   }
 }

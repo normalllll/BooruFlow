@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 env:
-  FLUTTER_VERSION: '3.44.1'
+  FLUTTER_VERSION: '3.44.7'
   RUST_VERSION: '1.96.0'
 
 jobs:
