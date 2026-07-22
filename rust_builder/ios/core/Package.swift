@@ -9,7 +9,7 @@ let productName = "core"
 let package = Package(
     name: "core",
     platforms: [
-        .iOS("13.0"),
+        .iOS("14.0"),
     ],
     products: [
         .library(
