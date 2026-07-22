@@ -30,9 +30,13 @@ void main(List<String> args) async {
       cratePath: _cratePath,
       targetTriple: _targetTriple(codeConfig),
       addDependency: output.dependencies.add,
-      action: () => const FlutterRustBridgeNativeAssetsBuilder(
+      action: () => FlutterRustBridgeNativeAssetsBuilder(
         assetName: 'core.dylib',
         cratePath: _cratePath,
+        extraCargoEnvironmentVariables: {
+          if (codeConfig.targetOS == OS.iOS)
+            'IPHONEOS_DEPLOYMENT_TARGET': '${codeConfig.iOS.targetVersion}.0',
+        },
       ).run(input: input, output: output),
     );
   });
@@ -114,12 +118,16 @@ bool? _swiftPackageManagerEnabled(File stateFile, String platformDirectory) {
   if (!stateFile.existsSync()) {
     return null;
   }
-  final state = jsonDecode(stateFile.readAsStringSync());
-  if (state
-      case {
-        'swift_package_manager_enabled': final Map<String, dynamic> platforms,
-      }) {
-    return platforms[platformDirectory] as bool?;
+  try {
+    final state = jsonDecode(stateFile.readAsStringSync());
+    if (state
+        case {
+          'swift_package_manager_enabled': final Map<String, dynamic> platforms,
+        }) {
+      return platforms[platformDirectory] as bool?;
+    }
+  } on FormatException {
+    return null;
   }
   return null;
 }
@@ -200,18 +208,22 @@ Future<void> _addBuildDependencies(
     }
   }
 
-  final result = await Process.run(
-      'rustup',
-      [
-        'which',
-        'rustc',
-      ],
-      workingDirectory: crateDirectory.path);
-  if (result.exitCode == 0) {
-    final rustc = File(result.stdout.toString().trim());
-    if (await rustc.exists()) {
-      addDependency(rustc.uri);
+  try {
+    final result = await Process.run(
+        'rustup',
+        [
+          'which',
+          'rustc',
+        ],
+        workingDirectory: crateDirectory.path);
+    if (result.exitCode == 0) {
+      final rustc = File(result.stdout.toString().trim());
+      if (await rustc.exists()) {
+        addDependency(rustc.uri);
+      }
     }
+  } on ProcessException {
+    // rustup is optional when Rust is installed through another toolchain.
   }
 }
 
@@ -266,7 +278,7 @@ String _rustcVersionField(String output, String field) {
   final prefix = '$field: ';
   for (final line in output.split('\n')) {
     if (line.startsWith(prefix)) {
-      return line.substring(prefix.length);
+      return line.substring(prefix.length).trim();
     }
   }
   throw StateError('Missing `$field` in `rustc --version --verbose` output');
