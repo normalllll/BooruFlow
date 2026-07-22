@@ -358,9 +358,6 @@ jobs:
           cache-key: flutter-${{ runner.os }}-${{ runner.arch }}-${{ env.FLUTTER_VERSION }}
           pub-cache-key: pub-${{ runner.os }}-${{ runner.arch }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('pubspec.yaml', 'pubspec.lock') }}
 
-      - name: Disable Flutter Swift Package Manager
-        run: flutter config --no-enable-swift-package-manager
-
       - name: Get Flutter Dependencies
         run: flutter pub get
 
