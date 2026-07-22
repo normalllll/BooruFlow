@@ -6,13 +6,19 @@ import 'package:flutter/physics.dart';
 import 'package:vector_math/vector_math_64.dart' show Quad, Vector3, Matrix4;
 import 'package:yande_gui/components/yande_image/yande_image.dart';
 import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
 
 class ImageZoomPage extends StatefulWidget {
   final String url;
   final double width;
   final double height;
 
-  const ImageZoomPage({super.key, required this.url, required this.width, required this.height});
+  const ImageZoomPage({
+    super.key,
+    required this.url,
+    required this.width,
+    required this.height,
+  });
 
   @override
   State<ImageZoomPage> createState() => _ImageZoomPageState();
@@ -24,65 +30,100 @@ class _ImageZoomPageState extends State<ImageZoomPage> {
 
   @override
   Widget build(BuildContext context) {
+    final useDesktopShell = shouldUseDesktopShell(context);
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(i18n.imageZoom.title),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              setState(() {
-                if (initialMatrix != null) {
-                  zoomStateKey.currentState?._transformationController?.value = initialMatrix!;
-                  zoomStateKey.currentState?._updateScroll(initialMatrix!);
-                }
-              });
-            },
+      appBar: useDesktopShell
+          ? null
+          : AppBar(
+              title: Text(i18n.imageZoom.title),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: _resetZoom,
+                ),
+              ],
+            ),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Center(
+              child: LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  return YandeImage(
+                    widget.url,
+                    width: widget.width,
+                    height: widget.height,
+                    imageBuilder: (Widget imageWidget) {
+                      return Zoom(
+                        key: zoomStateKey,
+                        onMinZoom: (v) {
+                          if (v) {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              initialMatrix ??= zoomStateKey
+                                  .currentState
+                                  ?._transformationController
+                                  ?.value;
+                            });
+                          }
+                        },
+                        maxScale: 10,
+                        initTotalZoomOut: true,
+                        canvasColor: Colors.transparent,
+                        backgroundColor: Colors.transparent,
+                        colorScrollBars: Theme.of(context).primaryColor,
+                        opacityScrollBars: 0.7,
+                        scrollWeight: 10.0,
+                        enableScroll: true,
+                        doubleTapZoom: true,
+                        zoomSensibility: 0.05,
+                        child: imageWidget,
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
           ),
+          if (useDesktopShell)
+            PositionedDirectional(
+              top: 12,
+              end: 12,
+              child: SafeArea(
+                child: Material(
+                  color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.refresh),
+                    onPressed: _resetZoom,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
-      body: Center(
-        child: LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-            return YandeImage(
-              widget.url,
-              width: widget.width,
-              height: widget.height,
-              imageBuilder: (Widget imageWidget) {
-                return Zoom(
-                  key: zoomStateKey,
-                  onMinZoom: (v) {
-                    if (v) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        initialMatrix ??= zoomStateKey.currentState?._transformationController?.value;
-                      });
-                    }
-                  },
-                  maxScale: 10,
-                  initTotalZoomOut: true,
-                  canvasColor: Colors.transparent,
-                  backgroundColor: Colors.transparent,
-                  colorScrollBars: Theme.of(context).primaryColor,
-                  opacityScrollBars: 0.7,
-                  scrollWeight: 10.0,
-                  enableScroll: true,
-                  doubleTapZoom: true,
-                  zoomSensibility: 0.05,
-                  child: imageWidget,
-                );
-              },
-            );
-          },
-        ),
-      ),
     );
+  }
+
+  void _resetZoom() {
+    setState(() {
+      if (initialMatrix != null) {
+        zoomStateKey.currentState?._transformationController?.value =
+            initialMatrix!;
+        zoomStateKey.currentState?._updateScroll(initialMatrix!);
+      }
+    });
   }
 }
 
 // From https://github.com/semakers/zoom-widget
 // This project does not provide controller such as maximize, minimize, and reset. It can only be copied into the project for use.
 
-typedef ZoomWidgetBuilder = Widget Function(BuildContext context, Quad viewport);
+typedef ZoomWidgetBuilder =
+    Widget Function(BuildContext context, Quad viewport);
 
 @immutable
 class Zoom extends StatefulWidget {
@@ -143,7 +184,9 @@ class Zoom extends StatefulWidget {
   final double zoomSensibility;
 
   static Vector3 getNearestPointOnLine(Vector3 point, Vector3 l1, Vector3 l2) {
-    final double lengthSquared = math.pow(l2.x - l1.x, 2.0).toDouble() + math.pow(l2.y - l1.y, 2.0).toDouble();
+    final double lengthSquared =
+        math.pow(l2.x - l1.x, 2.0).toDouble() +
+        math.pow(l2.y - l1.y, 2.0).toDouble();
 
     if (lengthSquared == 0) {
       return l1;
@@ -156,11 +199,28 @@ class Zoom extends StatefulWidget {
   }
 
   static Quad getAxisAlignedBoundingBox(Quad quad) {
-    final double minX = math.min(quad.point0.x, math.min(quad.point1.x, math.min(quad.point2.x, quad.point3.x)));
-    final double minY = math.min(quad.point0.y, math.min(quad.point1.y, math.min(quad.point2.y, quad.point3.y)));
-    final double maxX = math.max(quad.point0.x, math.max(quad.point1.x, math.max(quad.point2.x, quad.point3.x)));
-    final double maxY = math.max(quad.point0.y, math.max(quad.point1.y, math.max(quad.point2.y, quad.point3.y)));
-    return Quad.points(Vector3(minX, minY, 0), Vector3(maxX, minY, 0), Vector3(maxX, maxY, 0), Vector3(minX, maxY, 0));
+    final double minX = math.min(
+      quad.point0.x,
+      math.min(quad.point1.x, math.min(quad.point2.x, quad.point3.x)),
+    );
+    final double minY = math.min(
+      quad.point0.y,
+      math.min(quad.point1.y, math.min(quad.point2.y, quad.point3.y)),
+    );
+    final double maxX = math.max(
+      quad.point0.x,
+      math.max(quad.point1.x, math.max(quad.point2.x, quad.point3.x)),
+    );
+    final double maxY = math.max(
+      quad.point0.y,
+      math.max(quad.point1.y, math.max(quad.point2.y, quad.point3.y)),
+    );
+    return Quad.points(
+      Vector3(minX, minY, 0),
+      Vector3(maxX, minY, 0),
+      Vector3(maxX, maxY, 0),
+      Vector3(minX, maxY, 0),
+    );
   }
 
   static bool pointIsInside(Vector3 point, Quad quad) {
@@ -190,7 +250,10 @@ class Zoom extends StatefulWidget {
     double minDistance = double.infinity;
     late Vector3 closestOverall;
     for (final Vector3 closePoint in closestPoints) {
-      final double distance = math.sqrt(math.pow(point.x - closePoint.x, 2) + math.pow(point.y - closePoint.y, 2));
+      final double distance = math.sqrt(
+        math.pow(point.x - closePoint.x, 2) +
+            math.pow(point.y - closePoint.y, 2),
+      );
       if (distance < minDistance) {
         minDistance = distance;
         closestOverall = closePoint;
@@ -203,7 +266,8 @@ class Zoom extends StatefulWidget {
   State<Zoom> createState() => _ZoomState();
 }
 
-class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindingObserver {
+class _ZoomState extends State<Zoom>
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   TransformationController? _transformationController;
 
   final GlobalKey _childKey = GlobalKey();
@@ -216,8 +280,12 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
   Offset? _referenceFocalPoint;
   double? _scaleStart;
   _GestureType? _gestureType;
-  ValueNotifier<_ScrollBarData> verticalScrollNotifier = ValueNotifier(_ScrollBarData(length: 0, position: 0));
-  ValueNotifier<_ScrollBarData> horizontalScrollNotifier = ValueNotifier(_ScrollBarData(length: 0, position: 0));
+  ValueNotifier<_ScrollBarData> verticalScrollNotifier = ValueNotifier(
+    _ScrollBarData(length: 0, position: 0),
+  );
+  ValueNotifier<_ScrollBarData> horizontalScrollNotifier = ValueNotifier(
+    _ScrollBarData(length: 0, position: 0),
+  );
   Size parentSize = Size.zero;
   Size childSize = Size.zero;
   Orientation? _orientation;
@@ -230,12 +298,17 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
   Rect get _boundaryRect {
     assert(_childKey.currentContext != null);
 
-    final Rect boundaryRect = EdgeInsets.zero.inflateRect(Offset.zero & childSize);
+    final Rect boundaryRect = EdgeInsets.zero.inflateRect(
+      Offset.zero & childSize,
+    );
     assert(!boundaryRect.isEmpty, "Zoom's child must have nonzero dimensions.");
 
     assert(
       boundaryRect.isFinite ||
-          (boundaryRect.left.isInfinite && boundaryRect.top.isInfinite && boundaryRect.right.isInfinite && boundaryRect.bottom.isInfinite),
+          (boundaryRect.left.isInfinite &&
+              boundaryRect.top.isInfinite &&
+              boundaryRect.right.isInfinite &&
+              boundaryRect.bottom.isInfinite),
       'boundaryRect must either be infinite in all directions or finite in all directions.',
     );
     return boundaryRect;
@@ -243,29 +316,42 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
 
   Rect get _viewport {
     assert(_parentKey.currentContext != null);
-    final RenderBox parentRenderBox = _parentKey.currentContext!.findRenderObject()! as RenderBox;
+    final RenderBox parentRenderBox =
+        _parentKey.currentContext!.findRenderObject()! as RenderBox;
     return Offset.zero & parentRenderBox.size;
   }
 
   double _getScrollPercent(Matrix4 matrix, {required _ScrollType scrollType}) {
     switch (scrollType) {
       case _ScrollType.horizontal:
-        return _getMatrixTranslation(matrix).dx.abs() / ((childSize.width * matrix.getMaxScaleOnAxis()) - parentSize.width) * 100.0;
+        return _getMatrixTranslation(matrix).dx.abs() /
+            ((childSize.width * matrix.getMaxScaleOnAxis()) -
+                parentSize.width) *
+            100.0;
 
       case _ScrollType.vertical:
-        return _getMatrixTranslation(matrix).dy.abs() / ((childSize.height * matrix.getMaxScaleOnAxis()) - parentSize.height) * 100.0;
+        return _getMatrixTranslation(matrix).dy.abs() /
+            ((childSize.height * matrix.getMaxScaleOnAxis()) -
+                parentSize.height) *
+            100.0;
     }
   }
 
-  double _getScrollBarLength(Matrix4 matrix, {required _ScrollType scrollType}) {
+  double _getScrollBarLength(
+    Matrix4 matrix, {
+    required _ScrollType scrollType,
+  }) {
     double percent = 0;
     switch (scrollType) {
       case _ScrollType.horizontal:
-        percent = (parentSize.width / (childSize.width * matrix.getMaxScaleOnAxis()));
+        percent =
+            (parentSize.width / (childSize.width * matrix.getMaxScaleOnAxis()));
         return parentSize.width * percent;
 
       case _ScrollType.vertical:
-        percent = (parentSize.height / (childSize.height * matrix.getMaxScaleOnAxis()));
+        percent =
+            (parentSize.height /
+            (childSize.height * matrix.getMaxScaleOnAxis()));
         return parentSize.height * percent;
     }
   }
@@ -282,28 +368,44 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
   }
 
   void _updateScroll(Matrix4 matrix) {
-    if (childSize.width * matrix.getMaxScaleOnAxis() > parentSize.width + (parentSize.width * 0.01)) {
-      var horizontalPercent = _getScrollPercent(matrix, scrollType: _ScrollType.horizontal);
+    if (childSize.width * matrix.getMaxScaleOnAxis() >
+        parentSize.width + (parentSize.width * 0.01)) {
+      var horizontalPercent = _getScrollPercent(
+        matrix,
+        scrollType: _ScrollType.horizontal,
+      );
 
-      final horizontalLength = _getScrollBarLength(matrix, scrollType: _ScrollType.horizontal);
+      final horizontalLength = _getScrollBarLength(
+        matrix,
+        scrollType: _ScrollType.horizontal,
+      );
 
       horizontalScrollNotifier.value = _ScrollBarData(
         length: horizontalLength,
-        position: (horizontalPercent / 100.0) * (parentSize.width - horizontalLength),
+        position:
+            (horizontalPercent / 100.0) * (parentSize.width - horizontalLength),
       );
     } else {
       horizontalScrollNotifier.value = _ScrollBarData(length: 0, position: 0);
       onDisabledScrolls();
     }
 
-    if (childSize.height * matrix.getMaxScaleOnAxis() > parentSize.height + (parentSize.height * 0.01)) {
-      final verticalPercent = _getScrollPercent(matrix, scrollType: _ScrollType.vertical);
+    if (childSize.height * matrix.getMaxScaleOnAxis() >
+        parentSize.height + (parentSize.height * 0.01)) {
+      final verticalPercent = _getScrollPercent(
+        matrix,
+        scrollType: _ScrollType.vertical,
+      );
 
-      final verticalLength = _getScrollBarLength(matrix, scrollType: _ScrollType.vertical);
+      final verticalLength = _getScrollBarLength(
+        matrix,
+        scrollType: _ScrollType.vertical,
+      );
 
       verticalScrollNotifier.value = _ScrollBarData(
         length: verticalLength,
-        position: (verticalPercent / 100) * (parentSize.height - verticalLength),
+        position:
+            (verticalPercent / 100) * (parentSize.height - verticalLength),
       );
     } else {
       verticalScrollNotifier.value = _ScrollBarData(length: 0, position: 0);
@@ -311,14 +413,19 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
     }
   }
 
-  Matrix4 _matrixTranslate(Matrix4 matrix, Offset translation, {bool fixOffset = false}) {
+  Matrix4 _matrixTranslate(
+    Matrix4 matrix,
+    Offset translation, {
+    bool fixOffset = false,
+  }) {
     if (translation == Offset.zero) {
       return matrix.clone();
     }
 
     final Offset alignedTranslation = translation;
 
-    final Matrix4 nextMatrix = matrix.clone()..translate(alignedTranslation.dx, alignedTranslation.dy);
+    final Matrix4 nextMatrix = matrix.clone()
+      ..translate(alignedTranslation.dx, alignedTranslation.dy);
 
     final Quad nextViewport = _transformViewport(nextMatrix, _viewport);
 
@@ -328,9 +435,15 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
       return nextMatrix;
     }
 
-    final Quad boundariesAabbQuad = _getAxisAlignedBoundingBoxWithRotation(_boundaryRect, 0.0);
+    final Quad boundariesAabbQuad = _getAxisAlignedBoundingBoxWithRotation(
+      _boundaryRect,
+      0.0,
+    );
 
-    final Offset offendingDistance = _exceedsBy(boundariesAabbQuad, nextViewport);
+    final Offset offendingDistance = _exceedsBy(
+      boundariesAabbQuad,
+      nextViewport,
+    );
     if (offendingDistance == Offset.zero) {
       _updateScroll(nextMatrix);
       widget.onPositionUpdate?.call(_getMatrixTranslation(nextMatrix));
@@ -344,11 +457,23 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
       nextTotalTranslation.dy - offendingDistance.dy * currentScale,
     );
 
-    final Matrix4 correctedMatrix =
-        matrix.clone()..setTranslation(Vector3(correctedTotalTranslation.dx, correctedTotalTranslation.dy, 0.0));
+    final Matrix4 correctedMatrix = matrix.clone()
+      ..setTranslation(
+        Vector3(
+          correctedTotalTranslation.dx,
+          correctedTotalTranslation.dy,
+          0.0,
+        ),
+      );
 
-    final Quad correctedViewport = _transformViewport(correctedMatrix, _viewport);
-    final Offset offendingCorrectedDistance = _exceedsBy(boundariesAabbQuad, correctedViewport);
+    final Quad correctedViewport = _transformViewport(
+      correctedMatrix,
+      _viewport,
+    );
+    final Offset offendingCorrectedDistance = _exceedsBy(
+      boundariesAabbQuad,
+      correctedViewport,
+    );
     if (offendingCorrectedDistance == Offset.zero && !fixOffset) {
       _updateScroll(correctedMatrix);
       widget.onPositionUpdate?.call(_getMatrixTranslation(correctedMatrix));
@@ -358,7 +483,8 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
     if (offendingCorrectedDistance.dx != 0.0 &&
         offendingCorrectedDistance.dy != 0.0 &&
         !fixOffset &&
-        (childSize.width > parentSize.width || childSize.height > parentSize.height)) {
+        (childSize.width > parentSize.width ||
+            childSize.height > parentSize.height)) {
       return matrix.clone();
     }
 
@@ -366,8 +492,10 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
       offendingCorrectedDistance.dx == 0.0 ? correctedTotalTranslation.dx : 0.0,
       offendingCorrectedDistance.dy == 0.0 ? correctedTotalTranslation.dy : 0.0,
     );
-    final verticalMidLength = (parentSize.height - childSize.height * matrix.getMaxScaleOnAxis()) / 2;
-    final horizontalMidLength = (parentSize.width - (childSize.width * matrix.getMaxScaleOnAxis())) / 2;
+    final verticalMidLength =
+        (parentSize.height - childSize.height * matrix.getMaxScaleOnAxis()) / 2;
+    final horizontalMidLength =
+        (parentSize.width - (childSize.width * matrix.getMaxScaleOnAxis())) / 2;
 
     double horizontalMid = 0;
     double verticalMid = 0;
@@ -392,55 +520,62 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
       calculateMids(childSize.height < childSize.width);
     }
 
-    final midMatrix =
-        matrix.clone()..setTranslation(
-          Vector3(
-            unidirectionalCorrectedTotalTranslation.dx +
-                (widget.centerOnScale
-                    ? horizontalMid < 0
+    final midMatrix = matrix.clone()
+      ..setTranslation(
+        Vector3(
+          unidirectionalCorrectedTotalTranslation.dx +
+              (widget.centerOnScale
+                  ? horizontalMid < 0
                         ? 0
                         : horizontalMid
-                    : 0),
-            unidirectionalCorrectedTotalTranslation.dy +
-                (widget.centerOnScale
-                    ? verticalMid < 0
+                  : 0),
+          unidirectionalCorrectedTotalTranslation.dy +
+              (widget.centerOnScale
+                  ? verticalMid < 0
                         ? 0
                         : verticalMid
-                    : 0),
-            0.0,
-          ),
-        );
+                  : 0),
+          0.0,
+        ),
+      );
     _updateScroll(midMatrix);
     widget.onPositionUpdate?.call(_getMatrixTranslation(midMatrix));
     return midMatrix;
   }
 
   Matrix4 _matrixScale(Matrix4 matrix, double scale, {bool fixScale = false}) {
-    double sensibleScale = scale > 1.0 ? 1.0 + ((scale - 1.0) * widget.zoomSensibility) : 1.0 - ((1.0 - scale) * widget.zoomSensibility);
+    double sensibleScale = scale > 1.0
+        ? 1.0 + ((scale - 1.0) * widget.zoomSensibility)
+        : 1.0 - ((1.0 - scale) * widget.zoomSensibility);
     if (scale == 1.0) {
       return matrix.clone();
     }
     assert(scale != 0.0);
 
-    final nextScale = (matrix.clone()..scale(sensibleScale)).getMaxScaleOnAxis();
+    final nextScale = (matrix.clone()..scale(sensibleScale))
+        .getMaxScaleOnAxis();
 
     if (childSize.width == childSize.height) {
       if (parentSize.height > parentSize.width) {
-        if ((childSize.width * nextScale) < parentSize.width && nextScale < 1.0) {
+        if ((childSize.width * nextScale) < parentSize.width &&
+            nextScale < 1.0) {
           return matrix.clone();
         }
       } else {
-        if ((childSize.height * nextScale) < parentSize.height && nextScale < 1.0) {
+        if ((childSize.height * nextScale) < parentSize.height &&
+            nextScale < 1.0) {
           return matrix.clone();
         }
       }
     } else {
       if (childSize.height < childSize.width) {
-        if ((childSize.width * nextScale) < parentSize.width && nextScale < 1.0) {
+        if ((childSize.width * nextScale) < parentSize.width &&
+            nextScale < 1.0) {
           return matrix.clone();
         }
       } else {
-        if ((childSize.height * nextScale) < parentSize.height && nextScale < 1.0) {
+        if ((childSize.height * nextScale) < parentSize.height &&
+            nextScale < 1.0) {
           return matrix.clone();
         }
       }
@@ -449,9 +584,13 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
     if (matrix.getMaxScaleOnAxis() > widget.maxScale && sensibleScale > 1) {
       return matrix.clone();
     }
-    final newMatrix = matrix.clone()..scale(fixScale ? scale : sensibleScale.abs());
+    final newMatrix = matrix.clone()
+      ..scale(fixScale ? scale : sensibleScale.abs());
 
-    widget.onScaleUpdate?.call(fixScale ? scale : sensibleScale.abs(), newMatrix.getMaxScaleOnAxis());
+    widget.onScaleUpdate?.call(
+      fixScale ? scale : sensibleScale.abs(),
+      newMatrix.getMaxScaleOnAxis(),
+    );
 
     return newMatrix;
   }
@@ -487,12 +626,16 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
     _gestureType = null;
     _panAxis = null;
     _scaleStart = _transformationController!.value.getMaxScaleOnAxis();
-    _referenceFocalPoint = _transformationController!.toScene(details.localFocalPoint);
+    _referenceFocalPoint = _transformationController!.toScene(
+      details.localFocalPoint,
+    );
   }
 
   void _onScaleUpdate(ScaleUpdateDetails details) {
     final double scale = _transformationController!.value.getMaxScaleOnAxis();
-    final Offset focalPointScene = _transformationController!.toScene(details.localFocalPoint);
+    final Offset focalPointScene = _transformationController!.toScene(
+      details.localFocalPoint,
+    );
 
     if (_gestureType == _GestureType.pan) {
       _gestureType = _getGestureType(details);
@@ -506,16 +649,23 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
 
         final double desiredScale = _scaleStart! * details.scale;
         final double scaleChange = desiredScale / scale;
-        _transformationController!.value = _matrixScale(_transformationController!.value, scaleChange);
+        _transformationController!.value = _matrixScale(
+          _transformationController!.value,
+          scaleChange,
+        );
 
-        final Offset focalPointSceneScaled = _transformationController!.toScene(details.localFocalPoint);
+        final Offset focalPointSceneScaled = _transformationController!.toScene(
+          details.localFocalPoint,
+        );
 
         _transformationController!.value = _matrixTranslate(
           _transformationController!.value,
           focalPointSceneScaled - _referenceFocalPoint!,
         );
 
-        final Offset focalPointSceneCheck = _transformationController!.toScene(details.localFocalPoint);
+        final Offset focalPointSceneCheck = _transformationController!.toScene(
+          details.localFocalPoint,
+        );
         if (_round(_referenceFocalPoint!) != _round(focalPointSceneCheck)) {
           _referenceFocalPoint = focalPointSceneCheck;
         }
@@ -526,9 +676,15 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
 
         _panAxis ??= _getPanAxis(_referenceFocalPoint!, focalPointScene);
 
-        final Offset translationChange = focalPointScene - _referenceFocalPoint!;
-        _transformationController!.value = _matrixTranslate(_transformationController!.value, translationChange);
-        _referenceFocalPoint = _transformationController!.toScene(details.localFocalPoint);
+        final Offset translationChange =
+            focalPointScene - _referenceFocalPoint!;
+        _transformationController!.value = _matrixTranslate(
+          _transformationController!.value,
+          translationChange,
+        );
+        _referenceFocalPoint = _transformationController!.toScene(
+          details.localFocalPoint,
+        );
         break;
     }
   }
@@ -544,16 +700,29 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
       return;
     }
 
-    if (_gestureType != _GestureType.pan || details.velocity.pixelsPerSecond.distance < kMinFlingVelocity) {
+    if (_gestureType != _GestureType.pan ||
+        details.velocity.pixelsPerSecond.distance < kMinFlingVelocity) {
       _panAxis = null;
       return;
     }
 
-    final Vector3 translationVector = _transformationController!.value.getTranslation();
+    final Vector3 translationVector = _transformationController!.value
+        .getTranslation();
     final Offset translation = Offset(translationVector.x, translationVector.y);
-    final FrictionSimulation frictionSimulationX = FrictionSimulation(_kDrag, translation.dx, details.velocity.pixelsPerSecond.dx);
-    final FrictionSimulation frictionSimulationY = FrictionSimulation(_kDrag, translation.dy, details.velocity.pixelsPerSecond.dy);
-    final double tFinal = _getFinalTime(details.velocity.pixelsPerSecond.distance, _kDrag);
+    final FrictionSimulation frictionSimulationX = FrictionSimulation(
+      _kDrag,
+      translation.dx,
+      details.velocity.pixelsPerSecond.dx,
+    );
+    final FrictionSimulation frictionSimulationY = FrictionSimulation(
+      _kDrag,
+      translation.dy,
+      details.velocity.pixelsPerSecond.dy,
+    );
+    final double tFinal = _getFinalTime(
+      details.velocity.pixelsPerSecond.distance,
+      _kDrag,
+    );
     _animation = Tween<Offset>(
       begin: translation,
       end: Offset(frictionSimulationX.finalX, frictionSimulationY.finalX),
@@ -571,25 +740,43 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
 
       final double scaleChange = math.exp(-event.scrollDelta.dy / 200);
 
-      final Offset focalPointScene = _transformationController!.toScene(event.localPosition);
+      final Offset focalPointScene = _transformationController!.toScene(
+        event.localPosition,
+      );
 
-      _transformationController!.value = _matrixScale(_transformationController!.value, scaleChange);
+      _transformationController!.value = _matrixScale(
+        _transformationController!.value,
+        scaleChange,
+      );
 
-      final Offset focalPointSceneScaled = _transformationController!.toScene(event.localPosition);
-      _transformationController!.value = _matrixTranslate(_transformationController!.value, focalPointSceneScaled - focalPointScene);
+      final Offset focalPointSceneScaled = _transformationController!.toScene(
+        event.localPosition,
+      );
+      _transformationController!.value = _matrixTranslate(
+        _transformationController!.value,
+        focalPointSceneScaled - focalPointScene,
+      );
     }
   }
 
   void _onDoubleTap() {
     if (!_scaleController.isAnimating && widget.doubleTapZoom) {
-      doubleTapZoomIn = _transformationController!.value.getMaxScaleOnAxis() < widget.maxScale;
+      doubleTapZoomIn =
+          _transformationController!.value.getMaxScaleOnAxis() <
+          widget.maxScale;
 
-      _scaleAnimation = Tween<double>(
-        begin: _transformationController!.value.getMaxScaleOnAxis(),
-        end: widget.maxScale,
-      ).animate(CurvedAnimation(parent: _scaleController, curve: Curves.decelerate));
-      _scaleController.duration =
-          doubleTapZoomIn ? Duration(milliseconds: 100 + widget.doubleTapAnimDuration.inMilliseconds) : widget.doubleTapAnimDuration;
+      _scaleAnimation =
+          Tween<double>(
+            begin: _transformationController!.value.getMaxScaleOnAxis(),
+            end: widget.maxScale,
+          ).animate(
+            CurvedAnimation(parent: _scaleController, curve: Curves.decelerate),
+          );
+      _scaleController.duration = doubleTapZoomIn
+          ? Duration(
+              milliseconds: 100 + widget.doubleTapAnimDuration.inMilliseconds,
+            )
+          : widget.doubleTapAnimDuration;
       _scaleAnimation!.addListener(_onAnimateScale);
       _scaleController.forward();
     }
@@ -604,12 +791,20 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
       return;
     }
 
-    final Vector3 translationVector = _transformationController!.value.getTranslation();
+    final Vector3 translationVector = _transformationController!.value
+        .getTranslation();
     final Offset translation = Offset(translationVector.x, translationVector.y);
-    final Offset translationScene = _transformationController!.toScene(translation);
-    final Offset animationScene = _transformationController!.toScene(_animation!.value);
+    final Offset translationScene = _transformationController!.toScene(
+      translation,
+    );
+    final Offset animationScene = _transformationController!.toScene(
+      _animation!.value,
+    );
     final Offset translationChangeScene = animationScene - translationScene;
-    _transformationController!.value = _matrixTranslate(_transformationController!.value, translationChangeScene);
+    _transformationController!.value = _matrixTranslate(
+      _transformationController!.value,
+      translationChangeScene,
+    );
   }
 
   void _onAnimateScale() {
@@ -624,18 +819,31 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
     if (widget.doubleTapScaleChange < 1.0) {
       scaleChange = doubleTapZoomIn ? 1.01 : 0.99;
     } else {
-      scaleChange = doubleTapZoomIn ? widget.doubleTapScaleChange : 1 - (widget.doubleTapScaleChange - 1);
+      scaleChange = doubleTapZoomIn
+          ? widget.doubleTapScaleChange
+          : 1 - (widget.doubleTapScaleChange - 1);
     }
 
-    final Offset focalPointScene = _transformationController!.toScene(_doubleTapFocalPoint ?? Offset.zero);
+    final Offset focalPointScene = _transformationController!.toScene(
+      _doubleTapFocalPoint ?? Offset.zero,
+    );
 
-    _transformationController!.value = _matrixScale(_transformationController!.value, scaleChange, fixScale: true);
+    _transformationController!.value = _matrixScale(
+      _transformationController!.value,
+      scaleChange,
+      fixScale: true,
+    );
 
-    final Offset focalPointSceneScaled = _transformationController!.toScene(_doubleTapFocalPoint ?? Offset.zero);
+    final Offset focalPointSceneScaled = _transformationController!.toScene(
+      _doubleTapFocalPoint ?? Offset.zero,
+    );
 
     Offset difference = focalPointSceneScaled - focalPointScene;
 
-    _transformationController!.value = _matrixTranslate(_transformationController!.value, difference);
+    _transformationController!.value = _matrixTranslate(
+      _transformationController!.value,
+      difference,
+    );
   }
 
   void _onTransformationControllerChange() {
@@ -647,7 +855,8 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    _transformationController = widget.transformationController ?? TransformationController();
+    _transformationController =
+        widget.transformationController ?? TransformationController();
     _transformationController!.addListener(_onTransformationControllerChange);
     _controller = AnimationController(vsync: this);
     _scaleController = AnimationController(vsync: this);
@@ -666,20 +875,33 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
 
     if (oldWidget.transformationController == null) {
       if (widget.transformationController != null) {
-        _transformationController!.removeListener(_onTransformationControllerChange);
+        _transformationController!.removeListener(
+          _onTransformationControllerChange,
+        );
         _transformationController!.dispose();
         _transformationController = widget.transformationController;
-        _transformationController!.addListener(_onTransformationControllerChange);
+        _transformationController!.addListener(
+          _onTransformationControllerChange,
+        );
       }
     } else {
       if (widget.transformationController == null) {
-        _transformationController!.removeListener(_onTransformationControllerChange);
+        _transformationController!.removeListener(
+          _onTransformationControllerChange,
+        );
         _transformationController = TransformationController();
-        _transformationController!.addListener(_onTransformationControllerChange);
-      } else if (widget.transformationController != oldWidget.transformationController) {
-        _transformationController!.removeListener(_onTransformationControllerChange);
+        _transformationController!.addListener(
+          _onTransformationControllerChange,
+        );
+      } else if (widget.transformationController !=
+          oldWidget.transformationController) {
+        _transformationController!.removeListener(
+          _onTransformationControllerChange,
+        );
         _transformationController = widget.transformationController;
-        _transformationController!.addListener(_onTransformationControllerChange);
+        _transformationController!.addListener(
+          _onTransformationControllerChange,
+        );
       }
     }
   }
@@ -688,7 +910,9 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
   void dispose() {
     _controller.dispose();
     _scaleController.dispose();
-    _transformationController!.removeListener(_onTransformationControllerChange);
+    _transformationController!.removeListener(
+      _onTransformationControllerChange,
+    );
     WidgetsBinding.instance.removeObserver(this);
     if (widget.transformationController == null) {
       _transformationController!.dispose();
@@ -697,44 +921,60 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
   }
 
   void fixScale(double scale) {
-    _transformationController!.value = _matrixScale(_transformationController!.value, scale, fixScale: true);
+    _transformationController!.value = _matrixScale(
+      _transformationController!.value,
+      scale,
+      fixScale: true,
+    );
     _transformationController!.toScene(_referenceFocalPoint ?? Offset.zero);
     _transformationController!.toScene(_referenceFocalPoint ?? Offset.zero);
   }
 
   void recalculateSizes() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final RenderBox parentRenderBox = _parentKey.currentContext!.findRenderObject()! as RenderBox;
+      final RenderBox parentRenderBox =
+          _parentKey.currentContext!.findRenderObject()! as RenderBox;
       parentSize = parentRenderBox.size;
-      final RenderBox childRenderBox = _childKey.currentContext!.findRenderObject()! as RenderBox;
+      final RenderBox childRenderBox =
+          _childKey.currentContext!.findRenderObject()! as RenderBox;
       childSize = childRenderBox.size;
       double scale = 0;
 
       final currentScale = _transformationController!.value.getMaxScaleOnAxis();
 
-      _transformationController!.value = _matrixTranslate(_transformationController!.value, const Offset(-0.01, -0.01), fixOffset: true);
+      _transformationController!.value = _matrixTranslate(
+        _transformationController!.value,
+        const Offset(-0.01, -0.01),
+        fixOffset: true,
+      );
 
       if (childSize.width == childSize.height) {
         if (childSize.width > parentSize.width &&
-            ((childSize.width * currentScale) < parentSize.width || (childSize.height * currentScale) < parentSize.height)) {
+            ((childSize.width * currentScale) < parentSize.width ||
+                (childSize.height * currentScale) < parentSize.height)) {
           scale = parentSize.width / (childSize.width * currentScale);
           fixScale(scale);
         }
       } else {
         if (childSize.width > childSize.height) {
-          if (childSize.width > parentSize.width && (childSize.width * currentScale) < parentSize.width) {
+          if (childSize.width > parentSize.width &&
+              (childSize.width * currentScale) < parentSize.width) {
             scale = parentSize.width / (childSize.width * currentScale);
             fixScale(scale);
           }
         } else {
-          if (childSize.height > parentSize.height && (childSize.height * currentScale) < parentSize.height) {
+          if (childSize.height > parentSize.height &&
+              (childSize.height * currentScale) < parentSize.height) {
             scale = parentSize.height / (childSize.height * currentScale);
             fixScale(scale);
           }
         }
       }
 
-      _transformationController!.value = _matrixTranslate(_transformationController!.value, const Offset(-0.01, -0.01));
+      _transformationController!.value = _matrixTranslate(
+        _transformationController!.value,
+        const Offset(-0.01, -0.01),
+      );
 
       void fitChild(bool condition) {
         if (condition) {
@@ -765,7 +1005,9 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
       }
 
       if (widget.initTotalZoomOut) {
-        if (firstDraw && (childSize.width > parentSize.width || childSize.height > parentSize.height)) {
+        if (firstDraw &&
+            (childSize.width > parentSize.width ||
+                childSize.height > parentSize.height)) {
           if (childSize.width == childSize.height) {
             fitChild(parentSize.width > parentSize.height);
           } else {
@@ -775,7 +1017,11 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
         }
       } else {
         if (widget.initScale != null) {
-          _transformationController!.value = _matrixScale(_transformationController!.value, widget.initScale ?? 0.0, fixScale: true);
+          _transformationController!.value = _matrixScale(
+            _transformationController!.value,
+            widget.initScale ?? 0.0,
+            fixScale: true,
+          );
 
           _transformationController!.value = _matrixTranslate(
             _transformationController!.value,
@@ -784,9 +1030,14 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
           );
         }
         if (widget.initPosition != null) {
-          _transformationController!.value = _matrixTranslate(_transformationController!.value, widget.initPosition ?? Offset.zero);
+          _transformationController!.value = _matrixTranslate(
+            _transformationController!.value,
+            widget.initPosition ?? Offset.zero,
+          );
 
-          _referenceFocalPoint = _transformationController!.toScene(widget.initPosition ?? Offset.zero);
+          _referenceFocalPoint = _transformationController!.toScene(
+            widget.initPosition ?? Offset.zero,
+          );
         }
       }
     });
@@ -805,17 +1056,16 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
             widget.onPanUpPosition!(event.localPosition);
           }
         },
-        child:
-            (widget.maxZoomWidth == null || widget.maxZoomHeight == null)
-                ? Container(color: widget.canvasColor, child: widget.child)
-                : Center(
-                  child: Container(
-                    width: widget.maxZoomWidth,
-                    height: widget.maxZoomHeight,
-                    color: widget.canvasColor,
-                    child: widget.child,
-                  ),
+        child: (widget.maxZoomWidth == null || widget.maxZoomHeight == null)
+            ? Container(color: widget.canvasColor, child: widget.child)
+            : Center(
+                child: Container(
+                  width: widget.maxZoomWidth,
+                  height: widget.maxZoomHeight,
+                  color: widget.canvasColor,
+                  child: widget.child,
                 ),
+              ),
       ),
     );
 
@@ -831,12 +1081,11 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
             recalculateSizes();
           }
 
-          double opacity =
-              widget.opacityScrollBars < 0
-                  ? 0
-                  : widget.opacityScrollBars > 1
-                  ? 1
-                  : widget.opacityScrollBars;
+          double opacity = widget.opacityScrollBars < 0
+              ? 0
+              : widget.opacityScrollBars > 1
+              ? 1
+              : widget.opacityScrollBars;
 
           return ClipRect(
             child: Container(
@@ -854,56 +1103,70 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
                   onScaleUpdate: _onScaleUpdate,
                   onDoubleTap: _onDoubleTap,
                   onTap: widget.onTap,
-                  child:
-                      widget.enableScroll
-                          ? Stack(
-                            children: [
-                              child,
-                              ValueListenableBuilder<_ScrollBarData>(
-                                valueListenable: horizontalScrollNotifier,
-                                builder: (_, scrollData, __) {
-                                  return scrollData.length == 0
-                                      ? Container()
-                                      : Positioned(
-                                        top: parentSize.height - widget.scrollWeight,
+                  child: widget.enableScroll
+                      ? Stack(
+                          children: [
+                            child,
+                            ValueListenableBuilder<_ScrollBarData>(
+                              valueListenable: horizontalScrollNotifier,
+                              builder: (_, scrollData, __) {
+                                return scrollData.length == 0
+                                    ? Container()
+                                    : Positioned(
+                                        top:
+                                            parentSize.height -
+                                            widget.scrollWeight,
                                         left: scrollData.position,
                                         child: Container(
                                           decoration: BoxDecoration(
-                                            color: widget.colorScrollBars.withAlpha((opacity * 255).toInt()),
+                                            color: widget.colorScrollBars
+                                                .withAlpha(
+                                                  (opacity * 255).toInt(),
+                                                ),
                                             borderRadius: BorderRadius.only(
-                                              topLeft: Radius.circular(widget.radiusScrollBars),
-                                              topRight: Radius.circular(widget.radiusScrollBars),
+                                              topLeft: Radius.circular(
+                                                widget.radiusScrollBars,
+                                              ),
+                                              topRight: Radius.circular(
+                                                widget.radiusScrollBars,
+                                              ),
                                             ),
                                           ),
                                           height: widget.scrollWeight,
                                           width: scrollData.length,
                                         ),
                                       );
-                                },
-                              ),
-                              ValueListenableBuilder<_ScrollBarData>(
-                                valueListenable: verticalScrollNotifier,
-                                builder: (_, scrollData, __) {
-                                  return Positioned(
-                                    left: parentSize.width - widget.scrollWeight,
-                                    top: scrollData.position,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: widget.colorScrollBars.withAlpha((opacity * 255).toInt()),
-                                        borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(widget.radiusScrollBars),
-                                          bottomLeft: Radius.circular(widget.radiusScrollBars),
+                              },
+                            ),
+                            ValueListenableBuilder<_ScrollBarData>(
+                              valueListenable: verticalScrollNotifier,
+                              builder: (_, scrollData, __) {
+                                return Positioned(
+                                  left: parentSize.width - widget.scrollWeight,
+                                  top: scrollData.position,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: widget.colorScrollBars.withAlpha(
+                                        (opacity * 255).toInt(),
+                                      ),
+                                      borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(
+                                          widget.radiusScrollBars,
+                                        ),
+                                        bottomLeft: Radius.circular(
+                                          widget.radiusScrollBars,
                                         ),
                                       ),
-                                      height: scrollData.length,
-                                      width: widget.scrollWeight,
                                     ),
-                                  );
-                                },
-                              ),
-                            ],
-                          )
-                          : child,
+                                    height: scrollData.length,
+                                    width: widget.scrollWeight,
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        )
+                      : child,
                 ),
               ),
             ),
@@ -915,7 +1178,12 @@ class _ZoomState extends State<Zoom> with TickerProviderStateMixin, WidgetsBindi
 }
 
 class _ZoomBuilt extends StatelessWidget {
-  const _ZoomBuilt({required this.child, required this.childKey, required this.constrained, required this.matrix});
+  const _ZoomBuilt({
+    required this.child,
+    required this.childKey,
+    required this.constrained,
+    required this.matrix,
+  });
 
   final Widget child;
   final GlobalKey childKey;
@@ -924,7 +1192,10 @@ class _ZoomBuilt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget child = Transform(transform: matrix, child: KeyedSubtree(key: childKey, child: this.child));
+    Widget child = Transform(
+      transform: matrix,
+      child: KeyedSubtree(key: childKey, child: this.child),
+    );
 
     if (!constrained) {
       child = OverflowBox(
@@ -942,11 +1213,14 @@ class _ZoomBuilt extends StatelessWidget {
 }
 
 class TransformationController extends ValueNotifier<Matrix4> {
-  TransformationController([Matrix4? value]) : super(value ?? Matrix4.identity());
+  TransformationController([Matrix4? value])
+    : super(value ?? Matrix4.identity());
 
   Offset toScene(Offset viewportPoint) {
     final Matrix4 inverseMatrix = Matrix4.inverted(value);
-    final Vector3 untransformed = inverseMatrix.transform3(Vector3(viewportPoint.dx, viewportPoint.dy, 0));
+    final Vector3 untransformed = inverseMatrix.transform3(
+      Vector3(viewportPoint.dx, viewportPoint.dy, 0),
+    );
     return Offset(untransformed.x, untransformed.y);
   }
 }
@@ -975,19 +1249,26 @@ Offset _getMatrixTranslation(Matrix4 matrix) {
 Quad _transformViewport(Matrix4 matrix, Rect viewport) {
   final Matrix4 inverseMatrix = matrix.clone()..invert();
   return Quad.points(
-    inverseMatrix.transform3(Vector3(viewport.topLeft.dx, viewport.topLeft.dy, 0.0)),
-    inverseMatrix.transform3(Vector3(viewport.topRight.dx, viewport.topRight.dy, 0.0)),
-    inverseMatrix.transform3(Vector3(viewport.bottomRight.dx, viewport.bottomRight.dy, 0.0)),
-    inverseMatrix.transform3(Vector3(viewport.bottomLeft.dx, viewport.bottomLeft.dy, 0.0)),
+    inverseMatrix.transform3(
+      Vector3(viewport.topLeft.dx, viewport.topLeft.dy, 0.0),
+    ),
+    inverseMatrix.transform3(
+      Vector3(viewport.topRight.dx, viewport.topRight.dy, 0.0),
+    ),
+    inverseMatrix.transform3(
+      Vector3(viewport.bottomRight.dx, viewport.bottomRight.dy, 0.0),
+    ),
+    inverseMatrix.transform3(
+      Vector3(viewport.bottomLeft.dx, viewport.bottomLeft.dy, 0.0),
+    ),
   );
 }
 
 Quad _getAxisAlignedBoundingBoxWithRotation(Rect rect, double rotation) {
-  final Matrix4 rotationMatrix =
-      Matrix4.identity()
-        ..translate(rect.size.width / 2, rect.size.height / 2)
-        ..rotateZ(rotation)
-        ..translate(-rect.size.width / 2, -rect.size.height / 2);
+  final Matrix4 rotationMatrix = Matrix4.identity()
+    ..translate(rect.size.width / 2, rect.size.height / 2)
+    ..rotateZ(rotation)
+    ..translate(-rect.size.width / 2, -rect.size.height / 2);
   final Quad boundariesRotated = Quad.points(
     rotationMatrix.transform3(Vector3(rect.left, rect.top, 0.0)),
     rotationMatrix.transform3(Vector3(rect.right, rect.top, 0.0)),
@@ -998,11 +1279,19 @@ Quad _getAxisAlignedBoundingBoxWithRotation(Rect rect, double rotation) {
 }
 
 Offset _exceedsBy(Quad boundary, Quad viewport) {
-  final List<Vector3> viewportPoints = <Vector3>[viewport.point0, viewport.point1, viewport.point2, viewport.point3];
+  final List<Vector3> viewportPoints = <Vector3>[
+    viewport.point0,
+    viewport.point1,
+    viewport.point2,
+    viewport.point3,
+  ];
   Offset largestExcess = Offset.zero;
   for (final Vector3 point in viewportPoints) {
     final Vector3 pointInside = Zoom.getNearestPointInside(point, boundary);
-    final Offset excess = Offset(pointInside.x - point.x, pointInside.y - point.y);
+    final Offset excess = Offset(
+      pointInside.x - point.x,
+      pointInside.y - point.y,
+    );
     if (excess.dx.abs() > largestExcess.dx.abs()) {
       largestExcess = Offset(excess.dx, largestExcess.dy);
     }
@@ -1015,7 +1304,10 @@ Offset _exceedsBy(Quad boundary, Quad viewport) {
 }
 
 Offset _round(Offset offset) {
-  return Offset(double.parse(offset.dx.toStringAsFixed(9)), double.parse(offset.dy.toStringAsFixed(9)));
+  return Offset(
+    double.parse(offset.dx.toStringAsFixed(9)),
+    double.parse(offset.dy.toStringAsFixed(9)),
+  );
 }
 
 Axis? _getPanAxis(Offset point1, Offset point2) {

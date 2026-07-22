@@ -3,6 +3,8 @@ import 'package:loading_more_list/loading_more_list.dart';
 abstract class DataListSource<T> extends LoadingMoreBase<T> {
   bool _initialized = false;
 
+  Object? lastError;
+
   static const int _limit = 100;
 
   int _page = 1;
@@ -37,6 +39,7 @@ abstract class DataListSource<T> extends LoadingMoreBase<T> {
   Future<bool> loadData([bool isLoadMoreAction = false]) async {
     try {
       final list = await fetchList(_page, _limit);
+      lastError = null;
       if (list.isEmpty) {
         _hasMore = false;
         return true;
@@ -54,7 +57,7 @@ abstract class DataListSource<T> extends LoadingMoreBase<T> {
 
       return true;
     } catch (e) {
-      print(e);
+      lastError = e;
       return false;
     }
   }

@@ -7,9 +7,12 @@ import 'download_task.dart';
 
 abstract class DownloaderPlatform<T> {
   final _taskMap = <String, DownloadTask<T>>{};
-  final _taskListController = StreamController<List<DownloadTask<T>>>.broadcast();
+  final _taskSubscriptions = <String, StreamSubscription<DownloadTaskState>>{};
+  final _taskListController =
+      StreamController<List<DownloadTask<T>>>.broadcast();
 
-  Stream<List<DownloadTask<T>>> get taskListStream => _taskListController.stream;
+  Stream<List<DownloadTask<T>>> get taskListStream =>
+      _taskListController.stream;
 
   List<DownloadTask<T>> get taskList => _taskMap.values.toList();
 
@@ -18,19 +21,31 @@ abstract class DownloaderPlatform<T> {
   Future<bool> checkPrerequisites(DownloadTask task);
 
   @mustCallSuper
-  Future<void> addTask({required String taskId, required T inner, required String url, required String fileName}) async {
+  Future<void> addTask({
+    required String taskId,
+    required T inner,
+    required String url,
+    required String fileName,
+  }) async {
     if (_taskMap.values.any((task) => task.fileName == fileName)) {
       EasyLoading.showToast(i18n.downloads.messages.downloadTaskExists);
       return;
     }
-    final task = DownloadTask(taskId: taskId, inner: inner, url: url, fileName: fileName);
+    final task = DownloadTask(
+      taskId: taskId,
+      inner: inner,
+      url: url,
+      fileName: fileName,
+    );
 
     if (!await checkPrerequisites(task)) {
       return;
     }
 
     await handleTask(task);
-    EasyLoading.showToast(i18n.downloads.messages.downloadStartWith(name: fileName));
+    EasyLoading.showToast(
+      i18n.downloads.messages.downloadStartWith(name: fileName),
+    );
 
     registerTaskState(task);
   }
@@ -52,9 +67,13 @@ abstract class DownloaderPlatform<T> {
       if (task.state.status == DownloadStatus.failed) {
         try {
           await handleTask(task);
-          EasyLoading.showToast(i18n.downloads.messages.downloadRetryWith(name: task.fileName));
+          EasyLoading.showToast(
+            i18n.downloads.messages.downloadRetryWith(name: task.fileName),
+          );
         } catch (e) {
-          EasyLoading.showToast(i18n.downloads.messages.downloadFailedWith(name: task.fileName));
+          EasyLoading.showToast(
+            i18n.downloads.messages.downloadFailedWith(name: task.fileName),
+          );
         }
       } else {
         log('retryAll skip:${task.fileName}, status:${task.state.status}');
@@ -64,6 +83,7 @@ abstract class DownloaderPlatform<T> {
 
   @protected
   void removeTask(String taskId) {
+    _taskSubscriptions.remove(taskId)?.cancel();
     _taskMap.remove(taskId)?.dispose();
     _emitTaskList();
   }
@@ -73,6 +93,10 @@ abstract class DownloaderPlatform<T> {
   @protected
   void registerTaskState(DownloadTask<T> task) {
     _taskMap[task.taskId] = task;
+    _taskSubscriptions.remove(task.taskId)?.cancel();
+    _taskSubscriptions[task.taskId] = task.stream.listen((_) {
+      _emitTaskList();
+    });
     _emitTaskList();
   }
 

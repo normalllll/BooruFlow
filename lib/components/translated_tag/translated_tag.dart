@@ -8,25 +8,37 @@ class TranslatedTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return DecoratedBox(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: Theme.of(context).colorScheme.secondaryContainer.withAlpha(150),
+        borderRadius: BorderRadius.circular(999),
+        color: colorScheme.surfaceContainerHighest,
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
-      child: RichText(
-        text: TextSpan(
-          children: [
-            TextSpan(
-              text: text,
-              style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600),
-            ),
-            if (TagTranslationsService.translate(text) case final transltedText?)
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 9),
+        child: RichText(
+          text: TextSpan(
+            children: [
               TextSpan(
-                text: ' #$transltedText',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.primary),
+                text: '#$text',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: colorScheme.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-          ],
+              if (TagTranslationsService.translate(text)
+                  case final translatedText?)
+                TextSpan(
+                  text: ' · $translatedText',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

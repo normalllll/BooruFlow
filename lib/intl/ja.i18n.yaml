@@ -7,6 +7,11 @@ generic:
   disabled: 無効
   copiedWithValue: "$value をクリップボードにコピーしました"
   errorWithValue: "エラーが発生しました: $value"
+  loading: 読み込み中...
+  loadFailed: 読み込みに失敗しました
+  retry: 再試行
+  noMoreData: これ以上データはありません
+  notFound: 見つかりませんでした
 
 update:
   checkUpdateStart: アップデートを確認中…
@@ -19,9 +24,20 @@ postList:
   short: 投稿
   title: 投稿リスト
   titleWithTags: "タグ付き投稿: $tags"
+  freepivPromotionTitle: freepiv をチェック
+  freepivPromotionSubtitle: モダンで快適なクロスプラットフォーム対応の Pixiv 非公式クライアントです。
+  freepivPromotionAction: プロジェクトを見る
 
 postDetail:
   titleWithId: "投稿: $id"
+  tags: タグ
+  details: 詳細
+  actions: 操作
+  rating: レーティング
+  fileType: ファイル形式
+  viewOriginal: オリジナルを表示
+  download: ダウンロード
+  relatedLoadFailed: 関連画像の読み込みに失敗しました。再試行できます。
   createdAt: 作成日時
   author: 作者
   source: ソース
@@ -43,6 +59,11 @@ imageZoom:
 
 downloads:
   title: ダウンロード
+  active: 実行中
+  completed: 完了
+  failed: 失敗
+  waiting: 待機中
+  downloading: ダウンロード中
   messages:
     storagePermanentlyDenied: ストレージのアクセス許可が永久に拒否されました。\n設定で手動でストレージのアクセス許可を有効にしてください。  # Android
     storageDenied: ストレージのアクセス許可が拒否されました。  # Android

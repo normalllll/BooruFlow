@@ -7,6 +7,11 @@ generic:
   disabled: 停用
   copiedWithValue: "已复制到剪贴板: $value"
   errorWithValue: "发生错误: $value"
+  loading: 正在加载...
+  loadFailed: 加载失败
+  retry: 重试
+  noMoreData: 没有更多数据
+  notFound: 未找到内容
 
 update:
   checkUpdateStart: 正在检查更新...
@@ -19,9 +24,20 @@ postList:
   short: 帖子
   title: 帖子列表
   titleWithTags: "带有标签的帖子: $tags"
+  freepivPromotionTitle: 试试 freepiv
+  freepivPromotionSubtitle: 现代、流畅的跨平台 Pixiv 第三方客户端。
+  freepivPromotionAction: 查看项目
 
 postDetail:
   titleWithId: "帖子: $id"
+  tags: 标签
+  details: 详细信息
+  actions: 操作
+  rating: 安全评级
+  fileType: 文件类型
+  viewOriginal: 查看原图
+  download: 下载
+  relatedLoadFailed: 关联图片加载失败，可以重试。
   createdAt: 创建时间
   author: 作者
   source: 来源
@@ -43,6 +59,11 @@ imageZoom:
 
 downloads:
   title: 下载项
+  active: 进行中
+  completed: 已完成
+  failed: 失败
+  waiting: 等待中
+  downloading: 下载中
   messages:
     storagePermanentlyDenied: 你已永久拒绝存储权限。\n请在设置中手动启用存储权限。  # Android
     storageDenied: 你已拒绝存储权限。  # Android

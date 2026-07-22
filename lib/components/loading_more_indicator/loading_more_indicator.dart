@@ -1,22 +1,20 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_more_list/loading_more_list.dart';
+import 'package:yande_gui/i18n.dart';
 
 class LoadingMoreIndicator extends StatelessWidget {
   final IndicatorStatus status;
   final void Function() errorRefresh;
   final bool isSliver;
-  final bool fullScreenErrorCanRetry;
+  final Object? error;
 
   const LoadingMoreIndicator({
     super.key,
     required this.status,
     required this.errorRefresh,
     this.isSliver = false,
-    this.fullScreenErrorCanRetry = false,
+    this.error,
   });
-
-  static const textStyle = TextStyle(fontSize: 20);
 
   @override
   Widget build(BuildContext context) {
@@ -26,49 +24,210 @@ class LoadingMoreIndicator extends StatelessWidget {
         widget = const SizedBox();
         break;
       case IndicatorStatus.loadingMoreBusying:
-        widget = const Center(child: Padding(padding: EdgeInsets.only(top: 10, bottom: 10), child: CupertinoActivityIndicator()));
+        widget = _FooterIndicator(
+          icon: const SizedBox.square(
+            dimension: 18,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          label: i18n.generic.loading,
+        );
         break;
       case IndicatorStatus.fullScreenBusying:
-        widget = const Center(child: CupertinoActivityIndicator());
+        widget = _FullScreenIndicator(
+          icon: const SizedBox.square(
+            dimension: 28,
+            child: CircularProgressIndicator(strokeWidth: 2.4),
+          ),
+          label: i18n.generic.loading,
+        );
         if (isSliver) {
-          widget = SliverFillRemaining(child: widget);
+          widget = SliverFillRemaining(hasScrollBody: false, child: widget);
         } else {
-          widget = CustomScrollView(slivers: <Widget>[SliverFillRemaining(child: widget)]);
+          widget = CustomScrollView(
+            slivers: <Widget>[
+              SliverFillRemaining(hasScrollBody: false, child: widget),
+            ],
+          );
         }
         break;
       case IndicatorStatus.error:
-        widget = InkWell(onTap: () => errorRefresh(), child: const Center(child: Text('Load failed', style: textStyle)));
+        widget = _FooterIndicator(
+          icon: Icon(
+            Icons.error_outline,
+            size: 20,
+            color: Theme.of(context).colorScheme.error,
+          ),
+          label: i18n.generic.loadFailed,
+          onTap: errorRefresh,
+        );
         break;
       case IndicatorStatus.fullScreenError:
-        widget = SizedBox.expand(
-          child:
-              fullScreenErrorCanRetry
-                  ? InkWell(
-                    onTap: () => errorRefresh(),
-                    child: Center(child: Text('Load failed${fullScreenErrorCanRetry ? ', click to retry' : ''}', style: textStyle)),
-                  )
-                  : const Center(child: Text('Load failed', style: textStyle)),
+        widget = _ErrorContent(
+          message: error?.toString() ?? i18n.generic.loadFailed,
+          onRetry: errorRefresh,
         );
-
         if (isSliver) {
-          widget = SliverFillRemaining(child: widget);
+          widget = SliverFillRemaining(hasScrollBody: false, child: widget);
         } else {
-          widget = CustomScrollView(slivers: <Widget>[SliverFillRemaining(child: widget)]);
+          widget = CustomScrollView(
+            slivers: <Widget>[
+              SliverFillRemaining(hasScrollBody: false, child: widget),
+            ],
+          );
         }
         break;
       case IndicatorStatus.noMoreLoad:
-        widget = const Center(child: Padding(padding: EdgeInsets.only(top: 10, bottom: 10), child: Text('No more data', style: textStyle)));
-        // widget = const SizedBox();
+        widget = _FooterIndicator(
+          icon: Icon(
+            Icons.check,
+            size: 18,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+          label: i18n.generic.noMoreData,
+        );
         break;
       case IndicatorStatus.empty:
-        widget = const Center(child: Text('Not found', style: textStyle));
+        widget = const _EmptyContent();
         if (isSliver) {
-          widget = SliverFillRemaining(child: widget);
+          widget = SliverFillRemaining(hasScrollBody: false, child: widget);
         } else {
-          widget = CustomScrollView(slivers: <Widget>[SliverFillRemaining(child: widget)]);
+          widget = CustomScrollView(
+            slivers: <Widget>[
+              SliverFillRemaining(hasScrollBody: false, child: widget),
+            ],
+          );
         }
         break;
     }
     return widget;
+  }
+}
+
+class _FooterIndicator extends StatelessWidget {
+  const _FooterIndicator({required this.icon, required this.label, this.onTap});
+
+  final Widget icon;
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final content = SizedBox(
+      height: 56,
+      child: Center(
+        child: _InlineStatus(icon: icon, label: label),
+      ),
+    );
+    return onTap == null ? content : InkWell(onTap: onTap, child: content);
+  }
+}
+
+class _FullScreenIndicator extends StatelessWidget {
+  const _FullScreenIndicator({required this.icon, required this.label});
+
+  final Widget icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: _InlineStatus(icon: icon, label: label),
+  );
+}
+
+class _InlineStatus extends StatelessWidget {
+  const _InlineStatus({required this.icon, required this.label});
+
+  final Widget icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox.square(dimension: 22, child: Center(child: icon)),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ErrorContent extends StatelessWidget {
+  const _ErrorContent({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final hasDetailedMessage = message.contains('\n') || message.length > 120;
+
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 560),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Icon(Icons.error_outline, size: 44, color: colorScheme.error),
+              const SizedBox(height: 16),
+              Text(
+                message,
+                textAlign: hasDetailedMessage
+                    ? TextAlign.start
+                    : TextAlign.center,
+                style: TextStyle(color: colorScheme.error),
+              ),
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: onRetry,
+                icon: const Icon(Icons.refresh),
+                label: Text(i18n.generic.retry),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyContent extends StatelessWidget {
+  const _EmptyContent();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.inbox_outlined,
+              size: 48,
+              color: colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              i18n.generic.notFound,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

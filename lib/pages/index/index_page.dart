@@ -1,128 +1,442 @@
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:go_router/go_router.dart';
 import 'package:yande_gui/global.dart';
 import 'package:yande_gui/i18n.dart';
-import 'package:yande_gui/pages/about/about_page.dart';
-import 'package:yande_gui/pages/downloads/downloads_page.dart';
-import 'package:yande_gui/pages/post_list/post_list_page.dart';
-import 'package:yande_gui/pages/post_search/post_search_page.dart';
-import 'package:yande_gui/pages/settings/settings_page.dart';
+import 'package:yande_gui/router/app_navigation.dart';
 import 'package:yande_gui/services/dns_service.dart';
 import 'package:yande_gui/services/settings_service.dart';
 import 'package:yande_gui/services/updater_service.dart';
 import 'package:yande_gui/src/rust/api/yande_client.dart';
-import 'package:yande_gui/widgets/lazy_indexed_stack/lazy_indexed_stack.dart';
+import 'package:yande_gui/themes.dart';
+import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
 
 class IndexPage extends StatefulWidget {
-  final int? language;
+  const IndexPage({
+    required this.selectedIndex,
+    required this.showMobileNavigation,
+    required this.canPopListenable,
+    required this.onBack,
+    required this.onResetRightNavigator,
+    required this.child,
+    super.key,
+  });
 
-  const IndexPage({super.key, required this.language});
+  final int? selectedIndex;
+  final bool showMobileNavigation;
+  final ValueListenable<bool> canPopListenable;
+  final VoidCallback onBack;
+  final VoidCallback onResetRightNavigator;
+  final Widget child;
 
   @override
   State<IndexPage> createState() => _IndexPageState();
 }
 
 class _IndexPageState extends State<IndexPage> {
-  Map<(IconData, String), WidgetBuilder> get _pages => {
-    (Icons.list_alt_outlined, i18n.postList.short): (context) => PostListPage(key: ValueKey(widget.language)),
-    (Icons.search_outlined, i18n.postSearch.title): (context) => PostSearchPage(key: ValueKey(widget.language)),
-    (Icons.cloud_download_outlined, i18n.downloads.title): (context) => DownloadsPage(key: ValueKey(widget.language)),
-    (Icons.info_outlined, i18n.about.title): (context) => AboutPage(key: ValueKey(widget.language)),
-    (Icons.settings, i18n.settings.title): (context) => SettingsPage(key: ValueKey(widget.language)),
-  };
-
-  final controller = PageController();
-
-  int _selectedIndex = 0;
-
   bool _initialized = !SettingsService.prefetchDns;
 
   @override
   void initState() {
-    Future.delayed(Duration.zero, () async {
-      if (!_initialized) {
-        YandeClient instance;
-        try {
-          final List<String>? dns = await DnsService.fetchDns();
-          realIps = dns;
-          final ips = dns != null ? StringArray3(dns) : null;
-          instance = YandeClient(ips: ips, forLargeFile: false);
-        } catch (e) {
-          instance = YandeClient(ips: null, forLargeFile: false);
-        }
+    super.initState();
+    Future<void>.delayed(Duration.zero, _initialize);
+  }
 
-        setYandeClient(instance);
-        setState(() {
-          _initialized = true;
-        });
+  Future<void> _initialize() async {
+    if (!_initialized) {
+      YandeClient instance;
+      try {
+        final dns = await DnsService.fetchDns();
+        realIps = dns;
+        instance = YandeClient(
+          ips: dns != null ? StringArray3(dns) : null,
+          forLargeFile: false,
+        );
+      } catch (_) {
+        instance = YandeClient(ips: null, forLargeFile: false);
       }
 
-      UpdaterService.checkForUpdate()
-          .then((result) {
-            if (result != null) {
-              EasyLoading.showToast(
-                i18n.update.newVersionFound(version: result.$1),
-                toastPosition: EasyLoadingToastPosition.bottom,
-                duration: const Duration(seconds: 6),
-              );
-            }
-          })
-          .catchError((e) {
-            EasyLoading.showToast(i18n.update.checkUpdateFailed);
-          });
-    });
+      setYandeClient(instance);
+      if (!mounted) return;
+      setState(() => _initialized = true);
+    }
 
-    super.initState();
+    try {
+      final result = await UpdaterService.checkForUpdate();
+      if (result != null) {
+        EasyLoading.showToast(
+          i18n.update.newVersionFound(version: result.$1),
+          toastPosition: EasyLoadingToastPosition.bottom,
+          duration: const Duration(seconds: 6),
+        );
+      }
+    } catch (_) {
+      EasyLoading.showToast(i18n.update.checkUpdateFailed);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isVertical = MediaQuery.of(context).size.width < MediaQuery.of(context).size.height;
-
-    return Scaffold(
-      body: switch (_initialized) {
-        false => const Center(
+    if (!_initialized) {
+      return const Scaffold(
+        body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [CircularProgressIndicator(), SizedBox(height: 16), Text('Initializing...')],
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Initializing...'),
+            ],
           ),
         ),
-        true => Row(
-          children: [
-            if (!isVertical)
-              NavigationRail(
-                destinations: [for (final key in _pages.keys) NavigationRailDestination(icon: Icon(key.$1), label: Text(key.$2))],
-                labelType: NavigationRailLabelType.all,
-                selectedIndex: _selectedIndex,
-                onDestinationSelected: (index) {
-                  setState(() {
-                    _selectedIndex = index;
-                  });
-                },
-              ),
-            Expanded(child: LazyIndexedStack(index: _selectedIndex, children: [for (final page in _pages.values) page(context)])),
-          ],
-        ),
-      },
-      bottomNavigationBar: switch (isVertical) {
-        true => BottomNavigationBar(
-          onTap: (index) {
-            setState(() {
-              _selectedIndex = index;
-            });
-          },
-          currentIndex: _selectedIndex,
-          type: BottomNavigationBarType.fixed,
-          items: [for (final key in _pages.keys) BottomNavigationBarItem(icon: Icon(key.$1), label: key.$2)],
-        ),
-        false => null,
-      },
+      );
+    }
+
+    final useDesktopShell = shouldUseDesktopShell(context);
+
+    return Scaffold(
+      body: Row(
+        children: [
+          if (useDesktopShell)
+            _DesktopSidebar(
+              destinations: appDestinations,
+              selectedIndex: widget.selectedIndex,
+              canPopListenable: widget.canPopListenable,
+              onBack: widget.onBack,
+              onDestinationSelected: _selectDestination,
+            ),
+          Expanded(child: widget.child),
+        ],
+      ),
+      bottomNavigationBar: !useDesktopShell && widget.showMobileNavigation
+          ? _MobileNavigationBar(
+              destinations: appDestinations,
+              selectedIndex: widget.selectedIndex ?? 0,
+              onDestinationSelected: _selectDestination,
+            )
+          : null,
     );
   }
 
+  void _selectDestination(int index) {
+    widget.onResetRightNavigator();
+    context.go(appDestinations[index].route.path);
+  }
+}
+
+class _DesktopSidebar extends StatelessWidget {
+  const _DesktopSidebar({
+    required this.destinations,
+    required this.selectedIndex,
+    required this.canPopListenable,
+    required this.onBack,
+    required this.onDestinationSelected,
+  });
+
+  static const width = 96.0;
+
+  final List<AppDestination> destinations;
+  final int? selectedIndex;
+  final ValueListenable<bool> canPopListenable;
+  final VoidCallback onBack;
+  final ValueChanged<int> onDestinationSelected;
+
   @override
-  void didUpdateWidget(covariant IndexPage oldWidget) {
-    // TODO: implement didUpdateWidget
-    super.didUpdateWidget(oldWidget);
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+
+    return SizedBox(
+      width: width,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: tokens.surface,
+          border: BorderDirectional(
+            end: BorderSide(color: tokens.line.withValues(alpha: 0.40)),
+          ),
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(10, 10, 10, 82),
+            child: Column(
+              children: [
+                _SidebarBackButton(
+                  canPopListenable: canPopListenable,
+                  onBack: onBack,
+                ),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: ListView.separated(
+                    itemCount: destinations.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 8),
+                    itemBuilder: (context, index) => _NavigationItem(
+                      destination: destinations[index],
+                      selected: selectedIndex == index,
+                      onTap: () => onDestinationSelected(index),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SidebarBackButton extends StatelessWidget {
+  const _SidebarBackButton({
+    required this.canPopListenable,
+    required this.onBack,
+  });
+
+  final ValueListenable<bool> canPopListenable;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return ValueListenableBuilder<bool>(
+      valueListenable: canPopListenable,
+      builder: (context, canPop, child) {
+        return Tooltip(
+          message: MaterialLocalizations.of(context).backButtonTooltip,
+          child: Semantics(
+            button: true,
+            enabled: canPop,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: canPop ? onBack : null,
+              child: SizedBox(
+                height: 48,
+                child: Center(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 160),
+                    curve: Curves.easeOutCubic,
+                    width: 52,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: canPop
+                          ? tokens.brand
+                          : colorScheme.surfaceContainerHighest.withValues(
+                              alpha: 0.56,
+                            ),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: canPop
+                            ? tokens.brand
+                            : tokens.line.withValues(alpha: 0.60),
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.arrow_back,
+                      color: canPop
+                          ? Colors.white
+                          : colorScheme.onSurfaceVariant.withValues(
+                              alpha: 0.42,
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _NavigationItem extends StatelessWidget {
+  const _NavigationItem({
+    required this.destination,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final AppDestination destination;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
+    final accent = tokens.brand;
+    final label = appDestinationLabel(destination);
+
+    return Tooltip(
+      message: label,
+      child: Semantics(
+        button: true,
+        selected: selected,
+        label: label,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
+            height: 66,
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
+            decoration: BoxDecoration(
+              color: selected
+                  ? Color.alphaBlend(
+                      accent.withValues(alpha: 0.11),
+                      tokens.surfaceRaised,
+                    )
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: selected
+                    ? accent.withValues(alpha: 0.28)
+                    : Colors.transparent,
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOutCubic,
+                  width: 32,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: selected ? accent : Colors.transparent,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    selected ? destination.selectedIcon : destination.icon,
+                    size: 20,
+                    color: selected
+                        ? Colors.white
+                        : colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: selected ? accent : colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MobileNavigationBar extends StatelessWidget {
+  const _MobileNavigationBar({
+    required this.destinations,
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+  });
+
+  final List<AppDestination> destinations;
+  final int selectedIndex;
+  final ValueChanged<int> onDestinationSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+
+    return SafeArea(
+      top: false,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: tokens.surface,
+          border: Border(
+            top: BorderSide(color: tokens.line.withValues(alpha: 0.56)),
+          ),
+        ),
+        child: SizedBox(
+          height: 58,
+          child: Row(
+            children: [
+              for (var index = 0; index < destinations.length; index++)
+                Expanded(
+                  child: _MobileNavigationItem(
+                    destination: destinations[index],
+                    selected: selectedIndex == index,
+                    onTap: () => onDestinationSelected(index),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MobileNavigationItem extends StatelessWidget {
+  const _MobileNavigationItem({
+    required this.destination,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final AppDestination destination;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final accent = AppThemeTokens.of(context).brand;
+    final label = appDestinationLabel(destination);
+
+    return Tooltip(
+      message: label,
+      child: Semantics(
+        button: true,
+        selected: selected,
+        label: label,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  selected ? destination.selectedIcon : destination.icon,
+                  size: 22,
+                  color: selected
+                      ? accent
+                      : colorScheme.onSurfaceVariant.withValues(alpha: 0.78),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    height: 1,
+                    color: selected
+                        ? accent
+                        : colorScheme.onSurfaceVariant.withValues(alpha: 0.78),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

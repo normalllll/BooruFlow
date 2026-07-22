@@ -4,8 +4,10 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_ce_flutter/adapters.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:yande_gui/components/download_floating_window/download_floating_window.dart';
 import 'package:yande_gui/global.dart';
 import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/router/app_router.dart';
 import 'package:yande_gui/services/custom_tags_service.dart';
 import 'package:yande_gui/services/tag_translations_service.dart';
 import 'package:yande_gui/src/rust/api/yande_client.dart';
@@ -13,7 +15,6 @@ import 'package:yande_gui/src/rust/frb_generated.dart';
 import 'package:yande_gui/themes.dart';
 
 import 'downloader/downloader.dart';
-import 'pages/index/index_page.dart';
 import 'services/settings_service.dart';
 
 Future<void> main() async {
@@ -40,18 +41,20 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const darkPrimaryColor = Color(0xfff175a9);
-    const lightPrimaryColor = Color(0xffef83be);
+    const darkPrimaryColor = Color(0xFFFF79AD);
+    const lightPrimaryColor = AppThemeTokens.brandPink;
 
     return StreamBuilder(
       stream: rootUpdateController.stream,
       builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
         final locale = I18n.getLocale(SettingsService.language);
-        TagTranslationsService.update(SettingsService.language ?? I18n.getSystemLocaleIndex());
+        TagTranslationsService.update(
+          SettingsService.language ?? I18n.getSystemLocaleIndex(),
+        );
         I18n.update(locale);
-        return MaterialApp(
+        return MaterialApp.router(
           title: 'Yande GUI',
-          home: IndexPage(language: SettingsService.language),
+          routerConfig: AppRouter.router,
           darkTheme: darkTheme(darkPrimaryColor),
           theme: lightTheme(lightPrimaryColor),
           themeMode: switch (SettingsService.themeMode) {
@@ -69,7 +72,8 @@ class MyApp extends ConsumerWidget {
           supportedLocales: I18n.supportedLocales,
           localeResolutionCallback: (locale, supportedLocales) {
             for (final supportedLocale in supportedLocales) {
-              if (supportedLocale.languageCode == locale?.languageCode && supportedLocale.countryCode == locale?.countryCode) {
+              if (supportedLocale.languageCode == locale?.languageCode &&
+                  supportedLocale.countryCode == locale?.countryCode) {
                 return supportedLocale;
               }
             }
@@ -82,7 +86,10 @@ class MyApp extends ConsumerWidget {
                 onTap: () {
                   FocusManager.instance.primaryFocus?.unfocus();
                 },
-                child: child,
+                child: DownloadFloatingWindow(
+                  onTaskTap: AppRouter.openPost,
+                  child: child ?? const SizedBox.shrink(),
+                ),
               );
             },
           ),

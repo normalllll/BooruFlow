@@ -5,7 +5,7 @@ import 'package:yande_gui/components/translated_tag/translated_tag.dart';
 import 'package:yande_gui/components/yande_image/yande_image.dart';
 import 'package:yande_gui/downloader/download_task.dart';
 import 'package:yande_gui/downloader/downloader.dart';
-import 'package:yande_gui/pages/post_detail/post_detail_page.dart';
+import 'package:yande_gui/router/app_router.dart';
 import 'package:yande_gui/src/rust/yande/model/post.dart';
 
 class DownloadTaskWidget extends ConsumerWidget {
@@ -23,7 +23,7 @@ class DownloadTaskWidget extends ConsumerWidget {
         return InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (context) => PostDetailPage(post: task.inner)));
+            AppRouter.pushPost(context, task.inner);
           },
           child: Card(
             child: Padding(
@@ -42,11 +42,19 @@ class DownloadTaskWidget extends ConsumerWidget {
                         children: [
                           Row(
                             children: [
-                              Text('ID:${task.inner.id}', style: const TextStyle(fontSize: 16)),
+                              Text(
+                                'ID:${task.inner.id}',
+                                style: const TextStyle(fontSize: 16),
+                              ),
                               const SizedBox(width: 5),
                               Text(
                                 '${(task.inner.fileSize / 1024 / 1024).toStringAsFixed(2)}MB',
-                                style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.secondary),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.secondary,
+                                ),
                               ),
                               const SizedBox(width: 5),
                               switch (state.status) {
@@ -57,8 +65,11 @@ class DownloadTaskWidget extends ConsumerWidget {
                                   },
                                   child: const Icon(Icons.download_outlined),
                                 ),
-                                DownloadStatus.waiting => const Icon(Icons.pause_outlined),
-                                DownloadStatus.busying => const CupertinoActivityIndicator(),
+                                DownloadStatus.waiting => const Icon(
+                                  Icons.pause_outlined,
+                                ),
+                                DownloadStatus.busying =>
+                                  const CupertinoActivityIndicator(),
                                 DownloadStatus.completed => GestureDetector(
                                   behavior: HitTestBehavior.translucent,
                                   onTap: () {
@@ -85,7 +96,12 @@ class DownloadTaskWidget extends ConsumerWidget {
                                 child: Wrap(
                                   runSpacing: 14,
                                   spacing: 6,
-                                  children: [for (final tag in task.inner.tags.split(' ')) TranslatedTag(text: tag)],
+                                  children: [
+                                    for (final tag in task.inner.tags.split(
+                                      ' ',
+                                    ))
+                                      TranslatedTag(text: tag),
+                                  ],
                                 ),
                               ),
                             ),

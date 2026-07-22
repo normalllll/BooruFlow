@@ -7,6 +7,11 @@ generic:
   disabled: Disabled
   copiedWithValue: "Copied to clipboard: $value"
   errorWithValue: "An error occurred: $value"
+  loading: Loading...
+  loadFailed: Load failed
+  retry: Retry
+  noMoreData: No more data
+  notFound: Not found
 
 update:
   checkUpdateStart: Checking for updates...
@@ -19,9 +24,20 @@ postList:
   short: Post
   title: Post List
   titleWithTags: "Posts with tags: $tags"
+  freepivPromotionTitle: Discover freepiv
+  freepivPromotionSubtitle: A modern, smooth, cross-platform third-party Pixiv client.
+  freepivPromotionAction: View project
 
 postDetail:
   titleWithId: "Post: $id"
+  tags: Tags
+  details: Details
+  actions: Actions
+  rating: Rating
+  fileType: File type
+  viewOriginal: View original
+  download: Download
+  relatedLoadFailed: Failed to load related images. You can retry.
   createdAt: Created at
   author: Author
   source: Source
@@ -43,6 +59,11 @@ imageZoom:
 
 downloads:
   title: Downloads
+  active: Active
+  completed: Completed
+  failed: Failed
+  waiting: Waiting
+  downloading: Downloading
   messages:
     storagePermanentlyDenied: You have permanently denied storage permissions.\nPlease manually enable storage permissions in settings.  # Android
     storageDenied: You have denied storage permissions.  # Android

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:yande_gui/i18n.dart';
-import 'package:yande_gui/pages/post_list/post_list_page.dart';
+import 'package:yande_gui/router/app_router.dart';
 import 'package:yande_gui/services/custom_tags_service.dart';
 import 'package:yande_gui/services/tag_translations_service.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
@@ -64,9 +64,7 @@ class _PostSearchPageState extends State<PostSearchPage> {
     if (tags.isEmpty) {
       return;
     }
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => PostListPage(tags: tags)));
+    AppRouter.pushTaggedPosts(context, tags);
   }
 
   void _appendTag(String tag) {
