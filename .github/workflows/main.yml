@@ -363,7 +363,7 @@ jobs:
 
       - name: Build iOS
         run: |
-          flutter build ios --release --no-codesign
+          flutter build ios --release --no-codesign -v
           cd build/ios/iphoneos
           mkdir Payload
           mv ./Runner.app ./Payload
