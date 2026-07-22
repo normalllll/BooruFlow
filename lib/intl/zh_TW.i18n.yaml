@@ -5,23 +5,23 @@ generic:
   confirm: 確認
   enabled: 啟用
   disabled: 停用
-  copiedWithValue(String value): "已複製到剪貼簿: $value"
-  errorWithValue(String value): "發生錯誤: $value"
+  copiedWithValue: "已複製到剪貼簿: $value"
+  errorWithValue: "發生錯誤: $value"
 
 update:
   checkUpdateStart: 正在檢查更新...
   checkUpdateFailed: 檢查更新失敗，請檢查您的網路連線。
   selectDownloadUrlFailed: 找不到下載連結。\n請訪問專案頁面以手動更新或在專案Issue頁尋求幫助。
-  newVersionFound(String version): "發現新版本: $version。請轉到「關於」頁面並點擊「下載更新」。"
+  newVersionFound: "發現新版本: $version。請轉到「關於」頁面並點擊「下載更新」。"
   noNewVersionFound: 沒有新版本。
 
 postList:
   short: 帖子
   title: 帖子列表
-  titleWithTags(String tags): "帶有標籤的帖子: $tags"
+  titleWithTags: "帶有標籤的帖子: $tags"
 
 postDetail:
-  titleWithId(int id): "帖子: $id"
+  titleWithId: "帖子: $id"
   createdAt: 建立時間
   author: 作者
   source: 來源
@@ -52,12 +52,12 @@ downloads:
     downloadTaskExists: 下載任務已經存在。
     imageFileExists: 圖片檔案已經存在。
 
-    downloadRetryWith(String name): "重試下載任務: $name"
-    downloadStartWith(String name): "開始下載任務: $name"
+    downloadRetryWith: "重試下載任務: $name"
+    downloadStartWith: "開始下載任務: $name"
 
-    downloadCompletedWith(String name): "下載任務完成: $name"
-    downloadFailedWith(String name): "下載任務失敗: $name"
-    saveFailedWith(String name): "儲存失敗: 任務 $name"
+    downloadCompletedWith: "下載任務完成: $name"
+    downloadFailedWith: "下載任務失敗: $name"
+    saveFailedWith: "儲存失敗: 任務 $name"
 
 about:
   title: 關於

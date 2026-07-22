@@ -61,7 +61,7 @@ class _IndexPageState extends State<IndexPage> {
           .then((result) {
             if (result != null) {
               EasyLoading.showToast(
-                i18n.update.newVersionFound(result.$1),
+                i18n.update.newVersionFound(version: result.$1),
                 toastPosition: EasyLoadingToastPosition.bottom,
                 duration: const Duration(seconds: 6),
               );

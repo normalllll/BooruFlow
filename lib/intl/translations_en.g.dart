@@ -1,0 +1,629 @@
+///
+/// Generated file. Do not edit.
+///
+// coverage:ignore-file
+// ignore_for_file: type=lint, unused_import
+
+part of 'translations.g.dart';
+
+// Path: <root>
+typedef TranslationsEn = Translations; // ignore: unused_element
+
+class Translations with BaseTranslations<AppLocale, Translations> {
+  /// Returns the current translations of the given [context].
+  ///
+  /// Usage:
+  /// final t = Translations.of(context);
+  static Translations of(BuildContext context) =>
+      InheritedLocaleData.of<AppLocale, Translations>(context).translations;
+
+  /// You can call this constructor and build your own translation instance of this locale.
+  /// Constructing via the enum [AppLocale.build] is preferred.
+  Translations({
+    Map<String, Node>? overrides,
+    PluralResolver? cardinalResolver,
+    PluralResolver? ordinalResolver,
+    TranslationMetadata<AppLocale, Translations>? meta,
+  }) : assert(
+         overrides == null,
+         'Set "translation_overrides: true" in order to enable this feature.',
+       ),
+       $meta =
+           meta ??
+           TranslationMetadata(
+             locale: AppLocale.en,
+             overrides: overrides ?? {},
+             cardinalResolver: cardinalResolver,
+             ordinalResolver: ordinalResolver,
+           ) {
+    $meta.setFlatMapFunction(_flatMapFunction);
+  }
+
+  /// Metadata for the translations of <en>.
+  @override
+  final TranslationMetadata<AppLocale, Translations> $meta;
+
+  /// Access flat map
+  dynamic operator [](String key) => $meta.getTranslation(key);
+
+  late final Translations _root = this; // ignore: unused_field
+
+  Translations $copyWith({
+    TranslationMetadata<AppLocale, Translations>? meta,
+  }) => Translations(meta: meta ?? this.$meta);
+
+  // Translations
+  late final Translations$generic$en generic = Translations$generic$en.internal(
+    _root,
+  );
+  late final Translations$update$en update = Translations$update$en.internal(
+    _root,
+  );
+  late final Translations$postList$en postList =
+      Translations$postList$en.internal(_root);
+  late final Translations$postDetail$en postDetail =
+      Translations$postDetail$en.internal(_root);
+  late final Translations$postSearch$en postSearch =
+      Translations$postSearch$en.internal(_root);
+  late final Translations$imageZoom$en imageZoom =
+      Translations$imageZoom$en.internal(_root);
+  late final Translations$downloads$en downloads =
+      Translations$downloads$en.internal(_root);
+  late final Translations$about$en about = Translations$about$en.internal(
+    _root,
+  );
+  late final Translations$settings$en settings =
+      Translations$settings$en.internal(_root);
+}
+
+// Path: generic
+class Translations$generic$en {
+  Translations$generic$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'OK'
+  String get ok => 'OK';
+
+  /// en: 'Cancel'
+  String get cancel => 'Cancel';
+
+  /// en: 'Clear'
+  String get clear => 'Clear';
+
+  /// en: 'Confirm'
+  String get confirm => 'Confirm';
+
+  /// en: 'Enabled'
+  String get enabled => 'Enabled';
+
+  /// en: 'Disabled'
+  String get disabled => 'Disabled';
+
+  /// en: 'Copied to clipboard: $value'
+  String copiedWithValue({required Object value}) =>
+      'Copied to clipboard: ${value}';
+
+  /// en: 'An error occurred: $value'
+  String errorWithValue({required Object value}) =>
+      'An error occurred: ${value}';
+}
+
+// Path: update
+class Translations$update$en {
+  Translations$update$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'Checking for updates...'
+  String get checkUpdateStart => 'Checking for updates...';
+
+  /// en: 'Failed to check for updates. Please check your Internet connection.'
+  String get checkUpdateFailed =>
+      'Failed to check for updates. Please check your Internet connection.';
+
+  /// en: 'Unable to find download URL.\nPlease visit the project page to manually update or seek help on the project Issue page.'
+  String get selectDownloadUrlFailed =>
+      'Unable to find download URL.\nPlease visit the project page to manually update or seek help on the project Issue page.';
+
+  /// en: 'New version found: $version. Please go to the About page and click Download update.'
+  String newVersionFound({required Object version}) =>
+      'New version found: ${version}.\nPlease go to the About page and click Download update.';
+
+  /// en: 'No new version found.'
+  String get noNewVersionFound => 'No new version found.';
+}
+
+// Path: postList
+class Translations$postList$en {
+  Translations$postList$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'Post'
+  String get short => 'Post';
+
+  /// en: 'Post List'
+  String get title => 'Post List';
+
+  /// en: 'Posts with tags: $tags'
+  String titleWithTags({required Object tags}) => 'Posts with tags: ${tags}';
+}
+
+// Path: postDetail
+class Translations$postDetail$en {
+  Translations$postDetail$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'Post: $id'
+  String titleWithId({required Object id}) => 'Post: ${id}';
+
+  /// en: 'Created at'
+  String get createdAt => 'Created at';
+
+  /// en: 'Author'
+  String get author => 'Author';
+
+  /// en: 'Source'
+  String get source => 'Source';
+
+  /// en: 'Width'
+  String get width => 'Width';
+
+  /// en: 'Height'
+  String get height => 'Height';
+
+  /// en: 'Score'
+  String get score => 'Score';
+
+  /// en: 'Size'
+  String get size => 'Size';
+
+  /// en: 'Parent ID'
+  String get parent => 'Parent ID';
+
+  /// en: 'Has child posts'
+  String get hasChildren => 'Has child posts';
+
+  /// en: 'Similar posts'
+  String get similarPosts => 'Similar posts';
+
+  /// en: 'Parent post'
+  String get parentPost => 'Parent post';
+
+  /// en: 'Child post'
+  String get childPost => 'Child post';
+}
+
+// Path: postSearch
+class Translations$postSearch$en {
+  Translations$postSearch$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'Search'
+  String get title => 'Search';
+}
+
+// Path: imageZoom
+class Translations$imageZoom$en {
+  Translations$imageZoom$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'Zoom Image'
+  String get title => 'Zoom Image';
+}
+
+// Path: downloads
+class Translations$downloads$en {
+  Translations$downloads$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'Downloads'
+  String get title => 'Downloads';
+
+  late final Translations$downloads$messages$en messages =
+      Translations$downloads$messages$en.internal(_root);
+}
+
+// Path: about
+class Translations$about$en {
+  Translations$about$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'About'
+  String get title => 'About';
+
+  /// en: 'Project URL'
+  String get projectUrl => 'Project URL';
+
+  /// en: 'Publish page'
+  String get publishPage => 'Publish page';
+
+  /// en: 'App version'
+  String get appVersion => 'App version';
+
+  /// en: 'Dart version'
+  String get dartVersion => 'Dart version';
+
+  /// en: 'Rust version'
+  String get rustVersion => 'Rust version';
+
+  /// en: 'Discussion'
+  String get discussion => 'Discussion';
+
+  /// en: 'Download update'
+  String get downloadUpdate => 'Download update';
+
+  /// en: 'Download the latest version for your device via your browser.'
+  String get downloadUpdateHint =>
+      'Download the latest version for your device via your browser.';
+}
+
+// Path: settings
+class Translations$settings$en {
+  Translations$settings$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'Settings'
+  String get title => 'Settings';
+
+  /// en: 'Theme'
+  String get theme => 'Theme';
+
+  /// en: 'Language'
+  String get language => 'Language';
+
+  /// en: 'Prefetch DNS'
+  String get prefetchDns => 'Prefetch DNS';
+
+  /// en: 'Download Directory'
+  String get downloadDirectory => 'Download Directory';
+
+  /// en: 'Default to Platform Settings'
+  String get defaultToPlatformSettings => 'Default to Platform Settings';
+
+  /// en: 'Columns per Row'
+  String get columnsPerRow => 'Columns per Row';
+
+  /// en: 'Max Concurrent Download Tasks'
+  String get maxConcurrentDownloads => 'Max Concurrent Download Tasks';
+
+  /// en: 'Max Segments per Download Task'
+  String get maxSegmentsPerTask => 'Max Segments per Download Task';
+
+  /// en: 'Platform default'
+  String get platformDefault => 'Platform default';
+
+  /// en: 'System'
+  String get system => 'System';
+
+  /// en: 'Light'
+  String get light => 'Light';
+
+  /// en: 'Dark'
+  String get dark => 'Dark';
+
+  late final Translations$settings$languageDialog$en languageDialog =
+      Translations$settings$languageDialog$en.internal(_root);
+  late final Translations$settings$themeModeDialog$en themeModeDialog =
+      Translations$settings$themeModeDialog$en.internal(_root);
+  late final Translations$settings$downloadDirectoryDialog$en
+  downloadDirectoryDialog =
+      Translations$settings$downloadDirectoryDialog$en.internal(_root);
+  late final Translations$settings$dnsPrefetchDialog$en dnsPrefetchDialog =
+      Translations$settings$dnsPrefetchDialog$en.internal(_root);
+  late final Translations$settings$columnsPerRowDialog$en columnsPerRowDialog =
+      Translations$settings$columnsPerRowDialog$en.internal(_root);
+  late final Translations$settings$maxConcurrentDownloadsDialog$en
+  maxConcurrentDownloadsDialog =
+      Translations$settings$maxConcurrentDownloadsDialog$en.internal(_root);
+  late final Translations$settings$maxSegmentsPerTaskDialog$en
+  maxSegmentsPerTaskDialog =
+      Translations$settings$maxSegmentsPerTaskDialog$en.internal(_root);
+}
+
+// Path: downloads.messages
+class Translations$downloads$messages$en {
+  Translations$downloads$messages$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'You have permanently denied storage permissions.\nPlease manually enable storage permissions in settings.'
+  String get storagePermanentlyDenied =>
+      'You have permanently denied storage permissions.\nPlease manually enable storage permissions in settings.';
+
+  /// en: 'You have denied storage permissions.'
+  String get storageDenied => 'You have denied storage permissions.';
+
+  /// en: 'Unable to parse device information.'
+  String get deviceInfoError => 'Unable to parse device information.';
+
+  /// en: 'You have permanently denied photos permissions.\nPlease manually enable photos permissions in settings.'
+  String get photosPermanentlyDenied =>
+      'You have permanently denied photos permissions.\nPlease manually enable photos permissions in settings.';
+
+  /// en: 'You have denied photos permissions.'
+  String get photosDenied => 'You have denied photos permissions.';
+
+  /// en: 'The download task already exists.'
+  String get downloadTaskExists => 'The download task already exists.';
+
+  /// en: 'The image file already exists.'
+  String get imageFileExists => 'The image file already exists.';
+
+  /// en: 'Retry download task $name'
+  String downloadRetryWith({required Object name}) =>
+      'Retry download task ${name}';
+
+  /// en: 'Start download task $name'
+  String downloadStartWith({required Object name}) =>
+      'Start download task ${name}';
+
+  /// en: 'Download completed for task $name'
+  String downloadCompletedWith({required Object name}) =>
+      'Download completed for task ${name}';
+
+  /// en: 'Download failed for task $name'
+  String downloadFailedWith({required Object name}) =>
+      'Download failed for task ${name}';
+
+  /// en: 'Saving failed for task $name'
+  String saveFailedWith({required Object name}) =>
+      'Saving failed for task ${name}';
+}
+
+// Path: settings.languageDialog
+class Translations$settings$languageDialog$en {
+  Translations$settings$languageDialog$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'Language'
+  String get title => 'Language';
+}
+
+// Path: settings.themeModeDialog
+class Translations$settings$themeModeDialog$en {
+  Translations$settings$themeModeDialog$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'Theme Mode'
+  String get title => 'Theme Mode';
+}
+
+// Path: settings.downloadDirectoryDialog
+class Translations$settings$downloadDirectoryDialog$en {
+  Translations$settings$downloadDirectoryDialog$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'Download Directory'
+  String get title => 'Download Directory';
+
+  /// en: 'Choose Directory'
+  String get pickerTitle => 'Choose Directory';
+
+  /// en: 'Choose Directory'
+  String get pick => 'Choose Directory';
+
+  late final Translations$settings$downloadDirectoryDialog$messages$en
+  messages = Translations$settings$downloadDirectoryDialog$messages$en.internal(
+    _root,
+  );
+}
+
+// Path: settings.dnsPrefetchDialog
+class Translations$settings$dnsPrefetchDialog$en {
+  Translations$settings$dnsPrefetchDialog$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'DNS Prefetch'
+  String get title => 'DNS Prefetch';
+}
+
+// Path: settings.columnsPerRowDialog
+class Translations$settings$columnsPerRowDialog$en {
+  Translations$settings$columnsPerRowDialog$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'Columns per Row'
+  String get title => 'Columns per Row';
+}
+
+// Path: settings.maxConcurrentDownloadsDialog
+class Translations$settings$maxConcurrentDownloadsDialog$en {
+  Translations$settings$maxConcurrentDownloadsDialog$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'Max Concurrent Download Tasks'
+  String get title => 'Max Concurrent Download Tasks';
+}
+
+// Path: settings.maxSegmentsPerTaskDialog
+class Translations$settings$maxSegmentsPerTaskDialog$en {
+  Translations$settings$maxSegmentsPerTaskDialog$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'Max Segments per Download Task'
+  String get title => 'Max Segments per Download Task';
+}
+
+// Path: settings.downloadDirectoryDialog.messages
+class Translations$settings$downloadDirectoryDialog$messages$en {
+  Translations$settings$downloadDirectoryDialog$messages$en.internal(
+    this._root,
+  );
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'Directory set to platform default.'
+  String get setToPlatformDefault => 'Directory set to platform default.';
+
+  /// en: 'Directory path must be absolute.'
+  String get pathNotAbsolute => 'Directory path must be absolute.';
+
+  /// en: 'Directory path is not writable.'
+  String get pathNotWritable => 'Directory path is not writable.';
+}
+
+/// The flat map containing all translations for locale <en>.
+/// Only for edge cases! For simple maps, use the map function of this library.
+///
+/// The Dart AOT compiler has issues with very large switch statements,
+/// so the map is split into smaller functions (512 entries each).
+extension on Translations {
+  dynamic _flatMapFunction(String path) {
+    return switch (path) {
+      'generic.ok' => 'OK',
+      'generic.cancel' => 'Cancel',
+      'generic.clear' => 'Clear',
+      'generic.confirm' => 'Confirm',
+      'generic.enabled' => 'Enabled',
+      'generic.disabled' => 'Disabled',
+      'generic.copiedWithValue' =>
+        ({required Object value}) => 'Copied to clipboard: ${value}',
+      'generic.errorWithValue' =>
+        ({required Object value}) => 'An error occurred: ${value}',
+      'update.checkUpdateStart' => 'Checking for updates...',
+      'update.checkUpdateFailed' =>
+        'Failed to check for updates. Please check your Internet connection.',
+      'update.selectDownloadUrlFailed' =>
+        'Unable to find download URL.\nPlease visit the project page to manually update or seek help on the project Issue page.',
+      'update.newVersionFound' =>
+        ({required Object version}) =>
+            'New version found: ${version}.\nPlease go to the About page and click Download update.',
+      'update.noNewVersionFound' => 'No new version found.',
+      'postList.short' => 'Post',
+      'postList.title' => 'Post List',
+      'postList.titleWithTags' =>
+        ({required Object tags}) => 'Posts with tags: ${tags}',
+      'postDetail.titleWithId' => ({required Object id}) => 'Post: ${id}',
+      'postDetail.createdAt' => 'Created at',
+      'postDetail.author' => 'Author',
+      'postDetail.source' => 'Source',
+      'postDetail.width' => 'Width',
+      'postDetail.height' => 'Height',
+      'postDetail.score' => 'Score',
+      'postDetail.size' => 'Size',
+      'postDetail.parent' => 'Parent ID',
+      'postDetail.hasChildren' => 'Has child posts',
+      'postDetail.similarPosts' => 'Similar posts',
+      'postDetail.parentPost' => 'Parent post',
+      'postDetail.childPost' => 'Child post',
+      'postSearch.title' => 'Search',
+      'imageZoom.title' => 'Zoom Image',
+      'downloads.title' => 'Downloads',
+      'downloads.messages.storagePermanentlyDenied' =>
+        'You have permanently denied storage permissions.\nPlease manually enable storage permissions in settings.',
+      'downloads.messages.storageDenied' =>
+        'You have denied storage permissions.',
+      'downloads.messages.deviceInfoError' =>
+        'Unable to parse device information.',
+      'downloads.messages.photosPermanentlyDenied' =>
+        'You have permanently denied photos permissions.\nPlease manually enable photos permissions in settings.',
+      'downloads.messages.photosDenied' =>
+        'You have denied photos permissions.',
+      'downloads.messages.downloadTaskExists' =>
+        'The download task already exists.',
+      'downloads.messages.imageFileExists' => 'The image file already exists.',
+      'downloads.messages.downloadRetryWith' =>
+        ({required Object name}) => 'Retry download task ${name}',
+      'downloads.messages.downloadStartWith' =>
+        ({required Object name}) => 'Start download task ${name}',
+      'downloads.messages.downloadCompletedWith' =>
+        ({required Object name}) => 'Download completed for task ${name}',
+      'downloads.messages.downloadFailedWith' =>
+        ({required Object name}) => 'Download failed for task ${name}',
+      'downloads.messages.saveFailedWith' =>
+        ({required Object name}) => 'Saving failed for task ${name}',
+      'about.title' => 'About',
+      'about.projectUrl' => 'Project URL',
+      'about.publishPage' => 'Publish page',
+      'about.appVersion' => 'App version',
+      'about.dartVersion' => 'Dart version',
+      'about.rustVersion' => 'Rust version',
+      'about.discussion' => 'Discussion',
+      'about.downloadUpdate' => 'Download update',
+      'about.downloadUpdateHint' =>
+        'Download the latest version for your device via your browser.',
+      'settings.title' => 'Settings',
+      'settings.theme' => 'Theme',
+      'settings.language' => 'Language',
+      'settings.prefetchDns' => 'Prefetch DNS',
+      'settings.downloadDirectory' => 'Download Directory',
+      'settings.defaultToPlatformSettings' => 'Default to Platform Settings',
+      'settings.columnsPerRow' => 'Columns per Row',
+      'settings.maxConcurrentDownloads' => 'Max Concurrent Download Tasks',
+      'settings.maxSegmentsPerTask' => 'Max Segments per Download Task',
+      'settings.platformDefault' => 'Platform default',
+      'settings.system' => 'System',
+      'settings.light' => 'Light',
+      'settings.dark' => 'Dark',
+      'settings.languageDialog.title' => 'Language',
+      'settings.themeModeDialog.title' => 'Theme Mode',
+      'settings.downloadDirectoryDialog.title' => 'Download Directory',
+      'settings.downloadDirectoryDialog.pickerTitle' => 'Choose Directory',
+      'settings.downloadDirectoryDialog.pick' => 'Choose Directory',
+      'settings.downloadDirectoryDialog.messages.setToPlatformDefault' =>
+        'Directory set to platform default.',
+      'settings.downloadDirectoryDialog.messages.pathNotAbsolute' =>
+        'Directory path must be absolute.',
+      'settings.downloadDirectoryDialog.messages.pathNotWritable' =>
+        'Directory path is not writable.',
+      'settings.dnsPrefetchDialog.title' => 'DNS Prefetch',
+      'settings.columnsPerRowDialog.title' => 'Columns per Row',
+      'settings.maxConcurrentDownloadsDialog.title' =>
+        'Max Concurrent Download Tasks',
+      'settings.maxSegmentsPerTaskDialog.title' =>
+        'Max Segments per Download Task',
+      _ => null,
+    };
+  }
+}

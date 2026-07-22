@@ -153,7 +153,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
       onLongPress: () {
         HapticFeedback.mediumImpact();
         Clipboard.setData(ClipboardData(text: url));
-        EasyLoading.showSuccess(i18n.generic.copiedWithValue(post.source));
+        EasyLoading.showSuccess(i18n.generic.copiedWithValue(value: post.source));
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 3),
@@ -234,7 +234,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                         //set clipboard
                         Clipboard.setData(ClipboardData(text: tag));
                         EasyLoading.showSuccess(
-                          i18n.generic.copiedWithValue(tag),
+                          i18n.generic.copiedWithValue(value: tag),
                         );
                         HapticFeedback.mediumImpact();
                       },
@@ -421,7 +421,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
   @override
   Widget build(BuildContext context) {
     return AutoScaffold(
-      titleWidget: Text(i18n.postDetail.titleWithId(post.id)),
+      titleWidget: Text(i18n.postDetail.titleWithId(id: post.id)),
       builder: (context, horizontal) {
         if (horizontal) {
           return LayoutBuilder(

@@ -49,6 +49,7 @@ class _SettingsPageState extends State<SettingsPage> {
       0 => 'English',
       1 => '日本語',
       2 => '繁體中文',
+      3 => '简体中文',
       _ => 'Unknown',
     };
   }
@@ -165,6 +166,11 @@ class _SettingsPageState extends State<SettingsPage> {
                   RadioListTile<int?>(
                     title: const Text('繁體中文'),
                     value: 2,
+                  ),
+                  SizedBox(height: 5),
+                  RadioListTile<int?>(
+                    title: const Text('简体中文'),
+                    value: 3,
                   ),
                 ],
               ),

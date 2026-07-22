@@ -1,0 +1,113 @@
+generic:
+  ok: 确定
+  cancel: 取消
+  clear: 清除
+  confirm: 确认
+  enabled: 启用
+  disabled: 停用
+  copiedWithValue: "已复制到剪贴板: $value"
+  errorWithValue: "发生错误: $value"
+
+update:
+  checkUpdateStart: 正在检查更新...
+  checkUpdateFailed: 检查更新失败，请检查你的网络连接。
+  selectDownloadUrlFailed: 找不到下载链接。\n请访问项目页面手动更新，或在项目 Issue 页面寻求帮助。
+  newVersionFound: "发现新版本: $version。请转到“关于”页面并点击“下载更新”。"
+  noNewVersionFound: 没有新版本。
+
+postList:
+  short: 帖子
+  title: 帖子列表
+  titleWithTags: "带有标签的帖子: $tags"
+
+postDetail:
+  titleWithId: "帖子: $id"
+  createdAt: 创建时间
+  author: 作者
+  source: 来源
+  width: 宽度
+  height: 高度
+  score: 评分
+  size: 大小
+  parent: 父 ID
+  hasChildren: 有子帖子
+  similarPosts: 相似帖子
+  parentPost: 父帖子
+  childPost: 子帖子
+
+postSearch:
+  title: 搜索
+
+imageZoom:
+  title: 缩放图片
+
+downloads:
+  title: 下载项
+  messages:
+    storagePermanentlyDenied: 你已永久拒绝存储权限。\n请在设置中手动启用存储权限。  # Android
+    storageDenied: 你已拒绝存储权限。  # Android
+    deviceInfoError: 无法解析设备信息。
+    photosPermanentlyDenied: 你已永久拒绝照片权限。\n请在设置中手动启用照片权限。  # iOS
+    photosDenied: 你已拒绝照片权限。  # iOS
+    downloadTaskExists: 下载任务已存在。
+    imageFileExists: 图片文件已存在。
+
+    downloadRetryWith: "重试下载任务: $name"
+    downloadStartWith: "开始下载任务: $name"
+
+    downloadCompletedWith: "下载任务完成: $name"
+    downloadFailedWith: "下载任务失败: $name"
+    saveFailedWith: "保存失败: 任务 $name"
+
+about:
+  title: 关于
+  projectUrl: 项目网址
+  publishPage: 发布页面
+  appVersion: 应用版本
+  dartVersion: Dart 版本
+  rustVersion: Rust 版本
+  discussion: 讨论
+  downloadUpdate: 下载更新
+  downloadUpdateHint: 通过浏览器下载适合你设备的最新版本。
+
+settings:
+  title: 设置
+  theme: 主题
+  language: 语言
+  prefetchDns: 预解析 DNS
+  downloadDirectory: 下载目录
+  defaultToPlatformSettings: 使用平台默认设置
+  columnsPerRow: 每行列数
+  maxConcurrentDownloads: 最大同时下载任务数
+  maxSegmentsPerTask: 每个下载任务的最大分段数
+  platformDefault: 平台默认
+  system: 系统
+  light: 浅色模式
+  dark: 深色模式
+
+  languageDialog:
+    title: 语言
+
+  themeModeDialog:
+    title: 主题模式
+
+  downloadDirectoryDialog:
+    title: 下载目录
+    pickerTitle: 选择目录
+    pick: 选择目录
+    messages:
+      setToPlatformDefault: 下载目录已设为平台默认。
+      pathNotAbsolute: 路径必须是绝对路径。
+      pathNotWritable: 路径不可写入。
+
+  dnsPrefetchDialog:
+    title: DNS 预解析
+
+  columnsPerRowDialog:
+    title: 每行列数
+
+  maxConcurrentDownloadsDialog:
+    title: 最大同时下载任务数
+
+  maxSegmentsPerTaskDialog:
+    title: 每个下载任务的最大分段数

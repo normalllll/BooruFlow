@@ -95,7 +95,7 @@ class _PostSimilarWidgetState extends ConsumerState<PostSimilarWidget> {
       AsyncError(:final error) => GestureDetector(
         onTap: () => ref.refresh(provider),
         behavior: HitTestBehavior.translucent,
-        child: Text(i18n.generic.errorWithValue(error.toString())),
+        child: Text(i18n.generic.errorWithValue(value: error.toString())),
       ),
       _ => const Padding(padding: EdgeInsets.symmetric(horizontal: 4), child: Center(child: CupertinoActivityIndicator())),
     };

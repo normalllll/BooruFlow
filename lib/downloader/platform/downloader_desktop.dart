@@ -85,12 +85,12 @@ class DownloaderDesktop<T> extends DownloaderPlatform<T> {
             }
             await _moveFile(filePath, targetPath);
 
-            EasyLoading.showSuccess(i18n.downloads.messages.downloadCompletedWith(task.fileName));
+            EasyLoading.showSuccess(i18n.downloads.messages.downloadCompletedWith(name: task.fileName));
             task.emit(task.state.copyWith(status: DownloadStatus.completed));
             break;
           case DownloadEventError(:final error):
             print('download error:$error');
-            EasyLoading.showError(i18n.downloads.messages.downloadFailedWith(task.fileName));
+            EasyLoading.showError(i18n.downloads.messages.downloadFailedWith(name: task.fileName));
             task.emit(task.state.copyWith(status: DownloadStatus.failed, error: error));
             break;
         }

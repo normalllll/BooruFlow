@@ -30,7 +30,7 @@ abstract class DownloaderPlatform<T> {
     }
 
     await handleTask(task);
-    EasyLoading.showToast(i18n.downloads.messages.downloadStartWith(fileName));
+    EasyLoading.showToast(i18n.downloads.messages.downloadStartWith(name: fileName));
 
     registerTaskState(task);
   }
@@ -52,9 +52,9 @@ abstract class DownloaderPlatform<T> {
       if (task.state.status == DownloadStatus.failed) {
         try {
           await handleTask(task);
-          EasyLoading.showToast(i18n.downloads.messages.downloadRetryWith(task.fileName));
+          EasyLoading.showToast(i18n.downloads.messages.downloadRetryWith(name: task.fileName));
         } catch (e) {
-          EasyLoading.showToast(i18n.downloads.messages.downloadFailedWith(task.fileName));
+          EasyLoading.showToast(i18n.downloads.messages.downloadFailedWith(name: task.fileName));
         }
       } else {
         log('retryAll skip:${task.fileName}, status:${task.state.status}');

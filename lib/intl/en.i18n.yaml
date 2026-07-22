@@ -5,23 +5,23 @@ generic:
   confirm: Confirm
   enabled: Enabled
   disabled: Disabled
-  copiedWithValue(String value): "Copied to clipboard: $value"
-  errorWithValue(String value): "An error occurred: $value"
+  copiedWithValue: "Copied to clipboard: $value"
+  errorWithValue: "An error occurred: $value"
 
 update:
   checkUpdateStart: Checking for updates...
   checkUpdateFailed: Failed to check for updates. Please check your Internet connection.
   selectDownloadUrlFailed: Unable to find download URL.\nPlease visit the project page to manually update or seek help on the project Issue page.
-  newVersionFound(String version): "New version found: $version.\nPlease go to the About page and click Download update."
+  newVersionFound: "New version found: $version.\nPlease go to the About page and click Download update."
   noNewVersionFound: No new version found.
 
 postList:
   short: Post
   title: Post List
-  titleWithTags(String tags): "Posts with tags: $tags"
+  titleWithTags: "Posts with tags: $tags"
 
 postDetail:
-  titleWithId(int id): "Post: $id"
+  titleWithId: "Post: $id"
   createdAt: Created at
   author: Author
   source: Source
@@ -52,12 +52,12 @@ downloads:
     downloadTaskExists: The download task already exists.
     imageFileExists: The image file already exists.
 
-    downloadRetryWith(String name): "Retry download task $name"
-    downloadStartWith(String name): "Start download task $name"
+    downloadRetryWith: "Retry download task $name"
+    downloadStartWith: "Start download task $name"
 
-    downloadCompletedWith(String name): "Download completed for task $name"
-    downloadFailedWith(String name): "Download failed for task $name"
-    saveFailedWith(String name): "Saving failed for task $name"
+    downloadCompletedWith: "Download completed for task $name"
+    downloadFailedWith: "Download failed for task $name"
+    saveFailedWith: "Saving failed for task $name"
 
 about:
   title: About

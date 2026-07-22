@@ -75,11 +75,11 @@ class DownloaderIOS<T> extends DownloaderPlatform<T> {
             break;
           case DownloadEventSuccess():
             await saveImage(filePath, task.fileName);
-            EasyLoading.showSuccess(i18n.downloads.messages.downloadCompletedWith(task.fileName));
+            EasyLoading.showSuccess(i18n.downloads.messages.downloadCompletedWith(name: task.fileName));
             task.emit(task.state.copyWith(status: DownloadStatus.completed));
             break;
           case DownloadEventError(:final error):
-            EasyLoading.showError(i18n.downloads.messages.downloadFailedWith(task.fileName));
+            EasyLoading.showError(i18n.downloads.messages.downloadFailedWith(name: task.fileName));
             task.emit(task.state.copyWith(status: DownloadStatus.failed, error: error));
             break;
         }

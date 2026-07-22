@@ -1,0 +1,15 @@
+targets:
+  $default:
+    builders:
+      slang_build_runner:
+        options:
+          base_locale: en
+          input_directory: lib/intl
+          input_file_pattern: .i18n.yaml
+          output_directory: lib/intl
+          output_file_name: translations.g.dart
+          fallback_strategy: base_locale
+          lazy: false
+          format:
+            enabled: true
+            width: 120

@@ -105,7 +105,7 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                 pinned: isDesktop && widget.tags != null,
                 scrolledUnderElevation: 0,
                 title: switch (widget.tags) {
-                  final tags? => Text(i18n.postList.titleWithTags(tags.join(' '))),
+                  final tags? => Text(i18n.postList.titleWithTags(tags: tags.join(' '))),
                   _ => Text(i18n.postList.title),
                 },
               ),
