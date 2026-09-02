@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:developer';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:meta/meta.dart';
 import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/services/app_toast.dart';
 import 'download_task.dart';
 
 abstract class DownloaderPlatform<T> {
@@ -28,7 +28,7 @@ abstract class DownloaderPlatform<T> {
     required String fileName,
   }) async {
     if (_taskMap.values.any((task) => task.fileName == fileName)) {
-      EasyLoading.showToast(i18n.downloads.messages.downloadTaskExists);
+      AppToast.show(i18n.downloads.messages.downloadTaskExists);
       return;
     }
     final task = DownloadTask(
@@ -43,9 +43,7 @@ abstract class DownloaderPlatform<T> {
     }
 
     await handleTask(task);
-    EasyLoading.showToast(
-      i18n.downloads.messages.downloadStartWith(name: fileName),
-    );
+    AppToast.show(i18n.downloads.messages.downloadStartWith(name: fileName));
 
     registerTaskState(task);
   }
@@ -67,11 +65,11 @@ abstract class DownloaderPlatform<T> {
       if (task.state.status == DownloadStatus.failed) {
         try {
           await handleTask(task);
-          EasyLoading.showToast(
+          AppToast.show(
             i18n.downloads.messages.downloadRetryWith(name: task.fileName),
           );
         } catch (e) {
-          EasyLoading.showToast(
+          AppToast.error(
             i18n.downloads.messages.downloadFailedWith(name: task.fileName),
           );
         }

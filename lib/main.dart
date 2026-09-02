@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_ce_flutter/adapters.dart';
@@ -8,6 +7,7 @@ import 'package:yande_gui/components/download_floating_window/download_floating_
 import 'package:yande_gui/global.dart';
 import 'package:yande_gui/i18n.dart';
 import 'package:yande_gui/router/app_router.dart';
+import 'package:yande_gui/services/app_toast.dart';
 import 'package:yande_gui/services/custom_tags_service.dart';
 import 'package:yande_gui/services/tag_translations_service.dart';
 import 'package:yande_gui/src/rust/api/yande_client.dart';
@@ -44,43 +44,43 @@ class MyApp extends ConsumerWidget {
     const darkPrimaryColor = Color(0xFFFF79AD);
     const lightPrimaryColor = AppThemeTokens.brandPink;
 
-    return StreamBuilder(
-      stream: rootUpdateController.stream,
-      builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-        final locale = I18n.getLocale(SettingsService.language);
-        TagTranslationsService.update(
-          SettingsService.language ?? I18n.getSystemLocaleIndex(),
-        );
-        I18n.update(locale);
-        return MaterialApp.router(
-          title: 'Yande GUI',
-          routerConfig: AppRouter.router,
-          darkTheme: darkTheme(darkPrimaryColor),
-          theme: lightTheme(lightPrimaryColor),
-          themeMode: switch (SettingsService.themeMode) {
-            null => ThemeMode.system,
-            0 => ThemeMode.light,
-            1 => ThemeMode.dark,
-            _ => ThemeMode.system,
-          },
-          locale: locale,
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: I18n.supportedLocales,
-          localeResolutionCallback: (locale, supportedLocales) {
-            for (final supportedLocale in supportedLocales) {
-              if (supportedLocale.languageCode == locale?.languageCode &&
-                  supportedLocale.countryCode == locale?.countryCode) {
-                return supportedLocale;
+    return AppToastWrapper(
+      child: StreamBuilder(
+        stream: rootUpdateController.stream,
+        builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+          final locale = I18n.getLocale(SettingsService.language);
+          TagTranslationsService.update(
+            SettingsService.language ?? I18n.getSystemLocaleIndex(),
+          );
+          I18n.update(locale);
+          return MaterialApp.router(
+            title: 'Yande GUI',
+            routerConfig: AppRouter.router,
+            darkTheme: darkTheme(darkPrimaryColor),
+            theme: lightTheme(lightPrimaryColor),
+            themeMode: switch (SettingsService.themeMode) {
+              null => ThemeMode.system,
+              0 => ThemeMode.light,
+              1 => ThemeMode.dark,
+              _ => ThemeMode.system,
+            },
+            locale: locale,
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: I18n.supportedLocales,
+            localeResolutionCallback: (locale, supportedLocales) {
+              for (final supportedLocale in supportedLocales) {
+                if (supportedLocale.languageCode == locale?.languageCode &&
+                    supportedLocale.countryCode == locale?.countryCode) {
+                  return supportedLocale;
+                }
               }
-            }
-            return supportedLocales.first;
-          },
-          debugShowCheckedModeBanner: false,
-          builder: EasyLoading.init(
+              return supportedLocales.first;
+            },
+            debugShowCheckedModeBanner: false,
             builder: (context, child) {
               return GestureDetector(
                 onTap: () {
@@ -92,9 +92,9 @@ class MyApp extends ConsumerWidget {
                 ),
               );
             },
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

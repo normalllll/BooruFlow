@@ -1,7 +1,7 @@
 import 'dart:io';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/services/app_toast.dart';
 import 'package:yande_gui/services/settings_service.dart';
 import 'package:path/path.dart' as path;
 
@@ -10,7 +10,9 @@ import '../downloader_platform.dart';
 import 'download_queue_manger.dart';
 
 class DownloaderDesktop<T> extends DownloaderPlatform<T> {
-  final _downloadQueueManager = DownloadQueueManager(getMaxConcurrentDownloads: () => SettingsService.maxConcurrentDownloads);
+  final _downloadQueueManager = DownloadQueueManager(
+    getMaxConcurrentDownloads: () => SettingsService.maxConcurrentDownloads,
+  );
 
   Future<void> _moveFile(String sourcePath, String targetPath) async {
     final sourceFile = File(sourcePath);
@@ -48,7 +50,7 @@ class DownloaderDesktop<T> extends DownloaderPlatform<T> {
       file = File(path.join(downloadDir!.path, 'YandeGUI', task.fileName));
     }
     if (await file.exists()) {
-      EasyLoading.showError(i18n.downloads.messages.imageFileExists);
+      AppToast.error(i18n.downloads.messages.imageFileExists);
       return false;
     }
     return true;
@@ -73,7 +75,12 @@ class DownloaderDesktop<T> extends DownloaderPlatform<T> {
             task.emit(task.state.copyWith(status: DownloadStatus.busying));
             break;
           case DownloadEventProgress(:final value):
-            task.emit(task.state.copyWith(status: DownloadStatus.busying, progress: value));
+            task.emit(
+              task.state.copyWith(
+                status: DownloadStatus.busying,
+                progress: value,
+              ),
+            );
             break;
           case DownloadEventSuccess():
             final downloadDir = await getDownloadsDirectory();
@@ -81,17 +88,29 @@ class DownloaderDesktop<T> extends DownloaderPlatform<T> {
             if (SettingsService.downloadPath case String downloadPath) {
               targetPath = path.join(downloadPath, task.fileName);
             } else {
-              targetPath = path.join(downloadDir!.path, 'YandeGUI', task.fileName);
+              targetPath = path.join(
+                downloadDir!.path,
+                'YandeGUI',
+                task.fileName,
+              );
             }
             await _moveFile(filePath, targetPath);
 
-            EasyLoading.showSuccess(i18n.downloads.messages.downloadCompletedWith(name: task.fileName));
+            AppToast.success(
+              i18n.downloads.messages.downloadCompletedWith(
+                name: task.fileName,
+              ),
+            );
             task.emit(task.state.copyWith(status: DownloadStatus.completed));
             break;
           case DownloadEventError(:final error):
             print('download error:$error');
-            EasyLoading.showError(i18n.downloads.messages.downloadFailedWith(name: task.fileName));
-            task.emit(task.state.copyWith(status: DownloadStatus.failed, error: error));
+            AppToast.error(
+              i18n.downloads.messages.downloadFailedWith(name: task.fileName),
+            );
+            task.emit(
+              task.state.copyWith(status: DownloadStatus.failed, error: error),
+            );
             break;
         }
       },

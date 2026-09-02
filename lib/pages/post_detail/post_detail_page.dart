@@ -3,7 +3,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:yande_gui/components/translated_tag/translated_tag.dart';
@@ -12,6 +11,7 @@ import 'package:yande_gui/downloader/downloader.dart';
 import 'package:yande_gui/i18n.dart';
 import 'package:yande_gui/pages/post_detail/logic.dart';
 import 'package:yande_gui/router/app_router.dart';
+import 'package:yande_gui/services/app_toast.dart';
 import 'package:yande_gui/src/rust/yande/model/post.dart';
 import 'package:yande_gui/themes.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
@@ -42,7 +42,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
   @override
   void dispose() {
     _pageController.dispose();
-    EasyLoading.dismiss();
+    AppToast.dismissAll();
     super.dispose();
   }
 
@@ -246,7 +246,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
     await Clipboard.setData(ClipboardData(text: value));
     if (!mounted) return;
     HapticFeedback.mediumImpact();
-    EasyLoading.showSuccess(i18n.generic.copiedWithValue(value: value));
+    AppToast.success(i18n.generic.copiedWithValue(value: value));
   }
 
   Future<void> _openUrl(String url) async {

@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:yande_gui/global.dart';
 import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/services/app_toast.dart';
 import 'package:yande_gui/services/updater_service.dart';
 import 'package:yande_gui/src/rust/api/rustc.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
@@ -17,7 +17,12 @@ class AboutPage extends StatefulWidget {
 }
 
 class _AboutPageState extends State<AboutPage> {
-  Widget buildItem({required String title, String? subtitle, Widget? leading, Function()? onTap}) {
+  Widget buildItem({
+    required String title,
+    String? subtitle,
+    Widget? leading,
+    Function()? onTap,
+  }) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: ListTile(
@@ -31,17 +36,17 @@ class _AboutPageState extends State<AboutPage> {
   }
 
   void doUpdate() {
-    EasyLoading.showToast(i18n.update.checkUpdateStart);
+    AppToast.show(i18n.update.checkUpdateStart);
     UpdaterService.checkForUpdate()
         .then((result) {
           if (result == null) {
-            EasyLoading.showToast(i18n.update.noNewVersionFound);
+            AppToast.show(i18n.update.noNewVersionFound);
             return;
           }
 
           UpdaterService.selectDownloadUrl(result.$3).then((url) {
             if (url == null) {
-              EasyLoading.showToast(i18n.update.selectDownloadUrlFailed);
+              AppToast.error(i18n.update.selectDownloadUrlFailed);
               return;
             }
 
@@ -49,7 +54,7 @@ class _AboutPageState extends State<AboutPage> {
           });
         })
         .catchError((e) {
-          EasyLoading.showToast(i18n.update.checkUpdateFailed);
+          AppToast.error(i18n.update.checkUpdateFailed);
         });
   }
 
@@ -65,15 +70,22 @@ class _AboutPageState extends State<AboutPage> {
               leading: const Icon(Icons.link_outlined),
               subtitle: 'https://github.com/normalllll/yande_gui',
               onTap: () {
-                launchUrlString('https://github.com/normalllll/yande_gui', mode: LaunchMode.externalApplication);
+                launchUrlString(
+                  'https://github.com/normalllll/yande_gui',
+                  mode: LaunchMode.externalApplication,
+                );
               },
             ),
             buildItem(
               title: i18n.about.publishPage,
               leading: const Icon(Icons.new_releases_outlined),
-              subtitle: 'https://github.com/normalllll/yande_gui/releases/latest',
+              subtitle:
+                  'https://github.com/normalllll/yande_gui/releases/latest',
               onTap: () {
-                launchUrlString('https://github.com/normalllll/yande_gui/releases/latest', mode: LaunchMode.externalApplication);
+                launchUrlString(
+                  'https://github.com/normalllll/yande_gui/releases/latest',
+                  mode: LaunchMode.externalApplication,
+                );
               },
             ),
             buildItem(
@@ -81,8 +93,16 @@ class _AboutPageState extends State<AboutPage> {
               leading: const Icon(Icons.tag_outlined),
               subtitle: '${Global.appVersion}+${Global.buildNumber}',
             ),
-            buildItem(title: i18n.about.dartVersion, leading: const Icon(Icons.verified_outlined), subtitle: Platform.version),
-            buildItem(title: i18n.about.rustVersion, leading: const Icon(Icons.verified_outlined), subtitle: rustcVersion()),
+            buildItem(
+              title: i18n.about.dartVersion,
+              leading: const Icon(Icons.verified_outlined),
+              subtitle: Platform.version,
+            ),
+            buildItem(
+              title: i18n.about.rustVersion,
+              leading: const Icon(Icons.verified_outlined),
+              subtitle: rustcVersion(),
+            ),
             buildItem(
               title: i18n.about.discussion,
               leading: const Icon(Icons.telegram),

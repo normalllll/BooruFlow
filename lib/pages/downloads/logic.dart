@@ -3,7 +3,7 @@
 //
 // import 'package:device_info_plus/device_info_plus.dart';
 // import 'package:flutter/foundation.dart';
-// import 'package:flutter_easyloading/flutter_easyloading.dart';
+// import 'package:yande_gui/services/app_toast.dart';
 // import 'package:path_provider/path_provider.dart';
 // import 'package:permission_handler/permission_handler.dart';
 // import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -107,7 +107,7 @@
 //           PermissionStatus status = await Permission.storage.status;
 //
 //           if (status.isPermanentlyDenied) {
-//             EasyLoading.showError(i18n.downloads.messages.storagePermanentlyDenied);
+//             AppToast.error(i18n.downloads.messages.storagePermanentlyDenied);
 //             await Future.delayed(const Duration(seconds: 2));
 //             openAppSettings();
 //             return null;
@@ -115,20 +115,20 @@
 //           if (!status.isGranted) {
 //             status = await Permission.storage.request();
 //             if (!status.isGranted) {
-//               EasyLoading.showError(i18n.downloads.messages.storageDenied);
+//               AppToast.error(i18n.downloads.messages.storageDenied);
 //               return null;
 //             }
 //           }
 //         }
 //       } catch (e) {
-//         EasyLoading.showError(i18n.downloads.messages.deviceInfoError);
+//         AppToast.error(i18n.downloads.messages.deviceInfoError);
 //         return null;
 //       }
 //     } else if (Platform.isIOS) {
 //       PermissionStatus status = await Permission.photos.status;
 //
 //       if (status.isPermanentlyDenied) {
-//         EasyLoading.showError(i18n.downloads.messages.photosPermanentlyDenied);
+//         AppToast.error(i18n.downloads.messages.photosPermanentlyDenied);
 //         await Future.delayed(const Duration(seconds: 2));
 //         openAppSettings();
 //         return null;
@@ -136,18 +136,18 @@
 //       if (!status.isGranted) {
 //         status = await Permission.photos.request();
 //         if (!status.isGranted) {
-//           EasyLoading.showError(i18n.downloads.messages.photosDenied);
+//           AppToast.error(i18n.downloads.messages.photosDenied);
 //           return null;
 //         }
 //       }
 //     }
 //
 //     if (state.tasks.any((provider) => provider.post.id == post.id)) {
-//       EasyLoading.showToast(i18n.downloads.messages.downloadTaskExists);
+//       AppToast.show(i18n.downloads.messages.downloadTaskExists);
 //       return null;
 //     }
 //     if (await ImageSaver.existImage('${post.id}.${post.fileExt}', post.fileSize)) {
-//       EasyLoading.showToast(i18n.downloads.messages.imageFileExists);
+//       AppToast.show(i18n.downloads.messages.imageFileExists);
 //       return null;
 //     }
 //     final provider = downloadTaskProvider(post: post);
@@ -185,9 +185,9 @@
 //       }
 //       state = state.copyWith(type: DownloadTaskStateType.waiting);
 //
-//       EasyLoading.showToast(i18n.downloads.messages.downloadRetryWithId(state.post.id));
+//       AppToast.show(i18n.downloads.messages.downloadRetryWithId(state.post.id));
 //     } else {
-//       EasyLoading.showToast(i18n.downloads.messages.downloadStartWithId(state.post.id));
+//       AppToast.show(i18n.downloads.messages.downloadStartWithId(state.post.id));
 //     }
 //
 //     final ReceivePort receivePort = ReceivePort('DownloadTask:${post.id}');
@@ -213,17 +213,17 @@
 //       } else if (message is _DownloadSuccess) {
 //         try {
 //           ImageSaver.saveImage(filePath, '${state.post.id}.${state.post.fileExt}');
-//           EasyLoading.showSuccess(i18n.downloads.messages.downloadCompletedWithId(state.post.id));
+//           AppToast.success(i18n.downloads.messages.downloadCompletedWithId(state.post.id));
 //           state = state.copyWith(type: DownloadTaskStateType.completed);
 //         } catch (e) {
-//           EasyLoading.showError(i18n.downloads.messages.saveFailedWith(state.post.id));
+//           AppToast.error(i18n.downloads.messages.saveFailedWith(state.post.id));
 //           if (kDebugMode) {
 //             print(e);
 //           }
 //           state = state.copyWith(type: DownloadTaskStateType.failed);
 //         }
 //       } else if (message is _DownloadError) {
-//         EasyLoading.showError(i18n.downloads.messages.downloadFailedWithId(state.post.id));
+//         AppToast.error(i18n.downloads.messages.downloadFailedWithId(state.post.id));
 //         if (kDebugMode) {
 //           print(message.error);
 //         }

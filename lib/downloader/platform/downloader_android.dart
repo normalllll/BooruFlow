@@ -2,11 +2,11 @@ import 'dart:developer';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:yande_gui/download_foreground_service_plugin.dart';
 import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/services/app_toast.dart';
 import 'package:yande_gui/services/settings_service.dart';
 import 'package:path/path.dart' as path;
 
@@ -26,7 +26,10 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
 
   Future<void> onFirstTaskStarted() async {
     try {
-      await DownloadForegroundServicePlugin.startService(title: 'Yande GUI Downloader', text: 'Download start');
+      await DownloadForegroundServicePlugin.startService(
+        title: 'Yande GUI Downloader',
+        text: 'Download start',
+      );
       await Future.delayed(const Duration(milliseconds: 300));
     } catch (e) {
       log('onFirstTaskStarted: startService:$e');
@@ -41,11 +44,18 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
     }
   }
 
-  void onProgressChanged(int total, int completed, int failed, int canceled, double overallProgress) {
+  void onProgressChanged(
+    int total,
+    int completed,
+    int failed,
+    int canceled,
+    double overallProgress,
+  ) {
     try {
       DownloadForegroundServicePlugin.updateProgress(
         title: 'Yande GUI Downloader',
-        text: '🖼️$total ✅$completed ❌$failed ✖️$canceled ${(overallProgress * 100).toStringAsFixed(1)}%',
+        text:
+            '🖼️$total ✅$completed ❌$failed ✖️$canceled ${(overallProgress * 100).toStringAsFixed(1)}%',
 
         progress: (overallProgress * 100).toInt(),
       );
@@ -72,11 +82,15 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
     }
   }
 
-  Future<bool> _requestPermission({required Permission permission, required String deniedMsg, required String permanentlyDeniedMsg}) async {
+  Future<bool> _requestPermission({
+    required Permission permission,
+    required String deniedMsg,
+    required String permanentlyDeniedMsg,
+  }) async {
     var status = await permission.status;
 
     if (status.isPermanentlyDenied) {
-      EasyLoading.showError(permanentlyDeniedMsg);
+      AppToast.error(permanentlyDeniedMsg);
       await Future.delayed(const Duration(seconds: 2));
       openAppSettings();
       return false;
@@ -85,7 +99,7 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
     if (!status.isGranted) {
       status = await permission.request();
       if (!status.isGranted) {
-        EasyLoading.showError(deniedMsg);
+        AppToast.error(deniedMsg);
         return false;
       }
     }
@@ -93,12 +107,17 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
   }
 
   Future<bool> saveImage(String filePath, String fileName) async {
-    final bool result = await _channel.invokeMethod('saveImage', {'filePath': filePath, 'fileName': fileName});
+    final bool result = await _channel.invokeMethod('saveImage', {
+      'filePath': filePath,
+      'fileName': fileName,
+    });
     return result;
   }
 
   Future<bool> existImage(String fileName, int? fileSize) async {
-    final bool result = await _channel.invokeMethod('existImage', {'fileName': fileName});
+    final bool result = await _channel.invokeMethod('existImage', {
+      'fileName': fileName,
+    });
     return result;
   }
 
@@ -126,17 +145,18 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
         ok = await _requestPermission(
           permission: Permission.storage, // READ/WRITE_EXTERNAL_STORAGE
           deniedMsg: i18n.downloads.messages.storageDenied,
-          permanentlyDeniedMsg: i18n.downloads.messages.storagePermanentlyDenied,
+          permanentlyDeniedMsg:
+              i18n.downloads.messages.storagePermanentlyDenied,
         );
       }
       if (!ok) return false;
     } catch (e) {
-      EasyLoading.showError(i18n.downloads.messages.deviceInfoError);
+      AppToast.error(i18n.downloads.messages.deviceInfoError);
       return false;
     }
 
     if (await existImage(task.fileName, null)) {
-      EasyLoading.showError(i18n.downloads.messages.imageFileExists);
+      AppToast.error(i18n.downloads.messages.imageFileExists);
       return false;
     }
     return true;
@@ -160,16 +180,29 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
             task.emit(task.state.copyWith(status: DownloadStatus.busying));
             break;
           case DownloadEventProgress(:final value):
-            task.emit(task.state.copyWith(status: DownloadStatus.busying, progress: value));
+            task.emit(
+              task.state.copyWith(
+                status: DownloadStatus.busying,
+                progress: value,
+              ),
+            );
             break;
           case DownloadEventSuccess():
             await saveImage(filePath, task.fileName);
-            EasyLoading.showSuccess(i18n.downloads.messages.downloadCompletedWith(name: task.fileName));
+            AppToast.success(
+              i18n.downloads.messages.downloadCompletedWith(
+                name: task.fileName,
+              ),
+            );
             task.emit(task.state.copyWith(status: DownloadStatus.completed));
             break;
           case DownloadEventError(:final error):
-            EasyLoading.showError(i18n.downloads.messages.downloadFailedWith(name: task.fileName));
-            task.emit(task.state.copyWith(status: DownloadStatus.failed, error: error));
+            AppToast.error(
+              i18n.downloads.messages.downloadFailedWith(name: task.fileName),
+            );
+            task.emit(
+              task.state.copyWith(status: DownloadStatus.failed, error: error),
+            );
             break;
         }
       },

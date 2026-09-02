@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yande_gui/global.dart';
 import 'package:yande_gui/i18n.dart';
 import 'package:yande_gui/router/app_navigation.dart';
+import 'package:yande_gui/services/app_toast.dart';
 import 'package:yande_gui/services/dns_service.dart';
 import 'package:yande_gui/services/settings_service.dart';
 import 'package:yande_gui/services/updater_service.dart';
@@ -65,14 +65,13 @@ class _IndexPageState extends State<IndexPage> {
     try {
       final result = await UpdaterService.checkForUpdate();
       if (result != null) {
-        EasyLoading.showToast(
+        AppToast.show(
           i18n.update.newVersionFound(version: result.$1),
-          toastPosition: EasyLoadingToastPosition.bottom,
           duration: const Duration(seconds: 6),
         );
       }
     } catch (_) {
-      EasyLoading.showToast(i18n.update.checkUpdateFailed);
+      AppToast.error(i18n.update.checkUpdateFailed);
     }
   }
 
