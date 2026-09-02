@@ -4,7 +4,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:yande_gui/global.dart';
-import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/intl/locale_preferences.dart';
+import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/services/app_toast.dart';
 import 'package:yande_gui/services/settings_service.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
@@ -39,18 +40,18 @@ class _SettingsPageState extends State<SettingsPage> {
   String themeModeToText(int? themeMode) {
     switch (themeMode) {
       case null:
-        return i18n.settings.system;
+        return t.settings.system;
       case 0:
-        return i18n.settings.light;
+        return t.settings.light;
       case 1:
-        return i18n.settings.dark;
+        return t.settings.dark;
     }
     return 'Unknown';
   }
 
   String languageToText(int? language) {
     return switch (language) {
-      null => i18n.settings.system,
+      null => t.settings.system,
       0 => 'English',
       1 => '日本語',
       2 => '繁體中文',
@@ -88,7 +89,7 @@ class _SettingsPageState extends State<SettingsPage> {
       barrierDismissible: true,
       builder: (context) {
         return CupertinoAlertDialog(
-          title: Text(i18n.settings.themeModeDialog.title),
+          title: Text(t.settings.themeModeDialog.title),
           content: _dialogListTileMaterial(
             context,
             RadioGroup<int?>(
@@ -102,17 +103,17 @@ class _SettingsPageState extends State<SettingsPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   RadioListTile<int?>(
-                    title: Text(i18n.settings.system),
+                    title: Text(t.settings.system),
                     value: null,
                   ),
                   SizedBox(height: 5),
                   RadioListTile<int?>(
-                    title: Text(i18n.settings.light),
+                    title: Text(t.settings.light),
                     value: 0,
                   ),
                   SizedBox(height: 5),
                   RadioListTile<int?>(
-                    title: Text(i18n.settings.dark),
+                    title: Text(t.settings.dark),
                     value: 1,
                   ),
                 ],
@@ -122,7 +123,7 @@ class _SettingsPageState extends State<SettingsPage> {
           actions: [
             CupertinoDialogAction(
               isDestructiveAction: true,
-              child: Text(i18n.generic.cancel),
+              child: Text(t.generic.cancel),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -139,14 +140,14 @@ class _SettingsPageState extends State<SettingsPage> {
       barrierDismissible: true,
       builder: (context) {
         return CupertinoAlertDialog(
-          title: Text(i18n.settings.languageDialog.title),
+          title: Text(t.settings.languageDialog.title),
           content: _dialogListTileMaterial(
             context,
             RadioGroup<int?>(
               groupValue: SettingsService.language,
               onChanged: (value) {
                 SettingsService.language = value;
-                I18n.update(I18n.getLocale(value));
+                applyLanguagePreference(value);
                 rootUpdateController.add(null);
                 Navigator.of(context).pop();
               },
@@ -154,7 +155,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   RadioListTile<int?>(
-                    title: Text(i18n.settings.system),
+                    title: Text(t.settings.system),
                     value: null,
                   ),
                   SizedBox(height: 5),
@@ -172,13 +173,13 @@ class _SettingsPageState extends State<SettingsPage> {
           actions: [
             CupertinoDialogAction(
               isDestructiveAction: true,
-              child: Text(i18n.generic.cancel),
+              child: Text(t.generic.cancel),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             CupertinoDialogAction(
-              child: Text(i18n.generic.confirm),
+              child: Text(t.generic.confirm),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -195,7 +196,7 @@ class _SettingsPageState extends State<SettingsPage> {
       barrierDismissible: true,
       builder: (context) {
         return CupertinoAlertDialog(
-          title: Text(i18n.settings.dnsPrefetchDialog.title),
+          title: Text(t.settings.dnsPrefetchDialog.title),
           content: _dialogListTileMaterial(
             context,
             Column(
@@ -203,7 +204,7 @@ class _SettingsPageState extends State<SettingsPage> {
               children: [
                 CheckboxListTile(
                   value: SettingsService.prefetchDns,
-                  title: Text(i18n.generic.enabled),
+                  title: Text(t.generic.enabled),
                   onChanged: (v) {
                     SettingsService.prefetchDns = v ?? false;
                     rootUpdateController.add(null);
@@ -216,7 +217,7 @@ class _SettingsPageState extends State<SettingsPage> {
           actions: [
             CupertinoDialogAction(
               isDestructiveAction: true,
-              child: Text(i18n.generic.cancel),
+              child: Text(t.generic.cancel),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -282,13 +283,13 @@ class _SettingsPageState extends State<SettingsPage> {
           actions: [
             CupertinoDialogAction(
               isDestructiveAction: true,
-              child: Text(i18n.generic.cancel),
+              child: Text(t.generic.cancel),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             CupertinoDialogAction(
-              child: Text(i18n.generic.confirm),
+              child: Text(t.generic.confirm),
               onPressed: () {
                 final dir = textController.text;
 
@@ -344,7 +345,7 @@ class _SettingsPageState extends State<SettingsPage> {
         return StatefulBuilder(
           builder: (context, setState) {
             return CupertinoAlertDialog(
-              title: Text(i18n.settings.columnsPerRowDialog.title),
+              title: Text(t.settings.columnsPerRowDialog.title),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -372,13 +373,13 @@ class _SettingsPageState extends State<SettingsPage> {
               actions: [
                 CupertinoDialogAction(
                   isDestructiveAction: true,
-                  child: Text(i18n.generic.cancel),
+                  child: Text(t.generic.cancel),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
                 ),
                 CupertinoDialogAction(
-                  child: Text(i18n.generic.confirm),
+                  child: Text(t.generic.confirm),
                   onPressed: () {
                     SettingsService.waterfallColumns = currentSliderValue == 0
                         ? null
@@ -405,7 +406,7 @@ class _SettingsPageState extends State<SettingsPage> {
         return StatefulBuilder(
           builder: (context, setState) {
             return CupertinoAlertDialog(
-              title: Text(i18n.settings.maxConcurrentDownloadsDialog.title),
+              title: Text(t.settings.maxConcurrentDownloadsDialog.title),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -427,13 +428,13 @@ class _SettingsPageState extends State<SettingsPage> {
               actions: [
                 CupertinoDialogAction(
                   isDestructiveAction: true,
-                  child: Text(i18n.generic.cancel),
+                  child: Text(t.generic.cancel),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
                 ),
                 CupertinoDialogAction(
-                  child: Text(i18n.generic.confirm),
+                  child: Text(t.generic.confirm),
                   onPressed: () {
                     SettingsService.maxConcurrentDownloads = currentSliderValue
                         .toInt();
@@ -459,7 +460,7 @@ class _SettingsPageState extends State<SettingsPage> {
         return StatefulBuilder(
           builder: (context, setState) {
             return CupertinoAlertDialog(
-              title: Text(i18n.settings.maxSegmentsPerTaskDialog.title),
+              title: Text(t.settings.maxSegmentsPerTaskDialog.title),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -481,13 +482,13 @@ class _SettingsPageState extends State<SettingsPage> {
               actions: [
                 CupertinoDialogAction(
                   isDestructiveAction: true,
-                  child: Text(i18n.generic.cancel),
+                  child: Text(t.generic.cancel),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
                 ),
                 CupertinoDialogAction(
-                  child: Text(i18n.generic.confirm),
+                  child: Text(t.generic.confirm),
                   onPressed: () {
                     SettingsService.maxSegmentsPerTask = currentSliderValue
                         .toInt();
@@ -506,12 +507,12 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return AutoScaffold(
-      verticalOnlyTitleWidget: Text(i18n.settings.title),
+      verticalOnlyTitleWidget: Text(t.settings.title),
       builder: (context, horizontal) {
         return ListView(
           children: [
             buildItem(
-              title: Text(i18n.settings.language),
+              title: Text(t.settings.language),
               leading: const Icon(Icons.language),
               subtitle: Text(languageToText(SettingsService.language)),
               onTap: () {
@@ -519,7 +520,7 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
             buildItem(
-              title: Text(i18n.settings.theme),
+              title: Text(t.settings.theme),
               leading: switch (Theme.of(context).brightness) {
                 Brightness.dark => const Icon(Icons.dark_mode_outlined),
                 Brightness.light => const Icon(Icons.light_mode_outlined),
@@ -530,19 +531,19 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
             buildItem(
-              title: Text(i18n.settings.prefetchDns),
+              title: Text(t.settings.prefetchDns),
               leading: const Icon(Icons.network_check_outlined),
               subtitle: Text(
                 SettingsService.prefetchDns
-                    ? i18n.generic.enabled
-                    : i18n.generic.disabled,
+                    ? t.generic.enabled
+                    : t.generic.disabled,
               ),
               onTap: () {
                 _dnsPrefetchDialog();
               },
             ),
             buildItem(
-              title: Text(i18n.settings.columnsPerRow),
+              title: Text(t.settings.columnsPerRow),
               leading: const Icon(Icons.view_column_outlined),
               subtitle: Text(
                 waterfallColumns(SettingsService.waterfallColumns),
@@ -552,7 +553,7 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
             buildItem(
-              title: Text(i18n.settings.maxConcurrentDownloads),
+              title: Text(t.settings.maxConcurrentDownloads),
               leading: const Icon(Icons.grading_outlined),
               subtitle: Text(
                 maxActiveDownloadTasks(SettingsService.maxConcurrentDownloads),
@@ -562,7 +563,7 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
             buildItem(
-              title: Text(i18n.settings.maxSegmentsPerTask),
+              title: Text(t.settings.maxSegmentsPerTask),
               leading: const Icon(Icons.segment_outlined),
               subtitle: Text(
                 maxParallelSegmentsPerDownloadTask(
@@ -575,10 +576,10 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             if (Platform.isWindows || Platform.isLinux || Platform.isMacOS)
               buildItem(
-                title: Text(i18n.settings.downloadDirectory),
+                title: Text(t.settings.downloadDirectory),
                 leading: const Icon(Icons.save_alt_outlined),
                 subtitle: Text(
-                  SettingsService.downloadPath ?? i18n.settings.platformDefault,
+                  SettingsService.downloadPath ?? t.settings.platformDefault,
                 ),
                 onTap: () {
                   _downloadPathDialog();

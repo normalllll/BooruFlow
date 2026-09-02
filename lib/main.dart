@@ -5,7 +5,8 @@ import 'package:hive_ce_flutter/adapters.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:yande_gui/components/download_floating_window/download_floating_window.dart';
 import 'package:yande_gui/global.dart';
-import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/intl/locale_preferences.dart';
+import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/router/app_router.dart';
 import 'package:yande_gui/services/app_toast.dart';
 import 'package:yande_gui/services/custom_tags_service.dart';
@@ -25,15 +26,16 @@ Future<void> main() async {
   Global.buildNumber = packageInfo.buildNumber;
   await Hive.initFlutter();
   await SettingsService.initialize();
+  final appLocale = applyLanguagePreference(SettingsService.language);
   await CustomTagsService.initialize();
   await TagTranslationsService.loadAll();
-  TagTranslationsService.update(SettingsService.language);
+  TagTranslationsService.update(SettingsService.language ?? languagePreferenceForAppLocale(appLocale));
   if (!SettingsService.prefetchDns) {
     setYandeClient(YandeClient(ips: null, forLargeFile: false));
   }
 
   Downloader.instance.ensureInitialized();
-  runApp(const ProviderScope(child: MyApp()));
+  runApp(TranslationProvider(child: const ProviderScope(child: MyApp())));
 }
 
 class MyApp extends ConsumerWidget {
@@ -48,11 +50,9 @@ class MyApp extends ConsumerWidget {
       child: StreamBuilder(
         stream: rootUpdateController.stream,
         builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-          final locale = I18n.getLocale(SettingsService.language);
-          TagTranslationsService.update(
-            SettingsService.language ?? I18n.getSystemLocaleIndex(),
-          );
-          I18n.update(locale);
+          final appLocale = appLocaleForLanguagePreference(SettingsService.language);
+          final locale = appLocale.flutterLocale;
+          TagTranslationsService.update(SettingsService.language ?? languagePreferenceForAppLocale(appLocale));
           return MaterialApp.router(
             title: 'Yande GUI',
             routerConfig: AppRouter.router,
@@ -70,7 +70,7 @@ class MyApp extends ConsumerWidget {
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            supportedLocales: I18n.supportedLocales,
+            supportedLocales: AppLocaleUtils.supportedLocales,
             localeResolutionCallback: (locale, supportedLocales) {
               for (final supportedLocale in supportedLocales) {
                 if (supportedLocale.languageCode == locale?.languageCode &&

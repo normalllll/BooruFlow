@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/pages/about/about_page.dart';
 import 'package:yande_gui/pages/image_zoom_page/image_zoom_page.dart';
 import 'package:yande_gui/pages/index/index_page.dart';
@@ -221,9 +221,9 @@ class _MissingRouteDataPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AutoScaffold(
-      titleWidget: Text(i18n.generic.notFound),
+      titleWidget: Text(t.generic.notFound),
       builder: (context, horizontal) =>
-          Center(child: Text(i18n.generic.notFound)),
+          Center(child: Text(t.generic.notFound)),
     );
   }
 }

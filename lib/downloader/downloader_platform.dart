@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 import 'package:meta/meta.dart';
-import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/services/app_toast.dart';
 import 'download_task.dart';
 
@@ -28,7 +28,7 @@ abstract class DownloaderPlatform<T> {
     required String fileName,
   }) async {
     if (_taskMap.values.any((task) => task.fileName == fileName)) {
-      AppToast.show(i18n.downloads.messages.downloadTaskExists);
+      AppToast.show(t.downloads.messages.downloadTaskExists);
       return;
     }
     final task = DownloadTask(
@@ -43,7 +43,7 @@ abstract class DownloaderPlatform<T> {
     }
 
     await handleTask(task);
-    AppToast.show(i18n.downloads.messages.downloadStartWith(name: fileName));
+    AppToast.show(t.downloads.messages.downloadStartWith(name: fileName));
 
     registerTaskState(task);
   }
@@ -66,11 +66,11 @@ abstract class DownloaderPlatform<T> {
         try {
           await handleTask(task);
           AppToast.show(
-            i18n.downloads.messages.downloadRetryWith(name: task.fileName),
+            t.downloads.messages.downloadRetryWith(name: task.fileName),
           );
         } catch (e) {
           AppToast.error(
-            i18n.downloads.messages.downloadFailedWith(name: task.fileName),
+            t.downloads.messages.downloadFailedWith(name: task.fileName),
           );
         }
       } else {

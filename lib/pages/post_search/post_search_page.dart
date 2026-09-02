@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:yande_gui/components/post_search_field/post_search_field.dart';
-import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/router/app_router.dart';
 import 'package:yande_gui/services/custom_tags_service.dart';
 import 'package:yande_gui/services/tag_translations_service.dart';
@@ -182,11 +182,11 @@ class _PostSearchPageState extends State<PostSearchPage> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text(i18n.generic.cancel),
+                  child: Text(t.generic.cancel),
                 ),
                 TextButton(
                   onPressed: submit,
-                  child: Text(i18n.generic.confirm),
+                  child: Text(t.generic.confirm),
                 ),
               ],
             );
@@ -398,7 +398,7 @@ class _PostSearchPageState extends State<PostSearchPage> {
     return PostSearchField(
       controller: _textController,
       scrollController: _textScrollController,
-      hintText: i18n.postSearch.title,
+      hintText: t.postSearch.title,
       onSubmitted: _openPostList,
     );
   }

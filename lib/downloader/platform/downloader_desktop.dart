@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/services/app_toast.dart';
 import 'package:yande_gui/services/settings_service.dart';
 import 'package:path/path.dart' as path;
@@ -50,7 +50,7 @@ class DownloaderDesktop<T> extends DownloaderPlatform<T> {
       file = File(path.join(downloadDir!.path, 'YandeGUI', task.fileName));
     }
     if (await file.exists()) {
-      AppToast.error(i18n.downloads.messages.imageFileExists);
+      AppToast.error(t.downloads.messages.imageFileExists);
       return false;
     }
     return true;
@@ -97,7 +97,7 @@ class DownloaderDesktop<T> extends DownloaderPlatform<T> {
             await _moveFile(filePath, targetPath);
 
             AppToast.success(
-              i18n.downloads.messages.downloadCompletedWith(
+              t.downloads.messages.downloadCompletedWith(
                 name: task.fileName,
               ),
             );
@@ -106,7 +106,7 @@ class DownloaderDesktop<T> extends DownloaderPlatform<T> {
           case DownloadEventError(:final error):
             print('download error:$error');
             AppToast.error(
-              i18n.downloads.messages.downloadFailedWith(name: task.fileName),
+              t.downloads.messages.downloadFailedWith(name: task.fileName),
             );
             task.emit(
               task.state.copyWith(status: DownloadStatus.failed, error: error),

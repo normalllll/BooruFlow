@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:loading_more_list/loading_more_list.dart';
-import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/intl/translations.g.dart';
 
 class LoadingMoreIndicator extends StatelessWidget {
   final IndicatorStatus status;
@@ -29,7 +29,7 @@ class LoadingMoreIndicator extends StatelessWidget {
             dimension: 18,
             child: CircularProgressIndicator(strokeWidth: 2),
           ),
-          label: i18n.generic.loading,
+          label: t.generic.loading,
         );
         break;
       case IndicatorStatus.fullScreenBusying:
@@ -38,7 +38,7 @@ class LoadingMoreIndicator extends StatelessWidget {
             dimension: 28,
             child: CircularProgressIndicator(strokeWidth: 2.4),
           ),
-          label: i18n.generic.loading,
+          label: t.generic.loading,
         );
         if (isSliver) {
           widget = SliverFillRemaining(hasScrollBody: false, child: widget);
@@ -57,13 +57,13 @@ class LoadingMoreIndicator extends StatelessWidget {
             size: 20,
             color: Theme.of(context).colorScheme.error,
           ),
-          label: i18n.generic.loadFailed,
+          label: t.generic.loadFailed,
           onTap: errorRefresh,
         );
         break;
       case IndicatorStatus.fullScreenError:
         widget = _ErrorContent(
-          message: error?.toString() ?? i18n.generic.loadFailed,
+          message: error?.toString() ?? t.generic.loadFailed,
           onRetry: errorRefresh,
         );
         if (isSliver) {
@@ -83,7 +83,7 @@ class LoadingMoreIndicator extends StatelessWidget {
             size: 18,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          label: i18n.generic.noMoreData,
+          label: t.generic.noMoreData,
         );
         break;
       case IndicatorStatus.empty:
@@ -191,7 +191,7 @@ class _ErrorContent extends StatelessWidget {
               OutlinedButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh),
-                label: Text(i18n.generic.retry),
+                label: Text(t.generic.retry),
               ),
             ],
           ),
@@ -221,7 +221,7 @@ class _EmptyContent extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              i18n.generic.notFound,
+              t.generic.notFound,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleMedium,
             ),

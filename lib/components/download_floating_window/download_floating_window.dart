@@ -5,7 +5,7 @@ import 'package:yande_gui/components/yande_image/yande_image.dart';
 import 'package:yande_gui/downloader/download_task.dart';
 import 'package:yande_gui/downloader/downloader.dart';
 import 'package:yande_gui/global.dart';
-import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/src/rust/yande/model/post.dart';
 
 class DownloadFloatingWindow extends StatefulWidget {
@@ -311,7 +311,7 @@ class _DownloadFloatingButton extends StatelessWidget {
 
     return Semantics(
       button: true,
-      label: i18n.downloads.title,
+      label: t.downloads.title,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onPanUpdate: onDragDelta == null
@@ -488,7 +488,7 @@ class _DownloadPanelHeader extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                i18n.downloads.title,
+                t.downloads.title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.titleSmall,
@@ -501,7 +501,7 @@ class _DownloadPanelHeader extends StatelessWidget {
             const SizedBox(width: 8),
             _PanelIconButton(
               icon: Icons.refresh_outlined,
-              tooltip: i18n.generic.retry,
+              tooltip: t.generic.retry,
               onTap: onRetryAll,
             ),
             const SizedBox(width: 4),
@@ -524,19 +524,19 @@ class _DownloadPanelHeader extends StatelessWidget {
           children: [
             _SummaryCount(
               icon: Icons.downloading_outlined,
-              label: i18n.downloads.active,
+              label: t.downloads.active,
               count: summary.active,
               color: colorScheme.primary,
             ),
             _SummaryCount(
               icon: Icons.download_done_outlined,
-              label: i18n.downloads.completed,
+              label: t.downloads.completed,
               count: summary.completed,
             ),
             if (summary.failed > 0)
               _SummaryCount(
                 icon: Icons.error_outline,
-                label: i18n.downloads.failed,
+                label: t.downloads.failed,
                 count: summary.failed,
                 color: colorScheme.error,
               ),
@@ -625,7 +625,7 @@ class _CompactDownloadTask extends StatelessWidget {
                 if (state.status == DownloadStatus.failed)
                   _PanelIconButton(
                     icon: Icons.refresh_outlined,
-                    tooltip: i18n.generic.retry,
+                    tooltip: t.generic.retry,
                     onTap: () => Downloader.instance.startTask(task.taskId),
                   )
                 else
@@ -759,10 +759,10 @@ class _DownloadSummary {
 
 String _statusLabel(DownloadStatus status) {
   return switch (status) {
-    DownloadStatus.idle || DownloadStatus.waiting => i18n.downloads.waiting,
-    DownloadStatus.busying => i18n.downloads.downloading,
-    DownloadStatus.completed => i18n.downloads.completed,
-    DownloadStatus.failed => i18n.downloads.failed,
+    DownloadStatus.idle || DownloadStatus.waiting => t.downloads.waiting,
+    DownloadStatus.busying => t.downloads.downloading,
+    DownloadStatus.completed => t.downloads.completed,
+    DownloadStatus.failed => t.downloads.failed,
   };
 }
 

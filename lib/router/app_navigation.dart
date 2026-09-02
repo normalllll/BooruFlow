@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/intl/translations.g.dart';
 
 enum AppRoute {
   posts('/'),
@@ -52,10 +52,10 @@ const appDestinations = <AppDestination>[
 
 String appDestinationLabel(AppDestination destination) {
   return switch (destination.route) {
-    AppRoute.posts => i18n.postList.short,
-    AppRoute.search => i18n.postSearch.title,
-    AppRoute.about => i18n.about.title,
-    AppRoute.settings => i18n.settings.title,
+    AppRoute.posts => t.postList.short,
+    AppRoute.search => t.postSearch.title,
+    AppRoute.about => t.about.title,
+    AppRoute.settings => t.settings.title,
     _ => '',
   };
 }

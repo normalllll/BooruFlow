@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:yande_gui/download_foreground_service_plugin.dart';
-import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/services/app_toast.dart';
 import 'package:yande_gui/services/settings_service.dart';
 import 'package:path/path.dart' as path;
@@ -138,25 +138,25 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
       if (androidInfo.version.sdkInt >= 33) {
         ok = await _requestPermission(
           permission: Permission.photos, // Android 13+ READ_MEDIA_IMAGES
-          deniedMsg: i18n.downloads.messages.photosDenied,
-          permanentlyDeniedMsg: i18n.downloads.messages.photosPermanentlyDenied,
+          deniedMsg: t.downloads.messages.photosDenied,
+          permanentlyDeniedMsg: t.downloads.messages.photosPermanentlyDenied,
         );
       } else {
         ok = await _requestPermission(
           permission: Permission.storage, // READ/WRITE_EXTERNAL_STORAGE
-          deniedMsg: i18n.downloads.messages.storageDenied,
+          deniedMsg: t.downloads.messages.storageDenied,
           permanentlyDeniedMsg:
-              i18n.downloads.messages.storagePermanentlyDenied,
+              t.downloads.messages.storagePermanentlyDenied,
         );
       }
       if (!ok) return false;
     } catch (e) {
-      AppToast.error(i18n.downloads.messages.deviceInfoError);
+      AppToast.error(t.downloads.messages.deviceInfoError);
       return false;
     }
 
     if (await existImage(task.fileName, null)) {
-      AppToast.error(i18n.downloads.messages.imageFileExists);
+      AppToast.error(t.downloads.messages.imageFileExists);
       return false;
     }
     return true;
@@ -190,7 +190,7 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
           case DownloadEventSuccess():
             await saveImage(filePath, task.fileName);
             AppToast.success(
-              i18n.downloads.messages.downloadCompletedWith(
+              t.downloads.messages.downloadCompletedWith(
                 name: task.fileName,
               ),
             );
@@ -198,7 +198,7 @@ class DownloaderAndroid<T> extends DownloaderPlatform<T> {
             break;
           case DownloadEventError(:final error):
             AppToast.error(
-              i18n.downloads.messages.downloadFailedWith(name: task.fileName),
+              t.downloads.messages.downloadFailedWith(name: task.fileName),
             );
             task.emit(
               task.state.copyWith(status: DownloadStatus.failed, error: error),

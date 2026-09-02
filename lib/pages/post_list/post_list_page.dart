@@ -13,7 +13,7 @@ import 'package:yande_gui/components/post_waterfall_skeleton/post_waterfall_skel
 import 'package:yande_gui/components/yande_image/yande_image.dart';
 import 'package:yande_gui/downloader/downloader.dart';
 import 'package:yande_gui/enums.dart';
-import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/router/app_router.dart';
 import 'package:yande_gui/services/settings_service.dart';
 import 'package:yande_gui/src/rust/yande/model/post.dart';
@@ -121,7 +121,7 @@ class _PostListPageState extends ConsumerState<PostListPage> {
   Widget _buildResultSearchField() {
     return PostSearchField(
       controller: _searchController!,
-      hintText: i18n.postSearch.title,
+      hintText: t.postSearch.title,
       onSubmitted: _submitSearch,
     );
   }
@@ -302,7 +302,7 @@ class _FreepivPromotionBanner extends StatelessWidget {
             button: true,
             link: true,
             label:
-                '${i18n.postList.freepivPromotionTitle}. ${i18n.postList.freepivPromotionSubtitle}',
+                '${t.postList.freepivPromotionTitle}. ${t.postList.freepivPromotionSubtitle}',
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: () => launchUrlString(
@@ -368,7 +368,7 @@ class _FreepivPromotionBanner extends StatelessWidget {
                                   children: [
                                     Flexible(
                                       child: Text(
-                                        i18n.postList.freepivPromotionTitle,
+                                        t.postList.freepivPromotionTitle,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: Theme.of(context)
@@ -409,7 +409,7 @@ class _FreepivPromotionBanner extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 5),
                                 Text(
-                                  i18n.postList.freepivPromotionSubtitle,
+                                  t.postList.freepivPromotionSubtitle,
                                   maxLines: compact ? 2 : 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: Theme.of(context).textTheme.bodyMedium
@@ -442,7 +442,7 @@ class _FreepivPromotionBanner extends StatelessWidget {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
-                                      i18n.postList.freepivPromotionAction,
+                                      t.postList.freepivPromotionAction,
                                       style: Theme.of(context)
                                           .textTheme
                                           .labelLarge

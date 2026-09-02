@@ -8,7 +8,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import 'package:yande_gui/components/translated_tag/translated_tag.dart';
 import 'package:yande_gui/components/yande_image/yande_image.dart';
 import 'package:yande_gui/downloader/downloader.dart';
-import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/pages/post_detail/logic.dart';
 import 'package:yande_gui/router/app_router.dart';
 import 'package:yande_gui/services/app_toast.dart';
@@ -71,7 +71,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
         : () => ref.invalidate(getSimilarProvider(id: relatedGroupId));
 
     return AutoScaffold(
-      titleWidget: Text(i18n.postDetail.titleWithId(id: selectedPost.id)),
+      titleWidget: Text(t.postDetail.titleWithId(id: selectedPost.id)),
       topSafeArea: false,
       builder: (context, horizontal) {
         return LayoutBuilder(
@@ -246,7 +246,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
     await Clipboard.setData(ClipboardData(text: value));
     if (!mounted) return;
     HapticFeedback.mediumImpact();
-    AppToast.success(i18n.generic.copiedWithValue(value: value));
+    AppToast.success(t.generic.copiedWithValue(value: value));
   }
 
   Future<void> _openUrl(String url) async {
@@ -413,13 +413,13 @@ class _PostImageViewer extends StatelessWidget {
               children: [
                 _SurfaceIconButton(
                   icon: Icons.zoom_out_map_outlined,
-                  tooltip: i18n.postDetail.viewOriginal,
+                  tooltip: t.postDetail.viewOriginal,
                   onPressed: () => onOpen(selectedPost),
                 ),
                 const SizedBox(width: 8),
                 _SurfaceIconButton(
                   icon: Icons.download_outlined,
-                  tooltip: i18n.postDetail.download,
+                  tooltip: t.postDetail.download,
                   onPressed: () => onDownload(selectedPost),
                 ),
               ],
@@ -550,7 +550,7 @@ class _RelatedLoadError extends StatelessWidget {
               const SizedBox(width: 8),
               Flexible(
                 child: Text(
-                  i18n.postDetail.relatedLoadFailed,
+                  t.postDetail.relatedLoadFailed,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -565,7 +565,7 @@ class _RelatedLoadError extends StatelessWidget {
                   splashFactory: NoSplash.splashFactory,
                   overlayColor: WidgetStatePropertyAll(Colors.transparent),
                 ),
-                child: Text(i18n.generic.retry),
+                child: Text(t.generic.retry),
               ),
             ],
           ),
@@ -644,11 +644,11 @@ class _PostDetailPanel extends StatelessWidget {
       const SizedBox(height: 12),
       _StatsStrip(post: post),
       const SizedBox(height: 18),
-      _SectionTitle(title: i18n.postDetail.tags, icon: Icons.tag_outlined),
+      _SectionTitle(title: t.postDetail.tags, icon: Icons.tag_outlined),
       const SizedBox(height: 8),
       if (tags.isEmpty)
         Text(
-          i18n.generic.notFound,
+          t.generic.notFound,
           style: Theme.of(
             context,
           ).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
@@ -668,7 +668,7 @@ class _PostDetailPanel extends StatelessWidget {
           ],
         ),
       const SizedBox(height: 18),
-      _SectionTitle(title: i18n.postDetail.details, icon: Icons.info_outline),
+      _SectionTitle(title: t.postDetail.details, icon: Icons.info_outline),
       const SizedBox(height: 4),
       _MetadataRow(
         label: 'ID',
@@ -676,39 +676,39 @@ class _PostDetailPanel extends StatelessWidget {
         onCopy: () => onCopy('${post.id}'),
       ),
       _MetadataRow(
-        label: i18n.postDetail.createdAt,
+        label: t.postDetail.createdAt,
         value: _formatDateTime(post.createdAt),
       ),
       _MetadataRow(
-        label: i18n.postDetail.author,
+        label: t.postDetail.author,
         value: post.author.trim().isEmpty ? 'yande.re' : post.author,
       ),
       if (post.source.trim().isNotEmpty)
         _MetadataRow(
-          label: i18n.postDetail.source,
+          label: t.postDetail.source,
           value: post.source,
           onTap: sourceIsUrl ? () => onOpenSource(post.source) : null,
           onCopy: () => onCopy(post.source),
         ),
-      _MetadataRow(label: i18n.postDetail.width, value: '${post.width} px'),
-      _MetadataRow(label: i18n.postDetail.height, value: '${post.height} px'),
+      _MetadataRow(label: t.postDetail.width, value: '${post.width} px'),
+      _MetadataRow(label: t.postDetail.height, value: '${post.height} px'),
       _MetadataRow(
-        label: i18n.postDetail.fileType,
+        label: t.postDetail.fileType,
         value: post.fileExt.toUpperCase(),
       ),
       _MetadataRow(
-        label: i18n.postDetail.rating,
+        label: t.postDetail.rating,
         value: _ratingLabel(post.rating),
       ),
       if (post.parentId != null)
-        _MetadataRow(label: i18n.postDetail.parent, value: '${post.parentId}'),
+        _MetadataRow(label: t.postDetail.parent, value: '${post.parentId}'),
       _MetadataRow(
-        label: i18n.postDetail.hasChildren,
+        label: t.postDetail.hasChildren,
         value: '${post.hasChildren}',
       ),
       const SizedBox(height: 18),
       _SectionTitle(
-        title: i18n.postDetail.actions,
+        title: t.postDetail.actions,
         icon: Icons.touch_app_outlined,
       ),
       const SizedBox(height: 8),
@@ -745,7 +745,7 @@ class _StatsStrip extends StatelessWidget {
         Expanded(
           child: _StatTile(
             icon: Icons.aspect_ratio_outlined,
-            label: i18n.postDetail.size,
+            label: t.postDetail.size,
             value: dimensions,
           ),
         ),
@@ -753,7 +753,7 @@ class _StatsStrip extends StatelessWidget {
         Expanded(
           child: _StatTile(
             icon: Icons.favorite_border,
-            label: i18n.postDetail.score,
+            label: t.postDetail.score,
             value: '${post.score}',
           ),
         ),
@@ -761,7 +761,7 @@ class _StatsStrip extends StatelessWidget {
         Expanded(
           child: _StatTile(
             icon: Icons.data_usage_outlined,
-            label: i18n.postDetail.size,
+            label: t.postDetail.size,
             value: '${(post.fileSize / 1024 / 1024).toStringAsFixed(1)} MB',
           ),
         ),
@@ -769,7 +769,7 @@ class _StatsStrip extends StatelessWidget {
         Expanded(
           child: _StatTile(
             icon: Icons.insert_drive_file_outlined,
-            label: i18n.postDetail.fileType,
+            label: t.postDetail.fileType,
             value: post.fileExt.toUpperCase(),
           ),
         ),
@@ -793,7 +793,7 @@ class _ActionButtons extends StatelessWidget {
         overlayColor: WidgetStatePropertyAll(Colors.transparent),
       ),
       icon: const Icon(Icons.download_outlined),
-      label: Text(i18n.postDetail.download),
+      label: Text(t.postDetail.download),
     );
     final openButton = OutlinedButton.icon(
       onPressed: onOpenImage,
@@ -802,7 +802,7 @@ class _ActionButtons extends StatelessWidget {
         overlayColor: WidgetStatePropertyAll(Colors.transparent),
       ),
       icon: const Icon(Icons.zoom_out_map_outlined),
-      label: Text(i18n.postDetail.viewOriginal),
+      label: Text(t.postDetail.viewOriginal),
     );
 
     return LayoutBuilder(

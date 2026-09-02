@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:yande_gui/global.dart';
-import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/services/app_toast.dart';
 import 'package:yande_gui/services/updater_service.dart';
 import 'package:yande_gui/src/rust/api/rustc.dart';
@@ -36,17 +36,17 @@ class _AboutPageState extends State<AboutPage> {
   }
 
   void doUpdate() {
-    AppToast.show(i18n.update.checkUpdateStart);
+    AppToast.show(t.update.checkUpdateStart);
     UpdaterService.checkForUpdate()
         .then((result) {
           if (result == null) {
-            AppToast.show(i18n.update.noNewVersionFound);
+            AppToast.show(t.update.noNewVersionFound);
             return;
           }
 
           UpdaterService.selectDownloadUrl(result.$3).then((url) {
             if (url == null) {
-              AppToast.error(i18n.update.selectDownloadUrlFailed);
+              AppToast.error(t.update.selectDownloadUrlFailed);
               return;
             }
 
@@ -54,19 +54,19 @@ class _AboutPageState extends State<AboutPage> {
           });
         })
         .catchError((e) {
-          AppToast.error(i18n.update.checkUpdateFailed);
+          AppToast.error(t.update.checkUpdateFailed);
         });
   }
 
   @override
   Widget build(BuildContext context) {
     return AutoScaffold(
-      verticalOnlyTitleWidget: Text(i18n.about.title),
+      verticalOnlyTitleWidget: Text(t.about.title),
       builder: (context, horizontal) {
         return ListView(
           children: [
             buildItem(
-              title: i18n.about.projectUrl,
+              title: t.about.projectUrl,
               leading: const Icon(Icons.link_outlined),
               subtitle: 'https://github.com/normalllll/yande_gui',
               onTap: () {
@@ -77,7 +77,7 @@ class _AboutPageState extends State<AboutPage> {
               },
             ),
             buildItem(
-              title: i18n.about.publishPage,
+              title: t.about.publishPage,
               leading: const Icon(Icons.new_releases_outlined),
               subtitle:
                   'https://github.com/normalllll/yande_gui/releases/latest',
@@ -89,22 +89,22 @@ class _AboutPageState extends State<AboutPage> {
               },
             ),
             buildItem(
-              title: i18n.about.appVersion,
+              title: t.about.appVersion,
               leading: const Icon(Icons.tag_outlined),
               subtitle: '${Global.appVersion}+${Global.buildNumber}',
             ),
             buildItem(
-              title: i18n.about.dartVersion,
+              title: t.about.dartVersion,
               leading: const Icon(Icons.verified_outlined),
               subtitle: Platform.version,
             ),
             buildItem(
-              title: i18n.about.rustVersion,
+              title: t.about.rustVersion,
               leading: const Icon(Icons.verified_outlined),
               subtitle: rustcVersion(),
             ),
             buildItem(
-              title: i18n.about.discussion,
+              title: t.about.discussion,
               leading: const Icon(Icons.telegram),
               subtitle: 'https://t.me/+ONtNV3HTQ0NhMzVh',
               onTap: () {
@@ -112,7 +112,7 @@ class _AboutPageState extends State<AboutPage> {
               },
             ),
             buildItem(
-              title: i18n.about.discussion,
+              title: t.about.discussion,
               leading: const Icon(Icons.discord),
               subtitle: 'https://discord.gg/jQatz6965H',
               onTap: () {
@@ -120,9 +120,9 @@ class _AboutPageState extends State<AboutPage> {
               },
             ),
             buildItem(
-              title: i18n.about.downloadUpdate,
+              title: t.about.downloadUpdate,
               leading: const Icon(Icons.save_alt_outlined),
-              subtitle: i18n.about.downloadUpdateHint,
+              subtitle: t.about.downloadUpdateHint,
               onTap: doUpdate,
             ),
           ],

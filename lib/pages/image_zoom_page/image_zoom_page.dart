@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 import 'package:vector_math/vector_math_64.dart' show Quad, Vector3, Matrix4;
 import 'package:yande_gui/components/yande_image/yande_image.dart';
-import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
 
 class ImageZoomPage extends StatefulWidget {
@@ -36,7 +36,7 @@ class _ImageZoomPageState extends State<ImageZoomPage> {
       appBar: useDesktopShell
           ? null
           : AppBar(
-              title: Text(i18n.imageZoom.title),
+              title: Text(t.imageZoom.title),
               actions: [
                 IconButton(
                   icon: const Icon(Icons.refresh),

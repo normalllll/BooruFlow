@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yande_gui/downloader/downloader.dart';
-import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
 
 import 'download_task.dart';
@@ -12,7 +12,7 @@ class DownloadsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return AutoScaffold(
-      verticalOnlyTitleWidget: Text(i18n.downloads.title),
+      verticalOnlyTitleWidget: Text(t.downloads.title),
       floatingActionButton: FloatingActionButton(
         heroTag: '${runtimeType}FloatingActionButton',
         onPressed: () {

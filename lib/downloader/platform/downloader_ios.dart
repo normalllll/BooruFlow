@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:yande_gui/i18n.dart';
+import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/services/app_toast.dart';
 import 'package:path/path.dart' as path;
 import 'package:yande_gui/services/settings_service.dart';
@@ -46,7 +46,7 @@ class DownloaderIOS<T> extends DownloaderPlatform<T> {
     PermissionStatus status = await Permission.photos.status;
 
     if (status.isPermanentlyDenied) {
-      AppToast.error(i18n.downloads.messages.photosPermanentlyDenied);
+      AppToast.error(t.downloads.messages.photosPermanentlyDenied);
       await Future.delayed(const Duration(seconds: 2));
       openAppSettings();
       return false;
@@ -54,7 +54,7 @@ class DownloaderIOS<T> extends DownloaderPlatform<T> {
     if (!status.isGranted) {
       status = await Permission.photos.request();
       if (!status.isGranted) {
-        AppToast.error(i18n.downloads.messages.photosDenied);
+        AppToast.error(t.downloads.messages.photosDenied);
         return false;
       }
     }
@@ -90,7 +90,7 @@ class DownloaderIOS<T> extends DownloaderPlatform<T> {
           case DownloadEventSuccess():
             await saveImage(filePath, task.fileName);
             AppToast.success(
-              i18n.downloads.messages.downloadCompletedWith(
+              t.downloads.messages.downloadCompletedWith(
                 name: task.fileName,
               ),
             );
@@ -98,7 +98,7 @@ class DownloaderIOS<T> extends DownloaderPlatform<T> {
             break;
           case DownloadEventError(:final error):
             AppToast.error(
-              i18n.downloads.messages.downloadFailedWith(name: task.fileName),
+              t.downloads.messages.downloadFailedWith(name: task.fileName),
             );
             task.emit(
               task.state.copyWith(status: DownloadStatus.failed, error: error),
