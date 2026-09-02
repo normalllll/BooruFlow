@@ -552,10 +552,7 @@ class _PostPreviewImage extends StatelessWidget {
           YandeImage(
             post.previewUrl,
             fit: BoxFit.cover,
-            imageBuilder: (child) => Hero(
-              tag: post.id,
-              child: child,
-            ).animate().fade(duration: 250.ms),
+            imageBuilder: (child) => child.animate().fade(duration: 250.ms),
           ),
           if (post.rating != 's')
             PositionedDirectional(

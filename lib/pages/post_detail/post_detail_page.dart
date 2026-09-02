@@ -468,19 +468,16 @@ class _PostImagePage extends StatelessWidget {
             child: SizedBox(
               width: imageSize.width,
               height: imageSize.height,
-              child: Hero(
-                tag: post.id,
-                child: YandeImage(
-                  post.sampleUrl ?? post.previewUrl,
+              child: YandeImage(
+                post.sampleUrl ?? post.previewUrl,
+                width: imageSize.width,
+                height: imageSize.height,
+                fit: BoxFit.contain,
+                placeholderWidget: YandeImage(
+                  post.previewUrl,
                   width: imageSize.width,
                   height: imageSize.height,
                   fit: BoxFit.contain,
-                  placeholderWidget: YandeImage(
-                    post.previewUrl,
-                    width: imageSize.width,
-                    height: imageSize.height,
-                    fit: BoxFit.contain,
-                  ),
                 ),
               ),
             ),
