@@ -9,6 +9,7 @@ import 'package:loading_more_list/loading_more_list.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:yande_gui/components/loading_more_indicator/loading_more_indicator.dart';
 import 'package:yande_gui/components/post_search_field/post_search_field.dart';
+import 'package:yande_gui/components/post_waterfall_skeleton/post_waterfall_skeleton.dart';
 import 'package:yande_gui/components/yande_image/yande_image.dart';
 import 'package:yande_gui/downloader/downloader.dart';
 import 'package:yande_gui/enums.dart';
@@ -166,6 +167,9 @@ class _PostListPageState extends ConsumerState<PostListPage> {
         });
 
         final source = state.source;
+        final showInitialSkeleton =
+            source.isEmpty &&
+            source.indicatorStatus == IndicatorStatus.fullScreenBusying;
         return DataRefreshView(
           scrollController: _scrollController,
           onRefresh: () => source.refresh(false, false),
@@ -181,6 +185,8 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                   ),
                 if (widget.tags == null && source.isNotEmpty)
                   const SliverToBoxAdapter(child: _FreepivPromotionBanner()),
+                if (showInitialSkeleton)
+                  PostWaterfallSkeleton(configuredColumns: configuredColumns),
                 if (source.isNotEmpty)
                   SliverPadding(
                     padding: const EdgeInsets.all(12),
@@ -209,7 +215,7 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                       }, childCount: source.length),
                     ),
                   ),
-                _PostListStatusSliver(source: source),
+                if (!showInitialSkeleton) _PostListStatusSliver(source: source),
               ],
             );
           },
