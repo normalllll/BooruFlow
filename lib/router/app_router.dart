@@ -105,10 +105,15 @@ class AppRouter {
             path: AppRoute.taggedPosts.path,
             name: AppRoute.taggedPosts.name,
             pageBuilder: (context, state) {
-              final tags = state.uri.queryParametersAll['tag'] ?? const [];
-              return _contentPage(
-                state,
-                PostListPage(tags: List<String>.unmodifiable(tags)),
+              final query = state.uri.queryParameters['q'] ?? '';
+              final tags = query
+                  .trim()
+                  .split(RegExp(r'\s+'))
+                  .where((tag) => tag.isNotEmpty)
+                  .toList(growable: false);
+              return NoTransitionPage<void>(
+                key: state.pageKey,
+                child: PostListPage(tags: List<String>.unmodifiable(tags)),
               );
             },
           ),
@@ -161,7 +166,7 @@ class AppRouter {
   ) {
     return context.pushNamed<T>(
       AppRoute.taggedPosts.name,
-      queryParameters: {'tag': tags},
+      queryParameters: {'q': tags.join(' ')},
     );
   }
 

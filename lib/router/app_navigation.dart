@@ -6,7 +6,7 @@ enum AppRoute {
   search('/search'),
   about('/about'),
   settings('/settings'),
-  taggedPosts('/posts'),
+  taggedPosts('/search/posts'),
   postDetail('/posts/:id'),
   imageViewer('/image-viewer');
 

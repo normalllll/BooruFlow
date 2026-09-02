@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -9,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_more_list/loading_more_list.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:yande_gui/components/loading_more_indicator/loading_more_indicator.dart';
+import 'package:yande_gui/components/post_search_field/post_search_field.dart';
 import 'package:yande_gui/components/yande_image/yande_image.dart';
 import 'package:yande_gui/downloader/downloader.dart';
 import 'package:yande_gui/enums.dart';
@@ -34,8 +36,9 @@ class PostListPage extends ConsumerStatefulWidget {
 const double _kActivityIndicatorRadius = 14.0;
 
 class _PostListPageState extends ConsumerState<PostListPage> {
-  late final provider = postListProvider(runtimeType, tags: widget.tags ?? []);
+  late var provider = postListProvider(runtimeType, tags: widget.tags ?? []);
   late final ScrollController _scrollController;
+  TextEditingController? _searchController;
 
   bool get needTopPadding => widget.tags == null;
 
@@ -43,6 +46,30 @@ class _PostListPageState extends ConsumerState<PostListPage> {
   void initState() {
     super.initState();
     _scrollController = ScrollController()..addListener(_handleScroll);
+    if (widget.tags case final tags?) {
+      _searchController = TextEditingController(text: tags.join(' '));
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureInitialLoad());
+  }
+
+  @override
+  void didUpdateWidget(covariant PostListPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (listEquals(oldWidget.tags, widget.tags)) return;
+
+    provider = postListProvider(runtimeType, tags: widget.tags ?? []);
+    final query = widget.tags?.join(' ');
+    if (query == null) {
+      _searchController?.dispose();
+      _searchController = null;
+    } else if (_searchController == null) {
+      _searchController = TextEditingController(text: query);
+    } else {
+      _searchController!.value = TextEditingValue(
+        text: query,
+        selection: TextSelection.collapsed(offset: query.length),
+      );
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) => _ensureInitialLoad());
   }
 
@@ -51,6 +78,7 @@ class _PostListPageState extends ConsumerState<PostListPage> {
     _scrollController
       ..removeListener(_handleScroll)
       ..dispose();
+    _searchController?.dispose();
     super.dispose();
   }
 
@@ -77,6 +105,53 @@ class _PostListPageState extends ConsumerState<PostListPage> {
         _scrollController.position.extentAfter < 720) {
       unawaited(source.loadMore());
     }
+  }
+
+  List<String> _parseSearchTags(String text) {
+    return text
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((tag) => tag.isNotEmpty)
+        .toList(growable: false);
+  }
+
+  void _submitSearch(String text) {
+    final tags = _parseSearchTags(text);
+    if (tags.isEmpty || listEquals(tags, widget.tags)) return;
+    AppRouter.pushTaggedPosts(context, tags);
+  }
+
+  Widget _buildResultSearchField() {
+    return PostSearchField(
+      controller: _searchController!,
+      hintText: i18n.postSearch.title,
+      onSubmitted: _submitSearch,
+    );
+  }
+
+  Widget _buildDesktopSearchHeader() {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Material(
+      color: colorScheme.surface,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: colorScheme.outlineVariant)),
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 900),
+                child: _buildResultSearchField(),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget buildRefreshIndicator(
@@ -151,81 +226,93 @@ class _PostListPageState extends ConsumerState<PostListPage> {
     final configuredColumns = SettingsService.waterfallColumns;
     final useDesktopShell = shouldUseDesktopShell(context);
 
-    return AutoScaffold(
-      topSafeArea: false,
-      builder: (context, horizontal) {
-        return StreamBuilder<Iterable<Post>>(
-          key: ValueKey(state.source),
-          stream: state.source.rebuild,
-          initialData: state.source.wrapData(state.source),
-          builder: (context, snapshot) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _maybeLoadMore();
-            });
+    final list = StreamBuilder<Iterable<Post>>(
+      key: ValueKey(state.source),
+      stream: state.source.rebuild,
+      initialData: state.source.wrapData(state.source),
+      builder: (context, snapshot) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _maybeLoadMore();
+        });
 
-            final source = state.source;
-            return CustomScrollView(
-              controller: _scrollController,
-              physics: const BouncingScrollPhysics(
-                parent: AlwaysScrollableScrollPhysics(),
+        final source = state.source;
+        return CustomScrollView(
+          controller: _scrollController,
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+          slivers: [
+            CupertinoSliverRefreshControl(
+              onRefresh: () async {
+                await source.refresh(false, false);
+              },
+              refreshIndicatorExtent: 25,
+              builder: buildRefreshIndicator,
+            ),
+            if (needTopPadding)
+              SliverToBoxAdapter(
+                child: SizedBox(height: MediaQuery.paddingOf(context).top),
               ),
-              slivers: [
-                if (widget.tags != null && !useDesktopShell)
-                  SliverAppBar(
-                    floating: true,
-                    snap: isMobile,
-                    scrolledUnderElevation: 0,
-                    title: Text(
-                      i18n.postList.titleWithTags(tags: widget.tags!.join(' ')),
-                    ),
-                  ),
-                CupertinoSliverRefreshControl(
-                  onRefresh: () async {
-                    await source.refresh(false, false);
-                  },
-                  refreshIndicatorExtent: 25,
-                  builder: buildRefreshIndicator,
+            if (widget.tags == null && source.isNotEmpty)
+              const SliverToBoxAdapter(child: _FreepivPromotionBanner()),
+            if (source.isNotEmpty)
+              SliverPadding(
+                padding: const EdgeInsets.all(12),
+                sliver: SliverWaterfallFlow(
+                  gridDelegate: configuredColumns == null
+                      ? const SliverWaterfallFlowDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 240,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                        )
+                      : SliverWaterfallFlowDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: configuredColumns.clamp(1, 100),
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                        ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final post = source[index];
+                    return _PostPreviewCard(
+                      post: post,
+                      onTap: () => AppRouter.pushPost(context, post),
+                      onLongPress: () {
+                        HapticFeedback.mediumImpact();
+                        Downloader.instance.add(post);
+                      },
+                    );
+                  }, childCount: source.length),
                 ),
-                if (needTopPadding)
-                  SliverToBoxAdapter(
-                    child: SizedBox(height: MediaQuery.paddingOf(context).top),
-                  ),
-                if (widget.tags == null && source.isNotEmpty)
-                  const SliverToBoxAdapter(child: _FreepivPromotionBanner()),
-                if (source.isNotEmpty)
-                  SliverPadding(
-                    padding: const EdgeInsets.all(12),
-                    sliver: SliverWaterfallFlow(
-                      gridDelegate: configuredColumns == null
-                          ? const SliverWaterfallFlowDelegateWithMaxCrossAxisExtent(
-                              maxCrossAxisExtent: 240,
-                              crossAxisSpacing: 8,
-                              mainAxisSpacing: 8,
-                            )
-                          : SliverWaterfallFlowDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: configuredColumns.clamp(1, 100),
-                              crossAxisSpacing: 8,
-                              mainAxisSpacing: 8,
-                            ),
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        final post = source[index];
-                        return _PostPreviewCard(
-                          post: post,
-                          onTap: () => AppRouter.pushPost(context, post),
-                          onLongPress: () {
-                            HapticFeedback.mediumImpact();
-                            Downloader.instance.add(post);
-                          },
-                        );
-                      }, childCount: source.length),
-                    ),
-                  ),
-                _PostListStatusSliver(source: source),
-              ],
-            );
-          },
+              ),
+            _PostListStatusSliver(source: source),
+          ],
         );
       },
+    );
+
+    if (widget.tags != null) {
+      return Scaffold(
+        appBar: useDesktopShell
+            ? null
+            : AppBar(
+                titleSpacing: 0,
+                toolbarHeight: 64,
+                title: Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 12),
+                  child: _buildResultSearchField(),
+                ),
+              ),
+        body: Column(
+          children: [
+            if (useDesktopShell) _buildDesktopSearchHeader(),
+            Expanded(child: list),
+          ],
+        ),
+      );
+    }
+
+    return AutoScaffold(
+      topSafeArea: false,
+      builder: (context, horizontal) => list,
       floatingActionButton: isDesktop
           ? FloatingActionButton(
               heroTag: '${runtimeType}FloatingActionButton',

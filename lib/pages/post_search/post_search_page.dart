@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:yande_gui/components/post_search_field/post_search_field.dart';
 import 'package:yande_gui/i18n.dart';
 import 'package:yande_gui/router/app_router.dart';
 import 'package:yande_gui/services/custom_tags_service.dart';
@@ -16,7 +17,6 @@ class PostSearchPage extends StatefulWidget {
 class _PostSearchPageState extends State<PostSearchPage> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _textScrollController = ScrollController();
-  bool _hasTextContent = false;
   List<String> _customTags = const [];
   final Set<String> _enteringCustomTags = <String>{};
   final Set<String> _removingCustomTags = <String>{};
@@ -75,11 +75,6 @@ class _PostSearchPageState extends State<PostSearchPage> {
 
     tags.add(tag);
     _textController.text = tags.join(' ');
-    if (!_hasTextContent) {
-      setState(() {
-        _hasTextContent = true;
-      });
-    }
     _textController.selection = TextSelection.fromPosition(
       TextPosition(offset: _textController.text.length),
     );
@@ -286,34 +281,43 @@ class _PostSearchPageState extends State<PostSearchPage> {
           borderRadius: BorderRadius.circular(10),
           color: backgroundColor,
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
+        child: Stack(
+          alignment: Alignment.centerRight,
           children: [
-            RichText(
-              strutStyle: const StrutStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                forceStrutHeight: true,
-              ),
-              text: TextSpan(
-                children: [
-                  TextSpan(text: tag, style: tagStyle),
-                  if (translation != null)
-                    TextSpan(text: ' #$translation', style: translationStyle),
-                ],
+            Padding(
+              padding: EdgeInsets.only(right: isCustom ? 22 : 0),
+              child: RichText(
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                strutStyle: const StrutStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  forceStrutHeight: true,
+                ),
+                text: TextSpan(
+                  children: [
+                    TextSpan(text: tag, style: tagStyle),
+                    if (translation != null)
+                      TextSpan(text: ' #$translation', style: translationStyle),
+                  ],
+                ),
               ),
             ),
             if (isCustom)
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: isRemoving ? null : () => _removeCustomTag(tag),
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 6),
-                  child: Icon(
-                    Icons.close,
-                    size: 16,
-                    color: colorScheme.onSurfaceVariant,
+              Positioned(
+                top: 0,
+                right: 0,
+                bottom: 0,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: isRemoving ? null : () => _removeCustomTag(tag),
+                  child: SizedBox(
+                    width: 22,
+                    child: Icon(
+                      Icons.close,
+                      size: 16,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ),
@@ -391,61 +395,11 @@ class _PostSearchPageState extends State<PostSearchPage> {
   }
 
   Widget _buildSearchField() {
-    return Row(
-      children: [
-        Expanded(
-          child: TextField(
-            controller: _textController,
-            scrollController: _textScrollController,
-            onChanged: (text) {
-              if (text.isEmpty == _hasTextContent) {
-                setState(() {
-                  _hasTextContent = text.isNotEmpty;
-                });
-              }
-            },
-            onSubmitted: (value) {
-              _openPostList(value);
-            },
-            decoration: InputDecoration(
-              filled: true,
-              hintText: i18n.postSearch.title,
-              prefixIcon: Icon(
-                Icons.search,
-                color: Theme.of(context).inputDecorationTheme.hintStyle?.color,
-              ),
-              suffixIcon: _hasTextContent
-                  ? IconButton(
-                      icon: Icon(
-                        Icons.cancel,
-                        color: Theme.of(
-                          context,
-                        ).inputDecorationTheme.hintStyle?.color,
-                      ),
-                      onPressed: () {
-                        _textController.clear();
-                        setState(() {
-                          _hasTextContent = false;
-                        });
-                      },
-                    )
-                  : null,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30.0),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: const EdgeInsets.all(8),
-            ),
-          ),
-        ),
-        if (_hasTextContent)
-          IconButton(
-            onPressed: () {
-              _openPostList(_textController.text);
-            },
-            icon: const Icon(Icons.search),
-          ),
-      ],
+    return PostSearchField(
+      controller: _textController,
+      scrollController: _textScrollController,
+      hintText: i18n.postSearch.title,
+      onSubmitted: _openPostList,
     );
   }
 
@@ -458,7 +412,7 @@ class _PostSearchPageState extends State<PostSearchPage> {
         return Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
               child: _buildSearchField(),
             ),
             Expanded(
