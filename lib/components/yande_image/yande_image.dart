@@ -79,11 +79,11 @@ class _YandeImageState extends State<YandeImage> {
         try {
           return await yandeClient.downloadToMemoryWithCancel(
             url: url,
-            progressCallback: (BigInt received, BigInt total) {
+            progressCallback: (int received, int total) {
               chunkEvent(
                 ImageChunkEvent(
-                  cumulativeBytesLoaded: received.toInt(),
-                  expectedTotalBytes: total.toInt(),
+                  cumulativeBytesLoaded: received,
+                  expectedTotalBytes: total,
                 ),
               );
             },

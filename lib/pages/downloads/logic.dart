@@ -174,7 +174,7 @@
 //     );
 //   }
 //
-//   void updateProgress(BigInt received, BigInt total) {
+//   void updateProgress(int received, int total) {
 //     state = state.copyWith(progress: received / total);
 //   }
 //
@@ -266,7 +266,7 @@
 //         filePath: savePath,
 //         maxTaskCount: task.maxSegmentsPerTask,
 //         progressCallback: (received, total) {
-//           taskSendPort.send(_DownloadProgress(total == BigInt.zero ? 0 : received / total));
+//           taskSendPort.send(_DownloadProgress(total == 0 ? 0 : received / total));
 //         },
 //       );
 //       // Notify task success

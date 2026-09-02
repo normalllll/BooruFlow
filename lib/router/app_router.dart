@@ -150,7 +150,7 @@ class AppRouter {
   static Future<T?> pushPost<T>(BuildContext context, Post post) {
     return context.pushNamed<T>(
       AppRoute.postDetail.name,
-      pathParameters: {'id': post.id.toString()},
+      pathParameters: {'id': '${post.id}'},
       extra: post,
     );
   }
@@ -180,7 +180,7 @@ class AppRouter {
   static Future<T?> openPost<T>(Post post) {
     return router.pushNamed<T>(
       AppRoute.postDetail.name,
-      pathParameters: {'id': post.id.toString()},
+      pathParameters: {'id': '${post.id}'},
       extra: post,
     );
   }

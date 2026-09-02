@@ -130,9 +130,9 @@ class DownloadQueueManager {
         filePath: args.filePath,
         maxTaskCount: args.maxSegmentsPerTask,
         progressCallback: (received, total) {
-          final progress = total == BigInt.zero ? 0.0 : received / total;
-          _taskProgress[taskId] = progress.toDouble();
-          eventCallback(DownloadEventProgress(progress.toDouble()));
+          final progress = total == 0 ? 0.0 : received / total;
+          _taskProgress[taskId] = progress;
+          eventCallback(DownloadEventProgress(progress));
           _updateProgressThrottled();
         },
       );

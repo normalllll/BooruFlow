@@ -1,8 +1,8 @@
-use std::future::Future;
 use flutter_rust_bridge::DartFnFuture;
 use futures_util::future::try_join_all;
 use futures_util::stream::StreamExt;
 use reqwest::Url;
+use std::future::Future;
 use std::io::Write;
 use std::path::Path;
 use std::pin::Pin;
@@ -15,6 +15,10 @@ use tokio_util::sync::CancellationToken;
 
 pub struct HttpClient {
     client: reqwest::Client,
+}
+
+fn progress_value(value: usize) -> u32 {
+    u32::try_from(value).unwrap_or(u32::MAX)
 }
 
 impl HttpClient {
@@ -99,7 +103,7 @@ impl HttpClient {
         url: &str,
         file_path: &str,
         max_task_count: usize,
-        progress_callback: impl Fn(usize, usize) -> DartFnFuture<()> + Send + Sync + 'static,
+        progress_callback: impl Fn(u32, u32) -> DartFnFuture<()> + Send + Sync + 'static,
         cancel_token: tokio_util::sync::CancellationToken,
     ) -> anyhow::Result<()> {
         let head_resp = self.client.head(url).send().await?;
@@ -165,7 +169,7 @@ impl HttpClient {
                 }
 
                 if downloaded == expected_size {
-                    callback(downloaded, total_size).await;
+                    callback(progress_value(downloaded), progress_value(total_size)).await;
                     return Ok(downloaded);
                 }
 
@@ -216,7 +220,7 @@ impl HttpClient {
                             if last >= progress_min_count || downloaded == expected_size {
                                 let mut total = total_received.lock().await;
                                 *total += last;
-                                callback(*total, total_size).await;
+                                callback(progress_value(*total), progress_value(total_size)).await;
                                 last = 0;
                             }
                         }
@@ -275,7 +279,7 @@ impl HttpClient {
         url: &str,
         file_path: &str,
         total_size: usize,
-        progress_callback: impl Fn(usize, usize) -> DartFnFuture<()> + Send + 'static,
+        progress_callback: impl Fn(u32, u32) -> DartFnFuture<()> + Send + 'static,
     ) -> anyhow::Result<()> {
         use std::fs::File;
 
@@ -295,7 +299,7 @@ impl HttpClient {
             file.write_all(&chunk)?;
 
             if received >= next_threshold || received == total_size {
-                progress_callback(received, total_size).await;
+                progress_callback(progress_value(received), progress_value(total_size)).await;
                 next_threshold += part_offset;
             }
         }
@@ -307,7 +311,9 @@ impl HttpClient {
     pub async fn download_to_memory(
         &self,
         url: &str,
-        progress_callback: impl Fn(usize, usize) -> Pin<Box<dyn Future<Output = ()> + Send + 'static>> + 'static + Send,
+        progress_callback: impl Fn(u32, u32) -> Pin<Box<dyn Future<Output = ()> + Send + 'static>>
+            + 'static
+            + Send,
         cancel_token: CancellationToken,
     ) -> anyhow::Result<Vec<u8>> {
         let get_resp = tokio::select! {
@@ -346,7 +352,7 @@ impl HttpClient {
             received += chunk.len();
 
             if received >= next_threshold || received == total_size {
-                progress_callback(received, total_size).await;
+                progress_callback(progress_value(received), progress_value(total_size)).await;
                 next_threshold += part_offset;
             }
 

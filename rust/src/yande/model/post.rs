@@ -2,7 +2,6 @@ use flutter_rust_bridge::frb;
 use serde::Deserialize;
 use serde::Serialize;
 
-
 #[frb()]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Post {

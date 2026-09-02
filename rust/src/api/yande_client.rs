@@ -79,17 +79,12 @@ impl YandeClient {
         Ok(similar)
     }
 
-    // pub async fn download_to_file(&self, url: String, file_path: String, progress_callback: impl Fn(usize, usize) -> DartFnFuture<()> + 'static) -> anyhow::Result<()> {
-    //     self.http.download_to_file(&url, &file_path, progress_callback).await?;
-    //     Ok(())
-    // }
-
     pub async fn download_to_file(
         &self,
         url: &str,
         file_path: &str,
         max_task_count: u32,
-        progress_callback: impl Fn(usize, usize) -> DartFnFuture<()> + 'static + Send + Sync,
+        progress_callback: impl Fn(u32, u32) -> DartFnFuture<()> + 'static + Send + Sync,
     ) -> anyhow::Result<()> {
         self.http
             .download_to_file(
@@ -105,7 +100,7 @@ impl YandeClient {
     pub async fn download_to_memory(
         &self,
         url: &str,
-        progress_callback: impl Fn(usize, usize) -> DartFnFuture<()> + 'static + Send,
+        progress_callback: impl Fn(u32, u32) -> DartFnFuture<()> + 'static + Send,
     ) -> anyhow::Result<Vec<u8>> {
         let bytes = self
             .http
@@ -117,7 +112,7 @@ impl YandeClient {
     pub async fn download_to_memory_with_cancel(
         &self,
         url: &str,
-        progress_callback: impl Fn(usize, usize) -> DartFnFuture<()> + 'static + Send,
+        progress_callback: impl Fn(u32, u32) -> DartFnFuture<()> + 'static + Send,
         cancel_token: &DownloadCancelToken,
     ) -> anyhow::Result<Vec<u8>> {
         let bytes = self

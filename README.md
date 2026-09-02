@@ -63,11 +63,15 @@ Before building or running the Yande GUI, you will need the following dependenci
 
 1. **Install Flutter** by following the [official guide](https://flutter.dev/docs/get-started/install).
 2. **Install Rust** using `rustup` by following the [official guide](https://www.rust-lang.org/tools/install).
-3. **Install flutter_rust_bridge** by running the following command:
+3. **Install flutter_rust_bridge 2.13.0** by running the following command:
 
     ```bash
-    cargo install flutter_rust_bridge_codegen
+    cargo install flutter_rust_bridge_codegen --version 2.13.0 --locked
     ```
+
+   Regenerate the bridge after changing the Rust API with
+   `flutter_rust_bridge_codegen generate`. Native libraries are built and
+   bundled through Flutter Native Assets; Cargokit is not required.
 
 4. Clone the repository:
 

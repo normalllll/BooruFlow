@@ -15,9 +15,8 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.9
-  core:
-    path: rust_builder
-  flutter_rust_bridge: ^2.13.0-beta.5
+  flutter_rust_bridge: 2.13.0
+  flutter_rust_bridge_hooks: 2.13.0
   package_info_plus: ^10.2.1
   device_info_plus: ^13.2.0
   hive_ce: ^2.19.3
