@@ -7,6 +7,7 @@ generic:
   disabled: 無効
   copiedWithValue: "$value をクリップボードにコピーしました"
   errorWithValue: "エラーが発生しました: $value"
+  errorWithCause: "$message: $cause"
   loading: 読み込み中...
   loadFailed: 読み込みに失敗しました
   retry: 再試行
@@ -59,11 +60,33 @@ imageZoom:
 
 downloads:
   title: ダウンロード
+  tasksTitle: ダウンロードタスク
+  noTasks: ダウンロードタスクはありません
+  noTasksMessage: ダウンロードした画像がここに表示されます。
+  total: 合計
   active: 実行中
+  saved: 保存済み
   completed: 完了
   failed: 失敗
   waiting: 待機中
   downloading: ダウンロード中
+  needsAttention: 確認が必要
+  queued: 待機中
+  running: ダウンロード中
+  paused: 一時停止
+  downloaded: ダウンロード済み
+  cancelled: キャンセル済み
+  savePending: 保存待ち
+  saving: 保存中
+  saveFailed: 保存失敗
+  retrySave: 保存を再試行
+  cancel: キャンセル
+  deleteTask: タスクを削除
+  sync: 同期
+  syncFailed: ダウンロード状態の同期に失敗しました
+  actionFailed: ダウンロード操作に失敗しました
+  expand: 展開
+  collapse: 折りたたむ
   messages:
     storagePermanentlyDenied: ストレージのアクセス許可が永久に拒否されました。\n設定で手動でストレージのアクセス許可を有効にしてください。  # Android
     storageDenied: ストレージのアクセス許可が拒否されました。  # Android

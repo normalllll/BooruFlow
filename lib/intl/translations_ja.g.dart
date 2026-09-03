@@ -91,6 +91,8 @@ class _Translations$generic$ja extends Translations$generic$en {
   @override
   String errorWithValue({required Object value}) => 'エラーが発生しました: ${value}';
   @override
+  String errorWithCause({required Object message, required Object cause}) => '${message}: ${cause}';
+  @override
   String get loading => '読み込み中...';
   @override
   String get loadFailed => '読み込みに失敗しました';
@@ -226,7 +228,17 @@ class _Translations$downloads$ja extends Translations$downloads$en {
   @override
   String get title => 'ダウンロード';
   @override
+  String get tasksTitle => 'ダウンロードタスク';
+  @override
+  String get noTasks => 'ダウンロードタスクはありません';
+  @override
+  String get noTasksMessage => 'ダウンロードした画像がここに表示されます。';
+  @override
+  String get total => '合計';
+  @override
   String get active => '実行中';
+  @override
+  String get saved => '保存済み';
   @override
   String get completed => '完了';
   @override
@@ -235,6 +247,40 @@ class _Translations$downloads$ja extends Translations$downloads$en {
   String get waiting => '待機中';
   @override
   String get downloading => 'ダウンロード中';
+  @override
+  String get needsAttention => '確認が必要';
+  @override
+  String get queued => '待機中';
+  @override
+  String get running => 'ダウンロード中';
+  @override
+  String get paused => '一時停止';
+  @override
+  String get downloaded => 'ダウンロード済み';
+  @override
+  String get cancelled => 'キャンセル済み';
+  @override
+  String get savePending => '保存待ち';
+  @override
+  String get saving => '保存中';
+  @override
+  String get saveFailed => '保存失敗';
+  @override
+  String get retrySave => '保存を再試行';
+  @override
+  String get cancel => 'キャンセル';
+  @override
+  String get deleteTask => 'タスクを削除';
+  @override
+  String get sync => '同期';
+  @override
+  String get syncFailed => 'ダウンロード状態の同期に失敗しました';
+  @override
+  String get actionFailed => 'ダウンロード操作に失敗しました';
+  @override
+  String get expand => '展開';
+  @override
+  String get collapse => '折りたたむ';
   @override
   late final _Translations$downloads$messages$ja messages = _Translations$downloads$messages$ja._(_root);
 }
@@ -479,6 +525,7 @@ extension on TranslationsJa {
       'generic.disabled' => '無効',
       'generic.copiedWithValue' => ({required Object value}) => '${value} をクリップボードにコピーしました',
       'generic.errorWithValue' => ({required Object value}) => 'エラーが発生しました: ${value}',
+      'generic.errorWithCause' => ({required Object message, required Object cause}) => '${message}: ${cause}',
       'generic.loading' => '読み込み中...',
       'generic.loadFailed' => '読み込みに失敗しました',
       'generic.retry' => '再試行',
@@ -520,11 +567,33 @@ extension on TranslationsJa {
       'postSearch.title' => '検索',
       'imageZoom.title' => '画像をズーム',
       'downloads.title' => 'ダウンロード',
+      'downloads.tasksTitle' => 'ダウンロードタスク',
+      'downloads.noTasks' => 'ダウンロードタスクはありません',
+      'downloads.noTasksMessage' => 'ダウンロードした画像がここに表示されます。',
+      'downloads.total' => '合計',
       'downloads.active' => '実行中',
+      'downloads.saved' => '保存済み',
       'downloads.completed' => '完了',
       'downloads.failed' => '失敗',
       'downloads.waiting' => '待機中',
       'downloads.downloading' => 'ダウンロード中',
+      'downloads.needsAttention' => '確認が必要',
+      'downloads.queued' => '待機中',
+      'downloads.running' => 'ダウンロード中',
+      'downloads.paused' => '一時停止',
+      'downloads.downloaded' => 'ダウンロード済み',
+      'downloads.cancelled' => 'キャンセル済み',
+      'downloads.savePending' => '保存待ち',
+      'downloads.saving' => '保存中',
+      'downloads.saveFailed' => '保存失敗',
+      'downloads.retrySave' => '保存を再試行',
+      'downloads.cancel' => 'キャンセル',
+      'downloads.deleteTask' => 'タスクを削除',
+      'downloads.sync' => '同期',
+      'downloads.syncFailed' => 'ダウンロード状態の同期に失敗しました',
+      'downloads.actionFailed' => 'ダウンロード操作に失敗しました',
+      'downloads.expand' => '展開',
+      'downloads.collapse' => '折りたたむ',
       'downloads.messages.storagePermanentlyDenied' => 'ストレージのアクセス許可が永久に拒否されました。\n設定で手動でストレージのアクセス許可を有効にしてください。',
       'downloads.messages.storageDenied' => 'ストレージのアクセス許可が拒否されました。',
       'downloads.messages.deviceInfoError' => 'デバイス情報を解析できません。',

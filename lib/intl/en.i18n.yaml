@@ -7,6 +7,7 @@ generic:
   disabled: Disabled
   copiedWithValue: "Copied to clipboard: $value"
   errorWithValue: "An error occurred: $value"
+  errorWithCause: "$message: $cause"
   loading: Loading...
   loadFailed: Load failed
   retry: Retry
@@ -59,11 +60,33 @@ imageZoom:
 
 downloads:
   title: Downloads
+  tasksTitle: Download tasks
+  noTasks: No download tasks
+  noTasksMessage: Downloaded images will appear here.
+  total: Total
   active: Active
+  saved: Saved
   completed: Completed
   failed: Failed
   waiting: Waiting
   downloading: Downloading
+  needsAttention: Needs attention
+  queued: Queued
+  running: Downloading
+  paused: Paused
+  downloaded: Downloaded
+  cancelled: Cancelled
+  savePending: Waiting to save
+  saving: Saving
+  saveFailed: Save failed
+  retrySave: Retry save
+  cancel: Cancel
+  deleteTask: Delete task
+  sync: Sync
+  syncFailed: Download sync failed
+  actionFailed: Download action failed
+  expand: Expand
+  collapse: Collapse
   messages:
     storagePermanentlyDenied: You have permanently denied storage permissions.\nPlease manually enable storage permissions in settings.  # Android
     storageDenied: You have denied storage permissions.  # Android

@@ -5,7 +5,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_ce_flutter/adapters.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:yande_gui/components/download_floating_window/download_floating_window.dart';
 import 'package:yande_gui/features/downloads/application/yande_download_controller.dart';
 import 'package:yande_gui/global.dart';
 import 'package:yande_gui/intl/locale_preferences.dart';
@@ -94,10 +93,7 @@ class MyApp extends ConsumerWidget {
                 onTap: () {
                   FocusManager.instance.primaryFocus?.unfocus();
                 },
-                child: DownloadFloatingWindow(
-                  onTaskTap: AppRouter.openPost,
-                  child: child ?? const SizedBox.shrink(),
-                ),
+                child: child ?? const SizedBox.shrink(),
               );
             },
           );

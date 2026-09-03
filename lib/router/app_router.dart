@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:yande_gui/components/download_floating_window/download_floating_window.dart';
 import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/pages/about/about_page.dart';
 import 'package:yande_gui/pages/image_zoom_page/image_zoom_page.dart';
@@ -46,13 +47,16 @@ class AppRouter {
           WidgetsBinding.instance.addPostFrameCallback(
             (_) => _refreshRightNavigatorCanPop(),
           );
-          return IndexPage(
-            selectedIndex: appDestinationIndexForPath(state.uri.path),
-            showMobileNavigation: isPrimaryNavigationPath(state.uri.path),
-            canPopListenable: rightNavigatorCanPop,
-            onBack: _popRightNavigator,
-            onResetRightNavigator: _popRightNavigatorToRoot,
-            child: child,
+          return DownloadFloatingWindow(
+            onTaskTap: openPost,
+            child: IndexPage(
+              selectedIndex: appDestinationIndexForPath(state.uri.path),
+              showMobileNavigation: isPrimaryNavigationPath(state.uri.path),
+              canPopListenable: rightNavigatorCanPop,
+              onBack: _popRightNavigator,
+              onResetRightNavigator: _popRightNavigatorToRoot,
+              child: child,
+            ),
           );
         },
         routes: [
@@ -222,8 +226,7 @@ class _MissingRouteDataPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return AutoScaffold(
       titleWidget: Text(t.generic.notFound),
-      builder: (context, horizontal) =>
-          Center(child: Text(t.generic.notFound)),
+      builder: (context, horizontal) => Center(child: Text(t.generic.notFound)),
     );
   }
 }

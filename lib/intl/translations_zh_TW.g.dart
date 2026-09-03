@@ -91,6 +91,8 @@ class Translations$generic$zh_TW extends Translations$generic$en {
   @override
   String errorWithValue({required Object value}) => '發生錯誤: ${value}';
   @override
+  String errorWithCause({required Object message, required Object cause}) => '${message}：${cause}';
+  @override
   String get loading => '載入中...';
   @override
   String get loadFailed => '載入失敗';
@@ -225,7 +227,17 @@ class Translations$downloads$zh_TW extends Translations$downloads$en {
   @override
   String get title => '下載項';
   @override
+  String get tasksTitle => '下載任務';
+  @override
+  String get noTasks => '尚無下載任務';
+  @override
+  String get noTasksMessage => '下載的圖片會顯示在這裡。';
+  @override
+  String get total => '總數';
+  @override
   String get active => '進行中';
+  @override
+  String get saved => '已儲存';
   @override
   String get completed => '已完成';
   @override
@@ -234,6 +246,40 @@ class Translations$downloads$zh_TW extends Translations$downloads$en {
   String get waiting => '等待中';
   @override
   String get downloading => '下載中';
+  @override
+  String get needsAttention => '需要處理';
+  @override
+  String get queued => '佇列中';
+  @override
+  String get running => '正在下載';
+  @override
+  String get paused => '已暫停';
+  @override
+  String get downloaded => '已下載';
+  @override
+  String get cancelled => '已取消';
+  @override
+  String get savePending => '等待儲存';
+  @override
+  String get saving => '正在儲存';
+  @override
+  String get saveFailed => '儲存失敗';
+  @override
+  String get retrySave => '重試儲存';
+  @override
+  String get cancel => '取消';
+  @override
+  String get deleteTask => '刪除任務';
+  @override
+  String get sync => '同步';
+  @override
+  String get syncFailed => '下載狀態同步失敗';
+  @override
+  String get actionFailed => '下載操作失敗';
+  @override
+  String get expand => '展開';
+  @override
+  String get collapse => '收合';
   @override
   late final Translations$downloads$messages$zh_TW messages = Translations$downloads$messages$zh_TW.internal(_root);
 }
@@ -481,6 +527,7 @@ extension on TranslationsZhTw {
       'generic.disabled' => '停用',
       'generic.copiedWithValue' => ({required Object value}) => '已複製到剪貼簿: ${value}',
       'generic.errorWithValue' => ({required Object value}) => '發生錯誤: ${value}',
+      'generic.errorWithCause' => ({required Object message, required Object cause}) => '${message}：${cause}',
       'generic.loading' => '載入中...',
       'generic.loadFailed' => '載入失敗',
       'generic.retry' => '重試',
@@ -521,11 +568,33 @@ extension on TranslationsZhTw {
       'postSearch.title' => '搜尋',
       'imageZoom.title' => '縮放圖片',
       'downloads.title' => '下載項',
+      'downloads.tasksTitle' => '下載任務',
+      'downloads.noTasks' => '尚無下載任務',
+      'downloads.noTasksMessage' => '下載的圖片會顯示在這裡。',
+      'downloads.total' => '總數',
       'downloads.active' => '進行中',
+      'downloads.saved' => '已儲存',
       'downloads.completed' => '已完成',
       'downloads.failed' => '失敗',
       'downloads.waiting' => '等待中',
       'downloads.downloading' => '下載中',
+      'downloads.needsAttention' => '需要處理',
+      'downloads.queued' => '佇列中',
+      'downloads.running' => '正在下載',
+      'downloads.paused' => '已暫停',
+      'downloads.downloaded' => '已下載',
+      'downloads.cancelled' => '已取消',
+      'downloads.savePending' => '等待儲存',
+      'downloads.saving' => '正在儲存',
+      'downloads.saveFailed' => '儲存失敗',
+      'downloads.retrySave' => '重試儲存',
+      'downloads.cancel' => '取消',
+      'downloads.deleteTask' => '刪除任務',
+      'downloads.sync' => '同步',
+      'downloads.syncFailed' => '下載狀態同步失敗',
+      'downloads.actionFailed' => '下載操作失敗',
+      'downloads.expand' => '展開',
+      'downloads.collapse' => '收合',
       'downloads.messages.storagePermanentlyDenied' => '您已永久拒絕存儲權限。\n請在設定中手動啟用存儲權限。',
       'downloads.messages.storageDenied' => '您已拒絕存儲權限。',
       'downloads.messages.deviceInfoError' => '無法解析設備資訊。',

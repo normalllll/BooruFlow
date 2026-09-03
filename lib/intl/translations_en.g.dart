@@ -91,6 +91,9 @@ class Translations$generic$en {
   /// en: 'An error occurred: $value'
   String errorWithValue({required Object value}) => 'An error occurred: ${value}';
 
+  /// en: '$message: $cause'
+  String errorWithCause({required Object message, required Object cause}) => '${message}: ${cause}';
+
   /// en: 'Loading...'
   String get loading => 'Loading...';
 
@@ -267,8 +270,23 @@ class Translations$downloads$en {
   /// en: 'Downloads'
   String get title => 'Downloads';
 
+  /// en: 'Download tasks'
+  String get tasksTitle => 'Download tasks';
+
+  /// en: 'No download tasks'
+  String get noTasks => 'No download tasks';
+
+  /// en: 'Downloaded images will appear here.'
+  String get noTasksMessage => 'Downloaded images will appear here.';
+
+  /// en: 'Total'
+  String get total => 'Total';
+
   /// en: 'Active'
   String get active => 'Active';
+
+  /// en: 'Saved'
+  String get saved => 'Saved';
 
   /// en: 'Completed'
   String get completed => 'Completed';
@@ -281,6 +299,57 @@ class Translations$downloads$en {
 
   /// en: 'Downloading'
   String get downloading => 'Downloading';
+
+  /// en: 'Needs attention'
+  String get needsAttention => 'Needs attention';
+
+  /// en: 'Queued'
+  String get queued => 'Queued';
+
+  /// en: 'Downloading'
+  String get running => 'Downloading';
+
+  /// en: 'Paused'
+  String get paused => 'Paused';
+
+  /// en: 'Downloaded'
+  String get downloaded => 'Downloaded';
+
+  /// en: 'Cancelled'
+  String get cancelled => 'Cancelled';
+
+  /// en: 'Waiting to save'
+  String get savePending => 'Waiting to save';
+
+  /// en: 'Saving'
+  String get saving => 'Saving';
+
+  /// en: 'Save failed'
+  String get saveFailed => 'Save failed';
+
+  /// en: 'Retry save'
+  String get retrySave => 'Retry save';
+
+  /// en: 'Cancel'
+  String get cancel => 'Cancel';
+
+  /// en: 'Delete task'
+  String get deleteTask => 'Delete task';
+
+  /// en: 'Sync'
+  String get sync => 'Sync';
+
+  /// en: 'Download sync failed'
+  String get syncFailed => 'Download sync failed';
+
+  /// en: 'Download action failed'
+  String get actionFailed => 'Download action failed';
+
+  /// en: 'Expand'
+  String get expand => 'Expand';
+
+  /// en: 'Collapse'
+  String get collapse => 'Collapse';
 
   late final Translations$downloads$messages$en messages = Translations$downloads$messages$en.internal(_root);
 }
@@ -559,6 +628,7 @@ extension on Translations {
       'generic.disabled' => 'Disabled',
       'generic.copiedWithValue' => ({required Object value}) => 'Copied to clipboard: ${value}',
       'generic.errorWithValue' => ({required Object value}) => 'An error occurred: ${value}',
+      'generic.errorWithCause' => ({required Object message, required Object cause}) => '${message}: ${cause}',
       'generic.loading' => 'Loading...',
       'generic.loadFailed' => 'Load failed',
       'generic.retry' => 'Retry',
@@ -602,11 +672,33 @@ extension on Translations {
       'postSearch.title' => 'Search',
       'imageZoom.title' => 'Zoom Image',
       'downloads.title' => 'Downloads',
+      'downloads.tasksTitle' => 'Download tasks',
+      'downloads.noTasks' => 'No download tasks',
+      'downloads.noTasksMessage' => 'Downloaded images will appear here.',
+      'downloads.total' => 'Total',
       'downloads.active' => 'Active',
+      'downloads.saved' => 'Saved',
       'downloads.completed' => 'Completed',
       'downloads.failed' => 'Failed',
       'downloads.waiting' => 'Waiting',
       'downloads.downloading' => 'Downloading',
+      'downloads.needsAttention' => 'Needs attention',
+      'downloads.queued' => 'Queued',
+      'downloads.running' => 'Downloading',
+      'downloads.paused' => 'Paused',
+      'downloads.downloaded' => 'Downloaded',
+      'downloads.cancelled' => 'Cancelled',
+      'downloads.savePending' => 'Waiting to save',
+      'downloads.saving' => 'Saving',
+      'downloads.saveFailed' => 'Save failed',
+      'downloads.retrySave' => 'Retry save',
+      'downloads.cancel' => 'Cancel',
+      'downloads.deleteTask' => 'Delete task',
+      'downloads.sync' => 'Sync',
+      'downloads.syncFailed' => 'Download sync failed',
+      'downloads.actionFailed' => 'Download action failed',
+      'downloads.expand' => 'Expand',
+      'downloads.collapse' => 'Collapse',
       'downloads.messages.storagePermanentlyDenied' =>
         'You have permanently denied storage permissions.\nPlease manually enable storage permissions in settings.',
       'downloads.messages.storageDenied' => 'You have denied storage permissions.',

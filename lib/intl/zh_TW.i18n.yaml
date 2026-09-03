@@ -7,6 +7,7 @@ generic:
   disabled: 停用
   copiedWithValue: "已複製到剪貼簿: $value"
   errorWithValue: "發生錯誤: $value"
+  errorWithCause: "$message：$cause"
   loading: 載入中...
   loadFailed: 載入失敗
   retry: 重試
@@ -59,11 +60,33 @@ imageZoom:
 
 downloads:
   title: 下載項
+  tasksTitle: 下載任務
+  noTasks: 尚無下載任務
+  noTasksMessage: 下載的圖片會顯示在這裡。
+  total: 總數
   active: 進行中
+  saved: 已儲存
   completed: 已完成
   failed: 失敗
   waiting: 等待中
   downloading: 下載中
+  needsAttention: 需要處理
+  queued: 佇列中
+  running: 正在下載
+  paused: 已暫停
+  downloaded: 已下載
+  cancelled: 已取消
+  savePending: 等待儲存
+  saving: 正在儲存
+  saveFailed: 儲存失敗
+  retrySave: 重試儲存
+  cancel: 取消
+  deleteTask: 刪除任務
+  sync: 同步
+  syncFailed: 下載狀態同步失敗
+  actionFailed: 下載操作失敗
+  expand: 展開
+  collapse: 收合
   messages:
     storagePermanentlyDenied: 您已永久拒絕存儲權限。\n請在設定中手動啟用存儲權限。  # Android
     storageDenied: 您已拒絕存儲權限。  # Android

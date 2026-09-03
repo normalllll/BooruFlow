@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
 import 'package:yande_gui/global.dart';
+import 'package:yande_gui/intl/translations.g.dart';
 
 class AppToastWrapper extends StatelessWidget {
   const AppToastWrapper({required this.child, super.key});
@@ -35,6 +36,17 @@ abstract final class AppToast {
 
   static void error(Object message, {Duration duration = _defaultDuration}) {
     _show(message, type: ToastificationType.error, duration: duration);
+  }
+
+  static void errorWithCause(
+    Object message,
+    Object cause, {
+    Duration duration = _defaultDuration,
+  }) {
+    error(
+      t.generic.errorWithCause(message: message, cause: cause),
+      duration: duration,
+    );
   }
 
   static void info(Object message, {Duration duration = _defaultDuration}) {
