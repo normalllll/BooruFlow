@@ -26,8 +26,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
 
   project.set_dart_entrypoint_arguments(std::move(command_line_arguments));
 
-  constexpr int kWindowWidth = 1440;
-  constexpr int kWindowHeight = 1200;
+  constexpr int kWindowWidth = 1200;
+  constexpr int kWindowHeight = 900;
   const double scale_factor = GetDpiForSystem() / 96.0;
   RECT work_area{};
   if (!::SystemParametersInfoW(SPI_GETWORKAREA, 0, &work_area, 0)) {

@@ -5,6 +5,7 @@ use md5::Md5;
 use reqwest::header::{HeaderMap, HeaderName, HeaderValue, CONTENT_TYPE, HOST};
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
+use std::net::{IpAddr, SocketAddr};
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 use tokio::io::AsyncWriteExt;
@@ -36,18 +37,24 @@ pub async fn download_to_file(
 ) -> Result<(), String> {
     let original_url =
         reqwest::Url::parse(&url).map_err(|error| format!("Invalid download URL: {error}"))?;
-    let mut request_url = original_url;
-    if let Some(connect_host) = non_empty(connect_host) {
-        request_url
-            .set_host(Some(&connect_host))
-            .map_err(|_| format!("Invalid connection host: {connect_host}"))?;
-    }
-
     let mut client_builder = reqwest::Client::builder()
         .connect_timeout(Duration::from_secs(connect_timeout_seconds.max(1) as u64))
         .read_timeout(Duration::from_secs(receive_timeout_seconds.max(1) as u64))
         .danger_accept_invalid_certs(allow_invalid_certificates)
         .tls_sni(!disable_tls_sni);
+    if let Some(connect_host) = non_empty(connect_host) {
+        let original_host = original_url
+            .host_str()
+            .ok_or_else(|| "Download URL has no host".to_owned())?;
+        let connect_ip = connect_host
+            .parse::<IpAddr>()
+            .map_err(|error| format!("Invalid connection host: {error}"))?;
+        let connect_port = original_url
+            .port_or_known_default()
+            .ok_or_else(|| "Download URL has no known port".to_owned())?;
+        client_builder =
+            client_builder.resolve(original_host, SocketAddr::new(connect_ip, connect_port));
+    }
     if let Some(proxy_url) = non_empty(proxy_url) {
         client_builder = client_builder.proxy(
             reqwest::Proxy::all(&proxy_url)
@@ -58,17 +65,24 @@ pub async fn download_to_file(
         .build()
         .map_err(|error| format!("Could not create download client: {error}"))?;
 
+    let automatic_host = url_authority(&original_url)?;
     let mut request_headers = parse_headers(headers)?;
     if let Some(host_header) = non_empty(host_header) {
-        request_headers.insert(
-            HOST,
-            HeaderValue::from_str(&host_header)
-                .map_err(|error| format!("Invalid Host header: {error}"))?,
-        );
+        if host_header.eq_ignore_ascii_case(&automatic_host) {
+            // Keeping the original URL makes reqwest emit the original Host
+            // (or HTTP/2 :authority) while `resolve` changes only the peer IP.
+            request_headers.remove(HOST);
+        } else {
+            request_headers.insert(
+                HOST,
+                HeaderValue::from_str(&host_header)
+                    .map_err(|error| format!("Invalid Host header: {error}"))?,
+            );
+        }
     }
 
     let response = client
-        .get(request_url)
+        .get(original_url)
         .headers(request_headers)
         .send()
         .await
@@ -212,6 +226,21 @@ fn non_empty(value: Option<String>) -> Option<String> {
     value
         .map(|value| value.trim().to_owned())
         .filter(|value| !value.is_empty())
+}
+
+fn url_authority(url: &reqwest::Url) -> Result<String, String> {
+    let raw_host = url
+        .host_str()
+        .ok_or_else(|| "Download URL has no host".to_owned())?;
+    let host = if raw_host.contains(':') {
+        format!("[{raw_host}]")
+    } else {
+        raw_host.to_owned()
+    };
+    Ok(match url.port() {
+        Some(port) => format!("{host}:{port}"),
+        None => host,
+    })
 }
 
 async fn remove_invalid_file(path: &Path) {

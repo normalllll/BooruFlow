@@ -10,12 +10,14 @@ class YandeNetworkRoute {
   const YandeNetworkRoute({
     required this.originalUri,
     required this.requestUri,
+    required this.connectHost,
     required this.headers,
     required this.bypassed,
   });
 
   final Uri originalUri;
   final Uri requestUri;
+  final String? connectHost;
   final Map<String, String> headers;
   final bool bypassed;
 }
@@ -58,6 +60,7 @@ abstract final class YandeNetworkPolicy {
       return YandeNetworkRoute(
         originalUri: uri,
         requestUri: uri,
+        connectHost: null,
         headers: Map.unmodifiable(normalizedHeaders),
         bypassed: false,
       );
@@ -65,7 +68,8 @@ abstract final class YandeNetworkPolicy {
     normalizedHeaders[HttpHeaders.hostHeader] = _authority(uri);
     return YandeNetworkRoute(
       originalUri: uri,
-      requestUri: uri.replace(host: address),
+      requestUri: uri,
+      connectHost: address,
       headers: Map.unmodifiable(normalizedHeaders),
       bypassed: true,
     );
@@ -79,9 +83,11 @@ abstract final class YandeNetworkPolicy {
     if (!route.bypassed) return requested.normalizedFor(uri);
     return requested
         .copyWith(
-          connectHost: route.requestUri.host,
+          connectHost: route.connectHost,
           hostHeader: _authority(uri),
-          disableTlsSni: true,
+          // The CDN currently rejects a TLS handshake without SNI. Keep the
+          // original URL/SNI/Host and override only the connection address.
+          disableTlsSni: false,
           allowInvalidCertificates: true,
         )
         .normalizedFor(uri);

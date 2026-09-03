@@ -408,13 +408,10 @@ final class YandeDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDownl
   }
 
   private func requestUrl(for job: NativeDownloadJob) -> URL? {
-    guard var components = URLComponents(string: job.url) else {
-      return nil
-    }
-    if let connectHost = job.networkOptions.connectHost {
-      components.host = connectHost
-    }
-    return components.url
+    // URLSession does not expose a safe per-request DNS resolver for
+    // background tasks. Preserve the original URL so TLS SNI remains valid;
+    // the original Host header is still applied to the request above.
+    return URL(string: job.url)
   }
 
   private func moveDownloadedFile(location: URL, jobId: String, filename: String) throws -> URL {

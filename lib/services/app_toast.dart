@@ -41,10 +41,6 @@ abstract final class AppToast {
     _show(message, type: ToastificationType.info, duration: duration);
   }
 
-  static void dismissAll() {
-    toastification.dismissAll(delayForAnimation: false);
-  }
-
   static void _show(
     Object message, {
     required ToastificationType type,

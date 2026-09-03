@@ -25,6 +25,7 @@ import io.flutter.plugin.common.MethodChannel
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Proxy
 import java.net.URI
@@ -39,6 +40,7 @@ import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 import okhttp3.Call
+import okhttp3.Dns
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -316,14 +318,17 @@ class DownloadForegroundService : Service() {
         val partialFile = File(tempDirectory, "${job.id}.tmp")
         var call: Call? = null
         try {
-            val client = buildHttpClient(job.networkOptions)
             val originalUrl = job.url.toHttpUrl()
-            val requestUrl = job.networkOptions.connectHost?.let { originalUrl.newBuilder().host(it).build() } ?: originalUrl
-            val requestBuilder = Request.Builder().url(requestUrl)
+            val client = buildHttpClient(job.networkOptions, originalUrl.host)
+            val requestBuilder = Request.Builder().url(originalUrl)
             for ((key, value) in job.networkOptions.headers) {
                 requestBuilder.header(key, value)
             }
-            job.networkOptions.hostHeader?.let { requestBuilder.header("Host", it) }
+            val defaultPort = if (originalUrl.isHttps) 443 else 80
+            val automaticHost = if (originalUrl.port == defaultPort) originalUrl.host else "${originalUrl.host}:${originalUrl.port}"
+            job.networkOptions.hostHeader
+                ?.takeUnless { it.equals(automaticHost, ignoreCase = true) }
+                ?.let { requestBuilder.header("Host", it) }
             val activeCall = client.newCall(requestBuilder.build())
             call = activeCall
             calls[job.id] = activeCall
@@ -796,10 +801,20 @@ private fun nativeJobFromMap(map: Map<String, Any?>?): NativeDownloadJob? {
     )
 }
 
-private fun buildHttpClient(options: NativeNetworkOptions): OkHttpClient {
+private fun buildHttpClient(options: NativeNetworkOptions, originalHost: String): OkHttpClient {
     val builder = OkHttpClient.Builder()
         .connectTimeout(options.connectTimeoutSeconds, TimeUnit.SECONDS)
         .readTimeout(options.receiveTimeoutSeconds, TimeUnit.SECONDS)
+
+    options.connectHost?.let { connectHost ->
+        builder.dns(Dns { hostname ->
+            if (hostname.equals(originalHost, ignoreCase = true)) {
+                listOf(InetAddress.getByName(connectHost))
+            } else {
+                Dns.SYSTEM.lookup(hostname)
+            }
+        })
+    }
 
     options.proxyUrl?.let { rawProxy ->
         val proxyUri = URI(rawProxy)

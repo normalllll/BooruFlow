@@ -42,7 +42,6 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
   @override
   void dispose() {
     _pageController.dispose();
-    AppToast.dismissAll();
     super.dispose();
   }
 

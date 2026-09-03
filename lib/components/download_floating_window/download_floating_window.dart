@@ -48,26 +48,45 @@ class _DownloadFloatingWindowState extends State<DownloadFloatingWindow> {
                   final tasks =
                       snapshot.data ??
                       YandeDownloadController.instance.currentItems;
-                  if (tasks.isEmpty) return const SizedBox.shrink();
-
-                  final orderedTasks = tasks.reversed.toList(growable: false);
-                  final summary = _DownloadSummary.fromTasks(tasks);
-                  final size = constraints.biggest;
-
-                  if (_usesDesktopDock(size)) {
-                    return _buildDesktopDock(
-                      context,
-                      size,
-                      summary,
-                      orderedTasks,
+                  final Widget content;
+                  if (tasks.isEmpty) {
+                    content = const SizedBox.shrink(
+                      key: ValueKey('download-overlay-empty'),
+                    );
+                  } else {
+                    final orderedTasks = tasks.reversed.toList(growable: false);
+                    final summary = _DownloadSummary.fromTasks(tasks);
+                    final size = constraints.biggest;
+                    content = KeyedSubtree(
+                      key: const ValueKey('download-overlay-visible'),
+                      child: _usesDesktopDock(size)
+                          ? _buildDesktopDock(
+                              context,
+                              size,
+                              summary,
+                              orderedTasks,
+                            )
+                          : _buildMobileWindow(
+                              context,
+                              constraints,
+                              summary,
+                              orderedTasks,
+                            ),
                     );
                   }
-
-                  return _buildMobileWindow(
-                    context,
-                    constraints,
-                    summary,
-                    orderedTasks,
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 220),
+                    switchInCurve: Curves.easeOutBack,
+                    switchOutCurve: Curves.easeIn,
+                    transitionBuilder: (child, animation) => FadeTransition(
+                      opacity: animation,
+                      child: ScaleTransition(
+                        scale: Tween(begin: 0.88, end: 1.0).animate(animation),
+                        alignment: Alignment.bottomLeft,
+                        child: child,
+                      ),
+                    ),
+                    child: content,
                   );
                 },
               );
@@ -114,18 +133,31 @@ class _DownloadFloatingWindowState extends State<DownloadFloatingWindow> {
             onPressed: _toggleExpanded,
           ),
         ),
-        if (_expanded && panelWidth >= 180 && panelHeight >= 160)
+        if (panelWidth >= 180 && panelHeight >= 160)
           Positioned(
             left: _desktopRailWidth + 12,
             bottom: 18,
             width: panelWidth,
             height: panelHeight,
-            child: _DownloadPanel(
-              summary: summary,
-              tasks: tasks,
-              onClose: _collapse,
-              onRetryAll: YandeDownloadController.instance.retryAll,
-              onTaskTap: _openTask,
+            child: IgnorePointer(
+              ignoring: !_expanded,
+              child: AnimatedSlide(
+                offset: _expanded ? Offset.zero : const Offset(-0.06, 0),
+                duration: const Duration(milliseconds: 240),
+                curve: Curves.easeOutCubic,
+                child: AnimatedOpacity(
+                  opacity: _expanded ? 1 : 0,
+                  duration: const Duration(milliseconds: 180),
+                  curve: _expanded ? Curves.easeOut : Curves.easeIn,
+                  child: _DownloadPanel(
+                    summary: summary,
+                    tasks: tasks,
+                    onClose: _collapse,
+                    onRetryAll: YandeDownloadController.instance.retryAll,
+                    onTaskTap: _openTask,
+                  ),
+                ),
+              ),
             ),
           ),
       ],
@@ -159,15 +191,27 @@ class _DownloadFloatingWindowState extends State<DownloadFloatingWindow> {
               child: const ColoredBox(color: Colors.transparent),
             ),
           ),
-        Positioned(
+        AnimatedPositioned(
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           left: position.dx,
           top: position.dy,
           width: windowSize.width,
           height: windowSize.height,
           child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 180),
+            duration: const Duration(milliseconds: 220),
             switchInCurve: Curves.easeOutCubic,
             switchOutCurve: Curves.easeInCubic,
+            transitionBuilder: (child, animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: ScaleTransition(
+                  scale: Tween(begin: 0.92, end: 1.0).animate(animation),
+                  alignment: Alignment.bottomRight,
+                  child: child,
+                ),
+              );
+            },
             child: _expanded
                 ? _DownloadPanel(
                     key: const ValueKey('download-panel'),
@@ -323,61 +367,102 @@ class _DownloadFloatingButton extends StatelessWidget {
             ? null
             : (details) => onDragDelta!(details.delta),
         onTap: onPressed,
-        child: Material(
-          color: expanded
-              ? colorScheme.primaryContainer
-              : colorScheme.surfaceContainerHigh,
-          shape: const CircleBorder(),
-          elevation: expanded ? 4 : 2,
-          shadowColor: Colors.black.withValues(alpha: 0.22),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Center(
-                child: AnimatedRotation(
-                  turns: expanded ? 0.5 : 0,
-                  duration: const Duration(milliseconds: 220),
-                  curve: Curves.easeOutCubic,
-                  child: Icon(
-                    Icons.downloading_outlined,
-                    color: expanded
-                        ? colorScheme.onPrimaryContainer
-                        : colorScheme.onSurfaceVariant,
+        child: AnimatedScale(
+          scale: expanded ? 0.94 : 1,
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          child: Material(
+            color: expanded
+                ? colorScheme.primaryContainer
+                : colorScheme.surfaceContainerHigh,
+            shape: const CircleBorder(),
+            elevation: expanded ? 4 : 2,
+            shadowColor: Colors.black.withValues(alpha: 0.22),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                if (summary.active > 0)
+                  Positioned.fill(
+                    child: Padding(
+                      padding: const EdgeInsets.all(3),
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween(
+                          end: summary.progress.clamp(0.0, 1.0),
+                        ),
+                        duration: const Duration(milliseconds: 280),
+                        curve: Curves.easeOutCubic,
+                        builder: (context, value, child) {
+                          return CircularProgressIndicator(
+                            value: value,
+                            strokeWidth: 2.5,
+                            color: colorScheme.primary,
+                            backgroundColor: colorScheme.surfaceContainerHighest,
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                Center(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 220),
+                    switchInCurve: Curves.easeOutBack,
+                    switchOutCurve: Curves.easeIn,
+                    transitionBuilder: (child, animation) =>
+                        RotationTransition(
+                          turns: Tween(begin: 0.75, end: 1.0).animate(animation),
+                          child: FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          ),
+                        ),
+                    child: Icon(
+                      expanded
+                          ? Icons.close_rounded
+                          : Icons.downloading_outlined,
+                      key: ValueKey(expanded),
+                      color: expanded
+                          ? colorScheme.onPrimaryContainer
+                          : colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
-              ),
-              PositionedDirectional(
-                end: -1,
-                top: -1,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: summary.failed > 0
-                        ? colorScheme.error
-                        : colorScheme.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      minWidth: 20,
-                      minHeight: 20,
+                PositionedDirectional(
+                  end: -1,
+                  top: -1,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: summary.failed > 0
+                          ? colorScheme.error
+                          : colorScheme.primary,
+                      shape: BoxShape.circle,
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 5),
-                      child: Center(
-                        child: Text(
-                          '$badgeCount',
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(
-                                color: colorScheme.onPrimary,
-                                fontWeight: FontWeight.w700,
-                              ),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minWidth: 20,
+                        minHeight: 20,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 5),
+                        child: Center(
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 180),
+                            child: Text(
+                              '$badgeCount',
+                              key: ValueKey(badgeCount),
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(
+                                    color: colorScheme.onPrimary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -30,21 +30,11 @@ class YandeImage extends StatefulWidget {
 }
 
 class _YandeImageState extends State<YandeImage> {
-  bool _useDirectRoute = false;
-  bool _fallbackScheduled = false;
-
-  @override
-  void didUpdateWidget(covariant YandeImage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.url != widget.url) {
-      _useDirectRoute = false;
-      _fallbackScheduled = false;
-    }
-  }
-
   YandeNetworkRoute get _route => YandeNetworkPolicy.route(
     Uri.parse(widget.url),
-    permitBypass: !_useDirectRoute,
+    // The stock ExtendedNetworkImageProvider cannot override DNS while
+    // retaining the original TLS SNI. An IP URL fails before HTTP headers.
+    permitBypass: false,
     headers: YandeNetworkPolicy.imageHeaders,
   );
 
@@ -52,9 +42,8 @@ class _YandeImageState extends State<YandeImage> {
     return ExtendedNetworkImageProvider(
       route.requestUri.toString(),
       cache: true,
-      cacheKey:
-          '${keyToMd5(widget.url)}:${route.bypassed ? 'bypass' : 'direct'}',
-      printError: false,
+      cacheKey: keyToMd5(widget.url),
+      printError: true,
       headers: route.headers,
     );
   }
@@ -66,7 +55,7 @@ class _YandeImageState extends State<YandeImage> {
       key: ValueKey('${route.requestUri}|${route.bypassed}'),
       image: _createImageProvider(route),
       handleLoadingProgress: true,
-      loadStateChanged: (state) => _buildLoadState(state, route),
+      loadStateChanged: _buildLoadState,
       color: widget.color,
       colorBlendMode: widget.colorBlendMode,
       clearMemoryCacheWhenDispose: false,
@@ -76,7 +65,7 @@ class _YandeImageState extends State<YandeImage> {
     );
   }
 
-  Widget? _buildLoadState(ExtendedImageState state, YandeNetworkRoute route) {
+  Widget? _buildLoadState(ExtendedImageState state) {
     switch (state.extendedImageLoadState) {
       case LoadState.loading:
         final event = state.loadingProgress;
@@ -90,40 +79,18 @@ class _YandeImageState extends State<YandeImage> {
       case LoadState.completed:
         return widget.imageBuilder?.call(state.completedWidget);
       case LoadState.failed:
-        if (route.bypassed && !_useDirectRoute) {
-          _scheduleDirectFallback();
-          return _buildPlaceholder();
-        }
         return Center(
           child: IconButton(
             icon: const Icon(Icons.refresh_outlined),
-            onPressed: () {
-              setState(() {
-                _useDirectRoute = false;
-                _fallbackScheduled = false;
-              });
-            },
+            onPressed: state.reLoadImage,
           ),
         );
     }
   }
 
-  void _scheduleDirectFallback() {
-    if (_fallbackScheduled) return;
-    _fallbackScheduled = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      setState(() {
-        _useDirectRoute = true;
-        _fallbackScheduled = false;
-      });
-    });
-  }
-
   Widget _buildPlaceholder({double? progress}) {
     final placeholder = widget.placeholderWidget;
     if (placeholder != null) {
-      if (progress == null) return placeholder;
       return Stack(
         children: [
           placeholder,
@@ -159,7 +126,6 @@ class _YandeImageState extends State<YandeImage> {
         );
       },
     );
-    if (progress == null) return skeleton;
     return Stack(
       children: [
         skeleton,

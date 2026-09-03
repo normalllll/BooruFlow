@@ -68,8 +68,8 @@ final class RustIoDownloadEngine implements DownloadEngine {
       return;
     }
     running.cancelled = true;
-    await running.subscription?.cancel();
     running.completeWithError(const DownloadException('Download cancelled'));
+    await running.cancelSubscription();
     await running.finished;
   }
 
@@ -206,7 +206,7 @@ final class RustIoDownloadEngine implements DownloadEngine {
       }
     } finally {
       _running.remove(job.id);
-      await running.subscription?.cancel();
+      await running.cancelSubscription();
       running.completeFinished();
     }
   }
@@ -312,5 +312,17 @@ class _RunningDownload {
       return;
     }
     completer.completeError(error, stackTrace);
+  }
+
+  Future<void> cancelSubscription() async {
+    final current = subscription;
+    subscription = null;
+    if (current == null) return;
+    try {
+      await current.cancel();
+    } catch (_) {
+      // The request error has already been delivered through the stream.
+      // Cancellation is cleanup and must not surface it a second time.
+    }
   }
 }
