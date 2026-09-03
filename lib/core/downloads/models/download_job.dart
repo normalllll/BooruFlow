@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'save_target.dart';
 import 'download_request_options.dart';
 
@@ -5,6 +7,8 @@ class DownloadJob {
   DownloadJob({
     required this.id,
     required this.resourceId,
+    required this.sourceId,
+    required this.postId,
     required this.variantIndex,
     required this.url,
     required this.filename,
@@ -18,6 +22,8 @@ class DownloadJob {
 
   factory DownloadJob.create({
     required int resourceId,
+    String sourceId = 'yande',
+    String? postId,
     required int variantIndex,
     required Uri url,
     required String filename,
@@ -29,8 +35,15 @@ class DownloadJob {
   }) {
     final now = DateTime.now();
     return DownloadJob(
-      id: downloadJobId(resourceId: resourceId, variantIndex: variantIndex),
+      id: downloadJobId(
+        resourceId: resourceId,
+        sourceId: sourceId,
+        postId: postId,
+        variantIndex: variantIndex,
+      ),
       resourceId: resourceId,
+      sourceId: sourceId,
+      postId: postId ?? resourceId.toString(),
       variantIndex: variantIndex,
       url: url,
       filename: filename,
@@ -45,6 +58,8 @@ class DownloadJob {
 
   final String id;
   final int resourceId;
+  final String sourceId;
+  final String postId;
   final int variantIndex;
   final Uri url;
   final String filename;
@@ -58,6 +73,8 @@ class DownloadJob {
   DownloadJob copyWith({
     String? id,
     int? resourceId,
+    String? sourceId,
+    String? postId,
     int? variantIndex,
     Uri? url,
     String? filename,
@@ -71,6 +88,8 @@ class DownloadJob {
     return DownloadJob(
       id: id ?? this.id,
       resourceId: resourceId ?? this.resourceId,
+      sourceId: sourceId ?? this.sourceId,
+      postId: postId ?? this.postId,
       variantIndex: variantIndex ?? this.variantIndex,
       url: url ?? this.url,
       filename: filename ?? this.filename,
@@ -87,6 +106,8 @@ class DownloadJob {
     return {
       'id': id,
       'resourceId': resourceId,
+      'sourceId': sourceId,
+      'postId': postId,
       'variantIndex': variantIndex,
       'url': url.toString(),
       'filename': filename,
@@ -100,6 +121,16 @@ class DownloadJob {
   }
 }
 
-String downloadJobId({required int resourceId, required int variantIndex}) {
-  return 'resource_${resourceId}_variant_$variantIndex';
+String downloadJobId({
+  required int resourceId,
+  String? sourceId,
+  String? postId,
+  required int variantIndex,
+}) {
+  if (sourceId == null || postId == null) {
+    return 'resource_${resourceId}_variant_$variantIndex';
+  }
+  String encode(String value) =>
+      base64Url.encode(utf8.encode(value)).replaceAll('=', '');
+  return 'booru_${encode(sourceId)}_${encode(postId)}_variant_$variantIndex';
 }

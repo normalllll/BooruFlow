@@ -40,7 +40,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -154227452;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 2134417903;
 
 // Section: executor
 
@@ -265,6 +265,73 @@ fn wire__crate__api__booru_engine__BooruEngine_clear_auth_impl(
                     )?;
                     std::result::Result::Ok(output_ok)
                 })())
+            }
+        },
+    )
+}
+fn wire__crate__api__booru_engine__BooruEngine_download_to_file_stream_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "BooruEngine_download_to_file_stream",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<BooruEngine>,
+            >>::sse_decode(&mut deserializer);
+            let api_request =
+                <crate::api::booru_download::DownloadRequestDto>::sse_decode(&mut deserializer);
+            let api_sink = <StreamSink<
+                crate::api::booru_download::DownloadEventDto,
+                flutter_rust_bridge::for_generated::SseCodec,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, crate::booru::error::BooruErrorDto>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok =
+                            crate::api::booru_engine::BooruEngine::download_to_file_stream(
+                                &*api_that_guard,
+                                api_request,
+                                api_sink,
+                            )
+                            .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
             }
         },
     )
@@ -601,6 +668,68 @@ fn wire__crate__api__booru_engine__BooruEngine_prepare_media_impl(
                     })()
                     .await,
                 )
+            }
+        },
+    )
+}
+fn wire__crate__api__booru_engine__BooruEngine_prepare_media_url_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "BooruEngine_prepare_media_url",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<BooruEngine>,
+            >>::sse_decode(&mut deserializer);
+            let api_source_id = <String>::sse_decode(&mut deserializer);
+            let api_post_id = <String>::sse_decode(&mut deserializer);
+            let api_variant =
+                <crate::api::booru_models::MediaVariantKind>::sse_decode(&mut deserializer);
+            let api_url = <String>::sse_decode(&mut deserializer);
+            let api_allow_disk_cache = <bool>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, crate::booru::error::BooruErrorDto>((move || {
+                    let mut api_that_guard = None;
+                    let decode_indices_ =
+                        flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                            flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                &api_that, 0, false,
+                            ),
+                        ]);
+                    for i in decode_indices_ {
+                        match i {
+                            0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                            _ => unreachable!(),
+                        }
+                    }
+                    let api_that_guard = api_that_guard.unwrap();
+                    let output_ok = crate::api::booru_engine::BooruEngine::prepare_media_url(
+                        &*api_that_guard,
+                        api_source_id,
+                        api_post_id,
+                        api_variant,
+                        api_url,
+                        api_allow_disk_cache,
+                    )?;
+                    std::result::Result::Ok(output_ok)
+                })())
             }
         },
     )
@@ -954,6 +1083,72 @@ fn wire__crate__api__booru_engine__BooruEngine_set_web_session_impl(
                             api_source_id,
                             api_cookies,
                             api_user_agent,
+                        )
+                        .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__booru_engine__BooruEngine_stream_media_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "BooruEngine_stream_media",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<BooruEngine>,
+            >>::sse_decode(&mut deserializer);
+            let api_request =
+                <crate::api::booru_models::MediaRequestDto>::sse_decode(&mut deserializer);
+            let api_sink = <StreamSink<
+                crate::api::booru_download::MediaFetchEventDto,
+                flutter_rust_bridge::for_generated::SseCodec,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, crate::booru::error::BooruErrorDto>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::booru_engine::BooruEngine::stream_media(
+                            &*api_that_guard,
+                            api_request,
+                            api_sink,
                         )
                         .await?;
                         std::result::Result::Ok(output_ok)
@@ -1493,6 +1688,14 @@ flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
 
 // Section: dart2rust
 
+impl SseDecode for flutter_rust_bridge::for_generated::anyhow::Error {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <String>::sse_decode(deserializer);
+        return flutter_rust_bridge::for_generated::anyhow::anyhow!("{}", inner);
+    }
+}
+
 impl SseDecode for BooruEngine {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1510,6 +1713,32 @@ impl SseDecode
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut inner = <usize>::sse_decode(deserializer);
         return decode_rust_opaque_moi(inner);
+    }
+}
+
+impl SseDecode
+    for StreamSink<
+        crate::api::booru_download::DownloadEventDto,
+        flutter_rust_bridge::for_generated::SseCodec,
+    >
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <String>::sse_decode(deserializer);
+        return StreamSink::deserialize(inner);
+    }
+}
+
+impl SseDecode
+    for StreamSink<
+        crate::api::booru_download::MediaFetchEventDto,
+        flutter_rust_bridge::for_generated::SseCodec,
+    >
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <String>::sse_decode(deserializer);
+        return StreamSink::deserialize(inner);
     }
 }
 
@@ -1816,6 +2045,56 @@ impl SseDecode for crate::api::booru_models::ContentRating {
     }
 }
 
+impl SseDecode for crate::api::booru_download::DownloadEventDto {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut tag_ = <i32>::sse_decode(deserializer);
+        match tag_ {
+            0 => {
+                let mut var_receivedBytesDecimal = <String>::sse_decode(deserializer);
+                let mut var_totalBytesDecimal = <Option<String>>::sse_decode(deserializer);
+                let mut var_progress = <f64>::sse_decode(deserializer);
+                return crate::api::booru_download::DownloadEventDto::Progress {
+                    received_bytes_decimal: var_receivedBytesDecimal,
+                    total_bytes_decimal: var_totalBytesDecimal,
+                    progress: var_progress,
+                };
+            }
+            1 => {
+                let mut var_path = <String>::sse_decode(deserializer);
+                return crate::api::booru_download::DownloadEventDto::Done { path: var_path };
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+
+impl SseDecode for crate::api::booru_download::DownloadRequestDto {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_sourceId = <String>::sse_decode(deserializer);
+        let mut var_postId = <String>::sse_decode(deserializer);
+        let mut var_variant =
+            <crate::api::booru_models::MediaVariantKind>::sse_decode(deserializer);
+        let mut var_downloadRoot = <String>::sse_decode(deserializer);
+        return crate::api::booru_download::DownloadRequestDto {
+            source_id: var_sourceId,
+            post_id: var_postId,
+            variant: var_variant,
+            download_root: var_downloadRoot,
+        };
+    }
+}
+
+impl SseDecode for f64 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        deserializer.cursor.read_f64::<NativeEndian>().unwrap()
+    }
+}
+
 impl SseDecode for crate::api::booru_models::HttpHeaderDto {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -2008,6 +2287,28 @@ impl SseDecode for Vec<crate::api::booru_auth::WebCookieDto> {
             ));
         }
         return ans_;
+    }
+}
+
+impl SseDecode for crate::api::booru_download::MediaFetchEventDto {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut tag_ = <i32>::sse_decode(deserializer);
+        match tag_ {
+            0 => {
+                let mut var_bytes = <Vec<u8>>::sse_decode(deserializer);
+                let mut var_receivedBytesDecimal = <String>::sse_decode(deserializer);
+                let mut var_totalBytesDecimal = <Option<String>>::sse_decode(deserializer);
+                return crate::api::booru_download::MediaFetchEventDto::Chunk {
+                    bytes: var_bytes,
+                    received_bytes_decimal: var_receivedBytesDecimal,
+                    total_bytes_decimal: var_totalBytesDecimal,
+                };
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
     }
 }
 
@@ -2514,146 +2815,164 @@ fn pde_ffi_dispatcher_primary_impl(
             rust_vec_len,
             data_len,
         ),
-        5 => wire__crate__api__booru_engine__BooruEngine_get_post_impl(
+        5 => wire__crate__api__booru_engine__BooruEngine_download_to_file_stream_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        6 => wire__crate__api__booru_engine__BooruEngine_initialize_route_cache_impl(
+        6 => wire__crate__api__booru_engine__BooruEngine_get_post_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        7 => wire__crate__api__booru_engine__BooruEngine_list_sources_impl(
+        7 => wire__crate__api__booru_engine__BooruEngine_initialize_route_cache_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        8 => {
+        8 => wire__crate__api__booru_engine__BooruEngine_list_sources_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        9 => {
             wire__crate__api__booru_engine__BooruEngine_new_impl(port, ptr, rust_vec_len, data_len)
         }
-        9 => wire__crate__api__booru_engine__BooruEngine_prepare_download_impl(
+        10 => wire__crate__api__booru_engine__BooruEngine_prepare_download_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        10 => wire__crate__api__booru_engine__BooruEngine_prepare_media_impl(
+        11 => wire__crate__api__booru_engine__BooruEngine_prepare_media_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        11 => wire__crate__api__booru_engine__BooruEngine_refresh_route_cache_impl(
+        12 => wire__crate__api__booru_engine__BooruEngine_prepare_media_url_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        12 => wire__crate__api__booru_engine__BooruEngine_related_posts_impl(
+        13 => wire__crate__api__booru_engine__BooruEngine_refresh_route_cache_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        13 => wire__crate__api__booru_engine__BooruEngine_route_cache_state_impl(
+        14 => wire__crate__api__booru_engine__BooruEngine_related_posts_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        14 => wire__crate__api__booru_engine__BooruEngine_search_impl(
+        15 => wire__crate__api__booru_engine__BooruEngine_route_cache_state_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        15 => wire__crate__api__booru_engine__BooruEngine_set_credentials_impl(
+        16 => wire__crate__api__booru_engine__BooruEngine_search_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        16 => wire__crate__api__booru_engine__BooruEngine_set_web_session_impl(
+        17 => wire__crate__api__booru_engine__BooruEngine_set_credentials_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        17 => wire__crate__api__booru_engine__BooruEngine_verify_auth_impl(
+        18 => wire__crate__api__booru_engine__BooruEngine_set_web_session_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        18 => wire__crate__api__booru_models__auth_kind_default_impl(
+        19 => wire__crate__api__booru_engine__BooruEngine_stream_media_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        19 => wire__crate__api__booru_auth__auth_status_default_impl(
+        20 => wire__crate__api__booru_engine__BooruEngine_verify_auth_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        20 => wire__crate__api__booru_models__checksum_algorithm_default_impl(
+        21 => wire__crate__api__booru_models__auth_kind_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        21 => wire__crate__api__booru_models__content_policy_default_impl(
+        22 => wire__crate__api__booru_auth__auth_status_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        22 => wire__crate__api__booru_models__content_rating_default_impl(
+        23 => wire__crate__api__booru_models__checksum_algorithm_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        23 => wire__crate__api__booru_models__media_type_from_mime_impl(
+        24 => wire__crate__api__booru_models__content_policy_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        24 => {
+        25 => wire__crate__api__booru_models__content_rating_default_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        26 => wire__crate__api__booru_models__media_type_from_mime_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        27 => {
             wire__crate__api__booru_models__media_type_kind_impl(port, ptr, rust_vec_len, data_len)
         }
-        25 => wire__crate__api__booru_models__media_variant_kind_default_impl(
+        28 => wire__crate__api__booru_models__media_variant_kind_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        26 => wire__crate__api__booru_models__network_fallback_mode_default_impl(
+        29 => wire__crate__api__booru_models__network_fallback_mode_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        27 => wire__crate__api__booru_models__post_flags_dto_default_impl(
+        30 => wire__crate__api__booru_models__post_flags_dto_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        28 => wire__crate__api__booru_models__post_key_impl(port, ptr, rust_vec_len, data_len),
-        30 => wire__crate__api__booru_auth__source_credentials_dto_default_impl(
+        31 => wire__crate__api__booru_models__post_key_impl(port, ptr, rust_vec_len, data_len),
+        33 => wire__crate__api__booru_auth__source_credentials_dto_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        31 => wire__crate__api__booru_models__tag_category_default_impl(
+        34 => wire__crate__api__booru_models__tag_category_default_impl(
             port,
             ptr,
             rust_vec_len,
@@ -2671,7 +2990,7 @@ fn pde_ffi_dispatcher_sync_impl(
 ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
-        29 => wire__crate__api__rustc__rustc_version_impl(ptr, rust_vec_len, data_len),
+        32 => wire__crate__api__rustc__rustc_version_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -3103,6 +3422,64 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::booru_models::ContentRating>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::booru_download::DownloadEventDto {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            crate::api::booru_download::DownloadEventDto::Progress {
+                received_bytes_decimal,
+                total_bytes_decimal,
+                progress,
+            } => [
+                0.into_dart(),
+                received_bytes_decimal.into_into_dart().into_dart(),
+                total_bytes_decimal.into_into_dart().into_dart(),
+                progress.into_into_dart().into_dart(),
+            ]
+            .into_dart(),
+            crate::api::booru_download::DownloadEventDto::Done { path } => {
+                [1.into_dart(), path.into_into_dart().into_dart()].into_dart()
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::booru_download::DownloadEventDto
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::booru_download::DownloadEventDto>
+    for crate::api::booru_download::DownloadEventDto
+{
+    fn into_into_dart(self) -> crate::api::booru_download::DownloadEventDto {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::booru_download::DownloadRequestDto {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.source_id.into_into_dart().into_dart(),
+            self.post_id.into_into_dart().into_dart(),
+            self.variant.into_into_dart().into_dart(),
+            self.download_root.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::booru_download::DownloadRequestDto
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::booru_download::DownloadRequestDto>
+    for crate::api::booru_download::DownloadRequestDto
+{
+    fn into_into_dart(self) -> crate::api::booru_download::DownloadRequestDto {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::booru_models::HttpHeaderDto {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -3120,6 +3497,38 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::booru_models::HttpHeaderDto>
     for crate::api::booru_models::HttpHeaderDto
 {
     fn into_into_dart(self) -> crate::api::booru_models::HttpHeaderDto {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::booru_download::MediaFetchEventDto {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            crate::api::booru_download::MediaFetchEventDto::Chunk {
+                bytes,
+                received_bytes_decimal,
+                total_bytes_decimal,
+            } => [
+                0.into_dart(),
+                bytes.into_into_dart().into_dart(),
+                received_bytes_decimal.into_into_dart().into_dart(),
+                total_bytes_decimal.into_into_dart().into_dart(),
+            ]
+            .into_dart(),
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::booru_download::MediaFetchEventDto
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::booru_download::MediaFetchEventDto>
+    for crate::api::booru_download::MediaFetchEventDto
+{
+    fn into_into_dart(self) -> crate::api::booru_download::MediaFetchEventDto {
         self
     }
 }
@@ -3590,6 +3999,13 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::booru_auth::WebCookieDto>
     }
 }
 
+impl SseEncode for flutter_rust_bridge::for_generated::anyhow::Error {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(format!("{:?}", self), serializer);
+    }
+}
+
 impl SseEncode for BooruEngine {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -3605,6 +4021,30 @@ impl SseEncode
         let (ptr, size) = self.sse_encode_raw();
         <usize>::sse_encode(ptr, serializer);
         <i32>::sse_encode(size, serializer);
+    }
+}
+
+impl SseEncode
+    for StreamSink<
+        crate::api::booru_download::DownloadEventDto,
+        flutter_rust_bridge::for_generated::SseCodec,
+    >
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        unimplemented!("")
+    }
+}
+
+impl SseEncode
+    for StreamSink<
+        crate::api::booru_download::MediaFetchEventDto,
+        flutter_rust_bridge::for_generated::SseCodec,
+    >
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        unimplemented!("")
     }
 }
 
@@ -3877,6 +4317,48 @@ impl SseEncode for crate::api::booru_models::ContentRating {
     }
 }
 
+impl SseEncode for crate::api::booru_download::DownloadEventDto {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        match self {
+            crate::api::booru_download::DownloadEventDto::Progress {
+                received_bytes_decimal,
+                total_bytes_decimal,
+                progress,
+            } => {
+                <i32>::sse_encode(0, serializer);
+                <String>::sse_encode(received_bytes_decimal, serializer);
+                <Option<String>>::sse_encode(total_bytes_decimal, serializer);
+                <f64>::sse_encode(progress, serializer);
+            }
+            crate::api::booru_download::DownloadEventDto::Done { path } => {
+                <i32>::sse_encode(1, serializer);
+                <String>::sse_encode(path, serializer);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+
+impl SseEncode for crate::api::booru_download::DownloadRequestDto {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.source_id, serializer);
+        <String>::sse_encode(self.post_id, serializer);
+        <crate::api::booru_models::MediaVariantKind>::sse_encode(self.variant, serializer);
+        <String>::sse_encode(self.download_root, serializer);
+    }
+}
+
+impl SseEncode for f64 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        serializer.cursor.write_f64::<NativeEndian>(self).unwrap();
+    }
+}
+
 impl SseEncode for crate::api::booru_models::HttpHeaderDto {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -4018,6 +4500,27 @@ impl SseEncode for Vec<crate::api::booru_auth::WebCookieDto> {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
             <crate::api::booru_auth::WebCookieDto>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for crate::api::booru_download::MediaFetchEventDto {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        match self {
+            crate::api::booru_download::MediaFetchEventDto::Chunk {
+                bytes,
+                received_bytes_decimal,
+                total_bytes_decimal,
+            } => {
+                <i32>::sse_encode(0, serializer);
+                <Vec<u8>>::sse_encode(bytes, serializer);
+                <String>::sse_encode(received_bytes_decimal, serializer);
+                <Option<String>>::sse_encode(total_bytes_decimal, serializer);
+            }
+            _ => {
+                unimplemented!("");
+            }
         }
     }
 }

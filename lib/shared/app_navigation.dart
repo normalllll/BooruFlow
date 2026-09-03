@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yande_gui/intl/translations.g.dart';
-import 'package:yande_gui/src/rust/yande/model/post.dart';
+import 'package:yande_gui/features/posts/models/post.dart';
 
 enum AppRoute {
   posts('/'),
@@ -78,18 +78,22 @@ class ImageViewerRouteArgs {
     required this.url,
     required this.width,
     required this.height,
+    required this.sourceId,
+    required this.postId,
   });
 
   final String url;
   final double width;
   final double height;
+  final String sourceId;
+  final String postId;
 }
 
 extension AppNavigation on BuildContext {
   Future<T?> pushPost<T>(Post post) {
     return pushNamed<T>(
       AppRoute.postDetail.name,
-      pathParameters: {'id': '${post.id}'},
+      pathParameters: {'id': post.id},
       extra: post,
     );
   }
@@ -105,10 +109,18 @@ extension AppNavigation on BuildContext {
     required String url,
     required double width,
     required double height,
+    required String sourceId,
+    required String postId,
   }) {
     return pushNamed<T>(
       AppRoute.imageViewer.name,
-      extra: ImageViewerRouteArgs(url: url, width: width, height: height),
+      extra: ImageViewerRouteArgs(
+        url: url,
+        width: width,
+        height: height,
+        sourceId: sourceId,
+        postId: postId,
+      ),
     );
   }
 }

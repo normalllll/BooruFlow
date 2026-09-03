@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
 import 'package:yande_gui/core/app_runtime.dart';
+import 'package:yande_gui/features/booru/booru_error_presentation.dart';
 import 'package:yande_gui/intl/translations.g.dart';
 
 class AppToastWrapper extends StatelessWidget {
@@ -46,7 +47,10 @@ abstract final class AppToast {
     Duration duration = _defaultDuration,
   }) {
     error(
-      t.generic.errorWithCause(message: message, cause: cause),
+      t.generic.errorWithCause(
+        message: message,
+        cause: describeBooruError(cause),
+      ),
       duration: duration,
     );
   }

@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:yande_gui/src/rust/api/booru_models.dart';
 
 abstract interface class SettingsServiceStore {
   Map<String, dynamic> load();
@@ -116,6 +117,12 @@ class SettingsService {
   static const _downloadPathKey = 'downloadPath';
   static const _maxConcurrentDownloadsKey = 'maxConcurrentDownloads';
   static const _maxSegmentsPerTaskKey = 'maxSegmentsPerTask';
+  static const _sourceIdKey = 'booruSourceId';
+  static const _networkFallbackModeKey = 'booruNetworkFallbackMode';
+  static const _fallbackToSystemDnsKey = 'booruFallbackToSystemDns';
+  static const _proxyUrlKey = 'booruProxyUrl';
+  static const _contentPolicyKey = 'booruContentPolicy';
+  static const _ratingsKey = 'booruRatings';
 
   static const _settingKeys = {
     _languageKey,
@@ -125,6 +132,12 @@ class SettingsService {
     _downloadPathKey,
     _maxConcurrentDownloadsKey,
     _maxSegmentsPerTaskKey,
+    _sourceIdKey,
+    _networkFallbackModeKey,
+    _fallbackToSystemDnsKey,
+    _proxyUrlKey,
+    _contentPolicyKey,
+    _ratingsKey,
   };
 
   static final Map<String, dynamic> _map = {};
@@ -180,6 +193,63 @@ class SettingsService {
   static set maxSegmentsPerTask(int value) {
     _write(_maxSegmentsPerTaskKey, value);
   }
+
+  static String get sourceId => _map[_sourceIdKey] as String? ?? 'yande';
+
+  static set sourceId(String value) => _write(_sourceIdKey, value);
+
+  static NetworkFallbackMode get networkFallbackMode {
+    final index = _map[_networkFallbackModeKey] as int?;
+    if (index == null && _map[_bypassSniKey] == false) {
+      return NetworkFallbackMode.off;
+    }
+    return index != null &&
+            index >= 0 &&
+            index < NetworkFallbackMode.values.length
+        ? NetworkFallbackMode.values[index]
+        : NetworkFallbackMode.persistedIpOverride;
+  }
+
+  static set networkFallbackMode(NetworkFallbackMode value) {
+    _write(_networkFallbackModeKey, value.index);
+    _write(_bypassSniKey, value != NetworkFallbackMode.off);
+  }
+
+  static bool get fallbackToSystemDns =>
+      _map[_fallbackToSystemDnsKey] as bool? ?? true;
+
+  static set fallbackToSystemDns(bool value) =>
+      _write(_fallbackToSystemDnsKey, value);
+
+  static String? get proxyUrl {
+    final value = (_map[_proxyUrlKey] as String?)?.trim();
+    return value == null || value.isEmpty ? null : value;
+  }
+
+  static set proxyUrl(String? value) => _write(_proxyUrlKey, value?.trim());
+
+  static ContentPolicy get contentPolicy {
+    final index = _map[_contentPolicyKey] as int?;
+    return index != null && index >= 0 && index < ContentPolicy.values.length
+        ? ContentPolicy.values[index]
+        : ContentPolicy.unfiltered;
+  }
+
+  static set contentPolicy(ContentPolicy value) =>
+      _write(_contentPolicyKey, value.index);
+
+  static List<ContentRating> get ratings {
+    final values = _map[_ratingsKey];
+    if (values is! List) return const [];
+    return values
+        .whereType<int>()
+        .where((index) => index >= 0 && index < ContentRating.values.length)
+        .map((index) => ContentRating.values[index])
+        .toList(growable: false);
+  }
+
+  static set ratings(List<ContentRating> value) =>
+      _write(_ratingsKey, value.map((rating) => rating.index).toList());
 
   static Future<void> initialize({
     SettingsServiceStore? store,
@@ -255,8 +325,10 @@ class SettingsService {
       _waterfallColumnsKey ||
       _maxConcurrentDownloadsKey ||
       _maxSegmentsPerTaskKey => value is int,
-      _bypassSniKey => value is bool,
-      _downloadPathKey => value is String,
+      _networkFallbackModeKey || _contentPolicyKey => value is int,
+      _bypassSniKey || _fallbackToSystemDnsKey => value is bool,
+      _downloadPathKey || _sourceIdKey || _proxyUrlKey => value is String,
+      _ratingsKey => value is List && value.every((item) => item is int),
       _ => false,
     };
   }

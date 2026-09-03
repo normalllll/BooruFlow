@@ -14,6 +14,23 @@ generic:
   noMoreData: No more data
   notFound: Not found
 
+booruError:
+  invalidRequest: The request is invalid.
+  unsupportedCapability: This source does not support the requested operation.
+  authenticationRequired: Sign in to this source and try again.
+  authenticationRejected: The source rejected the account credentials.
+  permissionDenied: The source denied access to this resource.
+  rateLimited: The source is rate limiting requests. Try again later.
+  challengeRequired: The source requires a browser challenge or a different route.
+  sourceUnavailable: The source is currently unavailable.
+  network: The network request failed. Check the proxy or switch nodes.
+  timeout: The request timed out. Check the proxy or switch nodes.
+  invalidResponse: The source returned an invalid response.
+  unsafeRedirect: The source returned an unsafe redirect.
+  mediaValidationFailed: The image response could not be validated or decoded.
+  cancelled: The request was cancelled.
+  internal: An internal booru engine error occurred.
+
 update:
   checkUpdateStart: Checking for updates...
   checkUpdateFailed: Failed to check for updates. Please check your Internet connection.

@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:yande_gui/core/downloads/download_manager.dart';
 import 'package:yande_gui/core/downloads/download_models.dart';
 import 'package:yande_gui/features/downloads/yande_download_item.dart';
-import 'package:yande_gui/features/downloads/yande_download_naming.dart';
 import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/shared/app_toast.dart';
-import 'package:yande_gui/features/posts/network/yande_network_policy.dart';
-import 'package:yande_gui/src/rust/yande/model/post.dart';
+import 'package:yande_gui/core/settings_service.dart';
+import 'package:yande_gui/features/booru/booru_service.dart';
+import 'package:yande_gui/features/posts/models/post.dart';
+import 'package:yande_gui/src/rust/api/booru_models.dart';
+import 'package:path/path.dart' as path;
 
 final class YandeDownloads {
   YandeDownloads._();
@@ -28,7 +30,6 @@ final class YandeDownloads {
   Future<void> initialize() => _initializing ??= _initialize();
 
   Future<void> _initialize() async {
-    await YandeNetworkPolicy.initialize();
     await initializeDownloadManager();
     final initial = await downloadManager.listTasks();
     _replaceItems(initial, notifyTransitions: false);
@@ -41,48 +42,58 @@ final class YandeDownloads {
     var filename = 'Yande #${post.id}';
     try {
       await initialize();
-      final source = post.fileUrl ?? post.jpegUrl ?? post.previewUrl;
-      final uri = Uri.parse(source);
-      final usesOriginal = post.fileUrl != null && source == post.fileUrl;
-      final expectedBytes = usesOriginal
-          ? post.fileSize
-          : post.jpegUrl != null && source == post.jpegUrl
-          ? post.jpegFileSize
-          : null;
-      final checksum =
-          usesOriginal && RegExp(r'^[0-9a-fA-F]{32}$').hasMatch(post.md5)
-          ? DownloadChecksum(
-              algorithm: DownloadChecksumAlgorithm.md5,
-              value: post.md5,
-            )
-          : null;
-      filename = yandePostDownloadFilename(
+      final prepared = await BooruService.instance.engine.prepareDownload(
+        sourceId: post.sourceId,
         postId: post.id,
-        variantIndex: 0,
-        sourceUrl: uri,
-        declaredExtension: usesOriginal ? post.fileExt : null,
+        variant: MediaVariantKind.original,
       );
+      final uri = Uri.parse(prepared.url);
+      final expectedBytes = int.tryParse(prepared.expectedBytesDecimal ?? '');
+      final preparedChecksum = prepared.checksum;
+      final checksum = preparedChecksum == null
+          ? null
+          : DownloadChecksum(
+              algorithm: switch (preparedChecksum.algorithm) {
+                ChecksumAlgorithm.md5 => DownloadChecksumAlgorithm.md5,
+                ChecksumAlgorithm.sha256 => DownloadChecksumAlgorithm.sha256,
+              },
+              value: preparedChecksum.value,
+            );
+      filename = prepared.filename;
+      final configuredRoot = SettingsService.downloadPath;
       final job = DownloadJob.create(
-        resourceId: post.id,
-        variantIndex: 0,
+        resourceId: post.resourceId,
+        sourceId: post.sourceId,
+        postId: post.id,
+        variantIndex: MediaVariantKind.original.index,
         url: uri,
         filename: filename,
         networkOptions: DownloadNetworkOptions(
-          headers: YandeNetworkPolicy.imageHeaders,
+          headers: {
+            for (final header in prepared.headers) header.name: header.value,
+          },
         ),
         validation: DownloadValidationOptions(
           expectedBytes: expectedBytes != null && expectedBytes > 0
               ? expectedBytes
               : null,
-          allowedContentTypes: const ['image/*'],
+          allowedContentTypes: [
+            for (final kind in prepared.allowedMediaKinds) '${kind.name}/*',
+          ],
           checksum: checksum,
         ),
-        saveTarget: const SaveTarget.downloadsFolder(),
+        saveTarget: SaveTarget.downloadsFolder(
+          directory: configuredRoot == null
+              ? null
+              : path.join(configuredRoot, post.sourceId),
+          subdirectory: configuredRoot == null ? post.sourceId : null,
+        ),
         thumbnailUrl: post.previewUrl,
-        title: 'Yande #${post.id}',
+        title:
+            '${BooruService.instance.sourceById(post.sourceId).displayName} #${post.id}',
       );
 
-      _posts[post.id] = post;
+      _posts[post.resourceId] = post;
       await downloadManager.enqueue([job]);
       AppToast.show(t.downloads.messages.downloadStartWith(name: filename));
     } on DownloadException catch (error) {

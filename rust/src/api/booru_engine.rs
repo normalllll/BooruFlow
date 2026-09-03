@@ -1,5 +1,7 @@
 use crate::api::booru_auth::{AuthSchemaDto, AuthStateDto, SourceCredentialsDto, WebCookieDto};
-use crate::api::booru_download::{DownloadEventDto, DownloadRequestDto, PreparedDownloadDto};
+use crate::api::booru_download::{
+    DownloadEventDto, DownloadRequestDto, MediaFetchEventDto, PreparedDownloadDto,
+};
 use crate::api::booru_models::{
     BooruEngineConfigDto, BooruPostDto, BooruSourceDto, MediaRequestDto, MediaVariantKind,
     PostPageDto, RouteCacheStateDto, SearchRequestDto, TagSuggestionDto,
@@ -13,12 +15,17 @@ use crate::booru::adapters::wallhaven::WallhavenAdapter;
 use crate::booru::auth::credential::auth_schema;
 use crate::booru::auth::SessionStore;
 use crate::booru::error::{BooruErrorCode, BooruErrorDto, BooruResult};
-use crate::booru::media::download::{download_to_path, DownloadProgress};
+use crate::booru::media::download::{
+    download_to_path, open_prepared_unthrottled, DownloadProgress,
+};
 use crate::booru::media::request::prepared_download;
+use crate::booru::media::transcode::avif_to_png;
 use crate::booru::model::{PostId, SearchQuery};
 use crate::booru::network::NetworkRuntime;
 use crate::booru::registry::SourceRegistry;
 use crate::booru::source::{builtin_sources, ProtocolFamily};
+use crate::frb_generated::StreamSink;
+use futures_util::StreamExt;
 use std::collections::BTreeSet;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -222,6 +229,34 @@ impl BooruEngine {
         })
     }
 
+    pub fn prepare_media_url(
+        &self,
+        source_id: String,
+        post_id: String,
+        variant: MediaVariantKind,
+        url: String,
+        allow_disk_cache: bool,
+    ) -> BooruResult<MediaRequestDto> {
+        let adapter = self.registry.get(&source_id)?;
+        let url = reqwest::Url::parse(&url)
+            .map_err(|_| BooruErrorDto::invalid_request(Some(&source_id)))?;
+        let headers = self.runtime.prepared_headers(adapter.definition(), &url)?;
+        let auth_revision = self.sessions.revision(&source_id);
+        let route_revision = self.runtime.route_revision();
+        Ok(MediaRequestDto {
+            source_id: source_id.clone(),
+            post_id,
+            variant,
+            url: url.to_string(),
+            headers,
+            route_key: format!("{source_id}:{route_revision}"),
+            cache_key: format!("{source_id}:{url}:{auth_revision}:{route_revision}"),
+            auth_revision,
+            route_revision,
+            allow_disk_cache,
+        })
+    }
+
     pub async fn prepare_download(
         &self,
         source_id: String,
@@ -233,6 +268,116 @@ impl BooruEngine {
             .prepare_media(&self.context(), &PostId(post_id.clone()), variant)
             .await?;
         prepared_download(&source_id, &post_id, variant, prepared)
+    }
+
+    pub async fn stream_media(
+        &self,
+        request: MediaRequestDto,
+        sink: StreamSink<MediaFetchEventDto>,
+    ) -> BooruResult<()> {
+        let adapter = self.registry.get(&request.source_id)?;
+        let prepared = PreparedDownloadDto {
+            source_id: request.source_id.clone(),
+            post_id: request.post_id,
+            variant: request.variant,
+            url: request.url,
+            headers: request.headers,
+            expected_bytes_decimal: None,
+            allowed_media_kinds: vec![crate::api::booru_models::MediaKind::Image],
+            checksum: None,
+            filename: "media.bin".to_owned(),
+        };
+        let response =
+            open_prepared_unthrottled(&self.runtime, adapter.definition(), &prepared).await?;
+        let total = response.content_length();
+        let transcode_avif = prepared
+            .url
+            .split('?')
+            .next()
+            .is_some_and(|url| url.to_ascii_lowercase().ends_with(".avif"))
+            || response
+                .headers()
+                .get(reqwest::header::CONTENT_TYPE)
+                .and_then(|value| value.to_str().ok())
+                .is_some_and(|value| value.to_ascii_lowercase().contains("image/avif"));
+        let mut received = 0_u64;
+        let mut avif_bytes = Vec::new();
+        let mut chunks = response.bytes_stream();
+        while let Some(chunk) = chunks.next().await {
+            let chunk = chunk.map_err(|_| {
+                BooruErrorDto::new(
+                    BooruErrorCode::Network,
+                    Some(&request.source_id),
+                    "booru.error.network",
+                )
+            })?;
+            received = received.saturating_add(chunk.len() as u64);
+            let bytes = if transcode_avif {
+                avif_bytes.extend_from_slice(&chunk);
+                Vec::new()
+            } else {
+                chunk.to_vec()
+            };
+            sink.add(MediaFetchEventDto::Chunk {
+                bytes,
+                received_bytes_decimal: received.to_string(),
+                total_bytes_decimal: total.map(|value| value.to_string()),
+            })
+            .map_err(|_| {
+                BooruErrorDto::new(
+                    BooruErrorCode::Cancelled,
+                    Some(&request.source_id),
+                    "booru.error.cancelled",
+                )
+            })?;
+        }
+        if received == 0 {
+            return Err(BooruErrorDto::new(
+                BooruErrorCode::MediaValidationFailed,
+                Some(&request.source_id),
+                "booru.error.emptyDownload",
+            ));
+        }
+        if transcode_avif {
+            let source_id = request.source_id.clone();
+            let png = tokio::task::spawn_blocking(move || avif_to_png(&source_id, &avif_bytes))
+                .await
+                .map_err(|_| {
+                    BooruErrorDto::new(
+                        BooruErrorCode::Internal,
+                        Some(&request.source_id),
+                        "booru.error.imageDecodeFailed",
+                    )
+                })??;
+            for chunk in png.chunks(64 * 1024) {
+                sink.add(MediaFetchEventDto::Chunk {
+                    bytes: chunk.to_vec(),
+                    received_bytes_decimal: received.to_string(),
+                    total_bytes_decimal: total.map(|value| value.to_string()),
+                })
+                .map_err(|_| {
+                    BooruErrorDto::new(
+                        BooruErrorCode::Cancelled,
+                        Some(&request.source_id),
+                        "booru.error.cancelled",
+                    )
+                })?;
+            }
+        }
+        Ok(())
+    }
+
+    pub async fn download_to_file_stream(
+        &self,
+        request: DownloadRequestDto,
+        sink: StreamSink<DownloadEventDto>,
+    ) -> BooruResult<()> {
+        self.download_to_file(request, |event| {
+            sink.add(event).map_err(|_| {
+                BooruErrorDto::new(BooruErrorCode::Cancelled, None, "booru.error.cancelled")
+            })
+        })
+        .await
     }
 
     pub async fn download_to_file<F>(
@@ -488,21 +633,40 @@ mod tests {
     }
 
     #[tokio::test]
-    #[ignore = "live anonymous network test; writes 35 originals under rust/test-downloads"]
-    async fn live_anonymous_downloads_five_originals_from_every_source() {
+    #[ignore = "live anonymous network test; writes media under rust/test-downloads"]
+    async fn live_anonymous_downloads_five_from_every_source() {
         let manifest = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         let output_root = manifest.join("test-downloads");
         let support = manifest.join("target").join("live-test-support");
+        let bypass = std::env::var("ANYBOORU_LIVE_BYPASS").as_deref() == Ok("1");
+        let variant = match std::env::var("ANYBOORU_LIVE_VARIANT").as_deref() {
+            Ok("thumbnail") => MediaVariantKind::Thumbnail,
+            Ok("preview") => MediaVariantKind::Preview,
+            Ok("sample") => MediaVariantKind::Sample,
+            _ => MediaVariantKind::Original,
+        };
         let engine = BooruEngine::new(BooruEngineConfigDto {
             app_support_directory: support.to_string_lossy().into_owned(),
             proxy_url: None,
-            fallback_mode: NetworkFallbackMode::Off,
+            fallback_mode: if bypass {
+                NetworkFallbackMode::PersistedIpOverride
+            } else {
+                NetworkFallbackMode::Off
+            },
             fallback_to_system_dns: true,
             user_agent: "anybooru/1.0".to_owned(),
         })
         .unwrap();
+        if bypass {
+            engine.initialize_route_cache().await.unwrap();
+        }
         let mut failures = Vec::new();
         let source_filter = std::env::var("ANYBOORU_LIVE_SOURCE").ok();
+        let post_filter = std::env::var("ANYBOORU_LIVE_POST_ID").ok();
+        assert!(
+            post_filter.is_none() || source_filter.is_some(),
+            "ANYBOORU_LIVE_POST_ID requires ANYBOORU_LIVE_SOURCE"
+        );
         for source in engine.list_sources() {
             if source_filter
                 .as_deref()
@@ -514,57 +678,79 @@ mod tests {
                 engine.auth_state(source.source_id.clone()).unwrap().status,
                 crate::api::booru_auth::AuthStatus::NotConfigured
             );
-            let page = match engine
-                .search(SearchRequestDto {
-                    source_id: source.source_id.clone(),
-                    query_text: String::new(),
-                    ratings: Vec::new(),
-                    page_size: 5,
-                    cursor: None,
-                    content_policy: ContentPolicy::Unfiltered,
-                })
-                .await
-            {
-                Ok(page) => page,
-                Err(error) => {
-                    failures.push(format!(
-                        "anonymous search failed for {}: {}",
-                        source.source_id, error
-                    ));
-                    continue;
+            let expected_posts = if post_filter.is_some() { 1 } else { 5 };
+            let posts = if let Some(post_id) = post_filter.as_ref() {
+                match engine
+                    .get_post(source.source_id.clone(), post_id.clone())
+                    .await
+                {
+                    Ok(post) => vec![post],
+                    Err(error) => {
+                        failures.push(format!(
+                            "post lookup failed for {} post {}: {}",
+                            source.source_id, post_id, error,
+                        ));
+                        continue;
+                    }
+                }
+            } else {
+                match engine
+                    .search(SearchRequestDto {
+                        source_id: source.source_id.clone(),
+                        query_text: String::new(),
+                        ratings: Vec::new(),
+                        page_size: 5,
+                        cursor: None,
+                        content_policy: ContentPolicy::Unfiltered,
+                    })
+                    .await
+                {
+                    Ok(page) => page.items,
+                    Err(error) => {
+                        failures.push(format!(
+                            "anonymous search failed for {}: {}",
+                            source.source_id, error
+                        ));
+                        continue;
+                    }
                 }
             };
-            if page.items.len() < 5 {
+            if posts.len() < expected_posts {
                 failures.push(format!(
-                    "anonymous search returned {} posts for {} (expected 5)",
-                    page.items.len(),
-                    source.source_id
+                    "anonymous lookup returned {} posts for {} (expected {})",
+                    posts.len(),
+                    source.source_id,
+                    expected_posts,
                 ));
                 continue;
             }
 
-            for post in page.items.into_iter().take(5) {
+            for post in posts.into_iter().take(expected_posts) {
                 let post_id = post.post_id.clone();
                 let prepared = engine
-                    .prepare_media(
-                        source.source_id.clone(),
-                        post_id.clone(),
-                        MediaVariantKind::Original,
-                    )
+                    .prepare_media(source.source_id.clone(), post_id.clone(), variant)
                     .await;
                 match prepared {
-                    Ok(prepared) if prepared.variant == MediaVariantKind::Original => {}
-                    Ok(_) => {
+                    Ok(prepared)
+                        if variant == MediaVariantKind::Original
+                            && prepared.variant != MediaVariantKind::Original =>
+                    {
                         failures.push(format!(
                             "original request silently downgraded for {} post {}",
-                            source.source_id, post_id
+                            source.source_id, post_id,
                         ));
                         continue;
                     }
+                    Ok(prepared) => {
+                        println!(
+                            "fetching {:?} as {:?}: {}",
+                            variant, prepared.variant, prepared.url,
+                        );
+                    }
                     Err(error) => {
                         failures.push(format!(
-                            "original preparation failed for {} post {}: {}",
-                            source.source_id, post_id, error
+                            "{variant:?} preparation failed for {} post {}: {}",
+                            source.source_id, post_id, error,
                         ));
                         continue;
                     }
@@ -575,7 +761,7 @@ mod tests {
                         DownloadRequestDto {
                             source_id: post.source_id,
                             post_id: post.post_id,
-                            variant: MediaVariantKind::Original,
+                            variant,
                             download_root: output_root.to_string_lossy().into_owned(),
                         },
                         |event| {
@@ -588,15 +774,15 @@ mod tests {
                     .await;
                 if let Err(error) = result {
                     failures.push(format!(
-                        "original download failed for {} post {}: {}",
-                        source.source_id, post_id, error
+                        "{variant:?} download failed for {} post {}: {}",
+                        source.source_id, post_id, error,
                     ));
                     continue;
                 }
                 let Some(completed_path) = completed_path else {
                     failures.push(format!(
-                        "original download emitted no Done event for {} post {}",
-                        source.source_id, post_id
+                        "{variant:?} download emitted no Done event for {} post {}",
+                        source.source_id, post_id,
                     ));
                     continue;
                 };
@@ -604,6 +790,11 @@ mod tests {
                 assert!(completed_path.starts_with(output_root.join(&source.source_id)));
                 assert!(tokio::fs::try_exists(&completed_path).await.unwrap());
                 assert!(tokio::fs::metadata(&completed_path).await.unwrap().len() > 0);
+                if source.source_id == "anime_pictures" && variant != MediaVariantKind::Original {
+                    let avif = tokio::fs::read(&completed_path).await.unwrap();
+                    let png = avif_to_png(&source.source_id, &avif).unwrap();
+                    assert!(png.starts_with(&[137, 80, 78, 71, 13, 10, 26, 10]));
+                }
                 println!("downloaded {}", completed_path.display());
             }
         }

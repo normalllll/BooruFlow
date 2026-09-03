@@ -285,11 +285,8 @@ impl NetworkRuntime {
     pub async fn open_media(
         &self,
         source: &SourceDefinition,
-        mut spec: RequestSpec,
+        spec: RequestSpec,
     ) -> BooruResult<reqwest::Response> {
-        for (key, value) in &spec.query {
-            spec.url.query_pairs_mut().append_pair(key, value);
-        }
         let limiter = self
             .limiters
             .get(source.id)
@@ -301,6 +298,25 @@ impl NetworkRuntime {
                 "booru.error.cancelled",
             )
         })?;
+        self.open_media_inner(source, spec).await
+    }
+
+    pub async fn open_media_unthrottled(
+        &self,
+        source: &SourceDefinition,
+        spec: RequestSpec,
+    ) -> BooruResult<reqwest::Response> {
+        self.open_media_inner(source, spec).await
+    }
+
+    async fn open_media_inner(
+        &self,
+        source: &SourceDefinition,
+        mut spec: RequestSpec,
+    ) -> BooruResult<reqwest::Response> {
+        for (key, value) in &spec.query {
+            spec.url.query_pairs_mut().append_pair(key, value);
+        }
         let mut redirects = 0_u32;
         let mut force_system_dns = false;
         let mut url = spec.url.clone();

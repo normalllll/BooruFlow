@@ -28,6 +28,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEnginePtr;
 
   @protected
+  AnyhowException dco_decode_AnyhowException(dynamic raw);
+
+  @protected
   BooruEngine
   dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     dynamic raw,
@@ -44,6 +47,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     dynamic raw,
   );
+
+  @protected
+  RustStreamSink<DownloadEventDto> dco_decode_StreamSink_download_event_dto_Sse(
+    dynamic raw,
+  );
+
+  @protected
+  RustStreamSink<MediaFetchEventDto>
+  dco_decode_StreamSink_media_fetch_event_dto_Sse(dynamic raw);
 
   @protected
   String dco_decode_String(dynamic raw);
@@ -99,7 +111,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ChecksumDto dco_decode_box_autoadd_checksum_dto(dynamic raw);
 
   @protected
+  DownloadRequestDto dco_decode_box_autoadd_download_request_dto(dynamic raw);
+
+  @protected
   int dco_decode_box_autoadd_i_32(dynamic raw);
+
+  @protected
+  MediaRequestDto dco_decode_box_autoadd_media_request_dto(dynamic raw);
 
   @protected
   MediaType dco_decode_box_autoadd_media_type(dynamic raw);
@@ -132,6 +150,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ContentRating dco_decode_content_rating(dynamic raw);
+
+  @protected
+  DownloadEventDto dco_decode_download_event_dto(dynamic raw);
+
+  @protected
+  DownloadRequestDto dco_decode_download_request_dto(dynamic raw);
+
+  @protected
+  double dco_decode_f_64(dynamic raw);
 
   @protected
   HttpHeaderDto dco_decode_http_header_dto(dynamic raw);
@@ -179,6 +206,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<WebCookieDto> dco_decode_list_web_cookie_dto(dynamic raw);
+
+  @protected
+  MediaFetchEventDto dco_decode_media_fetch_event_dto(dynamic raw);
 
   @protected
   MediaKind dco_decode_media_kind(dynamic raw);
@@ -274,6 +304,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   WebCookieDto dco_decode_web_cookie_dto(dynamic raw);
 
   @protected
+  AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
+
+  @protected
   BooruEngine
   sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     SseDeserializer deserializer,
@@ -290,6 +323,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     SseDeserializer deserializer,
   );
+
+  @protected
+  RustStreamSink<DownloadEventDto> sse_decode_StreamSink_download_event_dto_Sse(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  RustStreamSink<MediaFetchEventDto>
+  sse_decode_StreamSink_media_fetch_event_dto_Sse(SseDeserializer deserializer);
 
   @protected
   String sse_decode_String(SseDeserializer deserializer);
@@ -347,7 +389,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ChecksumDto sse_decode_box_autoadd_checksum_dto(SseDeserializer deserializer);
 
   @protected
+  DownloadRequestDto sse_decode_box_autoadd_download_request_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   int sse_decode_box_autoadd_i_32(SseDeserializer deserializer);
+
+  @protected
+  MediaRequestDto sse_decode_box_autoadd_media_request_dto(
+    SseDeserializer deserializer,
+  );
 
   @protected
   MediaType sse_decode_box_autoadd_media_type(SseDeserializer deserializer);
@@ -386,6 +438,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ContentRating sse_decode_content_rating(SseDeserializer deserializer);
+
+  @protected
+  DownloadEventDto sse_decode_download_event_dto(SseDeserializer deserializer);
+
+  @protected
+  DownloadRequestDto sse_decode_download_request_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  double sse_decode_f_64(SseDeserializer deserializer);
 
   @protected
   HttpHeaderDto sse_decode_http_header_dto(SseDeserializer deserializer);
@@ -447,6 +510,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<WebCookieDto> sse_decode_list_web_cookie_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MediaFetchEventDto sse_decode_media_fetch_event_dto(
     SseDeserializer deserializer,
   );
 
@@ -564,6 +632,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   WebCookieDto sse_decode_web_cookie_dto(SseDeserializer deserializer);
 
   @protected
+  void sse_encode_AnyhowException(
+    AnyhowException self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void
   sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     BooruEngine self,
@@ -581,6 +655,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void
   sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     BooruEngine self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_StreamSink_download_event_dto_Sse(
+    RustStreamSink<DownloadEventDto> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_StreamSink_media_fetch_event_dto_Sse(
+    RustStreamSink<MediaFetchEventDto> self,
     SseSerializer serializer,
   );
 
@@ -651,7 +737,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_download_request_dto(
+    DownloadRequestDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_i_32(int self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_media_request_dto(
+    MediaRequestDto self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_box_autoadd_media_type(
@@ -700,6 +798,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_content_rating(ContentRating self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_download_event_dto(
+    DownloadEventDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_download_request_dto(
+    DownloadRequestDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_f_64(double self, SseSerializer serializer);
 
   @protected
   void sse_encode_http_header_dto(HttpHeaderDto self, SseSerializer serializer);
@@ -779,6 +892,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_web_cookie_dto(
     List<WebCookieDto> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_media_fetch_event_dto(
+    MediaFetchEventDto self,
     SseSerializer serializer,
   );
 

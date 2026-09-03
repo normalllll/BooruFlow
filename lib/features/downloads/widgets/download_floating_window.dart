@@ -10,7 +10,7 @@ import 'package:yande_gui/features/downloads/logic.dart';
 import 'package:yande_gui/features/downloads/yande_download_item.dart';
 import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/shared/app_toast.dart';
-import 'package:yande_gui/src/rust/yande/model/post.dart';
+import 'package:yande_gui/features/posts/models/post.dart';
 
 class DownloadFloatingWindow extends StatefulWidget {
   const DownloadFloatingWindow({

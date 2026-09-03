@@ -14,6 +14,23 @@ generic:
   noMoreData: 沒有更多資料
   notFound: 找不到內容
 
+booruError:
+  invalidRequest: 請求參數無效。
+  unsupportedCapability: 目前圖源不支援此操作。
+  authenticationRequired: 請登入目前圖源後重試。
+  authenticationRejected: 圖源拒絕了帳號憑證。
+  permissionDenied: 圖源拒絕存取此資源。
+  rateLimited: 請求受到圖源限流，請稍後重試。
+  challengeRequired: 圖源要求完成瀏覽器驗證或更換網路線路。
+  sourceUnavailable: 目前圖源暫時無法使用。
+  network: 網路請求失敗，請檢查代理或切換節點。
+  timeout: 請求逾時，請檢查代理或切換節點。
+  invalidResponse: 圖源回傳了無法解析的回應。
+  unsafeRedirect: 圖源回傳了不安全的重新導向。
+  mediaValidationFailed: 圖片回應驗證或解碼失敗。
+  cancelled: 請求已取消。
+  internal: 圖源引擎發生內部錯誤。
+
 update:
   checkUpdateStart: 正在檢查更新...
   checkUpdateFailed: 檢查更新失敗，請檢查您的網路連線。

@@ -50,6 +50,8 @@ class TranslationsZhTw extends Translations with BaseTranslations<AppLocale, Tra
   @override
   late final Translations$generic$zh_TW generic = Translations$generic$zh_TW.internal(_root);
   @override
+  late final Translations$booruError$zh_TW booruError = Translations$booruError$zh_TW.internal(_root);
+  @override
   late final Translations$update$zh_TW update = Translations$update$zh_TW.internal(_root);
   @override
   late final Translations$postList$zh_TW postList = Translations$postList$zh_TW.internal(_root);
@@ -102,6 +104,45 @@ class Translations$generic$zh_TW extends Translations$generic$en {
   String get noMoreData => '沒有更多資料';
   @override
   String get notFound => '找不到內容';
+}
+
+// Path: booruError
+class Translations$booruError$zh_TW extends Translations$booruError$en {
+  Translations$booruError$zh_TW.internal(TranslationsZhTw root) : this._root = root, super.internal(root);
+
+  final TranslationsZhTw _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get invalidRequest => '請求參數無效。';
+  @override
+  String get unsupportedCapability => '目前圖源不支援此操作。';
+  @override
+  String get authenticationRequired => '請登入目前圖源後重試。';
+  @override
+  String get authenticationRejected => '圖源拒絕了帳號憑證。';
+  @override
+  String get permissionDenied => '圖源拒絕存取此資源。';
+  @override
+  String get rateLimited => '請求受到圖源限流，請稍後重試。';
+  @override
+  String get challengeRequired => '圖源要求完成瀏覽器驗證或更換網路線路。';
+  @override
+  String get sourceUnavailable => '目前圖源暫時無法使用。';
+  @override
+  String get network => '網路請求失敗，請檢查代理或切換節點。';
+  @override
+  String get timeout => '請求逾時，請檢查代理或切換節點。';
+  @override
+  String get invalidResponse => '圖源回傳了無法解析的回應。';
+  @override
+  String get unsafeRedirect => '圖源回傳了不安全的重新導向。';
+  @override
+  String get mediaValidationFailed => '圖片回應驗證或解碼失敗。';
+  @override
+  String get cancelled => '請求已取消。';
+  @override
+  String get internal => '圖源引擎發生內部錯誤。';
 }
 
 // Path: update
@@ -533,6 +574,21 @@ extension on TranslationsZhTw {
       'generic.retry' => '重試',
       'generic.noMoreData' => '沒有更多資料',
       'generic.notFound' => '找不到內容',
+      'booruError.invalidRequest' => '請求參數無效。',
+      'booruError.unsupportedCapability' => '目前圖源不支援此操作。',
+      'booruError.authenticationRequired' => '請登入目前圖源後重試。',
+      'booruError.authenticationRejected' => '圖源拒絕了帳號憑證。',
+      'booruError.permissionDenied' => '圖源拒絕存取此資源。',
+      'booruError.rateLimited' => '請求受到圖源限流，請稍後重試。',
+      'booruError.challengeRequired' => '圖源要求完成瀏覽器驗證或更換網路線路。',
+      'booruError.sourceUnavailable' => '目前圖源暫時無法使用。',
+      'booruError.network' => '網路請求失敗，請檢查代理或切換節點。',
+      'booruError.timeout' => '請求逾時，請檢查代理或切換節點。',
+      'booruError.invalidResponse' => '圖源回傳了無法解析的回應。',
+      'booruError.unsafeRedirect' => '圖源回傳了不安全的重新導向。',
+      'booruError.mediaValidationFailed' => '圖片回應驗證或解碼失敗。',
+      'booruError.cancelled' => '請求已取消。',
+      'booruError.internal' => '圖源引擎發生內部錯誤。',
       'update.checkUpdateStart' => '正在檢查更新...',
       'update.checkUpdateFailed' => '檢查更新失敗，請檢查您的網路連線。',
       'update.selectDownloadUrlFailed' => '找不到下載連結。\n請訪問專案頁面以手動更新或在專案Issue頁尋求幫助。',

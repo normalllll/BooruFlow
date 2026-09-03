@@ -33,3 +33,12 @@ pub enum DownloadEventDto {
         path: String,
     },
 }
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum MediaFetchEventDto {
+    Chunk {
+        bytes: Vec<u8>,
+        received_bytes_decimal: String,
+        total_bytes_decimal: Option<String>,
+    },
+}

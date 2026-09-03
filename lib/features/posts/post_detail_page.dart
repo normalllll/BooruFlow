@@ -6,13 +6,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:yande_gui/features/downloads/logic.dart';
+import 'package:yande_gui/features/booru/booru_error_presentation.dart';
 import 'package:yande_gui/features/posts/widgets/yande_image.dart';
 import 'package:yande_gui/features/tags/translated_tag.dart';
 import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/features/posts/logic.dart';
 import 'package:yande_gui/shared/app_navigation.dart';
 import 'package:yande_gui/shared/app_toast.dart';
-import 'package:yande_gui/src/rust/yande/model/post.dart';
+import 'package:yande_gui/features/posts/models/post.dart';
+import 'package:yande_gui/src/rust/api/booru_models.dart';
 import 'package:yande_gui/shared/app_theme.dart';
 import 'package:yande_gui/shared/widgets/auto_scaffold.dart';
 
@@ -49,12 +51,14 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
   Widget build(BuildContext context) {
     final relatedGroupId = post.parentId ?? (post.hasChildren ? post.id : null);
     final relatedValue = relatedGroupId != null
-        ? ref.watch(getSimilarProvider(id: relatedGroupId))
+        ? ref.watch(
+            getSimilarProvider(sourceId: post.sourceId, id: relatedGroupId),
+          )
         : null;
     final imagePosts = <Post>[post];
-    final seenIds = <int>{post.id};
+    final seenIds = <String>{post.id};
     if (relatedValue case AsyncData(:final value)) {
-      for (final relatedPost in [value.source, ...value.posts]) {
+      for (final relatedPost in value) {
         if (seenIds.add(relatedPost.id)) imagePosts.add(relatedPost);
       }
     }
@@ -67,7 +71,9 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
     };
     final retryRelated = relatedGroupId == null
         ? null
-        : () => ref.invalidate(getSimilarProvider(id: relatedGroupId));
+        : () => ref.invalidate(
+            getSimilarProvider(sourceId: post.sourceId, id: relatedGroupId),
+          );
 
     return AutoScaffold(
       titleWidget: Text(t.postDetail.titleWithId(id: selectedPost.id)),
@@ -228,6 +234,8 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
       url: targetPost.fileUrl ?? targetPost.jpegUrl ?? targetPost.previewUrl,
       width: targetPost.width.toDouble(),
       height: targetPost.height.toDouble(),
+      sourceId: targetPost.sourceId,
+      postId: targetPost.id,
     );
   }
 
@@ -336,7 +344,7 @@ class _PostImageViewer extends StatelessWidget {
               );
             },
           ),
-          if (selectedPost.rating != 's')
+          if (selectedPost.rating != ContentRating.general)
             PositionedDirectional(
               top: 16,
               end: 16,
@@ -353,7 +361,7 @@ class _PostImageViewer extends StatelessWidget {
             ),
           if (relatedError != null && onRetryRelated != null)
             PositionedDirectional(
-              top: selectedPost.rating == 's' ? 12 : 58,
+              top: selectedPost.rating == ContentRating.general ? 12 : 58,
               start: 12,
               child: _RelatedLoadError(
                 error: relatedError!,
@@ -468,11 +476,19 @@ class _PostImagePage extends StatelessWidget {
               height: imageSize.height,
               child: YandeImage(
                 post.sampleUrl ?? post.previewUrl,
+                sourceId: post.sourceId,
+                postId: post.id,
+                variant:
+                    post.variant(MediaVariantKind.sample)?.kind ??
+                    post.displayMedia.kind,
                 width: imageSize.width,
                 height: imageSize.height,
                 fit: BoxFit.contain,
                 placeholderWidget: YandeImage(
                   post.previewUrl,
+                  sourceId: post.sourceId,
+                  postId: post.id,
+                  variant: post.displayMedia.kind,
                   width: imageSize.width,
                   height: imageSize.height,
                   fit: BoxFit.contain,
@@ -538,7 +554,7 @@ class _RelatedLoadError extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Tooltip(
-                message: error.toString(),
+                message: describeBooruError(error),
                 child: Icon(
                   Icons.error_outline,
                   size: 18,
@@ -611,7 +627,7 @@ class _PostDetailPanel extends StatelessWidget {
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
             ),
           ),
-          if (post.rating != 's') ...[
+          if (post.rating != ContentRating.general) ...[
             const SizedBox(width: 8),
             _RatingBadge(rating: post.rating),
           ],
@@ -668,11 +684,7 @@ class _PostDetailPanel extends StatelessWidget {
       const SizedBox(height: 18),
       _SectionTitle(title: t.postDetail.details, icon: Icons.info_outline),
       const SizedBox(height: 4),
-      _MetadataRow(
-        label: 'ID',
-        value: '${post.id}',
-        onCopy: () => onCopy('${post.id}'),
-      ),
+      _MetadataRow(label: 'ID', value: post.id, onCopy: () => onCopy(post.id)),
       _MetadataRow(
         label: t.postDetail.createdAt,
         value: _formatDateTime(post.createdAt),
@@ -959,12 +971,12 @@ class _SectionTitle extends StatelessWidget {
 class _RatingBadge extends StatelessWidget {
   const _RatingBadge({required this.rating});
 
-  final String rating;
+  final ContentRating rating;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isExplicit = rating == 'e';
+    final isExplicit = rating == ContentRating.explicit;
     final background = isExplicit
         ? const Color(0xFFE53935)
         : colorScheme.surfaceContainerHighest;
@@ -1099,6 +1111,6 @@ bool _isUrl(String value) {
       uri.host.isNotEmpty;
 }
 
-String _ratingLabel(String rating) {
-  return rating == 'e' ? 'R-18' : rating.toUpperCase();
+String _ratingLabel(ContentRating rating) {
+  return rating.shortLabel;
 }

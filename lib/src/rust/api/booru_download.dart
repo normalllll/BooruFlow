@@ -6,9 +6,65 @@
 import '../frb_generated.dart';
 import 'booru_models.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
+part 'booru_download.freezed.dart';
 
-// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `DownloadEventDto`, `DownloadRequestDto`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`
+
+@freezed
+sealed class DownloadEventDto with _$DownloadEventDto {
+  const DownloadEventDto._();
+
+  const factory DownloadEventDto.progress({
+    required String receivedBytesDecimal,
+    String? totalBytesDecimal,
+    required double progress,
+  }) = DownloadEventDto_Progress;
+  const factory DownloadEventDto.done({required String path}) =
+      DownloadEventDto_Done;
+}
+
+class DownloadRequestDto {
+  final String sourceId;
+  final String postId;
+  final MediaVariantKind variant;
+  final String downloadRoot;
+
+  const DownloadRequestDto({
+    required this.sourceId,
+    required this.postId,
+    required this.variant,
+    required this.downloadRoot,
+  });
+
+  @override
+  int get hashCode =>
+      sourceId.hashCode ^
+      postId.hashCode ^
+      variant.hashCode ^
+      downloadRoot.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DownloadRequestDto &&
+          runtimeType == other.runtimeType &&
+          sourceId == other.sourceId &&
+          postId == other.postId &&
+          variant == other.variant &&
+          downloadRoot == other.downloadRoot;
+}
+
+@freezed
+sealed class MediaFetchEventDto with _$MediaFetchEventDto {
+  const MediaFetchEventDto._();
+
+  const factory MediaFetchEventDto.chunk({
+    required Uint8List bytes,
+    required String receivedBytesDecimal,
+    String? totalBytesDecimal,
+  }) = MediaFetchEventDto_Chunk;
+}
 
 class PreparedDownloadDto {
   final String sourceId;

@@ -49,6 +49,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 
   // Translations
   late final Translations$generic$en generic = Translations$generic$en.internal(_root);
+  late final Translations$booruError$en booruError = Translations$booruError$en.internal(_root);
   late final Translations$update$en update = Translations$update$en.internal(_root);
   late final Translations$postList$en postList = Translations$postList$en.internal(_root);
   late final Translations$postDetail$en postDetail = Translations$postDetail$en.internal(_root);
@@ -108,6 +109,60 @@ class Translations$generic$en {
 
   /// en: 'Not found'
   String get notFound => 'Not found';
+}
+
+// Path: booruError
+class Translations$booruError$en {
+  Translations$booruError$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'The request is invalid.'
+  String get invalidRequest => 'The request is invalid.';
+
+  /// en: 'This source does not support the requested operation.'
+  String get unsupportedCapability => 'This source does not support the requested operation.';
+
+  /// en: 'Sign in to this source and try again.'
+  String get authenticationRequired => 'Sign in to this source and try again.';
+
+  /// en: 'The source rejected the account credentials.'
+  String get authenticationRejected => 'The source rejected the account credentials.';
+
+  /// en: 'The source denied access to this resource.'
+  String get permissionDenied => 'The source denied access to this resource.';
+
+  /// en: 'The source is rate limiting requests. Try again later.'
+  String get rateLimited => 'The source is rate limiting requests. Try again later.';
+
+  /// en: 'The source requires a browser challenge or a different route.'
+  String get challengeRequired => 'The source requires a browser challenge or a different route.';
+
+  /// en: 'The source is currently unavailable.'
+  String get sourceUnavailable => 'The source is currently unavailable.';
+
+  /// en: 'The network request failed. Check the proxy or switch nodes.'
+  String get network => 'The network request failed. Check the proxy or switch nodes.';
+
+  /// en: 'The request timed out. Check the proxy or switch nodes.'
+  String get timeout => 'The request timed out. Check the proxy or switch nodes.';
+
+  /// en: 'The source returned an invalid response.'
+  String get invalidResponse => 'The source returned an invalid response.';
+
+  /// en: 'The source returned an unsafe redirect.'
+  String get unsafeRedirect => 'The source returned an unsafe redirect.';
+
+  /// en: 'The image response could not be validated or decoded.'
+  String get mediaValidationFailed => 'The image response could not be validated or decoded.';
+
+  /// en: 'The request was cancelled.'
+  String get cancelled => 'The request was cancelled.';
+
+  /// en: 'An internal booru engine error occurred.'
+  String get internal => 'An internal booru engine error occurred.';
 }
 
 // Path: update
@@ -634,6 +689,21 @@ extension on Translations {
       'generic.retry' => 'Retry',
       'generic.noMoreData' => 'No more data',
       'generic.notFound' => 'Not found',
+      'booruError.invalidRequest' => 'The request is invalid.',
+      'booruError.unsupportedCapability' => 'This source does not support the requested operation.',
+      'booruError.authenticationRequired' => 'Sign in to this source and try again.',
+      'booruError.authenticationRejected' => 'The source rejected the account credentials.',
+      'booruError.permissionDenied' => 'The source denied access to this resource.',
+      'booruError.rateLimited' => 'The source is rate limiting requests. Try again later.',
+      'booruError.challengeRequired' => 'The source requires a browser challenge or a different route.',
+      'booruError.sourceUnavailable' => 'The source is currently unavailable.',
+      'booruError.network' => 'The network request failed. Check the proxy or switch nodes.',
+      'booruError.timeout' => 'The request timed out. Check the proxy or switch nodes.',
+      'booruError.invalidResponse' => 'The source returned an invalid response.',
+      'booruError.unsafeRedirect' => 'The source returned an unsafe redirect.',
+      'booruError.mediaValidationFailed' => 'The image response could not be validated or decoded.',
+      'booruError.cancelled' => 'The request was cancelled.',
+      'booruError.internal' => 'An internal booru engine error occurred.',
       'update.checkUpdateStart' => 'Checking for updates...',
       'update.checkUpdateFailed' => 'Failed to check for updates. Please check your Internet connection.',
       'update.selectDownloadUrlFailed' =>

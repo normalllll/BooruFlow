@@ -16,7 +16,7 @@ final class PostListProvider
     extends $NotifierProvider<PostList, PostListState> {
   PostListProvider._({
     required PostListFamily super.from,
-    required (Type, {List<String> tags}) super.argument,
+    required (Type, {String sourceId, List<String> tags}) super.argument,
   }) : super(
          retry: null,
          name: r'postListProvider',
@@ -58,7 +58,7 @@ final class PostListProvider
   }
 }
 
-String _$postListHash() => r'1543c96dd3d9034bbcc6bcd4a005247775f21533';
+String _$postListHash() => r'e0ba17645baac5ce91043fc6243d12f5018f907c';
 
 final class PostListFamily extends $Family
     with
@@ -67,7 +67,7 @@ final class PostListFamily extends $Family
           PostListState,
           PostListState,
           PostListState,
-          (Type, {List<String> tags})
+          (Type, {String sourceId, List<String> tags})
         > {
   PostListFamily._()
     : super(
@@ -78,19 +78,30 @@ final class PostListFamily extends $Family
         isAutoDispose: false,
       );
 
-  PostListProvider call(Type type, {required List<String> tags}) =>
-      PostListProvider._(argument: (type, tags: tags), from: this);
+  PostListProvider call(
+    Type type, {
+    required String sourceId,
+    required List<String> tags,
+  }) => PostListProvider._(
+    argument: (type, sourceId: sourceId, tags: tags),
+    from: this,
+  );
 
   @override
   String toString() => r'postListProvider';
 }
 
 abstract class _$PostList extends $Notifier<PostListState> {
-  late final _$args = ref.$arg as (Type, {List<String> tags});
+  late final _$args = ref.$arg as (Type, {String sourceId, List<String> tags});
   Type get type => _$args.$1;
+  String get sourceId => _$args.sourceId;
   List<String> get tags => _$args.tags;
 
-  PostListState build(Type type, {required List<String> tags});
+  PostListState build(
+    Type type, {
+    required String sourceId,
+    required List<String> tags,
+  });
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
@@ -103,7 +114,10 @@ abstract class _$PostList extends $Notifier<PostListState> {
               Object?,
               Object?
             >;
-    return element.handleCreate(ref, () => build(_$args.$1, tags: _$args.tags));
+    return element.handleCreate(
+      ref,
+      () => build(_$args.$1, sourceId: _$args.sourceId, tags: _$args.tags),
+    );
   }
 }
 
@@ -111,11 +125,16 @@ abstract class _$PostList extends $Notifier<PostListState> {
 final getSimilarProvider = GetSimilarFamily._();
 
 final class GetSimilarProvider
-    extends $FunctionalProvider<AsyncValue<Similar>, Similar, FutureOr<Similar>>
-    with $FutureModifier<Similar>, $FutureProvider<Similar> {
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<Post>>,
+          List<Post>,
+          FutureOr<List<Post>>
+        >
+    with $FutureModifier<List<Post>>, $FutureProvider<List<Post>> {
   GetSimilarProvider._({
     required GetSimilarFamily super.from,
-    required int super.argument,
+    required ({String sourceId, String id}) super.argument,
   }) : super(
          retry: null,
          name: r'getSimilarProvider',
@@ -131,18 +150,18 @@ final class GetSimilarProvider
   String toString() {
     return r'getSimilarProvider'
         ''
-        '($argument)';
+        '$argument';
   }
 
   @$internal
   @override
-  $FutureProviderElement<Similar> $createElement($ProviderPointer pointer) =>
+  $FutureProviderElement<List<Post>> $createElement($ProviderPointer pointer) =>
       $FutureProviderElement(pointer);
 
   @override
-  FutureOr<Similar> create(Ref ref) {
-    final argument = this.argument as int;
-    return getSimilar(ref, id: argument);
+  FutureOr<List<Post>> create(Ref ref) {
+    final argument = this.argument as ({String sourceId, String id});
+    return getSimilar(ref, sourceId: argument.sourceId, id: argument.id);
   }
 
   @override
@@ -156,10 +175,14 @@ final class GetSimilarProvider
   }
 }
 
-String _$getSimilarHash() => r'63b96471253688b5a424bfe819602ba4d5ab7f4a';
+String _$getSimilarHash() => r'6abad4976f31405cef28c905affc6a807f32917c';
 
 final class GetSimilarFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<Similar>, int> {
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<List<Post>>,
+          ({String sourceId, String id})
+        > {
   GetSimilarFamily._()
     : super(
         retry: null,
@@ -169,8 +192,8 @@ final class GetSimilarFamily extends $Family
         isAutoDispose: true,
       );
 
-  GetSimilarProvider call({required int id}) =>
-      GetSimilarProvider._(argument: id, from: this);
+  GetSimilarProvider call({required String sourceId, required String id}) =>
+      GetSimilarProvider._(argument: (sourceId: sourceId, id: id), from: this);
 
   @override
   String toString() => r'getSimilarProvider';

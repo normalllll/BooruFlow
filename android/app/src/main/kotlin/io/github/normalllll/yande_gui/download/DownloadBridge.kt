@@ -638,11 +638,11 @@ object AndroidMediaSaver {
             put(MediaStore.MediaColumns.MIME_TYPE, mimeTypeFor(job.filename))
             put(MediaStore.MediaColumns.SIZE, source.length())
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/YandeGUI/images")
+                put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/AnyBooru/${job.sourceId}")
                 put(MediaStore.MediaColumns.IS_PENDING, 1)
             } else {
                 @Suppress("DEPRECATION")
-                val directory = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "YandeGUI/images")
+                val directory = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "AnyBooru/${job.sourceId}")
                 if (!directory.exists() && !directory.mkdirs()) {
                     throw IllegalStateException("Could not create download directory: ${directory.absolutePath}")
                 }
@@ -707,6 +707,7 @@ object AndroidMediaSaver {
 data class NativeDownloadJob(
     val id: String,
     val resourceId: Int,
+    val sourceId: String,
     val url: String,
     val filename: String,
     val networkOptions: NativeNetworkOptions,
@@ -781,6 +782,7 @@ private fun nativeJobFromMap(map: Map<String, Any?>?): NativeDownloadJob? {
     return NativeDownloadJob(
         id = id,
         resourceId = (map["resourceId"] as? Number)?.toInt() ?: 0,
+        sourceId = map["sourceId"]?.toString()?.takeIf { it.isNotBlank() } ?: "yande",
         url = url,
         filename = filename,
         networkOptions = NativeNetworkOptions(

@@ -50,6 +50,8 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
   @override
   late final Translations$generic$zh_CN generic = Translations$generic$zh_CN.internal(_root);
   @override
+  late final Translations$booruError$zh_CN booruError = Translations$booruError$zh_CN.internal(_root);
+  @override
   late final Translations$update$zh_CN update = Translations$update$zh_CN.internal(_root);
   @override
   late final Translations$postList$zh_CN postList = Translations$postList$zh_CN.internal(_root);
@@ -102,6 +104,45 @@ class Translations$generic$zh_CN extends Translations$generic$en {
   String get noMoreData => '没有更多数据';
   @override
   String get notFound => '未找到内容';
+}
+
+// Path: booruError
+class Translations$booruError$zh_CN extends Translations$booruError$en {
+  Translations$booruError$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+  final TranslationsZhCn _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get invalidRequest => '请求参数无效。';
+  @override
+  String get unsupportedCapability => '当前图源不支持此操作。';
+  @override
+  String get authenticationRequired => '请登录当前图源后重试。';
+  @override
+  String get authenticationRejected => '图源拒绝了账号凭据。';
+  @override
+  String get permissionDenied => '图源拒绝访问此资源。';
+  @override
+  String get rateLimited => '请求受到图源限流，请稍后重试。';
+  @override
+  String get challengeRequired => '图源要求完成浏览器验证或更换网络线路。';
+  @override
+  String get sourceUnavailable => '当前图源暂时不可用。';
+  @override
+  String get network => '网络请求失败，请检查代理或切换节点。';
+  @override
+  String get timeout => '请求超时，请检查代理或切换节点。';
+  @override
+  String get invalidResponse => '图源返回了无法解析的响应。';
+  @override
+  String get unsafeRedirect => '图源返回了不安全的重定向。';
+  @override
+  String get mediaValidationFailed => '图片响应校验或解码失败。';
+  @override
+  String get cancelled => '请求已取消。';
+  @override
+  String get internal => '图源引擎发生内部错误。';
 }
 
 // Path: update
@@ -533,6 +574,21 @@ extension on TranslationsZhCn {
       'generic.retry' => '重试',
       'generic.noMoreData' => '没有更多数据',
       'generic.notFound' => '未找到内容',
+      'booruError.invalidRequest' => '请求参数无效。',
+      'booruError.unsupportedCapability' => '当前图源不支持此操作。',
+      'booruError.authenticationRequired' => '请登录当前图源后重试。',
+      'booruError.authenticationRejected' => '图源拒绝了账号凭据。',
+      'booruError.permissionDenied' => '图源拒绝访问此资源。',
+      'booruError.rateLimited' => '请求受到图源限流，请稍后重试。',
+      'booruError.challengeRequired' => '图源要求完成浏览器验证或更换网络线路。',
+      'booruError.sourceUnavailable' => '当前图源暂时不可用。',
+      'booruError.network' => '网络请求失败，请检查代理或切换节点。',
+      'booruError.timeout' => '请求超时，请检查代理或切换节点。',
+      'booruError.invalidResponse' => '图源返回了无法解析的响应。',
+      'booruError.unsafeRedirect' => '图源返回了不安全的重定向。',
+      'booruError.mediaValidationFailed' => '图片响应校验或解码失败。',
+      'booruError.cancelled' => '请求已取消。',
+      'booruError.internal' => '图源引擎发生内部错误。',
       'update.checkUpdateStart' => '正在检查更新...',
       'update.checkUpdateFailed' => '检查更新失败，请检查你的网络连接。',
       'update.selectDownloadUrlFailed' => '找不到下载链接。\n请访问项目页面手动更新，或在项目 Issue 页面寻求帮助。',

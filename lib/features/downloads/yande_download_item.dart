@@ -1,5 +1,5 @@
 import 'package:yande_gui/core/downloads/download_models.dart';
-import 'package:yande_gui/src/rust/yande/model/post.dart';
+import 'package:yande_gui/features/posts/models/post.dart';
 
 class YandeDownloadItem {
   const YandeDownloadItem({required this.snapshot, this.post});

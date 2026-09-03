@@ -10,6 +10,8 @@ part 'download_database.g.dart';
 class DownloadJobs extends Table {
   TextColumn get id => text()();
   IntColumn get resourceId => integer()();
+  TextColumn get sourceId => text().withDefault(const Constant('yande'))();
+  TextColumn get postId => text().withDefault(const Constant(''))();
   IntColumn get variantIndex => integer().withDefault(const Constant(0))();
   TextColumn get url => text()();
   TextColumn get filename => text()();
@@ -50,7 +52,7 @@ class DownloadDatabase extends _$DownloadDatabase {
   DownloadDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
@@ -68,6 +70,10 @@ class DownloadDatabase extends _$DownloadDatabase {
             downloadJobs.networkOptionsJson,
           );
           await migrator.addColumn(downloadJobs, downloadJobs.validationJson);
+        }
+        if (from < 5) {
+          await migrator.addColumn(downloadJobs, downloadJobs.sourceId);
+          await migrator.addColumn(downloadJobs, downloadJobs.postId);
         }
       },
     );

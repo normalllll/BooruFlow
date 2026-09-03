@@ -81,6 +81,8 @@ class DriftDownloadStore implements DownloadStore {
             DownloadJobsCompanion(
               id: Value(job.id),
               resourceId: Value(job.resourceId),
+              sourceId: Value(job.sourceId),
+              postId: Value(job.postId),
               variantIndex: Value(job.variantIndex),
               url: Value(job.url.toString()),
               filename: Value(job.filename),
@@ -253,6 +255,8 @@ class DriftDownloadStore implements DownloadStore {
     return DownloadJob(
       id: row.id,
       resourceId: row.resourceId,
+      sourceId: row.sourceId,
+      postId: row.postId.isEmpty ? row.resourceId.toString() : row.postId,
       variantIndex: row.variantIndex,
       url: Uri.parse(row.url),
       filename: row.filename,

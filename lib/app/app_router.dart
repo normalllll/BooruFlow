@@ -10,7 +10,7 @@ import 'package:yande_gui/features/search/post_search_page.dart';
 import 'package:yande_gui/features/settings/settings_page.dart';
 import 'package:yande_gui/features/shell/app_shell.dart';
 import 'package:yande_gui/intl/translations.g.dart';
-import 'package:yande_gui/src/rust/yande/model/post.dart';
+import 'package:yande_gui/features/posts/models/post.dart';
 import 'package:yande_gui/shared/app_navigation.dart';
 import 'package:yande_gui/shared/widgets/auto_scaffold.dart';
 
@@ -134,6 +134,8 @@ class AppRouter {
                         url: args.url,
                         width: args.width,
                         height: args.height,
+                        sourceId: args.sourceId,
+                        postId: args.postId,
                       )
                     : const _MissingRouteDataPage(),
               );
@@ -147,7 +149,7 @@ class AppRouter {
   static Future<T?> _openPost<T>(Post post) {
     return router.pushNamed<T>(
       AppRoute.postDetail.name,
-      pathParameters: {'id': '${post.id}'},
+      pathParameters: {'id': post.id},
       extra: post,
     );
   }

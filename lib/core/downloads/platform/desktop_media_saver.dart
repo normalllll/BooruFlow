@@ -49,8 +49,10 @@ final class DesktopMediaSaver implements MediaSaver {
   }
 
   Future<String> _resolveDirectory(DownloadJob job) async {
-    return resolveDesktopDownloadDirectory(
+    final root = await resolveDesktopDownloadDirectory(
       explicitDirectory: job.saveTarget.directory,
     );
+    final child = job.saveTarget.subdirectory;
+    return child == null || child.isEmpty ? root : p.join(root, child);
   }
 }

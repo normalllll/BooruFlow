@@ -8,6 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_more_list/loading_more_list.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:yande_gui/features/downloads/logic.dart';
+import 'package:yande_gui/features/booru/booru_service.dart';
+import 'package:yande_gui/features/posts/models/post.dart';
 import 'package:yande_gui/features/posts/widgets/post_search_field.dart';
 import 'package:yande_gui/features/posts/widgets/post_waterfall_skeleton.dart';
 import 'package:yande_gui/features/posts/resolution.dart';
@@ -15,7 +17,7 @@ import 'package:yande_gui/features/posts/widgets/yande_image.dart';
 import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/core/settings_service.dart';
 import 'package:yande_gui/shared/app_navigation.dart';
-import 'package:yande_gui/src/rust/yande/model/post.dart';
+import 'package:yande_gui/src/rust/api/booru_models.dart';
 import 'package:yande_gui/shared/app_theme.dart';
 import 'package:yande_gui/shared/widgets/auto_scaffold.dart';
 import 'package:yande_gui/shared/widgets/data_refresh_view.dart';
@@ -33,7 +35,11 @@ class PostListPage extends ConsumerStatefulWidget {
 }
 
 class _PostListPageState extends ConsumerState<PostListPage> {
-  late var provider = postListProvider(runtimeType, tags: widget.tags ?? []);
+  late var provider = postListProvider(
+    runtimeType,
+    sourceId: BooruService.instance.selectedSource.value,
+    tags: widget.tags ?? [],
+  );
   late final ScrollController _scrollController;
   TextEditingController? _searchController;
 
@@ -43,6 +49,8 @@ class _PostListPageState extends ConsumerState<PostListPage> {
   void initState() {
     super.initState();
     _scrollController = ScrollController()..addListener(_handleScroll);
+    BooruService.instance.selectedSource.addListener(_handleSourceChanged);
+    BooruService.instance.revision.addListener(_handleEngineChanged);
     if (widget.tags case final tags?) {
       _searchController = TextEditingController(text: tags.join(' '));
     }
@@ -54,7 +62,11 @@ class _PostListPageState extends ConsumerState<PostListPage> {
     super.didUpdateWidget(oldWidget);
     if (listEquals(oldWidget.tags, widget.tags)) return;
 
-    provider = postListProvider(runtimeType, tags: widget.tags ?? []);
+    provider = postListProvider(
+      runtimeType,
+      sourceId: BooruService.instance.selectedSource.value,
+      tags: widget.tags ?? [],
+    );
     final query = widget.tags?.join(' ');
     if (query == null) {
       _searchController?.dispose();
@@ -76,7 +88,28 @@ class _PostListPageState extends ConsumerState<PostListPage> {
       ..removeListener(_handleScroll)
       ..dispose();
     _searchController?.dispose();
+    BooruService.instance.selectedSource.removeListener(_handleSourceChanged);
+    BooruService.instance.revision.removeListener(_handleEngineChanged);
     super.dispose();
+  }
+
+  void _handleSourceChanged() {
+    if (!mounted) return;
+    setState(() {
+      provider = postListProvider(
+        runtimeType,
+        sourceId: BooruService.instance.selectedSource.value,
+        tags: widget.tags ?? [],
+      );
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureInitialLoad());
+  }
+
+  void _handleEngineChanged() {
+    if (!mounted) return;
+    ref.invalidate(provider);
+    setState(() {});
+    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureInitialLoad());
   }
 
   void _ensureInitialLoad() {
@@ -183,6 +216,7 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                   SliverToBoxAdapter(
                     child: SizedBox(height: MediaQuery.paddingOf(context).top),
                   ),
+                const SliverToBoxAdapter(child: _SourceStrip()),
                 if (widget.tags == null && source.isNotEmpty)
                   const SliverToBoxAdapter(child: _FreepivPromotionBanner()),
                 if (showInitialSkeleton)
@@ -557,10 +591,13 @@ class _PostPreviewImage extends StatelessWidget {
         children: [
           YandeImage(
             post.previewUrl,
+            sourceId: post.sourceId,
+            postId: post.id,
+            variant: post.displayMedia.kind,
             fit: BoxFit.cover,
             imageBuilder: (child) => child.animate().fade(duration: 250.ms),
           ),
-          if (post.rating != 's')
+          if (post.rating != ContentRating.general)
             PositionedDirectional(
               top: 8,
               end: 8,
@@ -659,12 +696,12 @@ class _PostPreviewFooter extends StatelessWidget {
 class _RatingBadge extends StatelessWidget {
   const _RatingBadge({required this.rating});
 
-  final String rating;
+  final ContentRating rating;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isExplicit = rating == 'e';
+    final isExplicit = rating == ContentRating.explicit;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -690,7 +727,7 @@ class _RatingBadge extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
         child: Text(
-          rating == 'e' ? 'R-18' : rating.toUpperCase(),
+          rating.shortLabel,
           style: TextStyle(
             color: isExplicit ? Colors.white : colorScheme.onSurfaceVariant,
             fontWeight: FontWeight.w700,
@@ -698,6 +735,64 @@ class _RatingBadge extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _SourceStrip extends StatelessWidget {
+  const _SourceStrip();
+
+  @override
+  Widget build(BuildContext context) {
+    final service = BooruService.instance;
+    return ValueListenableBuilder<String>(
+      valueListenable: service.selectedSource,
+      builder: (context, selected, _) {
+        return SizedBox(
+          height: 58,
+          child: ListView.separated(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+            scrollDirection: Axis.horizontal,
+            itemCount: service.sources.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 7),
+            itemBuilder: (context, index) {
+              final source = service.sources[index];
+              final active = source.sourceId == selected;
+              final colors = Theme.of(context).colorScheme;
+              return Semantics(
+                button: true,
+                selected: active,
+                child: GestureDetector(
+                  onTap: () => service.selectSource(source.sourceId),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 160),
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: active
+                          ? colors.primary
+                          : colors.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: active ? colors.primary : colors.outlineVariant,
+                      ),
+                    ),
+                    child: Text(
+                      source.displayName,
+                      style: TextStyle(
+                        color: active
+                            ? colors.onPrimary
+                            : colors.onSurfaceVariant,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

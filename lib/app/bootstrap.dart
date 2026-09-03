@@ -11,7 +11,7 @@ import 'package:yande_gui/core/downloads/download_manager_configuration.dart';
 import 'package:yande_gui/core/app_runtime.dart';
 import 'package:yande_gui/core/settings_service.dart';
 import 'package:yande_gui/features/downloads/logic.dart';
-import 'package:yande_gui/features/posts/network/yande_network_policy.dart';
+import 'package:yande_gui/features/booru/booru_service.dart';
 import 'package:yande_gui/features/search/custom_tags_service.dart';
 import 'package:yande_gui/features/tags/tag_translations_service.dart';
 import 'package:yande_gui/intl/locale_preferences.dart';
@@ -29,7 +29,7 @@ Future<void> bootstrap() async {
 
   await Hive.initFlutter();
   await SettingsService.initialize();
-  await applyYandeNetworkSettings();
+  await BooruService.instance.initialize(packageInfo.version);
 
   final appLocale = applyLanguagePreference(SettingsService.language);
   await CustomTagsService.initialize();
@@ -40,7 +40,6 @@ Future<void> bootstrap() async {
   configureDownloadManager(
     DownloadManagerConfiguration(
       maxConcurrentDownloads: () => SettingsService.maxConcurrentDownloads,
-      resolveNetworkOptions: YandeNetworkPolicy.resolveDownloadOptions,
     ),
   );
   await YandeDownloads.instance.initialize();

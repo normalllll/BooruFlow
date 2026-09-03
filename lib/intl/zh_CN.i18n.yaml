@@ -14,6 +14,23 @@ generic:
   noMoreData: 没有更多数据
   notFound: 未找到内容
 
+booruError:
+  invalidRequest: 请求参数无效。
+  unsupportedCapability: 当前图源不支持此操作。
+  authenticationRequired: 请登录当前图源后重试。
+  authenticationRejected: 图源拒绝了账号凭据。
+  permissionDenied: 图源拒绝访问此资源。
+  rateLimited: 请求受到图源限流，请稍后重试。
+  challengeRequired: 图源要求完成浏览器验证或更换网络线路。
+  sourceUnavailable: 当前图源暂时不可用。
+  network: 网络请求失败，请检查代理或切换节点。
+  timeout: 请求超时，请检查代理或切换节点。
+  invalidResponse: 图源返回了无法解析的响应。
+  unsafeRedirect: 图源返回了不安全的重定向。
+  mediaValidationFailed: 图片响应校验或解码失败。
+  cancelled: 请求已取消。
+  internal: 图源引擎发生内部错误。
+
 update:
   checkUpdateStart: 正在检查更新...
   checkUpdateFailed: 检查更新失败，请检查你的网络连接。

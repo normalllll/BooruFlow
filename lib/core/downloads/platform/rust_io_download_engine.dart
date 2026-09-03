@@ -4,7 +4,9 @@ import 'dart:io';
 import 'package:yande_gui/core/downloads/download_engine.dart';
 import 'package:yande_gui/core/downloads/download_file_system.dart';
 import 'package:yande_gui/core/downloads/download_models.dart';
-import 'package:yande_gui/src/rust/api/download.dart';
+import 'package:yande_gui/features/booru/booru_service.dart';
+import 'package:yande_gui/src/rust/api/booru_download.dart';
+import 'package:yande_gui/src/rust/api/booru_models.dart';
 import 'package:path/path.dart' as p;
 
 final class RustIoDownloadEngine implements DownloadEngine {
@@ -120,7 +122,7 @@ final class RustIoDownloadEngine implements DownloadEngine {
       var lastEmit = DateTime.fromMillisecondsSinceEpoch(0);
       final downloadedPath = await running.download(
         job,
-        partialFile.path,
+        jobDirectory.path,
         onProgress: (receivedBytes, totalBytes) {
           running.receivedBytes = receivedBytes;
           running.totalBytes = totalBytes;
@@ -216,7 +218,7 @@ class _RunningDownload {
   _RunningDownload({required this.job});
 
   final DownloadJob job;
-  StreamSubscription<FrbDownloadFileEvent>? subscription;
+  StreamSubscription<DownloadEventDto>? subscription;
   Completer<String>? _pathCompleter;
   final _finishedCompleter = Completer<void>();
   bool cancelled = false;
@@ -226,7 +228,7 @@ class _RunningDownload {
 
   Future<String> download(
     DownloadJob job,
-    String path, {
+    String downloadRoot, {
     required void Function(int receivedBytes, int? totalBytes) onProgress,
   }) {
     if (cancelled) {
@@ -235,43 +237,35 @@ class _RunningDownload {
       );
     }
     final completer = Completer<String>();
-    final network = job.networkOptions;
-    final validation = job.validation;
-    final checksum = validation.checksum;
-    final expectedBytes = validation.expectedBytes;
-    if (expectedBytes != null && expectedBytes > 0xffffffff) {
-      return Future<String>.error(
-        const DownloadException(
-          'The Rust bridge supports expected byte counts up to 4 GiB.',
-        ),
-      );
-    }
     _pathCompleter = completer;
-    subscription =
-        downloadToFile(
-          url: job.url.toString(),
-          path: path,
-          headers: network.headers,
-          proxyUrl: network.proxyUrl,
-          connectHost: network.connectHost,
-          hostHeader: network.hostHeader,
-          disableTlsSni: network.disableTlsSni,
-          allowInvalidCertificates: network.allowInvalidCertificates,
-          connectTimeoutSeconds: network.connectTimeoutSeconds,
-          receiveTimeoutSeconds: network.receiveTimeoutSeconds,
-          expectedBytes: expectedBytes,
-          allowedContentTypes: validation.allowedContentTypes,
-          checksumAlgorithm: checksum?.algorithm.name,
-          checksumValue: checksum?.value,
-        ).listen(
+    subscription = BooruService.instance.engine
+        .downloadToFileStream(
+          request: DownloadRequestDto(
+            sourceId: job.sourceId,
+            postId: job.postId,
+            variant:
+                job.variantIndex >= 0 &&
+                    job.variantIndex < MediaVariantKind.values.length
+                ? MediaVariantKind.values[job.variantIndex]
+                : MediaVariantKind.original,
+            downloadRoot: downloadRoot,
+          ),
+        )
+        .listen(
           (event) {
             if (cancelled) {
               return;
             }
             switch (event) {
-              case FrbDownloadFileEvent_Progress(:final received, :final total):
-                onProgress(received, total > 0 ? total : null);
-              case FrbDownloadFileEvent_Done(:final path):
+              case DownloadEventDto_Progress(
+                :final receivedBytesDecimal,
+                :final totalBytesDecimal,
+              ):
+                onProgress(
+                  int.tryParse(receivedBytesDecimal) ?? 0,
+                  int.tryParse(totalBytesDecimal ?? ''),
+                );
+              case DownloadEventDto_Done(:final path):
                 complete(path);
             }
           },

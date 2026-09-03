@@ -198,10 +198,27 @@ async fn replace_file(part_path: &Path, destination: &Path, source_id: &str) -> 
     Ok(())
 }
 
-async fn open_prepared(
+pub(crate) async fn open_prepared(
     runtime: &NetworkRuntime,
     source: &SourceDefinition,
     prepared: &PreparedDownloadDto,
+) -> BooruResult<reqwest::Response> {
+    open_prepared_inner(runtime, source, prepared, true).await
+}
+
+pub(crate) async fn open_prepared_unthrottled(
+    runtime: &NetworkRuntime,
+    source: &SourceDefinition,
+    prepared: &PreparedDownloadDto,
+) -> BooruResult<reqwest::Response> {
+    open_prepared_inner(runtime, source, prepared, false).await
+}
+
+async fn open_prepared_inner(
+    runtime: &NetworkRuntime,
+    source: &SourceDefinition,
+    prepared: &PreparedDownloadDto,
+    throttle: bool,
 ) -> BooruResult<reqwest::Response> {
     let url = reqwest::Url::parse(&prepared.url)
         .map_err(|_| BooruErrorDto::invalid_request(Some(source.id)))?;
@@ -213,11 +230,11 @@ async fn open_prepared(
         .collect();
     spec.allow_protected_headers = true;
     if source.id != "anime_pictures" || prepared.variant != MediaVariantKind::Original {
-        return runtime.open_media(source, spec).await;
+        return open_media(runtime, source, spec, throttle).await;
     }
 
     spec.follow_redirects = false;
-    let response = runtime.open_media(source, spec).await?;
+    let response = open_media(runtime, source, spec, throttle).await?;
     if !response.status().is_redirection() {
         return Ok(response);
     }
@@ -249,7 +266,20 @@ async fn open_prepared(
         .headers
         .push(("cookie".to_owned(), redirect_cookie));
     redirected.allow_protected_headers = true;
-    runtime.open_media(source, redirected).await
+    open_media(runtime, source, redirected, throttle).await
+}
+
+async fn open_media(
+    runtime: &NetworkRuntime,
+    source: &SourceDefinition,
+    spec: RequestSpec,
+    throttle: bool,
+) -> BooruResult<reqwest::Response> {
+    if throttle {
+        runtime.open_media(source, spec).await
+    } else {
+        runtime.open_media_unthrottled(source, spec).await
+    }
 }
 
 fn progress(received: u64, total: Option<u64>) -> DownloadProgress {

@@ -50,6 +50,8 @@ class TranslationsJa extends Translations with BaseTranslations<AppLocale, Trans
   @override
   late final _Translations$generic$ja generic = _Translations$generic$ja._(_root);
   @override
+  late final _Translations$booruError$ja booruError = _Translations$booruError$ja._(_root);
+  @override
   late final _Translations$update$ja update = _Translations$update$ja._(_root);
   @override
   late final _Translations$postList$ja postList = _Translations$postList$ja._(_root);
@@ -102,6 +104,45 @@ class _Translations$generic$ja extends Translations$generic$en {
   String get noMoreData => 'これ以上データはありません';
   @override
   String get notFound => '見つかりませんでした';
+}
+
+// Path: booruError
+class _Translations$booruError$ja extends Translations$booruError$en {
+  _Translations$booruError$ja._(TranslationsJa root) : this._root = root, super.internal(root);
+
+  final TranslationsJa _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get invalidRequest => 'リクエストが無効です。';
+  @override
+  String get unsupportedCapability => 'この画像ソースは要求された操作に対応していません。';
+  @override
+  String get authenticationRequired => 'この画像ソースにログインしてから再試行してください。';
+  @override
+  String get authenticationRejected => '画像ソースがアカウント認証情報を拒否しました。';
+  @override
+  String get permissionDenied => '画像ソースがこのリソースへのアクセスを拒否しました。';
+  @override
+  String get rateLimited => '画像ソースのレート制限中です。しばらくしてから再試行してください。';
+  @override
+  String get challengeRequired => 'ブラウザ認証を完了するか、別のネットワーク経路を使用してください。';
+  @override
+  String get sourceUnavailable => '画像ソースは現在利用できません。';
+  @override
+  String get network => 'ネットワークリクエストに失敗しました。プロキシまたはノードを変更してください。';
+  @override
+  String get timeout => 'リクエストがタイムアウトしました。プロキシまたはノードを変更してください。';
+  @override
+  String get invalidResponse => '画像ソースから無効なレスポンスが返されました。';
+  @override
+  String get unsafeRedirect => '画像ソースから安全でないリダイレクトが返されました。';
+  @override
+  String get mediaValidationFailed => '画像レスポンスを検証またはデコードできませんでした。';
+  @override
+  String get cancelled => 'リクエストはキャンセルされました。';
+  @override
+  String get internal => 'Booru エンジンの内部エラーが発生しました。';
 }
 
 // Path: update
@@ -531,6 +572,21 @@ extension on TranslationsJa {
       'generic.retry' => '再試行',
       'generic.noMoreData' => 'これ以上データはありません',
       'generic.notFound' => '見つかりませんでした',
+      'booruError.invalidRequest' => 'リクエストが無効です。',
+      'booruError.unsupportedCapability' => 'この画像ソースは要求された操作に対応していません。',
+      'booruError.authenticationRequired' => 'この画像ソースにログインしてから再試行してください。',
+      'booruError.authenticationRejected' => '画像ソースがアカウント認証情報を拒否しました。',
+      'booruError.permissionDenied' => '画像ソースがこのリソースへのアクセスを拒否しました。',
+      'booruError.rateLimited' => '画像ソースのレート制限中です。しばらくしてから再試行してください。',
+      'booruError.challengeRequired' => 'ブラウザ認証を完了するか、別のネットワーク経路を使用してください。',
+      'booruError.sourceUnavailable' => '画像ソースは現在利用できません。',
+      'booruError.network' => 'ネットワークリクエストに失敗しました。プロキシまたはノードを変更してください。',
+      'booruError.timeout' => 'リクエストがタイムアウトしました。プロキシまたはノードを変更してください。',
+      'booruError.invalidResponse' => '画像ソースから無効なレスポンスが返されました。',
+      'booruError.unsafeRedirect' => '画像ソースから安全でないリダイレクトが返されました。',
+      'booruError.mediaValidationFailed' => '画像レスポンスを検証またはデコードできませんでした。',
+      'booruError.cancelled' => 'リクエストはキャンセルされました。',
+      'booruError.internal' => 'Booru エンジンの内部エラーが発生しました。',
       'update.checkUpdateStart' => 'アップデートを確認中…',
       'update.checkUpdateFailed' => 'アップデートの確認に失敗しました。インターネット接続を確認してください。',
       'update.selectDownloadUrlFailed' => 'ダウンロードURLが見つかりません。\nプロジェクトページにアクセスし、手動で更新するか、プロジェクトのIssueページでヘルプを求めてください。',

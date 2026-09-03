@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:loading_more_list/loading_more_list.dart';
+import 'package:yande_gui/features/booru/booru_error_presentation.dart';
 import 'package:yande_gui/intl/translations.g.dart';
 
 class LoadingMoreIndicator extends StatelessWidget {
@@ -63,7 +64,7 @@ class LoadingMoreIndicator extends StatelessWidget {
         break;
       case IndicatorStatus.fullScreenError:
         widget = _ErrorContent(
-          message: error?.toString() ?? t.generic.loadFailed,
+          message: describeBooruError(error),
           onRetry: errorRefresh,
         );
         if (isSliver) {
@@ -170,30 +171,32 @@ class _ErrorContent extends StatelessWidget {
     final hasDetailedMessage = message.contains('\n') || message.length > 120;
 
     return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 560),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Icon(Icons.error_outline, size: 44, color: colorScheme.error),
-              const SizedBox(height: 16),
-              Text(
-                message,
-                textAlign: hasDetailedMessage
-                    ? TextAlign.start
-                    : TextAlign.center,
-                style: TextStyle(color: colorScheme.error),
-              ),
-              const SizedBox(height: 16),
-              OutlinedButton.icon(
-                onPressed: onRetry,
-                icon: const Icon(Icons.refresh),
-                label: Text(t.generic.retry),
-              ),
-            ],
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Icon(Icons.error_outline, size: 44, color: colorScheme.error),
+                const SizedBox(height: 16),
+                Text(
+                  message,
+                  textAlign: hasDetailedMessage
+                      ? TextAlign.start
+                      : TextAlign.center,
+                  style: TextStyle(color: colorScheme.error),
+                ),
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: onRetry,
+                  icon: const Icon(Icons.refresh),
+                  label: Text(t.generic.retry),
+                ),
+              ],
+            ),
           ),
         ),
       ),

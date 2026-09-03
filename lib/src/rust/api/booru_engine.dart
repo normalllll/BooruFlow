@@ -26,6 +26,10 @@ abstract class BooruEngine implements RustOpaqueInterface {
 
   Future<void> clearAuth({required String sourceId});
 
+  Stream<DownloadEventDto> downloadToFileStream({
+    required DownloadRequestDto request,
+  });
+
   Future<BooruPostDto> getPost({
     required String sourceId,
     required String postId,
@@ -52,6 +56,14 @@ abstract class BooruEngine implements RustOpaqueInterface {
     required MediaVariantKind variant,
   });
 
+  Future<MediaRequestDto> prepareMediaUrl({
+    required String sourceId,
+    required String postId,
+    required MediaVariantKind variant,
+    required String url,
+    required bool allowDiskCache,
+  });
+
   Future<RouteCacheStateDto> refreshRouteCache();
 
   Future<List<BooruPostDto>> relatedPosts({
@@ -73,6 +85,8 @@ abstract class BooruEngine implements RustOpaqueInterface {
     required List<WebCookieDto> cookies,
     required String userAgent,
   });
+
+  Stream<MediaFetchEventDto> streamMedia({required MediaRequestDto request});
 
   Future<AuthStateDto> verifyAuth({required String sourceId});
 }

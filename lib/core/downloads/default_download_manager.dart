@@ -827,15 +827,6 @@ final class DefaultDownloadManager implements DownloadManager {
       return task;
     }
 
-    final resourceTasks = await _activeStore.listTasks(
-      resourceId: job.resourceId,
-    );
-    for (final resourceTask in resourceTasks) {
-      if (resourceTask.variantIndex == job.variantIndex &&
-          _isActiveDownloadTask(resourceTask)) {
-        return resourceTask;
-      }
-    }
     return null;
   }
 
@@ -844,10 +835,10 @@ final class DefaultDownloadManager implements DownloadManager {
       return requested;
     }
     if (Platform.isAndroid) {
-      return const SaveTarget.mediaStore();
+      return SaveTarget.mediaStore(subdirectory: requested?.subdirectory);
     }
     if (Platform.isIOS) {
-      return const SaveTarget.photos();
+      return SaveTarget.photos(subdirectory: requested?.subdirectory);
     }
     return requested ?? const SaveTarget.downloadsFolder();
   }
@@ -922,7 +913,7 @@ final class DefaultDownloadManager implements DownloadManager {
 _DownloadComponents _createPlatformComponents() {
   if (Platform.isAndroid) {
     return _DownloadComponents(
-      engine: NativeDownloadEngine(
+      engine: RustIoDownloadEngine(
         type: DownloadEngineType.androidOkHttpForeground,
       ),
       mediaSaver: NativeMediaSaver(),
@@ -931,7 +922,7 @@ _DownloadComponents _createPlatformComponents() {
   }
   if (Platform.isIOS) {
     return _DownloadComponents(
-      engine: NativeDownloadEngine(type: DownloadEngineType.iosUrlSession),
+      engine: RustIoDownloadEngine(type: DownloadEngineType.iosUrlSession),
       mediaSaver: NativeMediaSaver(),
       permissionGuard: const NativeDownloadPermissionGuard(),
     );

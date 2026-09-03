@@ -7,17 +7,22 @@ import 'package:vector_math/vector_math_64.dart' show Quad, Vector3, Matrix4;
 import 'package:yande_gui/features/posts/widgets/yande_image.dart';
 import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/shared/widgets/auto_scaffold.dart';
+import 'package:yande_gui/src/rust/api/booru_models.dart';
 
 class ImageZoomPage extends StatefulWidget {
   final String url;
   final double width;
   final double height;
+  final String sourceId;
+  final String postId;
 
   const ImageZoomPage({
     super.key,
     required this.url,
     required this.width,
     required this.height,
+    required this.sourceId,
+    required this.postId,
   });
 
   @override
@@ -52,6 +57,10 @@ class _ImageZoomPageState extends State<ImageZoomPage> {
                 builder: (BuildContext context, BoxConstraints constraints) {
                   return YandeImage(
                     widget.url,
+                    sourceId: widget.sourceId,
+                    postId: widget.postId,
+                    variant: MediaVariantKind.original,
+                    allowDiskCache: false,
                     width: widget.width,
                     height: widget.height,
                     imageBuilder: (Widget imageWidget) {
@@ -425,7 +434,12 @@ class _ZoomState extends State<Zoom>
     final Offset alignedTranslation = translation;
 
     final Matrix4 nextMatrix = matrix.clone()
-      ..translate(alignedTranslation.dx, alignedTranslation.dy);
+      ..translateByDouble(
+        alignedTranslation.dx,
+        alignedTranslation.dy,
+        0.0,
+        1.0,
+      );
 
     final Quad nextViewport = _transformViewport(nextMatrix, _viewport);
 
@@ -552,8 +566,10 @@ class _ZoomState extends State<Zoom>
     }
     assert(scale != 0.0);
 
-    final nextScale = (matrix.clone()..scale(sensibleScale))
-        .getMaxScaleOnAxis();
+    final nextScale =
+        (matrix.clone()
+              ..scaleByDouble(sensibleScale, sensibleScale, sensibleScale, 1.0))
+            .getMaxScaleOnAxis();
 
     if (childSize.width == childSize.height) {
       if (parentSize.height > parentSize.width) {
@@ -584,8 +600,9 @@ class _ZoomState extends State<Zoom>
     if (matrix.getMaxScaleOnAxis() > widget.maxScale && sensibleScale > 1) {
       return matrix.clone();
     }
+    final appliedScale = fixScale ? scale : sensibleScale.abs();
     final newMatrix = matrix.clone()
-      ..scale(fixScale ? scale : sensibleScale.abs());
+      ..scaleByDouble(appliedScale, appliedScale, appliedScale, 1.0);
 
     widget.onScaleUpdate?.call(
       fixScale ? scale : sensibleScale.abs(),
@@ -1109,7 +1126,7 @@ class _ZoomState extends State<Zoom>
                             child,
                             ValueListenableBuilder<_ScrollBarData>(
                               valueListenable: horizontalScrollNotifier,
-                              builder: (_, scrollData, __) {
+                              builder: (_, scrollData, _) {
                                 return scrollData.length == 0
                                     ? Container()
                                     : Positioned(
@@ -1140,7 +1157,7 @@ class _ZoomState extends State<Zoom>
                             ),
                             ValueListenableBuilder<_ScrollBarData>(
                               valueListenable: verticalScrollNotifier,
-                              builder: (_, scrollData, __) {
+                              builder: (_, scrollData, _) {
                                 return Positioned(
                                   left: parentSize.width - widget.scrollWeight,
                                   top: scrollData.position,
@@ -1266,9 +1283,9 @@ Quad _transformViewport(Matrix4 matrix, Rect viewport) {
 
 Quad _getAxisAlignedBoundingBoxWithRotation(Rect rect, double rotation) {
   final Matrix4 rotationMatrix = Matrix4.identity()
-    ..translate(rect.size.width / 2, rect.size.height / 2)
+    ..translateByDouble(rect.size.width / 2, rect.size.height / 2, 0.0, 1.0)
     ..rotateZ(rotation)
-    ..translate(-rect.size.width / 2, -rect.size.height / 2);
+    ..translateByDouble(-rect.size.width / 2, -rect.size.height / 2, 0.0, 1.0);
   final Quad boundariesRotated = Quad.points(
     rotationMatrix.transform3(Vector3(rect.left, rect.top, 0.0)),
     rotationMatrix.transform3(Vector3(rect.right, rect.top, 0.0)),

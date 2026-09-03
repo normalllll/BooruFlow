@@ -29,6 +29,28 @@ class $DownloadJobsTable extends DownloadJobs
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _sourceIdMeta = const VerificationMeta(
+    'sourceId',
+  );
+  @override
+  late final GeneratedColumn<String> sourceId = GeneratedColumn<String>(
+    'source_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('yande'),
+  );
+  static const VerificationMeta _postIdMeta = const VerificationMeta('postId');
+  @override
+  late final GeneratedColumn<String> postId = GeneratedColumn<String>(
+    'post_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
   static const VerificationMeta _variantIndexMeta = const VerificationMeta(
     'variantIndex',
   );
@@ -155,6 +177,8 @@ class $DownloadJobsTable extends DownloadJobs
   List<GeneratedColumn> get $columns => [
     id,
     resourceId,
+    sourceId,
+    postId,
     variantIndex,
     url,
     filename,
@@ -191,6 +215,18 @@ class $DownloadJobsTable extends DownloadJobs
       );
     } else if (isInserting) {
       context.missing(_resourceIdMeta);
+    }
+    if (data.containsKey('source_id')) {
+      context.handle(
+        _sourceIdMeta,
+        sourceId.isAcceptableOrUnknown(data['source_id']!, _sourceIdMeta),
+      );
+    }
+    if (data.containsKey('post_id')) {
+      context.handle(
+        _postIdMeta,
+        postId.isAcceptableOrUnknown(data['post_id']!, _postIdMeta),
+      );
     }
     if (data.containsKey('variant_index')) {
       context.handle(
@@ -301,6 +337,14 @@ class $DownloadJobsTable extends DownloadJobs
         DriftSqlType.int,
         data['${effectivePrefix}resource_id'],
       )!,
+      sourceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_id'],
+      )!,
+      postId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}post_id'],
+      )!,
       variantIndex: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}variant_index'],
@@ -357,6 +401,8 @@ class $DownloadJobsTable extends DownloadJobs
 class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   final String id;
   final int resourceId;
+  final String sourceId;
+  final String postId;
   final int variantIndex;
   final String url;
   final String filename;
@@ -371,6 +417,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   const DownloadJob({
     required this.id,
     required this.resourceId,
+    required this.sourceId,
+    required this.postId,
     required this.variantIndex,
     required this.url,
     required this.filename,
@@ -388,6 +436,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['resource_id'] = Variable<int>(resourceId);
+    map['source_id'] = Variable<String>(sourceId);
+    map['post_id'] = Variable<String>(postId);
     map['variant_index'] = Variable<int>(variantIndex);
     map['url'] = Variable<String>(url);
     map['filename'] = Variable<String>(filename);
@@ -410,6 +460,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     return DownloadJobsCompanion(
       id: Value(id),
       resourceId: Value(resourceId),
+      sourceId: Value(sourceId),
+      postId: Value(postId),
       variantIndex: Value(variantIndex),
       url: Value(url),
       filename: Value(filename),
@@ -436,6 +488,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     return DownloadJob(
       id: serializer.fromJson<String>(json['id']),
       resourceId: serializer.fromJson<int>(json['resourceId']),
+      sourceId: serializer.fromJson<String>(json['sourceId']),
+      postId: serializer.fromJson<String>(json['postId']),
       variantIndex: serializer.fromJson<int>(json['variantIndex']),
       url: serializer.fromJson<String>(json['url']),
       filename: serializer.fromJson<String>(json['filename']),
@@ -457,6 +511,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'resourceId': serializer.toJson<int>(resourceId),
+      'sourceId': serializer.toJson<String>(sourceId),
+      'postId': serializer.toJson<String>(postId),
       'variantIndex': serializer.toJson<int>(variantIndex),
       'url': serializer.toJson<String>(url),
       'filename': serializer.toJson<String>(filename),
@@ -474,6 +530,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   DownloadJob copyWith({
     String? id,
     int? resourceId,
+    String? sourceId,
+    String? postId,
     int? variantIndex,
     String? url,
     String? filename,
@@ -488,6 +546,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   }) => DownloadJob(
     id: id ?? this.id,
     resourceId: resourceId ?? this.resourceId,
+    sourceId: sourceId ?? this.sourceId,
+    postId: postId ?? this.postId,
     variantIndex: variantIndex ?? this.variantIndex,
     url: url ?? this.url,
     filename: filename ?? this.filename,
@@ -506,6 +566,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
       resourceId: data.resourceId.present
           ? data.resourceId.value
           : this.resourceId,
+      sourceId: data.sourceId.present ? data.sourceId.value : this.sourceId,
+      postId: data.postId.present ? data.postId.value : this.postId,
       variantIndex: data.variantIndex.present
           ? data.variantIndex.value
           : this.variantIndex,
@@ -537,6 +599,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     return (StringBuffer('DownloadJob(')
           ..write('id: $id, ')
           ..write('resourceId: $resourceId, ')
+          ..write('sourceId: $sourceId, ')
+          ..write('postId: $postId, ')
           ..write('variantIndex: $variantIndex, ')
           ..write('url: $url, ')
           ..write('filename: $filename, ')
@@ -556,6 +620,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   int get hashCode => Object.hash(
     id,
     resourceId,
+    sourceId,
+    postId,
     variantIndex,
     url,
     filename,
@@ -574,6 +640,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
       (other is DownloadJob &&
           other.id == this.id &&
           other.resourceId == this.resourceId &&
+          other.sourceId == this.sourceId &&
+          other.postId == this.postId &&
           other.variantIndex == this.variantIndex &&
           other.url == this.url &&
           other.filename == this.filename &&
@@ -590,6 +658,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
 class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
   final Value<String> id;
   final Value<int> resourceId;
+  final Value<String> sourceId;
+  final Value<String> postId;
   final Value<int> variantIndex;
   final Value<String> url;
   final Value<String> filename;
@@ -605,6 +675,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
   const DownloadJobsCompanion({
     this.id = const Value.absent(),
     this.resourceId = const Value.absent(),
+    this.sourceId = const Value.absent(),
+    this.postId = const Value.absent(),
     this.variantIndex = const Value.absent(),
     this.url = const Value.absent(),
     this.filename = const Value.absent(),
@@ -621,6 +693,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
   DownloadJobsCompanion.insert({
     required String id,
     required int resourceId,
+    this.sourceId = const Value.absent(),
+    this.postId = const Value.absent(),
     this.variantIndex = const Value.absent(),
     required String url,
     required String filename,
@@ -642,6 +716,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
   static Insertable<DownloadJob> custom({
     Expression<String>? id,
     Expression<int>? resourceId,
+    Expression<String>? sourceId,
+    Expression<String>? postId,
     Expression<int>? variantIndex,
     Expression<String>? url,
     Expression<String>? filename,
@@ -658,6 +734,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (resourceId != null) 'resource_id': resourceId,
+      if (sourceId != null) 'source_id': sourceId,
+      if (postId != null) 'post_id': postId,
       if (variantIndex != null) 'variant_index': variantIndex,
       if (url != null) 'url': url,
       if (filename != null) 'filename': filename,
@@ -677,6 +755,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
   DownloadJobsCompanion copyWith({
     Value<String>? id,
     Value<int>? resourceId,
+    Value<String>? sourceId,
+    Value<String>? postId,
     Value<int>? variantIndex,
     Value<String>? url,
     Value<String>? filename,
@@ -693,6 +773,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     return DownloadJobsCompanion(
       id: id ?? this.id,
       resourceId: resourceId ?? this.resourceId,
+      sourceId: sourceId ?? this.sourceId,
+      postId: postId ?? this.postId,
       variantIndex: variantIndex ?? this.variantIndex,
       url: url ?? this.url,
       filename: filename ?? this.filename,
@@ -716,6 +798,12 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     }
     if (resourceId.present) {
       map['resource_id'] = Variable<int>(resourceId.value);
+    }
+    if (sourceId.present) {
+      map['source_id'] = Variable<String>(sourceId.value);
+    }
+    if (postId.present) {
+      map['post_id'] = Variable<String>(postId.value);
     }
     if (variantIndex.present) {
       map['variant_index'] = Variable<int>(variantIndex.value);
@@ -761,6 +849,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     return (StringBuffer('DownloadJobsCompanion(')
           ..write('id: $id, ')
           ..write('resourceId: $resourceId, ')
+          ..write('sourceId: $sourceId, ')
+          ..write('postId: $postId, ')
           ..write('variantIndex: $variantIndex, ')
           ..write('url: $url, ')
           ..write('filename: $filename, ')
@@ -1476,6 +1566,8 @@ typedef $$DownloadJobsTableCreateCompanionBuilder =
     DownloadJobsCompanion Function({
       required String id,
       required int resourceId,
+      Value<String> sourceId,
+      Value<String> postId,
       Value<int> variantIndex,
       required String url,
       required String filename,
@@ -1493,6 +1585,8 @@ typedef $$DownloadJobsTableUpdateCompanionBuilder =
     DownloadJobsCompanion Function({
       Value<String> id,
       Value<int> resourceId,
+      Value<String> sourceId,
+      Value<String> postId,
       Value<int> variantIndex,
       Value<String> url,
       Value<String> filename,
@@ -1548,6 +1642,16 @@ class $$DownloadJobsTableFilterComposer
 
   ColumnFilters<int> get resourceId => $composableBuilder(
     column: $table.resourceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceId => $composableBuilder(
+    column: $table.sourceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get postId => $composableBuilder(
+    column: $table.postId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1651,6 +1755,16 @@ class $$DownloadJobsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get sourceId => $composableBuilder(
+    column: $table.sourceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get postId => $composableBuilder(
+    column: $table.postId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get variantIndex => $composableBuilder(
     column: $table.variantIndex,
     builder: (column) => ColumnOrderings(column),
@@ -1723,6 +1837,12 @@ class $$DownloadJobsTableAnnotationComposer
     column: $table.resourceId,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get sourceId =>
+      $composableBuilder(column: $table.sourceId, builder: (column) => column);
+
+  GeneratedColumn<String> get postId =>
+      $composableBuilder(column: $table.postId, builder: (column) => column);
 
   GeneratedColumn<int> get variantIndex => $composableBuilder(
     column: $table.variantIndex,
@@ -1827,6 +1947,8 @@ class $$DownloadJobsTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<int> resourceId = const Value.absent(),
+                Value<String> sourceId = const Value.absent(),
+                Value<String> postId = const Value.absent(),
                 Value<int> variantIndex = const Value.absent(),
                 Value<String> url = const Value.absent(),
                 Value<String> filename = const Value.absent(),
@@ -1842,6 +1964,8 @@ class $$DownloadJobsTableTableManager
               }) => DownloadJobsCompanion(
                 id: id,
                 resourceId: resourceId,
+                sourceId: sourceId,
+                postId: postId,
                 variantIndex: variantIndex,
                 url: url,
                 filename: filename,
@@ -1859,6 +1983,8 @@ class $$DownloadJobsTableTableManager
               ({
                 required String id,
                 required int resourceId,
+                Value<String> sourceId = const Value.absent(),
+                Value<String> postId = const Value.absent(),
                 Value<int> variantIndex = const Value.absent(),
                 required String url,
                 required String filename,
@@ -1874,6 +2000,8 @@ class $$DownloadJobsTableTableManager
               }) => DownloadJobsCompanion.insert(
                 id: id,
                 resourceId: resourceId,
+                sourceId: sourceId,
+                postId: postId,
                 variantIndex: variantIndex,
                 url: url,
                 filename: filename,

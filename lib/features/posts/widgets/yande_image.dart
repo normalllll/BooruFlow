@@ -1,12 +1,19 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:yande_gui/features/posts/network/yande_network_policy.dart';
+import 'package:yande_gui/features/booru/booru_error_presentation.dart';
+import 'package:yande_gui/features/booru/booru_service.dart';
+import 'package:yande_gui/features/posts/widgets/rust_extended_network_image_provider.dart';
+import 'package:yande_gui/src/rust/api/booru_models.dart';
 
 class YandeImage extends StatefulWidget {
   const YandeImage(
     this.url, {
     super.key,
+    this.sourceId,
+    this.postId,
+    this.variant = MediaVariantKind.preview,
+    this.allowDiskCache = true,
     this.color,
     this.colorBlendMode,
     this.width,
@@ -17,6 +24,10 @@ class YandeImage extends StatefulWidget {
   });
 
   final String url;
+  final String? sourceId;
+  final String? postId;
+  final MediaVariantKind variant;
+  final bool allowDiskCache;
   final Color? color;
   final BlendMode? colorBlendMode;
   final double? width;
@@ -30,109 +41,144 @@ class YandeImage extends StatefulWidget {
 }
 
 class _YandeImageState extends State<YandeImage> {
-  static const _cacheNamespace = 'origin-host-v2';
+  Future<MediaRequestDto>? _request;
 
-  YandeNetworkRoute get _route => YandeNetworkPolicy.route(
-    Uri.parse(widget.url),
-    // The stock ExtendedNetworkImageProvider cannot override DNS while
-    // retaining the original TLS SNI. An IP URL fails before HTTP headers.
-    permitBypass: false,
-    headers: YandeNetworkPolicy.imageHeaders,
-  );
+  bool get _usesRust => widget.sourceId != null && widget.postId != null;
 
-  ExtendedNetworkImageProvider _createImageProvider(YandeNetworkRoute route) {
-    return ExtendedNetworkImageProvider(
-      route.requestUri.toString(),
-      cache: true,
-      cacheKey: keyToMd5('$_cacheNamespace:${widget.url}'),
-      printError: true,
-      retries: 0,
-      headers: route.headers,
-    );
+  @override
+  void initState() {
+    super.initState();
+    BooruService.instance.revision.addListener(_handleEngineRevision);
+    _prepare();
+  }
+
+  @override
+  void dispose() {
+    BooruService.instance.revision.removeListener(_handleEngineRevision);
+    super.dispose();
+  }
+
+  void _handleEngineRevision() {
+    if (mounted && _usesRust) setState(_prepare);
+  }
+
+  @override
+  void didUpdateWidget(covariant YandeImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.sourceId != widget.sourceId ||
+        oldWidget.postId != widget.postId ||
+        oldWidget.variant != widget.variant ||
+        oldWidget.url != widget.url) {
+      _prepare();
+    }
+  }
+
+  void _prepare() {
+    _request = _usesRust
+        ? BooruService.instance.engine.prepareMediaUrl(
+            sourceId: widget.sourceId!,
+            postId: widget.postId!,
+            variant: widget.variant,
+            url: widget.url,
+            allowDiskCache: widget.allowDiskCache,
+          )
+        : null;
   }
 
   @override
   Widget build(BuildContext context) {
-    final route = _route;
+    if (!_usesRust) {
+      return _image(
+        ExtendedNetworkImageProvider(
+          widget.url,
+          cache: true,
+          cacheKey: keyToMd5('anybooru:${widget.url}'),
+          retries: 1,
+        ),
+      );
+    }
+    return FutureBuilder<MediaRequestDto>(
+      future: _request,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return _error(() => setState(_prepare), error: snapshot.error);
+        }
+        final request = snapshot.data;
+        if (request == null) return _placeholder();
+        return _image(RustExtendedNetworkImageProvider(request: request));
+      },
+    );
+  }
+
+  Widget _image(ImageProvider provider) {
     return ExtendedImage(
-      key: ValueKey('${route.requestUri}|${route.bypassed}'),
-      image: _createImageProvider(route),
+      image: provider,
       handleLoadingProgress: true,
-      loadStateChanged: _buildLoadState,
+      loadStateChanged: (state) {
+        return switch (state.extendedImageLoadState) {
+          LoadState.loading => _placeholder(progress: _progress(state)),
+          LoadState.completed => widget.imageBuilder?.call(
+            state.completedWidget,
+          ),
+          LoadState.failed => _error(
+            state.reLoadImage,
+            error: state.lastException,
+          ),
+        };
+      },
       color: widget.color,
       colorBlendMode: widget.colorBlendMode,
-      clearMemoryCacheWhenDispose: false,
       width: widget.width,
       height: widget.height,
       fit: widget.fit ?? BoxFit.fitWidth,
     );
   }
 
-  Widget? _buildLoadState(ExtendedImageState state) {
-    switch (state.extendedImageLoadState) {
-      case LoadState.loading:
-        final event = state.loadingProgress;
-        final total = event?.expectedTotalBytes;
-        final progress = total == null
-            ? null
-            : total == 0
-            ? 1.0
-            : event!.cumulativeBytesLoaded / total;
-        return _buildPlaceholder(progress: progress);
-      case LoadState.completed:
-        return widget.imageBuilder?.call(state.completedWidget);
-      case LoadState.failed:
-        return Center(
-          child: IconButton(
-            icon: const Icon(Icons.refresh_outlined),
-            onPressed: state.reLoadImage,
-          ),
-        );
-    }
+  Widget _error(VoidCallback retry, {Object? error}) => Center(
+    child: IconButton(
+      icon: const Icon(Icons.refresh_outlined),
+      tooltip: error == null ? null : describeBooruError(error),
+      onPressed: retry,
+    ),
+  );
+
+  double? _progress(ExtendedImageState state) {
+    final event = state.loadingProgress;
+    final total = event?.expectedTotalBytes;
+    if (event == null || total == null || total <= 0) return null;
+    return event.cumulativeBytesLoaded / total;
   }
 
-  Widget _buildPlaceholder({double? progress}) {
-    final placeholder = widget.placeholderWidget;
-    if (placeholder != null) {
-      return Stack(
-        children: [
-          placeholder,
+  Widget _placeholder({double? progress}) {
+    final base =
+        widget.placeholderWidget ??
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final width =
+                widget.width ??
+                (constraints.hasBoundedWidth ? constraints.maxWidth : 96.0);
+            final height =
+                widget.height ??
+                (constraints.hasBoundedHeight ? constraints.maxHeight : width);
+            return Skeletonizer.zone(
+              child: Bone(
+                width: width,
+                height: height,
+                borderRadius: BorderRadius.circular(6),
+              ),
+            );
+          },
+        );
+    return Stack(
+      children: [
+        base,
+        if (progress != null)
           Positioned(
             left: 0,
             top: 0,
             right: 0,
             child: LinearProgressIndicator(value: progress),
           ),
-        ],
-      );
-    }
-    return _buildSkeletonPlaceholder(progress: progress);
-  }
-
-  Widget _buildSkeletonPlaceholder({double? progress}) {
-    final skeleton = LayoutBuilder(
-      builder: (context, constraints) {
-        final skeletonWidth =
-            widget.width ??
-            (constraints.hasBoundedWidth ? constraints.maxWidth : 96.0);
-        final skeletonHeight =
-            widget.height ??
-            (constraints.hasBoundedHeight
-                ? constraints.maxHeight
-                : skeletonWidth);
-        return Skeletonizer.zone(
-          child: Bone(
-            width: skeletonWidth,
-            height: skeletonHeight,
-            borderRadius: BorderRadius.circular(6),
-          ),
-        );
-      },
-    );
-    return Stack(
-      children: [
-        skeleton,
-        Center(child: CircularProgressIndicator(value: progress)),
       ],
     );
   }

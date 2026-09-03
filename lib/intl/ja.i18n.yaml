@@ -14,6 +14,23 @@ generic:
   noMoreData: これ以上データはありません
   notFound: 見つかりませんでした
 
+booruError:
+  invalidRequest: リクエストが無効です。
+  unsupportedCapability: この画像ソースは要求された操作に対応していません。
+  authenticationRequired: この画像ソースにログインしてから再試行してください。
+  authenticationRejected: 画像ソースがアカウント認証情報を拒否しました。
+  permissionDenied: 画像ソースがこのリソースへのアクセスを拒否しました。
+  rateLimited: 画像ソースのレート制限中です。しばらくしてから再試行してください。
+  challengeRequired: ブラウザ認証を完了するか、別のネットワーク経路を使用してください。
+  sourceUnavailable: 画像ソースは現在利用できません。
+  network: ネットワークリクエストに失敗しました。プロキシまたはノードを変更してください。
+  timeout: リクエストがタイムアウトしました。プロキシまたはノードを変更してください。
+  invalidResponse: 画像ソースから無効なレスポンスが返されました。
+  unsafeRedirect: 画像ソースから安全でないリダイレクトが返されました。
+  mediaValidationFailed: 画像レスポンスを検証またはデコードできませんでした。
+  cancelled: リクエストはキャンセルされました。
+  internal: Booru エンジンの内部エラーが発生しました。
+
 update:
   checkUpdateStart: アップデートを確認中…
   checkUpdateFailed: アップデートの確認に失敗しました。インターネット接続を確認してください。
