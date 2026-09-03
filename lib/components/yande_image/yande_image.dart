@@ -30,6 +30,8 @@ class YandeImage extends StatefulWidget {
 }
 
 class _YandeImageState extends State<YandeImage> {
+  static const _cacheNamespace = 'origin-host-v2';
+
   YandeNetworkRoute get _route => YandeNetworkPolicy.route(
     Uri.parse(widget.url),
     // The stock ExtendedNetworkImageProvider cannot override DNS while
@@ -42,8 +44,9 @@ class _YandeImageState extends State<YandeImage> {
     return ExtendedNetworkImageProvider(
       route.requestUri.toString(),
       cache: true,
-      cacheKey: keyToMd5(widget.url),
+      cacheKey: keyToMd5('$_cacheNamespace:${widget.url}'),
       printError: true,
+      retries: 0,
       headers: route.headers,
     );
   }

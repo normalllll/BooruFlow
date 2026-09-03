@@ -82,11 +82,15 @@ class _SettingsPageState extends State<SettingsPage> {
     return max.toString();
   }
 
-  Widget _dialogListTileMaterial(BuildContext context, Widget child) {
-    return Material(
-      type: MaterialType.transparency,
-      textStyle: DefaultTextStyle.of(context).style,
-      child: child,
+  Widget _materialDialogContent(BuildContext context, Widget child) {
+    final theme = Theme.of(context);
+    return Theme(
+      data: theme,
+      child: Material(
+        type: MaterialType.transparency,
+        textStyle: theme.textTheme.bodyMedium,
+        child: child,
+      ),
     );
   }
 
@@ -97,7 +101,7 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (context) {
         return CupertinoAlertDialog(
           title: Text(t.settings.themeModeDialog.title),
-          content: _dialogListTileMaterial(
+          content: _materialDialogContent(
             context,
             RadioGroup<int?>(
               groupValue: SettingsService.themeMode,
@@ -143,7 +147,7 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (context) {
         return CupertinoAlertDialog(
           title: Text(t.settings.languageDialog.title),
-          content: _dialogListTileMaterial(
+          content: _materialDialogContent(
             context,
             RadioGroup<int?>(
               groupValue: SettingsService.language,
@@ -200,7 +204,7 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (context) {
         return CupertinoAlertDialog(
           title: Text(t.settings.bypassSniDialog.title),
-          content: _dialogListTileMaterial(
+          content: _materialDialogContent(
             context,
             Column(
               mainAxisSize: MainAxisSize.min,
@@ -243,45 +247,48 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (context) {
         return CupertinoAlertDialog(
           title: const Text('Select Download Path'),
-          content: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 300),
-            child: Padding(
-              padding: const EdgeInsets.only(top: 20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: textController,
-                    decoration: const InputDecoration(
-                      hintText: 'Platform Default',
+          content: _materialDialogContent(
+            context,
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 300),
+              child: Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: textController,
+                      decoration: const InputDecoration(
+                        hintText: 'Platform Default',
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          FilePicker.getDirectoryPath(
-                            dialogTitle: 'Select a directory',
-                          ).then((value) {
-                            if (value != null) {
-                              textController.text = value;
-                            }
-                          });
-                        },
-                        child: const Text('Pick'),
-                      ),
-                      const SizedBox(width: 10),
-                      ElevatedButton(
-                        onPressed: () {
-                          textController.clear();
-                        },
-                        child: const Text('Clear'),
-                      ),
-                    ],
-                  ),
-                ],
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            FilePicker.getDirectoryPath(
+                              dialogTitle: 'Select a directory',
+                            ).then((value) {
+                              if (value != null) {
+                                textController.text = value;
+                              }
+                            });
+                          },
+                          child: const Text('Pick'),
+                        ),
+                        const SizedBox(width: 10),
+                        ElevatedButton(
+                          onPressed: () {
+                            textController.clear();
+                          },
+                          child: const Text('Clear'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -351,29 +358,32 @@ class _SettingsPageState extends State<SettingsPage> {
           builder: (context, setState) {
             return CupertinoAlertDialog(
               title: Text(t.settings.columnsPerRowDialog.title),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Slider(
-                    value: currentSliderValue,
-                    min: 0,
-                    max: 9,
-                    divisions: 9,
-                    label: switch (currentSliderValue) {
+              content: _materialDialogContent(
+                context,
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Slider(
+                      value: currentSliderValue,
+                      min: 0,
+                      max: 9,
+                      divisions: 9,
+                      label: switch (currentSliderValue) {
+                        0 => 'Auto',
+                        final value => (value.toInt() + 1).toString(),
+                      },
+                      onChanged: (double value) {
+                        setState(() {
+                          currentSliderValue = value;
+                        });
+                      },
+                    ),
+                    Text(switch (currentSliderValue) {
                       0 => 'Auto',
                       final value => (value.toInt() + 1).toString(),
-                    },
-                    onChanged: (double value) {
-                      setState(() {
-                        currentSliderValue = value;
-                      });
-                    },
-                  ),
-                  Text(switch (currentSliderValue) {
-                    0 => 'Auto',
-                    final value => (value.toInt() + 1).toString(),
-                  }),
-                ],
+                    }),
+                  ],
+                ),
               ),
               actions: [
                 CupertinoDialogAction(
@@ -413,23 +423,26 @@ class _SettingsPageState extends State<SettingsPage> {
           builder: (context, setState) {
             return CupertinoAlertDialog(
               title: Text(t.settings.maxConcurrentDownloadsDialog.title),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Slider(
-                    value: currentSliderValue.toDouble(),
-                    min: 1,
-                    max: 4,
-                    divisions: 3,
-                    label: currentSliderValue.toString(),
-                    onChanged: (double value) {
-                      setState(() {
-                        currentSliderValue = value.toInt();
-                      });
-                    },
-                  ),
-                  Text(currentSliderValue.toString()),
-                ],
+              content: _materialDialogContent(
+                context,
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Slider(
+                      value: currentSliderValue.toDouble(),
+                      min: 1,
+                      max: 4,
+                      divisions: 3,
+                      label: currentSliderValue.toString(),
+                      onChanged: (double value) {
+                        setState(() {
+                          currentSliderValue = value.toInt();
+                        });
+                      },
+                    ),
+                    Text(currentSliderValue.toString()),
+                  ],
+                ),
               ),
               actions: [
                 CupertinoDialogAction(
@@ -468,23 +481,26 @@ class _SettingsPageState extends State<SettingsPage> {
           builder: (context, setState) {
             return CupertinoAlertDialog(
               title: Text(t.settings.maxSegmentsPerTaskDialog.title),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Slider(
-                    value: currentSliderValue.toDouble(),
-                    min: 1,
-                    max: 6,
-                    divisions: 5,
-                    label: currentSliderValue.toString(),
-                    onChanged: (double value) {
-                      setState(() {
-                        currentSliderValue = value.toInt();
-                      });
-                    },
-                  ),
-                  Text(currentSliderValue.toString()),
-                ],
+              content: _materialDialogContent(
+                context,
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Slider(
+                      value: currentSliderValue.toDouble(),
+                      min: 1,
+                      max: 6,
+                      divisions: 5,
+                      label: currentSliderValue.toString(),
+                      onChanged: (double value) {
+                        setState(() {
+                          currentSliderValue = value.toInt();
+                        });
+                      },
+                    ),
+                    Text(currentSliderValue.toString()),
+                  ],
+                ),
               ),
               actions: [
                 CupertinoDialogAction(
