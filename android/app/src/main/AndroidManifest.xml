@@ -36,7 +36,7 @@
         </activity>
 
         <service
-            android:name="io.github.normalllll.yande_gui.DownloadForegroundService"
+            android:name="io.github.normalllll.yande_gui.download.DownloadForegroundService"
             android:exported="false"
             android:foregroundServiceType="dataSync"
             />

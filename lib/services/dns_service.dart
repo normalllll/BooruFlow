@@ -1,54 +1,129 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-class DnsService {
-  DnsService._();
+abstract final class DnsService {
+  static const hosts = <String>[
+    'yande.re',
+    'files.yande.re',
+    'assets.yande.re',
+  ];
 
-  static Future<Map<String, dynamic>> _fetchDnsByDoh(String domain) async {
-    HttpClient client = HttpClient();
-    client.connectionTimeout = const Duration(seconds: 3);
-    client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-    final request = await client.getUrl(
-      Uri.parse('https://doh.sb/dns-query?ct=application/dns-json&name=$domain&type=A&do=false&cd=false'),
-    );
-    final response = await request.close();
-    if (response.statusCode == 200) {
-      final body = await response.transform(utf8.decoder).join();
-      return jsonDecode(body);
+  static Map<String, String> _addresses = const {};
+  static Future<Map<String, String>?>? _refreshing;
+
+  static Map<String, String> get cachedAddresses =>
+      Map.unmodifiable(_addresses);
+
+  static String? cachedAddressFor(String host) =>
+      _addresses[host.toLowerCase()];
+
+  static Future<Map<String, String>?> fetchAddresses({bool force = false}) {
+    if (!force && _addresses.length == hosts.length) {
+      return Future.value(cachedAddresses);
     }
-    throw Exception('Failed to fetch latest release');
+    return _refreshing ??= _fetchAddresses().whenComplete(() {
+      _refreshing = null;
+    });
   }
 
-  static Future<Map<String, dynamic>> _fetchDnsByGithub() async {
-    HttpClient client = HttpClient();
-
-    final request = await client.getUrl(Uri.parse('https://cdn.jsdelivr.net/gh/normalllll/yande_gui@main/DNS.json'));
-    final response = await request.close();
-    if (response.statusCode == 200) {
-      final body = await response.transform(utf8.decoder).join();
-      return jsonDecode(body);
-    }
-    throw Exception('Failed to fetch latest release');
+  static Future<List<String>?> fetchDns({bool force = false}) async {
+    final addresses = await fetchAddresses(force: force);
+    if (addresses == null) return null;
+    return [for (final host in hosts) addresses[host]!];
   }
 
-  static Future<List<String>?> fetchDns() async {
+  static Future<Map<String, String>?> _fetchAddresses() async {
     try {
-      final dns0 = await _fetchDnsByDoh("yande.re");
-      final dns1 = await _fetchDnsByDoh("files.yande.re");
-      final dns2 = await _fetchDnsByDoh("assets.yande.re");
-      // return dns['Answer'][0]['data'];
+      final values = await Future.wait([
+        for (final host in hosts) _fetchAddressByDoh(host),
+      ]);
+      _addresses = Map.unmodifiable({
+        for (var index = 0; index < hosts.length; index++)
+          hosts[index]: values[index],
+      });
+      return cachedAddresses;
+    } catch (_) {}
 
-      return [dns0['Answer'][0]['data'], dns1['Answer'][0]['data'], dns2['Answer'][0]['data']];
+    try {
+      final fallback = await _fetchDnsByGithub();
+      final validated = <String, String>{};
+      for (final host in hosts) {
+        final address = _validIp(fallback[host]);
+        if (address == null) return null;
+        validated[host] = address;
+      }
+      _addresses = Map.unmodifiable(validated);
+      return cachedAddresses;
     } catch (_) {
-      // print(_);
+      return _addresses.isEmpty ? null : cachedAddresses;
     }
+  }
 
-    try {
-      final json = await _fetchDnsByGithub();
-      return [json['yande.re'], json['files.yande.re'], json['assets.yande.re']];
-    } catch (e) {
-      print(e);
+  static Future<String> _fetchAddressByDoh(String host) async {
+    final json = await _getJson(
+      Uri.https('doh.sb', '/dns-query', {
+        'ct': 'application/dns-json',
+        'name': host,
+        'type': 'A',
+        'do': 'false',
+        'cd': 'false',
+      }),
+      headers: {HttpHeaders.acceptHeader: 'application/dns-json'},
+    );
+    final answers = json['Answer'];
+    if (answers is List) {
+      for (final answer in answers.reversed) {
+        if (answer is Map && (answer['type'] == 1 || answer['type'] == '1')) {
+          final address = _validIp(answer['data']);
+          if (address != null) return address;
+        }
+      }
     }
-    return null;
+    throw const FormatException('DNS response contains no IPv4 address.');
+  }
+
+  static Future<Map<String, dynamic>> _fetchDnsByGithub() {
+    return _getJson(
+      Uri.parse(
+        'https://cdn.jsdelivr.net/gh/normalllll/yande_gui@main/DNS.json',
+      ),
+    );
+  }
+
+  static Future<Map<String, dynamic>> _getJson(
+    Uri uri, {
+    Map<String, String> headers = const {},
+  }) async {
+    final client = HttpClient()..connectionTimeout = const Duration(seconds: 5);
+    try {
+      final request = await client
+          .getUrl(uri)
+          .timeout(const Duration(seconds: 8));
+      headers.forEach(request.headers.set);
+      final response = await request.close().timeout(
+        const Duration(seconds: 8),
+      );
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        await response.drain<void>();
+        throw HttpException('HTTP ${response.statusCode}', uri: uri);
+      }
+      final body = await response
+          .transform(utf8.decoder)
+          .join()
+          .timeout(const Duration(seconds: 8));
+      final decoded = jsonDecode(body);
+      if (decoded is! Map) throw const FormatException('Expected JSON object.');
+      return decoded.cast<String, dynamic>();
+    } finally {
+      client.close(force: true);
+    }
+  }
+
+  static String? _validIp(Object? value) {
+    final text = value?.toString().trim();
+    if (text == null || text.isEmpty) return null;
+    final address = InternetAddress.tryParse(text);
+    return address?.type == InternetAddressType.IPv4 ? address!.address : null;
   }
 }

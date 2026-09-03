@@ -279,7 +279,7 @@ class Translations$settings$zh_CN extends Translations$settings$en {
   @override
   String get language => '语言';
   @override
-  String get prefetchDns => '预解析 DNS';
+  String get bypassSni => '绕过 SNI';
   @override
   String get downloadDirectory => '下载目录';
   @override
@@ -308,8 +308,8 @@ class Translations$settings$zh_CN extends Translations$settings$en {
   late final Translations$settings$downloadDirectoryDialog$zh_CN downloadDirectoryDialog =
       Translations$settings$downloadDirectoryDialog$zh_CN.internal(_root);
   @override
-  late final Translations$settings$dnsPrefetchDialog$zh_CN dnsPrefetchDialog =
-      Translations$settings$dnsPrefetchDialog$zh_CN.internal(_root);
+  late final Translations$settings$bypassSniDialog$zh_CN bypassSniDialog =
+      Translations$settings$bypassSniDialog$zh_CN.internal(_root);
   @override
   late final Translations$settings$columnsPerRowDialog$zh_CN columnsPerRowDialog =
       Translations$settings$columnsPerRowDialog$zh_CN.internal(_root);
@@ -396,17 +396,15 @@ class Translations$settings$downloadDirectoryDialog$zh_CN extends Translations$s
       Translations$settings$downloadDirectoryDialog$messages$zh_CN.internal(_root);
 }
 
-// Path: settings.dnsPrefetchDialog
-class Translations$settings$dnsPrefetchDialog$zh_CN extends Translations$settings$dnsPrefetchDialog$en {
-  Translations$settings$dnsPrefetchDialog$zh_CN.internal(TranslationsZhCn root)
-    : this._root = root,
-      super.internal(root);
+// Path: settings.bypassSniDialog
+class Translations$settings$bypassSniDialog$zh_CN extends Translations$settings$bypassSniDialog$en {
+  Translations$settings$bypassSniDialog$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
 
   final TranslationsZhCn _root; // ignore: unused_field
 
   // Translations
   @override
-  String get title => 'DNS 预解析';
+  String get title => '绕过 SNI';
 }
 
 // Path: settings.columnsPerRowDialog
@@ -552,7 +550,7 @@ extension on TranslationsZhCn {
       'settings.title' => '设置',
       'settings.theme' => '主题',
       'settings.language' => '语言',
-      'settings.prefetchDns' => '预解析 DNS',
+      'settings.bypassSni' => '绕过 SNI',
       'settings.downloadDirectory' => '下载目录',
       'settings.defaultToPlatformSettings' => '使用平台默认设置',
       'settings.columnsPerRow' => '每行列数',
@@ -570,7 +568,7 @@ extension on TranslationsZhCn {
       'settings.downloadDirectoryDialog.messages.setToPlatformDefault' => '下载目录已设为平台默认。',
       'settings.downloadDirectoryDialog.messages.pathNotAbsolute' => '路径必须是绝对路径。',
       'settings.downloadDirectoryDialog.messages.pathNotWritable' => '路径不可写入。',
-      'settings.dnsPrefetchDialog.title' => 'DNS 预解析',
+      'settings.bypassSniDialog.title' => '绕过 SNI',
       'settings.columnsPerRowDialog.title' => '每行列数',
       'settings.maxConcurrentDownloadsDialog.title' => '最大同时下载任务数',
       'settings.maxSegmentsPerTaskDialog.title' => '每个下载任务的最大分段数',

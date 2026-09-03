@@ -95,7 +95,7 @@ settings:
   title: Settings
   theme: Theme
   language: Language
-  prefetchDns: Prefetch DNS
+  bypassSni: Bypass SNI
   downloadDirectory: Download Directory
   defaultToPlatformSettings: Default to Platform Settings
   columnsPerRow: Columns per Row
@@ -121,8 +121,8 @@ settings:
       pathNotAbsolute: Directory path must be absolute.
       pathNotWritable: Directory path is not writable.
 
-  dnsPrefetchDialog:
-    title: DNS Prefetch
+  bypassSniDialog:
+    title: Bypass SNI
 
   columnsPerRowDialog:
     title: Columns per Row

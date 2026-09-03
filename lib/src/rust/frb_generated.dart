@@ -3,6 +3,7 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
+import 'api/download.dart';
 import 'api/rustc.dart';
 import 'api/yande_client.dart';
 import 'dart:async';
@@ -67,7 +68,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => -1874459403;
+  int get rustContentHash => 1673358372;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -79,37 +80,6 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
-  void crateApiYandeClientDownloadCancelTokenCancel({
-    required DownloadCancelToken that,
-  });
-
-  bool crateApiYandeClientDownloadCancelTokenIsCancelled({
-    required DownloadCancelToken that,
-  });
-
-  DownloadCancelToken crateApiYandeClientDownloadCancelTokenNew();
-
-  Future<void> crateApiYandeClientYandeClientDownloadToFile({
-    required YandeClient that,
-    required String url,
-    required String filePath,
-    required int maxTaskCount,
-    required FutureOr<void> Function(int, int) progressCallback,
-  });
-
-  Future<Uint8List> crateApiYandeClientYandeClientDownloadToMemory({
-    required YandeClient that,
-    required String url,
-    required FutureOr<void> Function(int, int) progressCallback,
-  });
-
-  Future<Uint8List> crateApiYandeClientYandeClientDownloadToMemoryWithCancel({
-    required YandeClient that,
-    required String url,
-    required FutureOr<void> Function(int, int) progressCallback,
-    required DownloadCancelToken cancelToken,
-  });
-
   Future<List<Post>> crateApiYandeClientYandeClientGetPosts({
     required YandeClient that,
     required List<String> tags,
@@ -122,21 +92,26 @@ abstract class RustLibApi extends BaseApi {
     required int postId,
   });
 
-  YandeClient crateApiYandeClientYandeClientNew({
-    StringArray3? ips,
-    required bool forLargeFile,
+  YandeClient crateApiYandeClientYandeClientNew({StringArray3? ips});
+
+  Stream<FrbDownloadFileEvent> crateApiDownloadDownloadToFile({
+    required String url,
+    required String path,
+    required Map<String, String> headers,
+    String? proxyUrl,
+    String? connectHost,
+    String? hostHeader,
+    required bool disableTlsSni,
+    required bool allowInvalidCertificates,
+    required int connectTimeoutSeconds,
+    required int receiveTimeoutSeconds,
+    int? expectedBytes,
+    required List<String> allowedContentTypes,
+    String? checksumAlgorithm,
+    String? checksumValue,
   });
 
   String crateApiRustcRustcVersion();
-
-  RustArcIncrementStrongCountFnType
-  get rust_arc_increment_strong_count_DownloadCancelToken;
-
-  RustArcDecrementStrongCountFnType
-  get rust_arc_decrement_strong_count_DownloadCancelToken;
-
-  CrossPlatformFinalizerArg
-  get rust_arc_decrement_strong_count_DownloadCancelTokenPtr;
 
   RustArcIncrementStrongCountFnType
   get rust_arc_increment_strong_count_YandeClient;
@@ -154,238 +129,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     required super.generalizedFrbRustBinding,
     required super.portManager,
   });
-
-  @override
-  void crateApiYandeClientDownloadCancelTokenCancel({
-    required DownloadCancelToken that,
-  }) {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerDownloadCancelToken(
-            that,
-            serializer,
-          );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 1)!;
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_unit,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiYandeClientDownloadCancelTokenCancelConstMeta,
-        argValues: [that],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiYandeClientDownloadCancelTokenCancelConstMeta =>
-      const TaskConstMeta(
-        debugName: "DownloadCancelToken_cancel",
-        argNames: ["that"],
-      );
-
-  @override
-  bool crateApiYandeClientDownloadCancelTokenIsCancelled({
-    required DownloadCancelToken that,
-  }) {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerDownloadCancelToken(
-            that,
-            serializer,
-          );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2)!;
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_bool,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiYandeClientDownloadCancelTokenIsCancelledConstMeta,
-        argValues: [that],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta
-  get kCrateApiYandeClientDownloadCancelTokenIsCancelledConstMeta =>
-      const TaskConstMeta(
-        debugName: "DownloadCancelToken_is_cancelled",
-        argNames: ["that"],
-      );
-
-  @override
-  DownloadCancelToken crateApiYandeClientDownloadCancelTokenNew() {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
-        },
-        codec: SseCodec(
-          decodeSuccessData:
-              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerDownloadCancelToken,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiYandeClientDownloadCancelTokenNewConstMeta,
-        argValues: [],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiYandeClientDownloadCancelTokenNewConstMeta =>
-      const TaskConstMeta(debugName: "DownloadCancelToken_new", argNames: []);
-
-  @override
-  Future<void> crateApiYandeClientYandeClientDownloadToFile({
-    required YandeClient that,
-    required String url,
-    required String filePath,
-    required int maxTaskCount,
-    required FutureOr<void> Function(int, int) progressCallback,
-  }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
-            that,
-            serializer,
-          );
-          sse_encode_String(url, serializer);
-          sse_encode_String(filePath, serializer);
-          sse_encode_u_32(maxTaskCount, serializer);
-          sse_encode_DartFn_Inputs_u_32_u_32_Output_unit_AnyhowException(
-            progressCallback,
-            serializer,
-          );
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 4,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_unit,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta: kCrateApiYandeClientYandeClientDownloadToFileConstMeta,
-        argValues: [that, url, filePath, maxTaskCount, progressCallback],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiYandeClientYandeClientDownloadToFileConstMeta =>
-      const TaskConstMeta(
-        debugName: "YandeClient_download_to_file",
-        argNames: [
-          "that",
-          "url",
-          "filePath",
-          "maxTaskCount",
-          "progressCallback",
-        ],
-      );
-
-  @override
-  Future<Uint8List> crateApiYandeClientYandeClientDownloadToMemory({
-    required YandeClient that,
-    required String url,
-    required FutureOr<void> Function(int, int) progressCallback,
-  }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
-            that,
-            serializer,
-          );
-          sse_encode_String(url, serializer);
-          sse_encode_DartFn_Inputs_u_32_u_32_Output_unit_AnyhowException(
-            progressCallback,
-            serializer,
-          );
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 5,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_list_prim_u_8_strict,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta: kCrateApiYandeClientYandeClientDownloadToMemoryConstMeta,
-        argValues: [that, url, progressCallback],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiYandeClientYandeClientDownloadToMemoryConstMeta =>
-      const TaskConstMeta(
-        debugName: "YandeClient_download_to_memory",
-        argNames: ["that", "url", "progressCallback"],
-      );
-
-  @override
-  Future<Uint8List> crateApiYandeClientYandeClientDownloadToMemoryWithCancel({
-    required YandeClient that,
-    required String url,
-    required FutureOr<void> Function(int, int) progressCallback,
-    required DownloadCancelToken cancelToken,
-  }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
-            that,
-            serializer,
-          );
-          sse_encode_String(url, serializer);
-          sse_encode_DartFn_Inputs_u_32_u_32_Output_unit_AnyhowException(
-            progressCallback,
-            serializer,
-          );
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerDownloadCancelToken(
-            cancelToken,
-            serializer,
-          );
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 6,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_list_prim_u_8_strict,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta:
-            kCrateApiYandeClientYandeClientDownloadToMemoryWithCancelConstMeta,
-        argValues: [that, url, progressCallback, cancelToken],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta
-  get kCrateApiYandeClientYandeClientDownloadToMemoryWithCancelConstMeta =>
-      const TaskConstMeta(
-        debugName: "YandeClient_download_to_memory_with_cancel",
-        argNames: ["that", "url", "progressCallback", "cancelToken"],
-      );
 
   @override
   Future<List<Post>> crateApiYandeClientYandeClientGetPosts({
@@ -408,7 +151,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 7,
+            funcId: 1,
             port: port_,
           );
         },
@@ -446,7 +189,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 8,
+            funcId: 2,
             port: port_,
           );
         },
@@ -468,17 +211,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  YandeClient crateApiYandeClientYandeClientNew({
-    StringArray3? ips,
-    required bool forLargeFile,
-  }) {
+  YandeClient crateApiYandeClientYandeClientNew({StringArray3? ips}) {
     return handler.executeSync(
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_opt_String_array_3(ips, serializer);
-          sse_encode_bool(forLargeFile, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 9)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
         },
         codec: SseCodec(
           decodeSuccessData:
@@ -486,16 +225,109 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: null,
         ),
         constMeta: kCrateApiYandeClientYandeClientNewConstMeta,
-        argValues: [ips, forLargeFile],
+        argValues: [ips],
         apiImpl: this,
       ),
     );
   }
 
   TaskConstMeta get kCrateApiYandeClientYandeClientNewConstMeta =>
+      const TaskConstMeta(debugName: "YandeClient_new", argNames: ["ips"]);
+
+  @override
+  Stream<FrbDownloadFileEvent> crateApiDownloadDownloadToFile({
+    required String url,
+    required String path,
+    required Map<String, String> headers,
+    String? proxyUrl,
+    String? connectHost,
+    String? hostHeader,
+    required bool disableTlsSni,
+    required bool allowInvalidCertificates,
+    required int connectTimeoutSeconds,
+    required int receiveTimeoutSeconds,
+    int? expectedBytes,
+    required List<String> allowedContentTypes,
+    String? checksumAlgorithm,
+    String? checksumValue,
+  }) {
+    final sink = RustStreamSink<FrbDownloadFileEvent>();
+    unawaited(
+      handler.executeNormal(
+        NormalTask(
+          callFfi: (port_) {
+            final serializer = SseSerializer(generalizedFrbRustBinding);
+            sse_encode_String(url, serializer);
+            sse_encode_String(path, serializer);
+            sse_encode_Map_String_String_None(headers, serializer);
+            sse_encode_opt_String(proxyUrl, serializer);
+            sse_encode_opt_String(connectHost, serializer);
+            sse_encode_opt_String(hostHeader, serializer);
+            sse_encode_bool(disableTlsSni, serializer);
+            sse_encode_bool(allowInvalidCertificates, serializer);
+            sse_encode_u_32(connectTimeoutSeconds, serializer);
+            sse_encode_u_32(receiveTimeoutSeconds, serializer);
+            sse_encode_opt_box_autoadd_u_32(expectedBytes, serializer);
+            sse_encode_list_String(allowedContentTypes, serializer);
+            sse_encode_opt_String(checksumAlgorithm, serializer);
+            sse_encode_opt_String(checksumValue, serializer);
+            sse_encode_StreamSink_frb_download_file_event_Sse(sink, serializer);
+            pdeCallFfi(
+              generalizedFrbRustBinding,
+              serializer,
+              funcId: 4,
+              port: port_,
+            );
+          },
+          codec: SseCodec(
+            decodeSuccessData: sse_decode_unit,
+            decodeErrorData: sse_decode_String,
+          ),
+          constMeta: kCrateApiDownloadDownloadToFileConstMeta,
+          argValues: [
+            url,
+            path,
+            headers,
+            proxyUrl,
+            connectHost,
+            hostHeader,
+            disableTlsSni,
+            allowInvalidCertificates,
+            connectTimeoutSeconds,
+            receiveTimeoutSeconds,
+            expectedBytes,
+            allowedContentTypes,
+            checksumAlgorithm,
+            checksumValue,
+            sink,
+          ],
+          apiImpl: this,
+        ),
+      ),
+    );
+    return sink.stream;
+  }
+
+  TaskConstMeta get kCrateApiDownloadDownloadToFileConstMeta =>
       const TaskConstMeta(
-        debugName: "YandeClient_new",
-        argNames: ["ips", "forLargeFile"],
+        debugName: "download_to_file",
+        argNames: [
+          "url",
+          "path",
+          "headers",
+          "proxyUrl",
+          "connectHost",
+          "hostHeader",
+          "disableTlsSni",
+          "allowInvalidCertificates",
+          "connectTimeoutSeconds",
+          "receiveTimeoutSeconds",
+          "expectedBytes",
+          "allowedContentTypes",
+          "checksumAlgorithm",
+          "checksumValue",
+          "sink",
+        ],
       );
 
   @override
@@ -504,7 +336,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 10)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 5)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
@@ -519,50 +351,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiRustcRustcVersionConstMeta =>
       const TaskConstMeta(debugName: "rustc_version", argNames: []);
-
-  Future<void> Function(int, dynamic, dynamic)
-  encode_DartFn_Inputs_u_32_u_32_Output_unit_AnyhowException(
-    FutureOr<void> Function(int, int) raw,
-  ) {
-    return (callId, rawArg0, rawArg1) async {
-      final arg0 = dco_decode_u_32(rawArg0);
-      final arg1 = dco_decode_u_32(rawArg1);
-
-      Box<void>? rawOutput;
-      Box<AnyhowException>? rawError;
-      try {
-        rawOutput = Box(await raw(arg0, arg1));
-      } catch (e, s) {
-        rawError = Box(AnyhowException("$e\n\n$s"));
-      }
-
-      final serializer = SseSerializer(generalizedFrbRustBinding);
-      assert((rawOutput != null) ^ (rawError != null));
-      if (rawOutput != null) {
-        serializer.buffer.putUint8(0);
-        sse_encode_unit(rawOutput.value, serializer);
-      } else {
-        serializer.buffer.putUint8(1);
-        sse_encode_AnyhowException(rawError!.value, serializer);
-      }
-      final output = serializer.intoRaw();
-
-      generalizedFrbRustBinding.dartFnDeliverOutput(
-        callId: callId,
-        ptr: output.ptr,
-        rustVecLen: output.rustVecLen,
-        dataLen: output.dataLen,
-      );
-    };
-  }
-
-  RustArcIncrementStrongCountFnType
-  get rust_arc_increment_strong_count_DownloadCancelToken => wire
-      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerDownloadCancelToken;
-
-  RustArcDecrementStrongCountFnType
-  get rust_arc_decrement_strong_count_DownloadCancelToken => wire
-      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerDownloadCancelToken;
 
   RustArcIncrementStrongCountFnType
   get rust_arc_increment_strong_count_YandeClient => wire
@@ -579,30 +367,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  DownloadCancelToken
-  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerDownloadCancelToken(
-    dynamic raw,
-  ) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return DownloadCancelTokenImpl.frbInternalDcoDecode(raw as List<dynamic>);
-  }
-
-  @protected
   YandeClient
   dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
     dynamic raw,
   ) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return YandeClientImpl.frbInternalDcoDecode(raw as List<dynamic>);
-  }
-
-  @protected
-  DownloadCancelToken
-  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerDownloadCancelToken(
-    dynamic raw,
-  ) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return DownloadCancelTokenImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
@@ -623,25 +393,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  FutureOr<void> Function(int, int)
-  dco_decode_DartFn_Inputs_u_32_u_32_Output_unit_AnyhowException(dynamic raw) {
+  Map<String, String> dco_decode_Map_String_String_None(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    throw UnimplementedError('');
-  }
-
-  @protected
-  Object dco_decode_DartOpaque(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return decodeDartOpaque(raw, generalizedFrbRustBinding);
-  }
-
-  @protected
-  DownloadCancelToken
-  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerDownloadCancelToken(
-    dynamic raw,
-  ) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return DownloadCancelTokenImpl.frbInternalDcoDecode(raw as List<dynamic>);
+    return Map.fromEntries(
+      dco_decode_list_record_string_string(
+        raw,
+      ).map((e) => MapEntry(e.$1, e.$2)),
+    );
   }
 
   @protected
@@ -651,6 +409,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return YandeClientImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  RustStreamSink<FrbDownloadFileEvent>
+  dco_decode_StreamSink_frb_download_file_event_Sse(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    throw UnimplementedError();
   }
 
   @protected
@@ -672,13 +437,29 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  PlatformInt64 dco_decode_i_64(dynamic raw) {
+  int dco_decode_box_autoadd_u_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    return dcoDecodeI64(raw);
+    return raw as int;
   }
 
   @protected
-  PlatformInt64 dco_decode_isize(dynamic raw) {
+  FrbDownloadFileEvent dco_decode_frb_download_file_event(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    switch (raw[0]) {
+      case 0:
+        return FrbDownloadFileEvent_Progress(
+          received: dco_decode_u_32(raw[1]),
+          total: dco_decode_u_32(raw[2]),
+        );
+      case 1:
+        return FrbDownloadFileEvent_Done(path: dco_decode_String(raw[1]));
+      default:
+        throw Exception("unreachable");
+    }
+  }
+
+  @protected
+  PlatformInt64 dco_decode_i_64(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dcoDecodeI64(raw);
   }
@@ -702,6 +483,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<(String, String)> dco_decode_list_record_string_string(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_record_string_string).toList();
+  }
+
+  @protected
   int? dco_decode_opt_CastedPrimitive_i_64(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_CastedPrimitive_i_64(raw);
@@ -717,6 +504,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   StringArray3? dco_decode_opt_String_array_3(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_String_array_3(raw);
+  }
+
+  @protected
+  int? dco_decode_opt_box_autoadd_u_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_u_32(raw);
   }
 
   @protected
@@ -767,6 +560,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  (String, String) dco_decode_record_string_string(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2) {
+      throw Exception('Expected 2 elements, got ${arr.length}');
+    }
+    return (dco_decode_String(arr[0]), dco_decode_String(arr[1]));
+  }
+
+  @protected
   Similar dco_decode_similar(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -810,36 +613,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  DownloadCancelToken
-  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerDownloadCancelToken(
-    SseDeserializer deserializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return DownloadCancelTokenImpl.frbInternalSseDecode(
-      sse_decode_usize(deserializer),
-      sse_decode_i_32(deserializer),
-    );
-  }
-
-  @protected
   YandeClient
   sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return YandeClientImpl.frbInternalSseDecode(
-      sse_decode_usize(deserializer),
-      sse_decode_i_32(deserializer),
-    );
-  }
-
-  @protected
-  DownloadCancelToken
-  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerDownloadCancelToken(
-    SseDeserializer deserializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return DownloadCancelTokenImpl.frbInternalSseDecode(
       sse_decode_usize(deserializer),
       sse_decode_i_32(deserializer),
     );
@@ -865,22 +644,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  Object sse_decode_DartOpaque(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    var inner = sse_decode_isize(deserializer);
-    return decodeDartOpaque(inner, generalizedFrbRustBinding);
-  }
-
-  @protected
-  DownloadCancelToken
-  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerDownloadCancelToken(
+  Map<String, String> sse_decode_Map_String_String_None(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    return DownloadCancelTokenImpl.frbInternalSseDecode(
-      sse_decode_usize(deserializer),
-      sse_decode_i_32(deserializer),
-    );
+    var inner = sse_decode_list_record_string_string(deserializer);
+    return Map.fromEntries(inner.map((e) => MapEntry(e.$1, e.$2)));
   }
 
   @protected
@@ -893,6 +662,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       sse_decode_usize(deserializer),
       sse_decode_i_32(deserializer),
     );
+  }
+
+  @protected
+  RustStreamSink<FrbDownloadFileEvent>
+  sse_decode_StreamSink_frb_download_file_event_Sse(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    throw UnimplementedError('Unreachable ()');
   }
 
   @protected
@@ -916,13 +694,36 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  PlatformInt64 sse_decode_i_64(SseDeserializer deserializer) {
+  int sse_decode_box_autoadd_u_32(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getPlatformInt64();
+    return (sse_decode_u_32(deserializer));
   }
 
   @protected
-  PlatformInt64 sse_decode_isize(SseDeserializer deserializer) {
+  FrbDownloadFileEvent sse_decode_frb_download_file_event(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var tag_ = sse_decode_i_32(deserializer);
+    switch (tag_) {
+      case 0:
+        var var_received = sse_decode_u_32(deserializer);
+        var var_total = sse_decode_u_32(deserializer);
+        return FrbDownloadFileEvent_Progress(
+          received: var_received,
+          total: var_total,
+        );
+      case 1:
+        var var_path = sse_decode_String(deserializer);
+        return FrbDownloadFileEvent_Done(path: var_path);
+      default:
+        throw UnimplementedError('');
+    }
+  }
+
+  @protected
+  PlatformInt64 sse_decode_i_64(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getPlatformInt64();
   }
@@ -959,6 +760,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<(String, String)> sse_decode_list_record_string_string(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <(String, String)>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_record_string_string(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   int? sse_decode_opt_CastedPrimitive_i_64(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -986,6 +801,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_String_array_3(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_u_32(deserializer));
     } else {
       return null;
     }
@@ -1073,6 +899,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  (String, String) sse_decode_record_string_string(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_field0 = sse_decode_String(deserializer);
+    var var_field1 = sse_decode_String(deserializer);
+    return (var_field0, var_field1);
+  }
+
+  @protected
   Similar sse_decode_similar(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_posts = sse_decode_list_post(deserializer);
@@ -1120,19 +956,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   void
-  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerDownloadCancelToken(
-    DownloadCancelToken self,
-    SseSerializer serializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_usize(
-      (self as DownloadCancelTokenImpl).frbInternalSseEncode(move: true),
-      serializer,
-    );
-  }
-
-  @protected
-  void
   sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
     YandeClient self,
     SseSerializer serializer,
@@ -1140,19 +963,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_usize(
       (self as YandeClientImpl).frbInternalSseEncode(move: true),
-      serializer,
-    );
-  }
-
-  @protected
-  void
-  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerDownloadCancelToken(
-    DownloadCancelToken self,
-    SseSerializer serializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_usize(
-      (self as DownloadCancelTokenImpl).frbInternalSseEncode(move: false),
       serializer,
     );
   }
@@ -1177,41 +987,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_DartFn_Inputs_u_32_u_32_Output_unit_AnyhowException(
-    FutureOr<void> Function(int, int) self,
+  void sse_encode_Map_String_String_None(
+    Map<String, String> self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_DartOpaque(
-      encode_DartFn_Inputs_u_32_u_32_Output_unit_AnyhowException(self),
-      serializer,
-    );
-  }
-
-  @protected
-  void sse_encode_DartOpaque(Object self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_isize(
-      PlatformPointerUtil.ptrToPlatformInt64(
-        encodeDartOpaque(
-          self,
-          portManager.dartHandlerPort,
-          generalizedFrbRustBinding,
-        ),
-      ),
-      serializer,
-    );
-  }
-
-  @protected
-  void
-  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerDownloadCancelToken(
-    DownloadCancelToken self,
-    SseSerializer serializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_usize(
-      (self as DownloadCancelTokenImpl).frbInternalSseEncode(move: null),
+    sse_encode_list_record_string_string(
+      self.entries.map((e) => (e.key, e.value)).toList(),
       serializer,
     );
   }
@@ -1225,6 +1007,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_usize(
       (self as YandeClientImpl).frbInternalSseEncode(move: null),
+      serializer,
+    );
+  }
+
+  @protected
+  void sse_encode_StreamSink_frb_download_file_event_Sse(
+    RustStreamSink<FrbDownloadFileEvent> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(
+      self.setupAndSerialize(
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_frb_download_file_event,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+      ),
       serializer,
     );
   }
@@ -1248,13 +1047,33 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer) {
+  void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putPlatformInt64(self);
+    sse_encode_u_32(self, serializer);
   }
 
   @protected
-  void sse_encode_isize(PlatformInt64 self, SseSerializer serializer) {
+  void sse_encode_frb_download_file_event(
+    FrbDownloadFileEvent self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    switch (self) {
+      case FrbDownloadFileEvent_Progress(
+        received: final received,
+        total: final total,
+      ):
+        sse_encode_i_32(0, serializer);
+        sse_encode_u_32(received, serializer);
+        sse_encode_u_32(total, serializer);
+      case FrbDownloadFileEvent_Done(path: final path):
+        sse_encode_i_32(1, serializer);
+        sse_encode_String(path, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putPlatformInt64(self);
   }
@@ -1285,6 +1104,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     serializer.buffer.putUint8List(self);
+  }
+
+  @protected
+  void sse_encode_list_record_string_string(
+    List<(String, String)> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_record_string_string(item, serializer);
+    }
   }
 
   @protected
@@ -1320,6 +1151,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_String_array_3(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_u_32(self, serializer);
     }
   }
 
@@ -1366,6 +1207,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_record_string_string(
+    (String, String) self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.$1, serializer);
+    sse_encode_String(self.$2, serializer);
+  }
+
+  @protected
   void sse_encode_similar(Similar self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_list_post(self.posts, serializer);
@@ -1403,41 +1254,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 }
 
 @sealed
-class DownloadCancelTokenImpl extends RustOpaque
-    implements DownloadCancelToken {
-  // Not to be used by end users
-  DownloadCancelTokenImpl.frbInternalDcoDecode(List<dynamic> wire)
-    : super.frbInternalDcoDecode(wire, _kStaticData);
-
-  // Not to be used by end users
-  DownloadCancelTokenImpl.frbInternalSseDecode(
-    BigInt ptr,
-    int externalSizeOnNative,
-  ) : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
-
-  static final _kStaticData = RustArcStaticData(
-    rustArcIncrementStrongCount: RustLib
-        .instance
-        .api
-        .rust_arc_increment_strong_count_DownloadCancelToken,
-    rustArcDecrementStrongCount: RustLib
-        .instance
-        .api
-        .rust_arc_decrement_strong_count_DownloadCancelToken,
-    rustArcDecrementStrongCountPtr: RustLib
-        .instance
-        .api
-        .rust_arc_decrement_strong_count_DownloadCancelTokenPtr,
-  );
-
-  void cancel() => RustLib.instance.api
-      .crateApiYandeClientDownloadCancelTokenCancel(that: this);
-
-  bool isCancelled() => RustLib.instance.api
-      .crateApiYandeClientDownloadCancelTokenIsCancelled(that: this);
-}
-
-@sealed
 class YandeClientImpl extends RustOpaque implements YandeClient {
   // Not to be used by end users
   YandeClientImpl.frbInternalDcoDecode(List<dynamic> wire)
@@ -1455,40 +1271,6 @@ class YandeClientImpl extends RustOpaque implements YandeClient {
     rustArcDecrementStrongCountPtr:
         RustLib.instance.api.rust_arc_decrement_strong_count_YandeClientPtr,
   );
-
-  Future<void> downloadToFile({
-    required String url,
-    required String filePath,
-    required int maxTaskCount,
-    required FutureOr<void> Function(int, int) progressCallback,
-  }) => RustLib.instance.api.crateApiYandeClientYandeClientDownloadToFile(
-    that: this,
-    url: url,
-    filePath: filePath,
-    maxTaskCount: maxTaskCount,
-    progressCallback: progressCallback,
-  );
-
-  Future<Uint8List> downloadToMemory({
-    required String url,
-    required FutureOr<void> Function(int, int) progressCallback,
-  }) => RustLib.instance.api.crateApiYandeClientYandeClientDownloadToMemory(
-    that: this,
-    url: url,
-    progressCallback: progressCallback,
-  );
-
-  Future<Uint8List> downloadToMemoryWithCancel({
-    required String url,
-    required FutureOr<void> Function(int, int) progressCallback,
-    required DownloadCancelToken cancelToken,
-  }) => RustLib.instance.api
-      .crateApiYandeClientYandeClientDownloadToMemoryWithCancel(
-        that: this,
-        url: url,
-        progressCallback: progressCallback,
-        cancelToken: cancelToken,
-      );
 
   Future<List<Post>> getPosts({
     required List<String> tags,

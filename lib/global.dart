@@ -18,8 +18,7 @@ void setYandeClient(YandeClient client) {
   _yandeClient = client;
 }
 
-List<String>? realIps;
-
-bool get isDesktop => Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+bool get isDesktop =>
+    Platform.isWindows || Platform.isLinux || Platform.isMacOS;
 
 bool get isMobile => Platform.isAndroid || Platform.isIOS;

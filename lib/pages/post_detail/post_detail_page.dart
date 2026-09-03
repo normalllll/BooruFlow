@@ -7,7 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:yande_gui/components/translated_tag/translated_tag.dart';
 import 'package:yande_gui/components/yande_image/yande_image.dart';
-import 'package:yande_gui/downloader/downloader.dart';
+import 'package:yande_gui/features/downloads/application/yande_download_controller.dart';
 import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/pages/post_detail/logic.dart';
 import 'package:yande_gui/router/app_router.dart';
@@ -235,7 +235,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
 
   void _downloadPost(Post targetPost) {
     HapticFeedback.mediumImpact();
-    Downloader.instance.add(targetPost);
+    YandeDownloadController.instance.add(targetPost);
   }
 
   void _openTag(String tag) {
@@ -283,7 +283,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
         final result = await Process.run('xdg-open', [url]);
         return result.exitCode == 0;
       }
-      return launchUrlString(url, mode: LaunchMode.externalApplication);
+      return await launchUrlString(url, mode: LaunchMode.externalApplication);
     } catch (_) {
       return false;
     }

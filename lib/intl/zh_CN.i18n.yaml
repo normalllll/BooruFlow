@@ -95,7 +95,7 @@ settings:
   title: 设置
   theme: 主题
   language: 语言
-  prefetchDns: 预解析 DNS
+  bypassSni: 绕过 SNI
   downloadDirectory: 下载目录
   defaultToPlatformSettings: 使用平台默认设置
   columnsPerRow: 每行列数
@@ -121,8 +121,8 @@ settings:
       pathNotAbsolute: 路径必须是绝对路径。
       pathNotWritable: 路径不可写入。
 
-  dnsPrefetchDialog:
-    title: DNS 预解析
+  bypassSniDialog:
+    title: 绕过 SNI
 
   columnsPerRowDialog:
     title: 每行列数

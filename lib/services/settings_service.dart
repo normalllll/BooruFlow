@@ -110,7 +110,8 @@ class SettingsService {
 
   static const _languageKey = 'language';
   static const _themeModeKey = 'themeMode';
-  static const _prefetchDnsKey = 'prefetchDns';
+  // Keep the legacy key so existing installations retain this preference.
+  static const _bypassSniKey = 'prefetchDns';
   static const _waterfallColumnsKey = 'waterfallColumns';
   static const _downloadPathKey = 'downloadPath';
   static const _maxConcurrentDownloadsKey = 'maxConcurrentDownloads';
@@ -119,7 +120,7 @@ class SettingsService {
   static const _settingKeys = {
     _languageKey,
     _themeModeKey,
-    _prefetchDnsKey,
+    _bypassSniKey,
     _waterfallColumnsKey,
     _downloadPathKey,
     _maxConcurrentDownloadsKey,
@@ -141,10 +142,10 @@ class SettingsService {
     _write(_themeModeKey, value);
   }
 
-  static bool get prefetchDns => _map[_prefetchDnsKey] as bool? ?? true;
+  static bool get bypassSni => _map[_bypassSniKey] as bool? ?? true;
 
-  static set prefetchDns(bool value) {
-    _write(_prefetchDnsKey, value);
+  static set bypassSni(bool value) {
+    _write(_bypassSniKey, value);
   }
 
   static int? get waterfallColumns => _map[_waterfallColumnsKey] as int?;
@@ -254,7 +255,7 @@ class SettingsService {
       _waterfallColumnsKey ||
       _maxConcurrentDownloadsKey ||
       _maxSegmentsPerTaskKey => value is int,
-      _prefetchDnsKey => value is bool,
+      _bypassSniKey => value is bool,
       _downloadPathKey => value is String,
       _ => false,
     };

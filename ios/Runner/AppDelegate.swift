@@ -10,14 +10,21 @@ import UIKit
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
+  override func application(
+    _ application: UIApplication,
+    handleEventsForBackgroundURLSession identifier: String,
+    completionHandler: @escaping () -> Void
+  ) {
+    YandeDownloadBridge.shared.handleEventsForBackgroundSession(
+      identifier: identifier,
+      completionHandler: completionHandler
+    )
+  }
+
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
-
-    guard let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "ImageSaverPlugin") else {
-      assertionFailure("Failed to get registrar for ImageSaverPlugin")
-      return
-    }
-
-    ImageSaverPlugin.register(with: registrar)
+    YandeDownloadBridge.shared.register(
+      messenger: engineBridge.applicationRegistrar.messenger()
+    )
   }
 }

@@ -8,7 +8,9 @@ import 'package:yande_gui/intl/locale_preferences.dart';
 import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/services/app_toast.dart';
 import 'package:yande_gui/services/settings_service.dart';
+import 'package:yande_gui/services/yande_network_policy.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
+import 'package:yande_gui/widgets/grouped_settings_list/grouped_settings_list.dart';
 import 'package:path/path.dart' as path;
 
 class SettingsPage extends StatefulWidget {
@@ -19,21 +21,26 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  void _refreshSettings() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   Widget buildItem({
     required Widget title,
     Widget? subtitle,
     Widget? leading,
-    Function()? onTap,
+    VoidCallback? onTap,
   }) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: ListTile(
-        leading: leading,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        title: title,
-        subtitle: subtitle,
-        onTap: onTap,
-      ),
+    return ListTile(
+      leading: leading,
+      title: title,
+      subtitle: subtitle,
+      trailing: onTap == null
+          ? null
+          : const Icon(Icons.chevron_right_rounded, size: 20),
+      onTap: onTap,
     );
   }
 
@@ -98,6 +105,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 SettingsService.themeMode = value;
                 rootUpdateController.add(null);
                 Navigator.of(context).pop();
+                _refreshSettings();
               },
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -107,15 +115,9 @@ class _SettingsPageState extends State<SettingsPage> {
                     value: null,
                   ),
                   SizedBox(height: 5),
-                  RadioListTile<int?>(
-                    title: Text(t.settings.light),
-                    value: 0,
-                  ),
+                  RadioListTile<int?>(title: Text(t.settings.light), value: 0),
                   SizedBox(height: 5),
-                  RadioListTile<int?>(
-                    title: Text(t.settings.dark),
-                    value: 1,
-                  ),
+                  RadioListTile<int?>(title: Text(t.settings.dark), value: 1),
                 ],
               ),
             ),
@@ -150,6 +152,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 applyLanguagePreference(value);
                 rootUpdateController.add(null);
                 Navigator.of(context).pop();
+                _refreshSettings();
               },
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -190,25 +193,27 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _dnsPrefetchDialog() {
+  void _bypassSniDialog() {
     showCupertinoDialog(
       context: context,
       barrierDismissible: true,
       builder: (context) {
         return CupertinoAlertDialog(
-          title: Text(t.settings.dnsPrefetchDialog.title),
+          title: Text(t.settings.bypassSniDialog.title),
           content: _dialogListTileMaterial(
             context,
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 CheckboxListTile(
-                  value: SettingsService.prefetchDns,
+                  value: SettingsService.bypassSni,
                   title: Text(t.generic.enabled),
-                  onChanged: (v) {
-                    SettingsService.prefetchDns = v ?? false;
+                  onChanged: (v) async {
+                    SettingsService.bypassSni = v ?? false;
                     rootUpdateController.add(null);
                     Navigator.of(context).pop();
+                    _refreshSettings();
+                    await applyYandeNetworkSettings(force: true);
                   },
                 ),
               ],
@@ -296,8 +301,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 if (dir.isEmpty) {
                   SettingsService.downloadPath = null;
                   AppToast.info('Download path set to platform default');
-                  setState(() {});
                   Navigator.of(context).pop();
+                  _refreshSettings();
                   return;
                 }
                 if (path.isRelative(dir)) {
@@ -320,8 +325,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 }
 
                 SettingsService.downloadPath = textController.text;
-                setState(() {});
                 Navigator.of(context).pop();
+                _refreshSettings();
               },
             ),
           ],
@@ -386,6 +391,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         : currentSliderValue.toInt() + 1;
                     rootUpdateController.add(null);
                     Navigator.of(context).pop();
+                    _refreshSettings();
                   },
                 ),
               ],
@@ -440,6 +446,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         .toInt();
                     rootUpdateController.add(null);
                     Navigator.of(context).pop();
+                    _refreshSettings();
                   },
                 ),
               ],
@@ -494,6 +501,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         .toInt();
                     rootUpdateController.add(null);
                     Navigator.of(context).pop();
+                    _refreshSettings();
                   },
                 ),
               ],
@@ -509,82 +517,78 @@ class _SettingsPageState extends State<SettingsPage> {
     return AutoScaffold(
       verticalOnlyTitleWidget: Text(t.settings.title),
       builder: (context, horizontal) {
-        return ListView(
-          children: [
-            buildItem(
-              title: Text(t.settings.language),
-              leading: const Icon(Icons.language),
-              subtitle: Text(languageToText(SettingsService.language)),
-              onTap: () {
-                _languageDialog();
-              },
-            ),
-            buildItem(
-              title: Text(t.settings.theme),
-              leading: switch (Theme.of(context).brightness) {
-                Brightness.dark => const Icon(Icons.dark_mode_outlined),
-                Brightness.light => const Icon(Icons.light_mode_outlined),
-              },
-              subtitle: Text(themeModeToText(SettingsService.themeMode)),
-              onTap: () {
-                _themeModeDialog();
-              },
-            ),
-            buildItem(
-              title: Text(t.settings.prefetchDns),
-              leading: const Icon(Icons.network_check_outlined),
-              subtitle: Text(
-                SettingsService.prefetchDns
-                    ? t.generic.enabled
-                    : t.generic.disabled,
-              ),
-              onTap: () {
-                _dnsPrefetchDialog();
-              },
-            ),
-            buildItem(
-              title: Text(t.settings.columnsPerRow),
-              leading: const Icon(Icons.view_column_outlined),
-              subtitle: Text(
-                waterfallColumns(SettingsService.waterfallColumns),
-              ),
-              onTap: () {
-                _columnsPerRowDialog();
-              },
-            ),
-            buildItem(
-              title: Text(t.settings.maxConcurrentDownloads),
-              leading: const Icon(Icons.grading_outlined),
-              subtitle: Text(
-                maxActiveDownloadTasks(SettingsService.maxConcurrentDownloads),
-              ),
-              onTap: () {
-                _maxConcurrentDownloadsDialog();
-              },
-            ),
-            buildItem(
-              title: Text(t.settings.maxSegmentsPerTask),
-              leading: const Icon(Icons.segment_outlined),
-              subtitle: Text(
-                maxParallelSegmentsPerDownloadTask(
-                  SettingsService.maxSegmentsPerTask,
-                ),
-              ),
-              onTap: () {
-                _maxSegmentsPerTaskDialog();
-              },
-            ),
-            if (Platform.isWindows || Platform.isLinux || Platform.isMacOS)
+        return GroupedSettingsList(
+          groups: [
+            [
               buildItem(
-                title: Text(t.settings.downloadDirectory),
-                leading: const Icon(Icons.save_alt_outlined),
-                subtitle: Text(
-                  SettingsService.downloadPath ?? t.settings.platformDefault,
-                ),
-                onTap: () {
-                  _downloadPathDialog();
-                },
+                title: Text(t.settings.language),
+                leading: const Icon(Icons.language),
+                subtitle: Text(languageToText(SettingsService.language)),
+                onTap: _languageDialog,
               ),
+              buildItem(
+                title: Text(t.settings.theme),
+                leading: switch (Theme.of(context).brightness) {
+                  Brightness.dark => const Icon(Icons.dark_mode_outlined),
+                  Brightness.light => const Icon(Icons.light_mode_outlined),
+                },
+                subtitle: Text(themeModeToText(SettingsService.themeMode)),
+                onTap: _themeModeDialog,
+              ),
+              buildItem(
+                title: Text(t.settings.columnsPerRow),
+                leading: const Icon(Icons.view_column_outlined),
+                subtitle: Text(
+                  waterfallColumns(SettingsService.waterfallColumns),
+                ),
+                onTap: _columnsPerRowDialog,
+              ),
+            ],
+            [
+              buildItem(
+                title: Text(t.settings.bypassSni),
+                leading: const Icon(Icons.network_check_outlined),
+                subtitle: Text(
+                  SettingsService.bypassSni
+                      ? t.generic.enabled
+                      : t.generic.disabled,
+                ),
+                onTap: _bypassSniDialog,
+              ),
+            ],
+            [
+              buildItem(
+                title: Text(t.settings.maxConcurrentDownloads),
+                leading: const Icon(Icons.grading_outlined),
+                subtitle: Text(
+                  maxActiveDownloadTasks(
+                    SettingsService.maxConcurrentDownloads,
+                  ),
+                ),
+                onTap: _maxConcurrentDownloadsDialog,
+              ),
+              buildItem(
+                title: Text(t.settings.maxSegmentsPerTask),
+                leading: const Icon(Icons.segment_outlined),
+                subtitle: Text(
+                  maxParallelSegmentsPerDownloadTask(
+                    SettingsService.maxSegmentsPerTask,
+                  ),
+                ),
+                onTap: _maxSegmentsPerTaskDialog,
+              ),
+              if (Platform.isWindows || Platform.isLinux || Platform.isMacOS)
+                buildItem(
+                  title: Text(t.settings.downloadDirectory),
+                  leading: const Icon(Icons.save_alt_outlined),
+                  subtitle: Text(
+                    SettingsService.downloadPath ?? t.settings.platformDefault,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  onTap: _downloadPathDialog,
+                ),
+            ],
           ],
         );
       },

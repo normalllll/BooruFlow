@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "io.github.normalllll.yande_gui"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37
     ndkVersion = "28.2.13676358"
 
     compileOptions {
@@ -78,4 +78,8 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    implementation("com.squareup.okhttp3:okhttp:5.4.0")
 }

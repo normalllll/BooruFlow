@@ -11,7 +11,7 @@ import 'package:yande_gui/components/loading_more_indicator/loading_more_indicat
 import 'package:yande_gui/components/post_search_field/post_search_field.dart';
 import 'package:yande_gui/components/post_waterfall_skeleton/post_waterfall_skeleton.dart';
 import 'package:yande_gui/components/yande_image/yande_image.dart';
-import 'package:yande_gui/downloader/downloader.dart';
+import 'package:yande_gui/features/downloads/application/yande_download_controller.dart';
 import 'package:yande_gui/enums.dart';
 import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/router/app_router.dart';
@@ -209,7 +209,7 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                           onTap: () => AppRouter.pushPost(context, post),
                           onLongPress: () {
                             HapticFeedback.mediumImpact();
-                            Downloader.instance.add(post);
+                            YandeDownloadController.instance.add(post);
                           },
                         );
                       }, childCount: source.length),

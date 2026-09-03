@@ -280,7 +280,7 @@ class _Translations$settings$ja extends Translations$settings$en {
   @override
   String get language => '言語';
   @override
-  String get prefetchDns => 'DNS のプリフェッチ';
+  String get bypassSni => 'SNI をバイパス';
   @override
   String get downloadDirectory => 'ダウンロードディレクトリ';
   @override
@@ -311,8 +311,9 @@ class _Translations$settings$ja extends Translations$settings$en {
   late final _Translations$settings$downloadDirectoryDialog$ja downloadDirectoryDialog =
       _Translations$settings$downloadDirectoryDialog$ja._(_root);
   @override
-  late final _Translations$settings$dnsPrefetchDialog$ja dnsPrefetchDialog =
-      _Translations$settings$dnsPrefetchDialog$ja._(_root);
+  late final _Translations$settings$bypassSniDialog$ja bypassSniDialog = _Translations$settings$bypassSniDialog$ja._(
+    _root,
+  );
   @override
   late final _Translations$settings$columnsPerRowDialog$ja columnsPerRowDialog =
       _Translations$settings$columnsPerRowDialog$ja._(_root);
@@ -397,15 +398,15 @@ class _Translations$settings$downloadDirectoryDialog$ja extends Translations$set
       _Translations$settings$downloadDirectoryDialog$messages$ja._(_root);
 }
 
-// Path: settings.dnsPrefetchDialog
-class _Translations$settings$dnsPrefetchDialog$ja extends Translations$settings$dnsPrefetchDialog$en {
-  _Translations$settings$dnsPrefetchDialog$ja._(TranslationsJa root) : this._root = root, super.internal(root);
+// Path: settings.bypassSniDialog
+class _Translations$settings$bypassSniDialog$ja extends Translations$settings$bypassSniDialog$en {
+  _Translations$settings$bypassSniDialog$ja._(TranslationsJa root) : this._root = root, super.internal(root);
 
   final TranslationsJa _root; // ignore: unused_field
 
   // Translations
   @override
-  String get title => 'DNS プリフェッチ';
+  String get title => 'SNI をバイパス';
 }
 
 // Path: settings.columnsPerRowDialog
@@ -548,7 +549,7 @@ extension on TranslationsJa {
       'settings.title' => '設定',
       'settings.theme' => 'テーマ',
       'settings.language' => '言語',
-      'settings.prefetchDns' => 'DNS のプリフェッチ',
+      'settings.bypassSni' => 'SNI をバイパス',
       'settings.downloadDirectory' => 'ダウンロードディレクトリ',
       'settings.defaultToPlatformSettings' => 'プラットフォームのデフォルトを使用',
       'settings.columnsPerRow' => '各行の列数',
@@ -566,7 +567,7 @@ extension on TranslationsJa {
       'settings.downloadDirectoryDialog.messages.setToPlatformDefault' => 'ダウンロードディレクトリはプラットフォームのデフォルトに設定されています。',
       'settings.downloadDirectoryDialog.messages.pathNotAbsolute' => 'パスは絶対パスである必要があります。',
       'settings.downloadDirectoryDialog.messages.pathNotWritable' => 'パスに書き込みできません。',
-      'settings.dnsPrefetchDialog.title' => 'DNS プリフェッチ',
+      'settings.bypassSniDialog.title' => 'SNI をバイパス',
       'settings.columnsPerRowDialog.title' => '各行の列数',
       'settings.maxConcurrentDownloadsDialog.title' => '最大同時ダウンロードタスク数',
       'settings.maxSegmentsPerTaskDialog.title' => '各ダウンロードタスクの最大セグメント数',

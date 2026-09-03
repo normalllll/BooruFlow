@@ -1,14 +1,10 @@
 import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:yande_gui/global.dart';
 import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/router/app_navigation.dart';
 import 'package:yande_gui/services/app_toast.dart';
-import 'package:yande_gui/services/dns_service.dart';
-import 'package:yande_gui/services/settings_service.dart';
 import 'package:yande_gui/services/updater_service.dart';
-import 'package:yande_gui/src/rust/api/yande_client.dart';
 import 'package:yande_gui/themes.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
 
@@ -35,8 +31,6 @@ class IndexPage extends StatefulWidget {
 }
 
 class _IndexPageState extends State<IndexPage> {
-  bool _initialized = !SettingsService.prefetchDns;
-
   @override
   void initState() {
     super.initState();
@@ -44,24 +38,6 @@ class _IndexPageState extends State<IndexPage> {
   }
 
   Future<void> _initialize() async {
-    if (!_initialized) {
-      YandeClient instance;
-      try {
-        final dns = await DnsService.fetchDns();
-        realIps = dns;
-        instance = YandeClient(
-          ips: dns != null ? StringArray3(dns) : null,
-          forLargeFile: false,
-        );
-      } catch (_) {
-        instance = YandeClient(ips: null, forLargeFile: false);
-      }
-
-      setYandeClient(instance);
-      if (!mounted) return;
-      setState(() => _initialized = true);
-    }
-
     try {
       final result = await UpdaterService.checkForUpdate();
       if (result != null) {
@@ -77,21 +53,6 @@ class _IndexPageState extends State<IndexPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_initialized) {
-      return const Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text('Initializing...'),
-            ],
-          ),
-        ),
-      );
-    }
-
     final useDesktopShell = shouldUseDesktopShell(context);
 
     return Scaffold(

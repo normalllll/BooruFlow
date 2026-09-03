@@ -5,6 +5,7 @@ edition = "2021"
 build = "build.rs"
 
 [lib]
+name = "core"
 crate-type = ["cdylib", "staticlib"]
 
 [build-dependencies]
@@ -20,11 +21,13 @@ url = "2.5"
 tokio = { version = "1", features = ["test-util", "full"] }
 tokio-util = "0.7"
 futures-util = "0.3"
+md-5 = "0.10.6"
+sha2 = "0.10.9"
 
 [dependencies.reqwest]
 version = "0.13.4"
 default-features = false
-features = ["rustls", "json", "stream", "http2"]
+features = ["rustls", "json", "stream", "http2", "socks", "system-proxy"]
 
 #[dependencies.serde_json]
 #version = "1.0.140"

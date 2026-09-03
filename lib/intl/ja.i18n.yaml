@@ -95,7 +95,7 @@ settings:
   title: 設定
   theme: テーマ
   language: 言語
-  prefetchDns: DNS のプリフェッチ
+  bypassSni: SNI をバイパス
   downloadDirectory: ダウンロードディレクトリ
   defaultToPlatformSettings: プラットフォームのデフォルトを使用
   columnsPerRow: 各行の列数
@@ -121,8 +121,8 @@ settings:
       pathNotAbsolute: パスは絶対パスである必要があります。
       pathNotWritable: パスに書き込みできません。
 
-  dnsPrefetchDialog:
-    title: DNS プリフェッチ
+  bypassSniDialog:
+    title: SNI をバイパス
 
   columnsPerRowDialog:
     title: 各行の列数

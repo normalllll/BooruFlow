@@ -338,8 +338,8 @@ class Translations$settings$en {
   /// en: 'Language'
   String get language => 'Language';
 
-  /// en: 'Prefetch DNS'
-  String get prefetchDns => 'Prefetch DNS';
+  /// en: 'Bypass SNI'
+  String get bypassSni => 'Bypass SNI';
 
   /// en: 'Download Directory'
   String get downloadDirectory => 'Download Directory';
@@ -375,8 +375,8 @@ class Translations$settings$en {
       Translations$settings$themeModeDialog$en.internal(_root);
   late final Translations$settings$downloadDirectoryDialog$en downloadDirectoryDialog =
       Translations$settings$downloadDirectoryDialog$en.internal(_root);
-  late final Translations$settings$dnsPrefetchDialog$en dnsPrefetchDialog =
-      Translations$settings$dnsPrefetchDialog$en.internal(_root);
+  late final Translations$settings$bypassSniDialog$en bypassSniDialog =
+      Translations$settings$bypassSniDialog$en.internal(_root);
   late final Translations$settings$columnsPerRowDialog$en columnsPerRowDialog =
       Translations$settings$columnsPerRowDialog$en.internal(_root);
   late final Translations$settings$maxConcurrentDownloadsDialog$en maxConcurrentDownloadsDialog =
@@ -477,16 +477,16 @@ class Translations$settings$downloadDirectoryDialog$en {
       Translations$settings$downloadDirectoryDialog$messages$en.internal(_root);
 }
 
-// Path: settings.dnsPrefetchDialog
-class Translations$settings$dnsPrefetchDialog$en {
-  Translations$settings$dnsPrefetchDialog$en.internal(this._root);
+// Path: settings.bypassSniDialog
+class Translations$settings$bypassSniDialog$en {
+  Translations$settings$bypassSniDialog$en.internal(this._root);
 
   final Translations _root; // ignore: unused_field
 
   // Translations
 
-  /// en: 'DNS Prefetch'
-  String get title => 'DNS Prefetch';
+  /// en: 'Bypass SNI'
+  String get title => 'Bypass SNI';
 }
 
 // Path: settings.columnsPerRowDialog
@@ -633,7 +633,7 @@ extension on Translations {
       'settings.title' => 'Settings',
       'settings.theme' => 'Theme',
       'settings.language' => 'Language',
-      'settings.prefetchDns' => 'Prefetch DNS',
+      'settings.bypassSni' => 'Bypass SNI',
       'settings.downloadDirectory' => 'Download Directory',
       'settings.defaultToPlatformSettings' => 'Default to Platform Settings',
       'settings.columnsPerRow' => 'Columns per Row',
@@ -651,7 +651,7 @@ extension on Translations {
       'settings.downloadDirectoryDialog.messages.setToPlatformDefault' => 'Directory set to platform default.',
       'settings.downloadDirectoryDialog.messages.pathNotAbsolute' => 'Directory path must be absolute.',
       'settings.downloadDirectoryDialog.messages.pathNotWritable' => 'Directory path is not writable.',
-      'settings.dnsPrefetchDialog.title' => 'DNS Prefetch',
+      'settings.bypassSniDialog.title' => 'Bypass SNI',
       'settings.columnsPerRowDialog.title' => 'Columns per Row',
       'settings.maxConcurrentDownloadsDialog.title' => 'Max Concurrent Download Tasks',
       'settings.maxSegmentsPerTaskDialog.title' => 'Max Segments per Download Task',

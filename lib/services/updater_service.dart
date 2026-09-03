@@ -20,7 +20,6 @@ class UpdaterService {
 
   static Future<(String, int, List<dynamic>)?> checkForUpdate() async {
     final packageInfo = await PackageInfo.fromPlatform();
-    final appVersion = packageInfo.version;
     final buildNumber = packageInfo.buildNumber;
 
     final latestRelease = await _fetchLatestRelease();

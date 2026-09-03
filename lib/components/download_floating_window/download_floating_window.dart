@@ -2,8 +2,9 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:yande_gui/components/yande_image/yande_image.dart';
-import 'package:yande_gui/downloader/download_task.dart';
-import 'package:yande_gui/downloader/downloader.dart';
+import 'package:yande_gui/core/downloads/download_models.dart';
+import 'package:yande_gui/features/downloads/application/yande_download_controller.dart';
+import 'package:yande_gui/features/downloads/domain/yande_download_item.dart';
 import 'package:yande_gui/global.dart';
 import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/src/rust/yande/model/post.dart';
@@ -41,10 +42,12 @@ class _DownloadFloatingWindowState extends State<DownloadFloatingWindow> {
         Positioned.fill(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              return StreamBuilder<List<DownloadTask<Post>>>(
-                stream: Downloader.instance.taskListStream,
+              return StreamBuilder<List<YandeDownloadItem>>(
+                stream: YandeDownloadController.instance.watchItems,
                 builder: (context, snapshot) {
-                  final tasks = snapshot.data ?? Downloader.instance.taskList;
+                  final tasks =
+                      snapshot.data ??
+                      YandeDownloadController.instance.currentItems;
                   if (tasks.isEmpty) return const SizedBox.shrink();
 
                   final orderedTasks = tasks.reversed.toList(growable: false);
@@ -79,7 +82,7 @@ class _DownloadFloatingWindowState extends State<DownloadFloatingWindow> {
     BuildContext context,
     Size availableSize,
     _DownloadSummary summary,
-    List<DownloadTask<Post>> tasks,
+    List<YandeDownloadItem> tasks,
   ) {
     final panelWidth = math.min(
       _panelMaxWidth,
@@ -121,7 +124,7 @@ class _DownloadFloatingWindowState extends State<DownloadFloatingWindow> {
               summary: summary,
               tasks: tasks,
               onClose: _collapse,
-              onRetryAll: Downloader.instance.retryAll,
+              onRetryAll: YandeDownloadController.instance.retryAll,
               onTaskTap: _openTask,
             ),
           ),
@@ -133,7 +136,7 @@ class _DownloadFloatingWindowState extends State<DownloadFloatingWindow> {
     BuildContext context,
     BoxConstraints constraints,
     _DownloadSummary summary,
-    List<DownloadTask<Post>> tasks,
+    List<YandeDownloadItem> tasks,
   ) {
     final availableSize = constraints.biggest;
     final viewPadding = MediaQuery.viewPaddingOf(context);
@@ -178,7 +181,7 @@ class _DownloadFloatingWindowState extends State<DownloadFloatingWindow> {
                       viewPadding,
                     ),
                     onClose: _collapse,
-                    onRetryAll: Downloader.instance.retryAll,
+                    onRetryAll: YandeDownloadController.instance.retryAll,
                     onTaskTap: _openTask,
                   )
                 : _DownloadFloatingButton(
@@ -280,9 +283,11 @@ class _DownloadFloatingWindowState extends State<DownloadFloatingWindow> {
     if (_expanded) setState(() => _expanded = false);
   }
 
-  void _openTask(DownloadTask<Post> task) {
+  void _openTask(YandeDownloadItem task) {
+    final post = task.post;
+    if (post == null) return;
     _collapse();
-    widget.onTaskTap(task.inner);
+    widget.onTaskTap(post);
   }
 }
 
@@ -393,12 +398,12 @@ class _DownloadPanel extends StatelessWidget {
   });
 
   final _DownloadSummary summary;
-  final List<DownloadTask<Post>> tasks;
+  final List<YandeDownloadItem> tasks;
   final bool draggable;
   final ValueChanged<Offset>? onDragDelta;
   final VoidCallback onClose;
   final VoidCallback onRetryAll;
-  final ValueChanged<DownloadTask<Post>> onTaskTap;
+  final ValueChanged<YandeDownloadItem> onTaskTap;
 
   @override
   Widget build(BuildContext context) {
@@ -550,97 +555,100 @@ class _DownloadPanelHeader extends StatelessWidget {
 class _CompactDownloadTask extends StatelessWidget {
   const _CompactDownloadTask({required this.task, required this.onTap});
 
-  final DownloadTask<Post> task;
+  final YandeDownloadItem task;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<DownloadTaskState>(
-      stream: task.stream,
-      initialData: task.state,
-      builder: (context, snapshot) {
-        final state = snapshot.data ?? task.state;
-        final colorScheme = Theme.of(context).colorScheme;
+    final state = task.snapshot;
+    final colorScheme = Theme.of(context).colorScheme;
+    final failed =
+        state.status == DownloadStatus.failed ||
+        state.saveState == SaveState.failed;
+    final saved = state.saveState == SaveState.saved;
+    final thumbnail = task.post?.previewUrl ?? state.thumbnailUrl;
 
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 9),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: YandeImage(
-                    task.inner.previewUrl,
-                    width: 44,
-                    height: 44,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              task.fileName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.labelLarge,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            _statusLabel(state.status),
-                            style: Theme.of(context).textTheme.labelMedium
-                                ?.copyWith(
-                                  color: state.status == DownloadStatus.failed
-                                      ? colorScheme.error
-                                      : colorScheme.onSurfaceVariant,
-                                ),
-                          ),
-                        ],
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: task.post == null ? null : onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: thumbnail == null
+                  ? SizedBox.square(
+                      dimension: 44,
+                      child: ColoredBox(
+                        color: colorScheme.surfaceContainerHighest,
+                        child: const Icon(Icons.image_outlined, size: 20),
                       ),
-                      const SizedBox(height: 7),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(2),
-                        child: LinearProgressIndicator(
-                          value: state.status == DownloadStatus.completed
-                              ? 1
-                              : state.progress.clamp(0.0, 1.0),
-                          minHeight: 4,
-                          color: state.status == DownloadStatus.failed
-                              ? colorScheme.error
-                              : null,
+                    )
+                  : YandeImage(
+                      thumbnail,
+                      width: 44,
+                      height: 44,
+                      fit: BoxFit.cover,
+                    ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          state.filename,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.labelLarge,
                         ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _statusLabel(state),
+                        style: Theme.of(context).textTheme.labelMedium
+                            ?.copyWith(
+                              color: failed
+                                  ? colorScheme.error
+                                  : colorScheme.onSurfaceVariant,
+                            ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(width: 8),
-                if (state.status == DownloadStatus.failed)
-                  _PanelIconButton(
-                    icon: Icons.refresh_outlined,
-                    tooltip: t.generic.retry,
-                    onTap: () => Downloader.instance.startTask(task.taskId),
-                  )
-                else
-                  Icon(
-                    _statusIcon(state.status),
-                    size: 20,
-                    color: state.status == DownloadStatus.completed
-                        ? colorScheme.primary
-                        : colorScheme.onSurfaceVariant,
+                  const SizedBox(height: 7),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(2),
+                    child: LinearProgressIndicator(
+                      value: saved ? 1 : state.progress.clamp(0.0, 1.0),
+                      minHeight: 4,
+                      color: failed ? colorScheme.error : null,
+                    ),
                   ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      },
+            const SizedBox(width: 8),
+            if (failed || state.status == DownloadStatus.cancelled)
+              _PanelIconButton(
+                icon: Icons.refresh_outlined,
+                tooltip: t.generic.retry,
+                onTap: () => YandeDownloadController.instance.retry(state.id),
+              )
+            else
+              Icon(
+                _statusIcon(state),
+                size: 20,
+                color: saved
+                    ? colorScheme.primary
+                    : colorScheme.onSurfaceVariant,
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -718,25 +726,33 @@ class _DownloadSummary {
     required this.progress,
   });
 
-  factory _DownloadSummary.fromTasks(List<DownloadTask<Post>> tasks) {
+  factory _DownloadSummary.fromTasks(List<YandeDownloadItem> tasks) {
     var active = 0;
     var completed = 0;
     var failed = 0;
     var progress = 0.0;
 
     for (final task in tasks) {
-      final state = task.state;
-      switch (state.status) {
-        case DownloadStatus.idle:
-        case DownloadStatus.waiting:
-        case DownloadStatus.busying:
-          active++;
-        case DownloadStatus.completed:
-          completed++;
-        case DownloadStatus.failed:
-          failed++;
+      final state = task.snapshot;
+      if (state.saveState == SaveState.saved) {
+        completed++;
+      } else if (state.status == DownloadStatus.failed ||
+          state.status == DownloadStatus.cancelled ||
+          state.saveState == SaveState.failed) {
+        failed++;
+      } else {
+        switch (state.status) {
+          case DownloadStatus.queued:
+          case DownloadStatus.running:
+          case DownloadStatus.paused:
+          case DownloadStatus.downloaded:
+            active++;
+          case DownloadStatus.failed:
+          case DownloadStatus.cancelled:
+            break;
+        }
       }
-      progress += state.status == DownloadStatus.completed
+      progress += state.saveState == SaveState.saved
           ? 1
           : state.progress.clamp(0.0, 1.0);
     }
@@ -757,21 +773,34 @@ class _DownloadSummary {
   final double progress;
 }
 
-String _statusLabel(DownloadStatus status) {
-  return switch (status) {
-    DownloadStatus.idle || DownloadStatus.waiting => t.downloads.waiting,
-    DownloadStatus.busying => t.downloads.downloading,
-    DownloadStatus.completed => t.downloads.completed,
-    DownloadStatus.failed => t.downloads.failed,
+String _statusLabel(DownloadTaskSnapshot state) {
+  if (state.saveState == SaveState.saved) return t.downloads.completed;
+  if (state.status == DownloadStatus.failed ||
+      state.status == DownloadStatus.cancelled ||
+      state.saveState == SaveState.failed) {
+    return t.downloads.failed;
+  }
+  return switch (state.status) {
+    DownloadStatus.queued => t.downloads.waiting,
+    DownloadStatus.running ||
+    DownloadStatus.paused ||
+    DownloadStatus.downloaded => t.downloads.downloading,
+    DownloadStatus.failed || DownloadStatus.cancelled => t.downloads.failed,
   };
 }
 
-IconData _statusIcon(DownloadStatus status) {
-  return switch (status) {
-    DownloadStatus.idle => Icons.download_outlined,
-    DownloadStatus.waiting => Icons.schedule_outlined,
-    DownloadStatus.busying => Icons.downloading_outlined,
-    DownloadStatus.completed => Icons.check_circle_outline,
-    DownloadStatus.failed => Icons.error_outline,
+IconData _statusIcon(DownloadTaskSnapshot state) {
+  if (state.saveState == SaveState.saved) return Icons.check_circle_outline;
+  if (state.status == DownloadStatus.failed ||
+      state.status == DownloadStatus.cancelled ||
+      state.saveState == SaveState.failed) {
+    return Icons.error_outline;
+  }
+  return switch (state.status) {
+    DownloadStatus.queued => Icons.schedule_outlined,
+    DownloadStatus.running ||
+    DownloadStatus.paused => Icons.downloading_outlined,
+    DownloadStatus.downloaded => Icons.save_outlined,
+    DownloadStatus.failed || DownloadStatus.cancelled => Icons.error_outline,
   };
 }

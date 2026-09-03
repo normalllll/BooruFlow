@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yande_gui/downloader/downloader.dart';
+import 'package:yande_gui/features/downloads/application/yande_download_controller.dart';
+import 'package:yande_gui/features/downloads/domain/yande_download_item.dart';
 import 'package:yande_gui/intl/translations.g.dart';
 import 'package:yande_gui/widgets/auto_scaffold/auto_scaffold.dart';
 
@@ -14,20 +15,22 @@ class DownloadsPage extends ConsumerWidget {
     return AutoScaffold(
       verticalOnlyTitleWidget: Text(t.downloads.title),
       floatingActionButton: FloatingActionButton(
-        heroTag: '${runtimeType}FloatingActionButton',
+        heroTag: null,
         onPressed: () {
-          Downloader.instance.retryAll();
+          YandeDownloadController.instance.retryAll();
         },
         child: const Icon(Icons.refresh, color: Colors.white),
       ),
       builder: (context, horizontal) {
-        return StreamBuilder(
-          stream: Downloader.instance.taskListStream,
+        return StreamBuilder<List<YandeDownloadItem>>(
+          stream: YandeDownloadController.instance.watchItems,
           builder: (context, snapshot) {
-            final list = snapshot.data ?? Downloader.instance.taskList;
+            final list =
+                snapshot.data ?? YandeDownloadController.instance.currentItems;
             return ListView.builder(
               itemCount: list.length,
-              itemBuilder: (context, index) => DownloadTaskWidget(task: list[list.length - index - 1]),
+              itemBuilder: (context, index) =>
+                  DownloadTaskWidget(task: list[list.length - index - 1]),
             );
           },
         );
