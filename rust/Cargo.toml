@@ -14,8 +14,11 @@ rustc_version = "0.4"
 
 [dependencies]
 flutter_rust_bridge = "=2.13.0"
-anyhow = "1"
-lazy_static = "*"
+async-trait = "0.1"
+base64 = "0.22"
+serde_json = "1"
+thiserror = "2"
+time = { version = "0.3", features = ["formatting", "parsing"] }
 url = "2.5"
 
 tokio = { version = "1", features = ["test-util", "full"] }
@@ -29,12 +32,12 @@ version = "0.13.4"
 default-features = false
 features = ["rustls", "json", "stream", "http2", "socks", "system-proxy"]
 
-#[dependencies.serde_json]
-#version = "1.0.140"
-
 [dependencies.serde]
 version = "1"
 features = ["derive"]
+
+[dev-dependencies]
+tempfile = "3"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }

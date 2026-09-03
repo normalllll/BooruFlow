@@ -1,0 +1,11 @@
+pub(crate) mod adapter;
+pub(crate) mod adapters;
+pub(crate) mod auth;
+pub(crate) mod capabilities;
+pub(crate) mod error;
+pub(crate) mod media;
+pub(crate) mod model;
+pub(crate) mod network;
+pub(crate) mod registry;
+pub(crate) mod source;
+pub(crate) mod user_agent;
