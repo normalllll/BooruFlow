@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <cmath>
 #include <flutter/dart_project.h>
 #include <flutter/flutter_view_controller.h>
 #include <windows.h>
@@ -24,19 +26,32 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
 
   project.set_dart_entrypoint_arguments(std::move(command_line_arguments));
 
-  FlutterWindow window(project);
-  UINT dpi = GetDpiForSystem();
+  constexpr int kWindowWidth = 1440;
+  constexpr int kWindowHeight = 1200;
+  const double scale_factor = GetDpiForSystem() / 96.0;
+  RECT work_area{};
+  if (!::SystemParametersInfoW(SPI_GETWORKAREA, 0, &work_area, 0)) {
+    work_area.right = ::GetSystemMetrics(SM_CXSCREEN);
+    work_area.bottom = ::GetSystemMetrics(SM_CYSCREEN);
+  }
 
-  int screen_width = GetSystemMetricsForDpi(SM_CXSCREEN, dpi);
-  int screen_height = GetSystemMetricsForDpi(SM_CYSCREEN, dpi);
+  const int work_area_x =
+      static_cast<int>(std::round(work_area.left / scale_factor));
+  const int work_area_y =
+      static_cast<int>(std::round(work_area.top / scale_factor));
+  const int work_area_width = static_cast<int>(
+      std::round((work_area.right - work_area.left) / scale_factor));
+  const int work_area_height = static_cast<int>(
+      std::round((work_area.bottom - work_area.top) / scale_factor));
+  const int window_width = std::min(kWindowWidth, work_area_width);
+  const int window_height = std::min(kWindowHeight, work_area_height);
+  const int window_x = work_area_x + (work_area_width - window_width) / 2;
+  const int window_y = work_area_y + (work_area_height - window_height) / 2;
 
-
-  int window_width = 1440;
-  int window_height = 1200;
-
-  // center the window
-  Win32Window::Point origin((screen_width - window_width) / 2, (screen_height - window_height) / 2);
+  Win32Window::Point origin(window_x, window_y);
   Win32Window::Size size(window_width, window_height);
+
+  FlutterWindow window(project);
   if (!window.Create(L"Yande GUI", origin, size)) {
     return EXIT_FAILURE;
   }

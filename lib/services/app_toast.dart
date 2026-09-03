@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
+import 'package:yande_gui/global.dart';
 
 class AppToastWrapper extends StatelessWidget {
   const AppToastWrapper({required this.child, super.key});
@@ -9,8 +10,8 @@ class AppToastWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ToastificationWrapper(
-      config: const ToastificationConfig(
-        alignment: Alignment.bottomCenter,
+      config: ToastificationConfig(
+        alignment: isDesktop ? Alignment.topRight : Alignment.bottomCenter,
         maxToastLimit: 5,
       ),
       child: child,

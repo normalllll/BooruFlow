@@ -3,10 +3,17 @@ import FlutterMacOS
 
 class MainFlutterWindow: NSWindow {
   override func awakeFromNib() {
+    var centeredFrame = self.frame
+    if let visibleFrame = NSScreen.main?.visibleFrame {
+      centeredFrame.origin = NSPoint(
+        x: visibleFrame.midX - centeredFrame.width / 2,
+        y: visibleFrame.midY - centeredFrame.height / 2
+      )
+    }
+    self.setFrame(centeredFrame, display: false)
+
     let flutterViewController = FlutterViewController()
-    let windowFrame = self.frame
     self.contentViewController = flutterViewController
-    self.setFrame(windowFrame, display: true)
 
     RegisterGeneratedPlugins(registry: flutterViewController)
 
