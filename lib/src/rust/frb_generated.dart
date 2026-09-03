@@ -3,17 +3,18 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
-import 'api/download.dart';
+import 'api/booru_auth.dart';
+import 'api/booru_download.dart';
+import 'api/booru_engine.dart';
+import 'api/booru_models.dart';
 import 'api/rustc.dart';
-import 'api/yande_client.dart';
+import 'booru/error.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'frb_generated.dart';
 import 'frb_generated.io.dart'
     if (dart.library.js_interop) 'frb_generated.web.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
-import 'yande/model/post.dart';
-import 'yande/model/similar.dart';
 
 /// Main entrypoint of the Rust API
 class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
@@ -68,7 +69,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => 1673358372;
+  int get rustContentHash => -154227452;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -80,46 +81,137 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
-  Future<List<Post>> crateApiYandeClientYandeClientGetPosts({
-    required YandeClient that,
-    required List<String> tags,
-    required int limit,
-    required int page,
+  Future<AuthSchemaDto> crateApiBooruEngineBooruEngineAuthSchema({
+    required BooruEngine that,
+    required String sourceId,
   });
 
-  Future<Similar> crateApiYandeClientYandeClientGetSimilar({
-    required YandeClient that,
-    required int postId,
+  Future<AuthStateDto> crateApiBooruEngineBooruEngineAuthState({
+    required BooruEngine that,
+    required String sourceId,
   });
 
-  YandeClient crateApiYandeClientYandeClientNew({StringArray3? ips});
+  Future<List<TagSuggestionDto>> crateApiBooruEngineBooruEngineAutocomplete({
+    required BooruEngine that,
+    required String sourceId,
+    required String text,
+  });
 
-  Stream<FrbDownloadFileEvent> crateApiDownloadDownloadToFile({
-    required String url,
-    required String path,
-    required Map<String, String> headers,
-    String? proxyUrl,
-    String? connectHost,
-    String? hostHeader,
-    required bool disableTlsSni,
-    required bool allowInvalidCertificates,
-    required int connectTimeoutSeconds,
-    required int receiveTimeoutSeconds,
-    int? expectedBytes,
-    required List<String> allowedContentTypes,
-    String? checksumAlgorithm,
-    String? checksumValue,
+  Future<void> crateApiBooruEngineBooruEngineClearAuth({
+    required BooruEngine that,
+    required String sourceId,
+  });
+
+  Future<BooruPostDto> crateApiBooruEngineBooruEngineGetPost({
+    required BooruEngine that,
+    required String sourceId,
+    required String postId,
+  });
+
+  Future<RouteCacheStateDto>
+  crateApiBooruEngineBooruEngineInitializeRouteCache({
+    required BooruEngine that,
+  });
+
+  Future<List<BooruSourceDto>> crateApiBooruEngineBooruEngineListSources({
+    required BooruEngine that,
+  });
+
+  Future<BooruEngine> crateApiBooruEngineBooruEngineNew({
+    required BooruEngineConfigDto config,
+  });
+
+  Future<PreparedDownloadDto> crateApiBooruEngineBooruEnginePrepareDownload({
+    required BooruEngine that,
+    required String sourceId,
+    required String postId,
+    required MediaVariantKind variant,
+  });
+
+  Future<MediaRequestDto> crateApiBooruEngineBooruEnginePrepareMedia({
+    required BooruEngine that,
+    required String sourceId,
+    required String postId,
+    required MediaVariantKind variant,
+  });
+
+  Future<RouteCacheStateDto> crateApiBooruEngineBooruEngineRefreshRouteCache({
+    required BooruEngine that,
+  });
+
+  Future<List<BooruPostDto>> crateApiBooruEngineBooruEngineRelatedPosts({
+    required BooruEngine that,
+    required String sourceId,
+    required String postId,
+  });
+
+  Future<RouteCacheStateDto> crateApiBooruEngineBooruEngineRouteCacheState({
+    required BooruEngine that,
+  });
+
+  Future<PostPageDto> crateApiBooruEngineBooruEngineSearch({
+    required BooruEngine that,
+    required SearchRequestDto request,
+  });
+
+  Future<AuthStateDto> crateApiBooruEngineBooruEngineSetCredentials({
+    required BooruEngine that,
+    required String sourceId,
+    required SourceCredentialsDto credentials,
+  });
+
+  Future<AuthStateDto> crateApiBooruEngineBooruEngineSetWebSession({
+    required BooruEngine that,
+    required String sourceId,
+    required List<WebCookieDto> cookies,
+    required String userAgent,
+  });
+
+  Future<AuthStateDto> crateApiBooruEngineBooruEngineVerifyAuth({
+    required BooruEngine that,
+    required String sourceId,
+  });
+
+  Future<AuthKind> crateApiBooruModelsAuthKindDefault();
+
+  Future<AuthStatus> crateApiBooruAuthAuthStatusDefault();
+
+  Future<ChecksumAlgorithm> crateApiBooruModelsChecksumAlgorithmDefault();
+
+  Future<ContentPolicy> crateApiBooruModelsContentPolicyDefault();
+
+  Future<ContentRating> crateApiBooruModelsContentRatingDefault();
+
+  Future<MediaType?> crateApiBooruModelsMediaTypeFromMime({
+    required String value,
+  });
+
+  Future<MediaKind> crateApiBooruModelsMediaTypeKind({required MediaType that});
+
+  Future<MediaVariantKind> crateApiBooruModelsMediaVariantKindDefault();
+
+  Future<NetworkFallbackMode> crateApiBooruModelsNetworkFallbackModeDefault();
+
+  Future<PostFlagsDto> crateApiBooruModelsPostFlagsDtoDefault();
+
+  Future<String> crateApiBooruModelsPostKey({
+    required String sourceId,
+    required String postId,
   });
 
   String crateApiRustcRustcVersion();
 
+  Future<SourceCredentialsDto> crateApiBooruAuthSourceCredentialsDtoDefault();
+
+  Future<TagCategory> crateApiBooruModelsTagCategoryDefault();
+
   RustArcIncrementStrongCountFnType
-  get rust_arc_increment_strong_count_YandeClient;
+  get rust_arc_increment_strong_count_BooruEngine;
 
   RustArcDecrementStrongCountFnType
-  get rust_arc_decrement_strong_count_YandeClient;
+  get rust_arc_decrement_strong_count_BooruEngine;
 
-  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_YandeClientPtr;
+  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_BooruEnginePtr;
 }
 
 class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
@@ -131,23 +223,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
-  Future<List<Post>> crateApiYandeClientYandeClientGetPosts({
-    required YandeClient that,
-    required List<String> tags,
-    required int limit,
-    required int page,
+  Future<AuthSchemaDto> crateApiBooruEngineBooruEngineAuthSchema({
+    required BooruEngine that,
+    required String sourceId,
   }) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
             that,
             serializer,
           );
-          sse_encode_list_String(tags, serializer);
-          sse_encode_u_32(limit, serializer);
-          sse_encode_u_32(page, serializer);
+          sse_encode_String(sourceId, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
@@ -156,36 +244,36 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           );
         },
         codec: SseCodec(
-          decodeSuccessData: sse_decode_list_post,
-          decodeErrorData: sse_decode_AnyhowException,
+          decodeSuccessData: sse_decode_auth_schema_dto,
+          decodeErrorData: sse_decode_booru_error_dto,
         ),
-        constMeta: kCrateApiYandeClientYandeClientGetPostsConstMeta,
-        argValues: [that, tags, limit, page],
+        constMeta: kCrateApiBooruEngineBooruEngineAuthSchemaConstMeta,
+        argValues: [that, sourceId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiYandeClientYandeClientGetPostsConstMeta =>
+  TaskConstMeta get kCrateApiBooruEngineBooruEngineAuthSchemaConstMeta =>
       const TaskConstMeta(
-        debugName: "YandeClient_get_posts",
-        argNames: ["that", "tags", "limit", "page"],
+        debugName: "BooruEngine_auth_schema",
+        argNames: ["that", "sourceId"],
       );
 
   @override
-  Future<Similar> crateApiYandeClientYandeClientGetSimilar({
-    required YandeClient that,
-    required int postId,
+  Future<AuthStateDto> crateApiBooruEngineBooruEngineAuthState({
+    required BooruEngine that,
+    required String sourceId,
   }) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
             that,
             serializer,
           );
-          sse_encode_CastedPrimitive_i_64(postId, serializer);
+          sse_encode_String(sourceId, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
@@ -194,141 +282,923 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           );
         },
         codec: SseCodec(
-          decodeSuccessData: sse_decode_similar,
-          decodeErrorData: sse_decode_AnyhowException,
+          decodeSuccessData: sse_decode_auth_state_dto,
+          decodeErrorData: sse_decode_booru_error_dto,
         ),
-        constMeta: kCrateApiYandeClientYandeClientGetSimilarConstMeta,
-        argValues: [that, postId],
+        constMeta: kCrateApiBooruEngineBooruEngineAuthStateConstMeta,
+        argValues: [that, sourceId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiYandeClientYandeClientGetSimilarConstMeta =>
+  TaskConstMeta get kCrateApiBooruEngineBooruEngineAuthStateConstMeta =>
       const TaskConstMeta(
-        debugName: "YandeClient_get_similar",
-        argNames: ["that", "postId"],
+        debugName: "BooruEngine_auth_state",
+        argNames: ["that", "sourceId"],
       );
 
   @override
-  YandeClient crateApiYandeClientYandeClientNew({StringArray3? ips}) {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
+  Future<List<TagSuggestionDto>> crateApiBooruEngineBooruEngineAutocomplete({
+    required BooruEngine that,
+    required String sourceId,
+    required String text,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_opt_String_array_3(ips, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_String(sourceId, serializer);
+          sse_encode_String(text, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 3,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_tag_suggestion_dto,
+          decodeErrorData: sse_decode_booru_error_dto,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineAutocompleteConstMeta,
+        argValues: [that, sourceId, text],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruEngineBooruEngineAutocompleteConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_autocomplete",
+        argNames: ["that", "sourceId", "text"],
+      );
+
+  @override
+  Future<void> crateApiBooruEngineBooruEngineClearAuth({
+    required BooruEngine that,
+    required String sourceId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_String(sourceId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 4,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_booru_error_dto,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineClearAuthConstMeta,
+        argValues: [that, sourceId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruEngineBooruEngineClearAuthConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_clear_auth",
+        argNames: ["that", "sourceId"],
+      );
+
+  @override
+  Future<BooruPostDto> crateApiBooruEngineBooruEngineGetPost({
+    required BooruEngine that,
+    required String sourceId,
+    required String postId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_String(sourceId, serializer);
+          sse_encode_String(postId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 5,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_booru_post_dto,
+          decodeErrorData: sse_decode_booru_error_dto,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineGetPostConstMeta,
+        argValues: [that, sourceId, postId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruEngineBooruEngineGetPostConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_get_post",
+        argNames: ["that", "sourceId", "postId"],
+      );
+
+  @override
+  Future<RouteCacheStateDto>
+  crateApiBooruEngineBooruEngineInitializeRouteCache({
+    required BooruEngine that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 6,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_route_cache_state_dto,
+          decodeErrorData: sse_decode_booru_error_dto,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineInitializeRouteCacheConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta
+  get kCrateApiBooruEngineBooruEngineInitializeRouteCacheConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_initialize_route_cache",
+        argNames: ["that"],
+      );
+
+  @override
+  Future<List<BooruSourceDto>> crateApiBooruEngineBooruEngineListSources({
+    required BooruEngine that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 7,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_booru_source_dto,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineListSourcesConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruEngineBooruEngineListSourcesConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_list_sources",
+        argNames: ["that"],
+      );
+
+  @override
+  Future<BooruEngine> crateApiBooruEngineBooruEngineNew({
+    required BooruEngineConfigDto config,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_booru_engine_config_dto(config, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 8,
+            port: port_,
+          );
         },
         codec: SseCodec(
           decodeSuccessData:
-              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient,
-          decodeErrorData: null,
+              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine,
+          decodeErrorData: sse_decode_booru_error_dto,
         ),
-        constMeta: kCrateApiYandeClientYandeClientNewConstMeta,
-        argValues: [ips],
+        constMeta: kCrateApiBooruEngineBooruEngineNewConstMeta,
+        argValues: [config],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiYandeClientYandeClientNewConstMeta =>
-      const TaskConstMeta(debugName: "YandeClient_new", argNames: ["ips"]);
+  TaskConstMeta get kCrateApiBooruEngineBooruEngineNewConstMeta =>
+      const TaskConstMeta(debugName: "BooruEngine_new", argNames: ["config"]);
 
   @override
-  Stream<FrbDownloadFileEvent> crateApiDownloadDownloadToFile({
-    required String url,
-    required String path,
-    required Map<String, String> headers,
-    String? proxyUrl,
-    String? connectHost,
-    String? hostHeader,
-    required bool disableTlsSni,
-    required bool allowInvalidCertificates,
-    required int connectTimeoutSeconds,
-    required int receiveTimeoutSeconds,
-    int? expectedBytes,
-    required List<String> allowedContentTypes,
-    String? checksumAlgorithm,
-    String? checksumValue,
+  Future<PreparedDownloadDto> crateApiBooruEngineBooruEnginePrepareDownload({
+    required BooruEngine that,
+    required String sourceId,
+    required String postId,
+    required MediaVariantKind variant,
   }) {
-    final sink = RustStreamSink<FrbDownloadFileEvent>();
-    unawaited(
-      handler.executeNormal(
-        NormalTask(
-          callFfi: (port_) {
-            final serializer = SseSerializer(generalizedFrbRustBinding);
-            sse_encode_String(url, serializer);
-            sse_encode_String(path, serializer);
-            sse_encode_Map_String_String_None(headers, serializer);
-            sse_encode_opt_String(proxyUrl, serializer);
-            sse_encode_opt_String(connectHost, serializer);
-            sse_encode_opt_String(hostHeader, serializer);
-            sse_encode_bool(disableTlsSni, serializer);
-            sse_encode_bool(allowInvalidCertificates, serializer);
-            sse_encode_u_32(connectTimeoutSeconds, serializer);
-            sse_encode_u_32(receiveTimeoutSeconds, serializer);
-            sse_encode_opt_box_autoadd_u_32(expectedBytes, serializer);
-            sse_encode_list_String(allowedContentTypes, serializer);
-            sse_encode_opt_String(checksumAlgorithm, serializer);
-            sse_encode_opt_String(checksumValue, serializer);
-            sse_encode_StreamSink_frb_download_file_event_Sse(sink, serializer);
-            pdeCallFfi(
-              generalizedFrbRustBinding,
-              serializer,
-              funcId: 4,
-              port: port_,
-            );
-          },
-          codec: SseCodec(
-            decodeSuccessData: sse_decode_unit,
-            decodeErrorData: sse_decode_String,
-          ),
-          constMeta: kCrateApiDownloadDownloadToFileConstMeta,
-          argValues: [
-            url,
-            path,
-            headers,
-            proxyUrl,
-            connectHost,
-            hostHeader,
-            disableTlsSni,
-            allowInvalidCertificates,
-            connectTimeoutSeconds,
-            receiveTimeoutSeconds,
-            expectedBytes,
-            allowedContentTypes,
-            checksumAlgorithm,
-            checksumValue,
-            sink,
-          ],
-          apiImpl: this,
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_String(sourceId, serializer);
+          sse_encode_String(postId, serializer);
+          sse_encode_media_variant_kind(variant, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 9,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_prepared_download_dto,
+          decodeErrorData: sse_decode_booru_error_dto,
         ),
+        constMeta: kCrateApiBooruEngineBooruEnginePrepareDownloadConstMeta,
+        argValues: [that, sourceId, postId, variant],
+        apiImpl: this,
       ),
     );
-    return sink.stream;
   }
 
-  TaskConstMeta get kCrateApiDownloadDownloadToFileConstMeta =>
+  TaskConstMeta get kCrateApiBooruEngineBooruEnginePrepareDownloadConstMeta =>
       const TaskConstMeta(
-        debugName: "download_to_file",
-        argNames: [
-          "url",
-          "path",
-          "headers",
-          "proxyUrl",
-          "connectHost",
-          "hostHeader",
-          "disableTlsSni",
-          "allowInvalidCertificates",
-          "connectTimeoutSeconds",
-          "receiveTimeoutSeconds",
-          "expectedBytes",
-          "allowedContentTypes",
-          "checksumAlgorithm",
-          "checksumValue",
-          "sink",
-        ],
+        debugName: "BooruEngine_prepare_download",
+        argNames: ["that", "sourceId", "postId", "variant"],
       );
+
+  @override
+  Future<MediaRequestDto> crateApiBooruEngineBooruEnginePrepareMedia({
+    required BooruEngine that,
+    required String sourceId,
+    required String postId,
+    required MediaVariantKind variant,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_String(sourceId, serializer);
+          sse_encode_String(postId, serializer);
+          sse_encode_media_variant_kind(variant, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 10,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_media_request_dto,
+          decodeErrorData: sse_decode_booru_error_dto,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEnginePrepareMediaConstMeta,
+        argValues: [that, sourceId, postId, variant],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruEngineBooruEnginePrepareMediaConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_prepare_media",
+        argNames: ["that", "sourceId", "postId", "variant"],
+      );
+
+  @override
+  Future<RouteCacheStateDto> crateApiBooruEngineBooruEngineRefreshRouteCache({
+    required BooruEngine that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 11,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_route_cache_state_dto,
+          decodeErrorData: sse_decode_booru_error_dto,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineRefreshRouteCacheConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruEngineBooruEngineRefreshRouteCacheConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_refresh_route_cache",
+        argNames: ["that"],
+      );
+
+  @override
+  Future<List<BooruPostDto>> crateApiBooruEngineBooruEngineRelatedPosts({
+    required BooruEngine that,
+    required String sourceId,
+    required String postId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_String(sourceId, serializer);
+          sse_encode_String(postId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 12,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_booru_post_dto,
+          decodeErrorData: sse_decode_booru_error_dto,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineRelatedPostsConstMeta,
+        argValues: [that, sourceId, postId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruEngineBooruEngineRelatedPostsConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_related_posts",
+        argNames: ["that", "sourceId", "postId"],
+      );
+
+  @override
+  Future<RouteCacheStateDto> crateApiBooruEngineBooruEngineRouteCacheState({
+    required BooruEngine that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 13,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_route_cache_state_dto,
+          decodeErrorData: sse_decode_booru_error_dto,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineRouteCacheStateConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruEngineBooruEngineRouteCacheStateConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_route_cache_state",
+        argNames: ["that"],
+      );
+
+  @override
+  Future<PostPageDto> crateApiBooruEngineBooruEngineSearch({
+    required BooruEngine that,
+    required SearchRequestDto request,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_box_autoadd_search_request_dto(request, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 14,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_post_page_dto,
+          decodeErrorData: sse_decode_booru_error_dto,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineSearchConstMeta,
+        argValues: [that, request],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruEngineBooruEngineSearchConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_search",
+        argNames: ["that", "request"],
+      );
+
+  @override
+  Future<AuthStateDto> crateApiBooruEngineBooruEngineSetCredentials({
+    required BooruEngine that,
+    required String sourceId,
+    required SourceCredentialsDto credentials,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_String(sourceId, serializer);
+          sse_encode_box_autoadd_source_credentials_dto(
+            credentials,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 15,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_auth_state_dto,
+          decodeErrorData: sse_decode_booru_error_dto,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineSetCredentialsConstMeta,
+        argValues: [that, sourceId, credentials],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruEngineBooruEngineSetCredentialsConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_set_credentials",
+        argNames: ["that", "sourceId", "credentials"],
+      );
+
+  @override
+  Future<AuthStateDto> crateApiBooruEngineBooruEngineSetWebSession({
+    required BooruEngine that,
+    required String sourceId,
+    required List<WebCookieDto> cookies,
+    required String userAgent,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_String(sourceId, serializer);
+          sse_encode_list_web_cookie_dto(cookies, serializer);
+          sse_encode_String(userAgent, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 16,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_auth_state_dto,
+          decodeErrorData: sse_decode_booru_error_dto,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineSetWebSessionConstMeta,
+        argValues: [that, sourceId, cookies, userAgent],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruEngineBooruEngineSetWebSessionConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_set_web_session",
+        argNames: ["that", "sourceId", "cookies", "userAgent"],
+      );
+
+  @override
+  Future<AuthStateDto> crateApiBooruEngineBooruEngineVerifyAuth({
+    required BooruEngine that,
+    required String sourceId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_String(sourceId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 17,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_auth_state_dto,
+          decodeErrorData: sse_decode_booru_error_dto,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineVerifyAuthConstMeta,
+        argValues: [that, sourceId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruEngineBooruEngineVerifyAuthConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_verify_auth",
+        argNames: ["that", "sourceId"],
+      );
+
+  @override
+  Future<AuthKind> crateApiBooruModelsAuthKindDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 18,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_auth_kind,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiBooruModelsAuthKindDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruModelsAuthKindDefaultConstMeta =>
+      const TaskConstMeta(debugName: "auth_kind_default", argNames: []);
+
+  @override
+  Future<AuthStatus> crateApiBooruAuthAuthStatusDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 19,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_auth_status,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiBooruAuthAuthStatusDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruAuthAuthStatusDefaultConstMeta =>
+      const TaskConstMeta(debugName: "auth_status_default", argNames: []);
+
+  @override
+  Future<ChecksumAlgorithm> crateApiBooruModelsChecksumAlgorithmDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 20,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_checksum_algorithm,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiBooruModelsChecksumAlgorithmDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruModelsChecksumAlgorithmDefaultConstMeta =>
+      const TaskConstMeta(
+        debugName: "checksum_algorithm_default",
+        argNames: [],
+      );
+
+  @override
+  Future<ContentPolicy> crateApiBooruModelsContentPolicyDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 21,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_content_policy,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiBooruModelsContentPolicyDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruModelsContentPolicyDefaultConstMeta =>
+      const TaskConstMeta(debugName: "content_policy_default", argNames: []);
+
+  @override
+  Future<ContentRating> crateApiBooruModelsContentRatingDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 22,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_content_rating,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiBooruModelsContentRatingDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruModelsContentRatingDefaultConstMeta =>
+      const TaskConstMeta(debugName: "content_rating_default", argNames: []);
+
+  @override
+  Future<MediaType?> crateApiBooruModelsMediaTypeFromMime({
+    required String value,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(value, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 23,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_opt_box_autoadd_media_type,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiBooruModelsMediaTypeFromMimeConstMeta,
+        argValues: [value],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruModelsMediaTypeFromMimeConstMeta =>
+      const TaskConstMeta(
+        debugName: "media_type_from_mime",
+        argNames: ["value"],
+      );
+
+  @override
+  Future<MediaKind> crateApiBooruModelsMediaTypeKind({
+    required MediaType that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_media_type(that, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 24,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_media_kind,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiBooruModelsMediaTypeKindConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruModelsMediaTypeKindConstMeta =>
+      const TaskConstMeta(debugName: "media_type_kind", argNames: ["that"]);
+
+  @override
+  Future<MediaVariantKind> crateApiBooruModelsMediaVariantKindDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 25,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_media_variant_kind,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiBooruModelsMediaVariantKindDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruModelsMediaVariantKindDefaultConstMeta =>
+      const TaskConstMeta(
+        debugName: "media_variant_kind_default",
+        argNames: [],
+      );
+
+  @override
+  Future<NetworkFallbackMode> crateApiBooruModelsNetworkFallbackModeDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 26,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_network_fallback_mode,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiBooruModelsNetworkFallbackModeDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruModelsNetworkFallbackModeDefaultConstMeta =>
+      const TaskConstMeta(
+        debugName: "network_fallback_mode_default",
+        argNames: [],
+      );
+
+  @override
+  Future<PostFlagsDto> crateApiBooruModelsPostFlagsDtoDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 27,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_post_flags_dto,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiBooruModelsPostFlagsDtoDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruModelsPostFlagsDtoDefaultConstMeta =>
+      const TaskConstMeta(debugName: "post_flags_dto_default", argNames: []);
+
+  @override
+  Future<String> crateApiBooruModelsPostKey({
+    required String sourceId,
+    required String postId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(sourceId, serializer);
+          sse_encode_String(postId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 28,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_String,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiBooruModelsPostKeyConstMeta,
+        argValues: [sourceId, postId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruModelsPostKeyConstMeta => const TaskConstMeta(
+    debugName: "post_key",
+    argNames: ["sourceId", "postId"],
+  );
 
   @override
   String crateApiRustcRustcVersion() {
@@ -336,7 +1206,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 5)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 29)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
@@ -352,70 +1222,96 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiRustcRustcVersionConstMeta =>
       const TaskConstMeta(debugName: "rustc_version", argNames: []);
 
+  @override
+  Future<SourceCredentialsDto> crateApiBooruAuthSourceCredentialsDtoDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 30,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_source_credentials_dto,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiBooruAuthSourceCredentialsDtoDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruAuthSourceCredentialsDtoDefaultConstMeta =>
+      const TaskConstMeta(
+        debugName: "source_credentials_dto_default",
+        argNames: [],
+      );
+
+  @override
+  Future<TagCategory> crateApiBooruModelsTagCategoryDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 31,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_tag_category,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiBooruModelsTagCategoryDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruModelsTagCategoryDefaultConstMeta =>
+      const TaskConstMeta(debugName: "tag_category_default", argNames: []);
+
   RustArcIncrementStrongCountFnType
-  get rust_arc_increment_strong_count_YandeClient => wire
-      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient;
+  get rust_arc_increment_strong_count_BooruEngine => wire
+      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine;
 
   RustArcDecrementStrongCountFnType
-  get rust_arc_decrement_strong_count_YandeClient => wire
-      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient;
+  get rust_arc_decrement_strong_count_BooruEngine => wire
+      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine;
 
   @protected
-  AnyhowException dco_decode_AnyhowException(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return AnyhowException(raw as String);
-  }
-
-  @protected
-  YandeClient
-  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
+  BooruEngine
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     dynamic raw,
   ) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    return YandeClientImpl.frbInternalDcoDecode(raw as List<dynamic>);
+    return BooruEngineImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
-  YandeClient
-  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
+  BooruEngine
+  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     dynamic raw,
   ) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    return YandeClientImpl.frbInternalDcoDecode(raw as List<dynamic>);
+    return BooruEngineImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
-  int dco_decode_CastedPrimitive_i_64(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    throw UnimplementedError(
-      'Not implemented in this codec, please use the other one',
-    );
-  }
-
-  @protected
-  Map<String, String> dco_decode_Map_String_String_None(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return Map.fromEntries(
-      dco_decode_list_record_string_string(
-        raw,
-      ).map((e) => MapEntry(e.$1, e.$2)),
-    );
-  }
-
-  @protected
-  YandeClient
-  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
+  BooruEngine
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     dynamic raw,
   ) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    return YandeClientImpl.frbInternalDcoDecode(raw as List<dynamic>);
-  }
-
-  @protected
-  RustStreamSink<FrbDownloadFileEvent>
-  dco_decode_StreamSink_frb_download_file_event_Sse(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    throw UnimplementedError();
+    return BooruEngineImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
@@ -425,9 +1321,63 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  StringArray3 dco_decode_String_array_3(dynamic raw) {
+  AuthFieldDto dco_decode_auth_field_dto(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    return StringArray3((raw as List<dynamic>).map(dco_decode_String).toList());
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return AuthFieldDto(
+      kind: dco_decode_auth_field_kind(arr[0]),
+      labelKey: dco_decode_String(arr[1]),
+      required_: dco_decode_bool(arr[2]),
+      secret: dco_decode_bool(arr[3]),
+      helpUrl: dco_decode_opt_String(arr[4]),
+    );
+  }
+
+  @protected
+  AuthFieldKind dco_decode_auth_field_kind(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return AuthFieldKind.values[raw as int];
+  }
+
+  @protected
+  AuthKind dco_decode_auth_kind(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return AuthKind.values[raw as int];
+  }
+
+  @protected
+  AuthSchemaDto dco_decode_auth_schema_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return AuthSchemaDto(
+      sourceId: dco_decode_String(arr[0]),
+      fields: dco_decode_list_auth_field_dto(arr[1]),
+      usesWebSession: dco_decode_bool(arr[2]),
+    );
+  }
+
+  @protected
+  AuthStateDto dco_decode_auth_state_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return AuthStateDto(
+      sourceId: dco_decode_String(arr[0]),
+      status: dco_decode_auth_status(arr[1]),
+      username: dco_decode_opt_String(arr[2]),
+      authRevision: dco_decode_u_32(arr[3]),
+    );
+  }
+
+  @protected
+  AuthStatus dco_decode_auth_status(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return AuthStatus.values[raw as int];
   }
 
   @protected
@@ -437,31 +1387,202 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  BooruEngineConfigDto dco_decode_booru_engine_config_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return BooruEngineConfigDto(
+      appSupportDirectory: dco_decode_String(arr[0]),
+      proxyUrl: dco_decode_opt_String(arr[1]),
+      fallbackMode: dco_decode_network_fallback_mode(arr[2]),
+      fallbackToSystemDns: dco_decode_bool(arr[3]),
+      userAgent: dco_decode_String(arr[4]),
+    );
+  }
+
+  @protected
+  BooruErrorCode dco_decode_booru_error_code(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return BooruErrorCode.values[raw as int];
+  }
+
+  @protected
+  BooruErrorDto dco_decode_booru_error_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+    return BooruErrorDto(
+      code: dco_decode_booru_error_code(arr[0]),
+      sourceId: dco_decode_opt_String(arr[1]),
+      userMessageKey: dco_decode_String(arr[2]),
+      diagnosticId: dco_decode_String(arr[3]),
+      httpStatus: dco_decode_opt_box_autoadd_u_32(arr[4]),
+      retryAfterSeconds: dco_decode_opt_box_autoadd_u_32(arr[5]),
+      action: dco_decode_opt_box_autoadd_recovery_action(arr[6]),
+    );
+  }
+
+  @protected
+  BooruPostDto dco_decode_booru_post_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 11)
+      throw Exception('unexpected arr length: expect 11 but see ${arr.length}');
+    return BooruPostDto(
+      sourceId: dco_decode_String(arr[0]),
+      postId: dco_decode_String(arr[1]),
+      postKey: dco_decode_String(arr[2]),
+      webUrl: dco_decode_opt_String(arr[3]),
+      rating: dco_decode_content_rating(arr[4]),
+      score: dco_decode_opt_box_autoadd_i_32(arr[5]),
+      createdAtIso8601: dco_decode_opt_String(arr[6]),
+      sourceUrl: dco_decode_opt_String(arr[7]),
+      tags: dco_decode_list_booru_tag_dto(arr[8]),
+      media: dco_decode_list_media_variant_dto(arr[9]),
+      flags: dco_decode_post_flags_dto(arr[10]),
+    );
+  }
+
+  @protected
+  BooruProtocol dco_decode_booru_protocol(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return BooruProtocol.values[raw as int];
+  }
+
+  @protected
+  BooruSourceDto dco_decode_booru_source_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return BooruSourceDto(
+      sourceId: dco_decode_String(arr[0]),
+      displayName: dco_decode_String(arr[1]),
+      protocol: dco_decode_booru_protocol(arr[2]),
+      enabledByDefault: dco_decode_bool(arr[3]),
+      isAiSource: dco_decode_bool(arr[4]),
+      capabilities: dco_decode_source_capabilities_dto(arr[5]),
+    );
+  }
+
+  @protected
+  BooruTagDto dco_decode_booru_tag_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return BooruTagDto(
+      name: dco_decode_String(arr[0]),
+      category: dco_decode_tag_category(arr[1]),
+    );
+  }
+
+  @protected
+  BooruEngineConfigDto dco_decode_box_autoadd_booru_engine_config_dto(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_booru_engine_config_dto(raw);
+  }
+
+  @protected
+  ChecksumDto dco_decode_box_autoadd_checksum_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_checksum_dto(raw);
+  }
+
+  @protected
+  int dco_decode_box_autoadd_i_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
+  }
+
+  @protected
+  MediaType dco_decode_box_autoadd_media_type(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_media_type(raw);
+  }
+
+  @protected
+  RecoveryAction dco_decode_box_autoadd_recovery_action(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_recovery_action(raw);
+  }
+
+  @protected
+  RouteProvider dco_decode_box_autoadd_route_provider(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_route_provider(raw);
+  }
+
+  @protected
+  SearchRequestDto dco_decode_box_autoadd_search_request_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_search_request_dto(raw);
+  }
+
+  @protected
+  SourceCredentialsDto dco_decode_box_autoadd_source_credentials_dto(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_source_credentials_dto(raw);
+  }
+
+  @protected
   int dco_decode_box_autoadd_u_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as int;
   }
 
   @protected
-  FrbDownloadFileEvent dco_decode_frb_download_file_event(dynamic raw) {
+  ChecksumAlgorithm dco_decode_checksum_algorithm(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    switch (raw[0]) {
-      case 0:
-        return FrbDownloadFileEvent_Progress(
-          received: dco_decode_u_32(raw[1]),
-          total: dco_decode_u_32(raw[2]),
-        );
-      case 1:
-        return FrbDownloadFileEvent_Done(path: dco_decode_String(raw[1]));
-      default:
-        throw Exception("unreachable");
-    }
+    return ChecksumAlgorithm.values[raw as int];
   }
 
   @protected
-  PlatformInt64 dco_decode_i_64(dynamic raw) {
+  ChecksumDto dco_decode_checksum_dto(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    return dcoDecodeI64(raw);
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return ChecksumDto(
+      algorithm: dco_decode_checksum_algorithm(arr[0]),
+      value: dco_decode_String(arr[1]),
+    );
+  }
+
+  @protected
+  ContentPolicy dco_decode_content_policy(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return ContentPolicy.values[raw as int];
+  }
+
+  @protected
+  ContentRating dco_decode_content_rating(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return ContentRating.values[raw as int];
+  }
+
+  @protected
+  HttpHeaderDto dco_decode_http_header_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return HttpHeaderDto(
+      name: dco_decode_String(arr[0]),
+      value: dco_decode_String(arr[1]),
+    );
+  }
+
+  @protected
+  int dco_decode_i_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
   }
 
   @protected
@@ -471,9 +1592,61 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  List<Post> dco_decode_list_post(dynamic raw) {
+  List<AuthFieldDto> dco_decode_list_auth_field_dto(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    return (raw as List<dynamic>).map(dco_decode_post).toList();
+    return (raw as List<dynamic>).map(dco_decode_auth_field_dto).toList();
+  }
+
+  @protected
+  List<BooruPostDto> dco_decode_list_booru_post_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_booru_post_dto).toList();
+  }
+
+  @protected
+  List<BooruSourceDto> dco_decode_list_booru_source_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_booru_source_dto).toList();
+  }
+
+  @protected
+  List<BooruTagDto> dco_decode_list_booru_tag_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_booru_tag_dto).toList();
+  }
+
+  @protected
+  List<ContentRating> dco_decode_list_content_rating(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_content_rating).toList();
+  }
+
+  @protected
+  List<HttpHeaderDto> dco_decode_list_http_header_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_http_header_dto).toList();
+  }
+
+  @protected
+  List<MediaKind> dco_decode_list_media_kind(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_media_kind).toList();
+  }
+
+  @protected
+  List<MediaVariantDto> dco_decode_list_media_variant_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_media_variant_dto).toList();
+  }
+
+  @protected
+  List<PersistedHostRouteDto> dco_decode_list_persisted_host_route_dto(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>)
+        .map(dco_decode_persisted_host_route_dto)
+        .toList();
   }
 
   @protected
@@ -483,15 +1656,77 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  List<(String, String)> dco_decode_list_record_string_string(dynamic raw) {
+  List<TagSuggestionDto> dco_decode_list_tag_suggestion_dto(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    return (raw as List<dynamic>).map(dco_decode_record_string_string).toList();
+    return (raw as List<dynamic>).map(dco_decode_tag_suggestion_dto).toList();
   }
 
   @protected
-  int? dco_decode_opt_CastedPrimitive_i_64(dynamic raw) {
+  List<WebCookieDto> dco_decode_list_web_cookie_dto(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    return raw == null ? null : dco_decode_CastedPrimitive_i_64(raw);
+    return (raw as List<dynamic>).map(dco_decode_web_cookie_dto).toList();
+  }
+
+  @protected
+  MediaKind dco_decode_media_kind(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return MediaKind.values[raw as int];
+  }
+
+  @protected
+  MediaRequestDto dco_decode_media_request_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 10)
+      throw Exception('unexpected arr length: expect 10 but see ${arr.length}');
+    return MediaRequestDto(
+      sourceId: dco_decode_String(arr[0]),
+      postId: dco_decode_String(arr[1]),
+      variant: dco_decode_media_variant_kind(arr[2]),
+      url: dco_decode_String(arr[3]),
+      headers: dco_decode_list_http_header_dto(arr[4]),
+      routeKey: dco_decode_String(arr[5]),
+      cacheKey: dco_decode_String(arr[6]),
+      authRevision: dco_decode_u_32(arr[7]),
+      routeRevision: dco_decode_String(arr[8]),
+      allowDiskCache: dco_decode_bool(arr[9]),
+    );
+  }
+
+  @protected
+  MediaType dco_decode_media_type(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return MediaType.values[raw as int];
+  }
+
+  @protected
+  MediaVariantDto dco_decode_media_variant_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 8)
+      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
+    return MediaVariantDto(
+      kind: dco_decode_media_variant_kind(arr[0]),
+      url: dco_decode_String(arr[1]),
+      width: dco_decode_opt_box_autoadd_u_32(arr[2]),
+      height: dco_decode_opt_box_autoadd_u_32(arr[3]),
+      byteLengthDecimal: dco_decode_opt_String(arr[4]),
+      mediaType: dco_decode_opt_box_autoadd_media_type(arr[5]),
+      extension_: dco_decode_opt_String(arr[6]),
+      checksum: dco_decode_opt_box_autoadd_checksum_dto(arr[7]),
+    );
+  }
+
+  @protected
+  MediaVariantKind dco_decode_media_variant_kind(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return MediaVariantKind.values[raw as int];
+  }
+
+  @protected
+  NetworkFallbackMode dco_decode_network_fallback_mode(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return NetworkFallbackMode.values[raw as int];
   }
 
   @protected
@@ -501,9 +1736,33 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  StringArray3? dco_decode_opt_String_array_3(dynamic raw) {
+  ChecksumDto? dco_decode_opt_box_autoadd_checksum_dto(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    return raw == null ? null : dco_decode_String_array_3(raw);
+    return raw == null ? null : dco_decode_box_autoadd_checksum_dto(raw);
+  }
+
+  @protected
+  int? dco_decode_opt_box_autoadd_i_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_i_32(raw);
+  }
+
+  @protected
+  MediaType? dco_decode_opt_box_autoadd_media_type(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_media_type(raw);
+  }
+
+  @protected
+  RecoveryAction? dco_decode_opt_box_autoadd_recovery_action(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_recovery_action(raw);
+  }
+
+  @protected
+  RouteProvider? dco_decode_opt_box_autoadd_route_provider(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_route_provider(raw);
   }
 
   @protected
@@ -513,72 +1772,165 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  Post dco_decode_post(dynamic raw) {
+  PersistedHostRouteDto dco_decode_persisted_host_route_dto(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 37)
-      throw Exception('unexpected arr length: expect 37 but see ${arr.length}');
-    return Post(
-      id: dco_decode_CastedPrimitive_i_64(arr[0]),
-      tags: dco_decode_String(arr[1]),
-      createdAt: dco_decode_CastedPrimitive_i_64(arr[2]),
-      updatedAt: dco_decode_CastedPrimitive_i_64(arr[3]),
-      creatorId: dco_decode_opt_CastedPrimitive_i_64(arr[4]),
-      author: dco_decode_String(arr[5]),
-      change: dco_decode_CastedPrimitive_i_64(arr[6]),
-      source: dco_decode_String(arr[7]),
-      score: dco_decode_CastedPrimitive_i_64(arr[8]),
-      md5: dco_decode_String(arr[9]),
-      fileSize: dco_decode_CastedPrimitive_i_64(arr[10]),
-      fileExt: dco_decode_String(arr[11]),
-      fileUrl: dco_decode_opt_String(arr[12]),
-      isShownInIndex: dco_decode_bool(arr[13]),
-      previewUrl: dco_decode_String(arr[14]),
-      previewWidth: dco_decode_CastedPrimitive_i_64(arr[15]),
-      previewHeight: dco_decode_CastedPrimitive_i_64(arr[16]),
-      actualPreviewWidth: dco_decode_CastedPrimitive_i_64(arr[17]),
-      actualPreviewHeight: dco_decode_CastedPrimitive_i_64(arr[18]),
-      sampleUrl: dco_decode_opt_String(arr[19]),
-      sampleWidth: dco_decode_CastedPrimitive_i_64(arr[20]),
-      sampleHeight: dco_decode_CastedPrimitive_i_64(arr[21]),
-      sampleFileSize: dco_decode_CastedPrimitive_i_64(arr[22]),
-      jpegUrl: dco_decode_opt_String(arr[23]),
-      jpegWidth: dco_decode_CastedPrimitive_i_64(arr[24]),
-      jpegHeight: dco_decode_CastedPrimitive_i_64(arr[25]),
-      jpegFileSize: dco_decode_CastedPrimitive_i_64(arr[26]),
-      rating: dco_decode_String(arr[27]),
-      isRatingLocked: dco_decode_bool(arr[28]),
-      hasChildren: dco_decode_bool(arr[29]),
-      parentId: dco_decode_opt_CastedPrimitive_i_64(arr[30]),
-      status: dco_decode_String(arr[31]),
-      isPending: dco_decode_bool(arr[32]),
-      width: dco_decode_CastedPrimitive_i_64(arr[33]),
-      height: dco_decode_CastedPrimitive_i_64(arr[34]),
-      isHeld: dco_decode_bool(arr[35]),
-      isNoteLocked: dco_decode_bool(arr[36]),
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return PersistedHostRouteDto(
+      logicalHost: dco_decode_String(arr[0]),
+      httpsPort: dco_decode_u_16(arr[1]),
+      candidates: dco_decode_list_String(arr[2]),
     );
   }
 
   @protected
-  (String, String) dco_decode_record_string_string(dynamic raw) {
+  PostFlagsDto dco_decode_post_flags_dto(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 2) {
-      throw Exception('Expected 2 elements, got ${arr.length}');
-    }
-    return (dco_decode_String(arr[0]), dco_decode_String(arr[1]));
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return PostFlagsDto(
+      hasChildren: dco_decode_bool(arr[0]),
+      parentId: dco_decode_opt_String(arr[1]),
+      isPending: dco_decode_bool(arr[2]),
+      isDeleted: dco_decode_bool(arr[3]),
+      isAiGenerated: dco_decode_bool(arr[4]),
+    );
   }
 
   @protected
-  Similar dco_decode_similar(dynamic raw) {
+  PostPageDto dco_decode_post_page_dto(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 2)
-      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
-    return Similar(
-      posts: dco_decode_list_post(arr[0]),
-      source: dco_decode_post(arr[1]),
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return PostPageDto(
+      items: dco_decode_list_booru_post_dto(arr[0]),
+      nextCursor: dco_decode_opt_String(arr[1]),
+      exhausted: dco_decode_bool(arr[2]),
     );
+  }
+
+  @protected
+  PreparedDownloadDto dco_decode_prepared_download_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 9)
+      throw Exception('unexpected arr length: expect 9 but see ${arr.length}');
+    return PreparedDownloadDto(
+      sourceId: dco_decode_String(arr[0]),
+      postId: dco_decode_String(arr[1]),
+      variant: dco_decode_media_variant_kind(arr[2]),
+      url: dco_decode_String(arr[3]),
+      headers: dco_decode_list_http_header_dto(arr[4]),
+      expectedBytesDecimal: dco_decode_opt_String(arr[5]),
+      allowedMediaKinds: dco_decode_list_media_kind(arr[6]),
+      checksum: dco_decode_opt_box_autoadd_checksum_dto(arr[7]),
+      filename: dco_decode_String(arr[8]),
+    );
+  }
+
+  @protected
+  RecoveryAction dco_decode_recovery_action(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return RecoveryAction.values[raw as int];
+  }
+
+  @protected
+  RouteCacheStateDto dco_decode_route_cache_state_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return RouteCacheStateDto(
+      initialized: dco_decode_bool(arr[0]),
+      refreshing: dco_decode_bool(arr[1]),
+      routeRevision: dco_decode_String(arr[2]),
+      fetchedAtIso8601: dco_decode_opt_String(arr[3]),
+      provider: dco_decode_opt_box_autoadd_route_provider(arr[4]),
+      routes: dco_decode_list_persisted_host_route_dto(arr[5]),
+    );
+  }
+
+  @protected
+  RouteProvider dco_decode_route_provider(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return RouteProvider.values[raw as int];
+  }
+
+  @protected
+  SearchRequestDto dco_decode_search_request_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return SearchRequestDto(
+      sourceId: dco_decode_String(arr[0]),
+      queryText: dco_decode_String(arr[1]),
+      ratings: dco_decode_list_content_rating(arr[2]),
+      pageSize: dco_decode_u_32(arr[3]),
+      cursor: dco_decode_opt_String(arr[4]),
+      contentPolicy: dco_decode_content_policy(arr[5]),
+    );
+  }
+
+  @protected
+  SourceCapabilitiesDto dco_decode_source_capabilities_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 9)
+      throw Exception('unexpected arr length: expect 9 but see ${arr.length}');
+    return SourceCapabilitiesDto(
+      ratings: dco_decode_list_content_rating(arr[0]),
+      authKind: dco_decode_auth_kind(arr[1]),
+      supportsSearch: dco_decode_bool(arr[2]),
+      supportsPostDetail: dco_decode_bool(arr[3]),
+      supportsAutocomplete: dco_decode_bool(arr[4]),
+      supportsRelatedPosts: dco_decode_bool(arr[5]),
+      supportsOriginal: dco_decode_bool(arr[6]),
+      supportsAuthenticatedMedia: dco_decode_bool(arr[7]),
+      supportsBackgroundDownload: dco_decode_bool(arr[8]),
+    );
+  }
+
+  @protected
+  SourceCredentialsDto dco_decode_source_credentials_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return SourceCredentialsDto(
+      username: dco_decode_opt_String(arr[0]),
+      userId: dco_decode_opt_String(arr[1]),
+      apiKey: dco_decode_opt_String(arr[2]),
+    );
+  }
+
+  @protected
+  TagCategory dco_decode_tag_category(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return TagCategory.values[raw as int];
+  }
+
+  @protected
+  TagSuggestionDto dco_decode_tag_suggestion_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return TagSuggestionDto(
+      value: dco_decode_String(arr[0]),
+      label: dco_decode_String(arr[1]),
+      category: dco_decode_tag_category(arr[2]),
+      postCountDecimal: dco_decode_opt_String(arr[3]),
+    );
+  }
+
+  @protected
+  int dco_decode_u_16(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
   }
 
   @protected
@@ -606,71 +1958,55 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    var inner = sse_decode_String(deserializer);
-    return AnyhowException(inner);
+  WebCookieDto dco_decode_web_cookie_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return WebCookieDto(
+      name: dco_decode_String(arr[0]),
+      value: dco_decode_String(arr[1]),
+      domain: dco_decode_String(arr[2]),
+      path: dco_decode_String(arr[3]),
+      secure: dco_decode_bool(arr[4]),
+      expiresAtIso8601: dco_decode_opt_String(arr[5]),
+    );
   }
 
   @protected
-  YandeClient
-  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
+  BooruEngine
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    return YandeClientImpl.frbInternalSseDecode(
+    return BooruEngineImpl.frbInternalSseDecode(
       sse_decode_usize(deserializer),
       sse_decode_i_32(deserializer),
     );
   }
 
   @protected
-  YandeClient
-  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
+  BooruEngine
+  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    return YandeClientImpl.frbInternalSseDecode(
+    return BooruEngineImpl.frbInternalSseDecode(
       sse_decode_usize(deserializer),
       sse_decode_i_32(deserializer),
     );
   }
 
   @protected
-  int sse_decode_CastedPrimitive_i_64(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    var inner = sse_decode_i_64(deserializer);
-    return inner.toInt();
-  }
-
-  @protected
-  Map<String, String> sse_decode_Map_String_String_None(
+  BooruEngine
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    var inner = sse_decode_list_record_string_string(deserializer);
-    return Map.fromEntries(inner.map((e) => MapEntry(e.$1, e.$2)));
-  }
-
-  @protected
-  YandeClient
-  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
-    SseDeserializer deserializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return YandeClientImpl.frbInternalSseDecode(
+    return BooruEngineImpl.frbInternalSseDecode(
       sse_decode_usize(deserializer),
       sse_decode_i_32(deserializer),
     );
-  }
-
-  @protected
-  RustStreamSink<FrbDownloadFileEvent>
-  sse_decode_StreamSink_frb_download_file_event_Sse(
-    SseDeserializer deserializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    throw UnimplementedError('Unreachable ()');
   }
 
   @protected
@@ -681,10 +2017,69 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  StringArray3 sse_decode_String_array_3(SseDeserializer deserializer) {
+  AuthFieldDto sse_decode_auth_field_dto(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    var inner = sse_decode_list_String(deserializer);
-    return StringArray3(inner);
+    var var_kind = sse_decode_auth_field_kind(deserializer);
+    var var_labelKey = sse_decode_String(deserializer);
+    var var_required_ = sse_decode_bool(deserializer);
+    var var_secret = sse_decode_bool(deserializer);
+    var var_helpUrl = sse_decode_opt_String(deserializer);
+    return AuthFieldDto(
+      kind: var_kind,
+      labelKey: var_labelKey,
+      required_: var_required_,
+      secret: var_secret,
+      helpUrl: var_helpUrl,
+    );
+  }
+
+  @protected
+  AuthFieldKind sse_decode_auth_field_kind(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return AuthFieldKind.values[inner];
+  }
+
+  @protected
+  AuthKind sse_decode_auth_kind(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return AuthKind.values[inner];
+  }
+
+  @protected
+  AuthSchemaDto sse_decode_auth_schema_dto(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_sourceId = sse_decode_String(deserializer);
+    var var_fields = sse_decode_list_auth_field_dto(deserializer);
+    var var_usesWebSession = sse_decode_bool(deserializer);
+    return AuthSchemaDto(
+      sourceId: var_sourceId,
+      fields: var_fields,
+      usesWebSession: var_usesWebSession,
+    );
+  }
+
+  @protected
+  AuthStateDto sse_decode_auth_state_dto(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_sourceId = sse_decode_String(deserializer);
+    var var_status = sse_decode_auth_status(deserializer);
+    var var_username = sse_decode_opt_String(deserializer);
+    var var_authRevision = sse_decode_u_32(deserializer);
+    return AuthStateDto(
+      sourceId: var_sourceId,
+      status: var_status,
+      username: var_username,
+      authRevision: var_authRevision,
+    );
+  }
+
+  @protected
+  AuthStatus sse_decode_auth_status(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return AuthStatus.values[inner];
   }
 
   @protected
@@ -694,38 +2089,224 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  BooruEngineConfigDto sse_decode_booru_engine_config_dto(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_appSupportDirectory = sse_decode_String(deserializer);
+    var var_proxyUrl = sse_decode_opt_String(deserializer);
+    var var_fallbackMode = sse_decode_network_fallback_mode(deserializer);
+    var var_fallbackToSystemDns = sse_decode_bool(deserializer);
+    var var_userAgent = sse_decode_String(deserializer);
+    return BooruEngineConfigDto(
+      appSupportDirectory: var_appSupportDirectory,
+      proxyUrl: var_proxyUrl,
+      fallbackMode: var_fallbackMode,
+      fallbackToSystemDns: var_fallbackToSystemDns,
+      userAgent: var_userAgent,
+    );
+  }
+
+  @protected
+  BooruErrorCode sse_decode_booru_error_code(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return BooruErrorCode.values[inner];
+  }
+
+  @protected
+  BooruErrorDto sse_decode_booru_error_dto(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_code = sse_decode_booru_error_code(deserializer);
+    var var_sourceId = sse_decode_opt_String(deserializer);
+    var var_userMessageKey = sse_decode_String(deserializer);
+    var var_diagnosticId = sse_decode_String(deserializer);
+    var var_httpStatus = sse_decode_opt_box_autoadd_u_32(deserializer);
+    var var_retryAfterSeconds = sse_decode_opt_box_autoadd_u_32(deserializer);
+    var var_action = sse_decode_opt_box_autoadd_recovery_action(deserializer);
+    return BooruErrorDto(
+      code: var_code,
+      sourceId: var_sourceId,
+      userMessageKey: var_userMessageKey,
+      diagnosticId: var_diagnosticId,
+      httpStatus: var_httpStatus,
+      retryAfterSeconds: var_retryAfterSeconds,
+      action: var_action,
+    );
+  }
+
+  @protected
+  BooruPostDto sse_decode_booru_post_dto(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_sourceId = sse_decode_String(deserializer);
+    var var_postId = sse_decode_String(deserializer);
+    var var_postKey = sse_decode_String(deserializer);
+    var var_webUrl = sse_decode_opt_String(deserializer);
+    var var_rating = sse_decode_content_rating(deserializer);
+    var var_score = sse_decode_opt_box_autoadd_i_32(deserializer);
+    var var_createdAtIso8601 = sse_decode_opt_String(deserializer);
+    var var_sourceUrl = sse_decode_opt_String(deserializer);
+    var var_tags = sse_decode_list_booru_tag_dto(deserializer);
+    var var_media = sse_decode_list_media_variant_dto(deserializer);
+    var var_flags = sse_decode_post_flags_dto(deserializer);
+    return BooruPostDto(
+      sourceId: var_sourceId,
+      postId: var_postId,
+      postKey: var_postKey,
+      webUrl: var_webUrl,
+      rating: var_rating,
+      score: var_score,
+      createdAtIso8601: var_createdAtIso8601,
+      sourceUrl: var_sourceUrl,
+      tags: var_tags,
+      media: var_media,
+      flags: var_flags,
+    );
+  }
+
+  @protected
+  BooruProtocol sse_decode_booru_protocol(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return BooruProtocol.values[inner];
+  }
+
+  @protected
+  BooruSourceDto sse_decode_booru_source_dto(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_sourceId = sse_decode_String(deserializer);
+    var var_displayName = sse_decode_String(deserializer);
+    var var_protocol = sse_decode_booru_protocol(deserializer);
+    var var_enabledByDefault = sse_decode_bool(deserializer);
+    var var_isAiSource = sse_decode_bool(deserializer);
+    var var_capabilities = sse_decode_source_capabilities_dto(deserializer);
+    return BooruSourceDto(
+      sourceId: var_sourceId,
+      displayName: var_displayName,
+      protocol: var_protocol,
+      enabledByDefault: var_enabledByDefault,
+      isAiSource: var_isAiSource,
+      capabilities: var_capabilities,
+    );
+  }
+
+  @protected
+  BooruTagDto sse_decode_booru_tag_dto(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_String(deserializer);
+    var var_category = sse_decode_tag_category(deserializer);
+    return BooruTagDto(name: var_name, category: var_category);
+  }
+
+  @protected
+  BooruEngineConfigDto sse_decode_box_autoadd_booru_engine_config_dto(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_booru_engine_config_dto(deserializer));
+  }
+
+  @protected
+  ChecksumDto sse_decode_box_autoadd_checksum_dto(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_checksum_dto(deserializer));
+  }
+
+  @protected
+  int sse_decode_box_autoadd_i_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_i_32(deserializer));
+  }
+
+  @protected
+  MediaType sse_decode_box_autoadd_media_type(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_media_type(deserializer));
+  }
+
+  @protected
+  RecoveryAction sse_decode_box_autoadd_recovery_action(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_recovery_action(deserializer));
+  }
+
+  @protected
+  RouteProvider sse_decode_box_autoadd_route_provider(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_route_provider(deserializer));
+  }
+
+  @protected
+  SearchRequestDto sse_decode_box_autoadd_search_request_dto(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_search_request_dto(deserializer));
+  }
+
+  @protected
+  SourceCredentialsDto sse_decode_box_autoadd_source_credentials_dto(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_source_credentials_dto(deserializer));
+  }
+
+  @protected
   int sse_decode_box_autoadd_u_32(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_u_32(deserializer));
   }
 
   @protected
-  FrbDownloadFileEvent sse_decode_frb_download_file_event(
+  ChecksumAlgorithm sse_decode_checksum_algorithm(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-
-    var tag_ = sse_decode_i_32(deserializer);
-    switch (tag_) {
-      case 0:
-        var var_received = sse_decode_u_32(deserializer);
-        var var_total = sse_decode_u_32(deserializer);
-        return FrbDownloadFileEvent_Progress(
-          received: var_received,
-          total: var_total,
-        );
-      case 1:
-        var var_path = sse_decode_String(deserializer);
-        return FrbDownloadFileEvent_Done(path: var_path);
-      default:
-        throw UnimplementedError('');
-    }
+    var inner = sse_decode_i_32(deserializer);
+    return ChecksumAlgorithm.values[inner];
   }
 
   @protected
-  PlatformInt64 sse_decode_i_64(SseDeserializer deserializer) {
+  ChecksumDto sse_decode_checksum_dto(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getPlatformInt64();
+    var var_algorithm = sse_decode_checksum_algorithm(deserializer);
+    var var_value = sse_decode_String(deserializer);
+    return ChecksumDto(algorithm: var_algorithm, value: var_value);
+  }
+
+  @protected
+  ContentPolicy sse_decode_content_policy(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return ContentPolicy.values[inner];
+  }
+
+  @protected
+  ContentRating sse_decode_content_rating(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return ContentRating.values[inner];
+  }
+
+  @protected
+  HttpHeaderDto sse_decode_http_header_dto(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_String(deserializer);
+    var var_value = sse_decode_String(deserializer);
+    return HttpHeaderDto(name: var_name, value: var_value);
+  }
+
+  @protected
+  int sse_decode_i_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getInt32();
   }
 
   @protected
@@ -741,13 +2322,125 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  List<Post> sse_decode_list_post(SseDeserializer deserializer) {
+  List<AuthFieldDto> sse_decode_list_auth_field_dto(
+    SseDeserializer deserializer,
+  ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
     var len_ = sse_decode_i_32(deserializer);
-    var ans_ = <Post>[];
+    var ans_ = <AuthFieldDto>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
-      ans_.add(sse_decode_post(deserializer));
+      ans_.add(sse_decode_auth_field_dto(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<BooruPostDto> sse_decode_list_booru_post_dto(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <BooruPostDto>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_booru_post_dto(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<BooruSourceDto> sse_decode_list_booru_source_dto(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <BooruSourceDto>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_booru_source_dto(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<BooruTagDto> sse_decode_list_booru_tag_dto(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <BooruTagDto>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_booru_tag_dto(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<ContentRating> sse_decode_list_content_rating(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <ContentRating>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_content_rating(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<HttpHeaderDto> sse_decode_list_http_header_dto(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <HttpHeaderDto>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_http_header_dto(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<MediaKind> sse_decode_list_media_kind(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <MediaKind>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_media_kind(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<MediaVariantDto> sse_decode_list_media_variant_dto(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <MediaVariantDto>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_media_variant_dto(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<PersistedHostRouteDto> sse_decode_list_persisted_host_route_dto(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <PersistedHostRouteDto>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_persisted_host_route_dto(deserializer));
     }
     return ans_;
   }
@@ -760,28 +2453,111 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  List<(String, String)> sse_decode_list_record_string_string(
+  List<TagSuggestionDto> sse_decode_list_tag_suggestion_dto(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
     var len_ = sse_decode_i_32(deserializer);
-    var ans_ = <(String, String)>[];
+    var ans_ = <TagSuggestionDto>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
-      ans_.add(sse_decode_record_string_string(deserializer));
+      ans_.add(sse_decode_tag_suggestion_dto(deserializer));
     }
     return ans_;
   }
 
   @protected
-  int? sse_decode_opt_CastedPrimitive_i_64(SseDeserializer deserializer) {
+  List<WebCookieDto> sse_decode_list_web_cookie_dto(
+    SseDeserializer deserializer,
+  ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
-    if (sse_decode_bool(deserializer)) {
-      return (sse_decode_CastedPrimitive_i_64(deserializer));
-    } else {
-      return null;
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <WebCookieDto>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_web_cookie_dto(deserializer));
     }
+    return ans_;
+  }
+
+  @protected
+  MediaKind sse_decode_media_kind(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return MediaKind.values[inner];
+  }
+
+  @protected
+  MediaRequestDto sse_decode_media_request_dto(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_sourceId = sse_decode_String(deserializer);
+    var var_postId = sse_decode_String(deserializer);
+    var var_variant = sse_decode_media_variant_kind(deserializer);
+    var var_url = sse_decode_String(deserializer);
+    var var_headers = sse_decode_list_http_header_dto(deserializer);
+    var var_routeKey = sse_decode_String(deserializer);
+    var var_cacheKey = sse_decode_String(deserializer);
+    var var_authRevision = sse_decode_u_32(deserializer);
+    var var_routeRevision = sse_decode_String(deserializer);
+    var var_allowDiskCache = sse_decode_bool(deserializer);
+    return MediaRequestDto(
+      sourceId: var_sourceId,
+      postId: var_postId,
+      variant: var_variant,
+      url: var_url,
+      headers: var_headers,
+      routeKey: var_routeKey,
+      cacheKey: var_cacheKey,
+      authRevision: var_authRevision,
+      routeRevision: var_routeRevision,
+      allowDiskCache: var_allowDiskCache,
+    );
+  }
+
+  @protected
+  MediaType sse_decode_media_type(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return MediaType.values[inner];
+  }
+
+  @protected
+  MediaVariantDto sse_decode_media_variant_dto(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_kind = sse_decode_media_variant_kind(deserializer);
+    var var_url = sse_decode_String(deserializer);
+    var var_width = sse_decode_opt_box_autoadd_u_32(deserializer);
+    var var_height = sse_decode_opt_box_autoadd_u_32(deserializer);
+    var var_byteLengthDecimal = sse_decode_opt_String(deserializer);
+    var var_mediaType = sse_decode_opt_box_autoadd_media_type(deserializer);
+    var var_extension_ = sse_decode_opt_String(deserializer);
+    var var_checksum = sse_decode_opt_box_autoadd_checksum_dto(deserializer);
+    return MediaVariantDto(
+      kind: var_kind,
+      url: var_url,
+      width: var_width,
+      height: var_height,
+      byteLengthDecimal: var_byteLengthDecimal,
+      mediaType: var_mediaType,
+      extension_: var_extension_,
+      checksum: var_checksum,
+    );
+  }
+
+  @protected
+  MediaVariantKind sse_decode_media_variant_kind(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return MediaVariantKind.values[inner];
+  }
+
+  @protected
+  NetworkFallbackMode sse_decode_network_fallback_mode(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return NetworkFallbackMode.values[inner];
   }
 
   @protected
@@ -796,11 +2572,63 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  StringArray3? sse_decode_opt_String_array_3(SseDeserializer deserializer) {
+  ChecksumDto? sse_decode_opt_box_autoadd_checksum_dto(
+    SseDeserializer deserializer,
+  ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
     if (sse_decode_bool(deserializer)) {
-      return (sse_decode_String_array_3(deserializer));
+      return (sse_decode_box_autoadd_checksum_dto(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  int? sse_decode_opt_box_autoadd_i_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_i_32(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  MediaType? sse_decode_opt_box_autoadd_media_type(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_media_type(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  RecoveryAction? sse_decode_opt_box_autoadd_recovery_action(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_recovery_action(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  RouteProvider? sse_decode_opt_box_autoadd_route_provider(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_route_provider(deserializer));
     } else {
       return null;
     }
@@ -818,102 +2646,199 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  Post sse_decode_post(SseDeserializer deserializer) {
+  PersistedHostRouteDto sse_decode_persisted_host_route_dto(
+    SseDeserializer deserializer,
+  ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    var var_id = sse_decode_CastedPrimitive_i_64(deserializer);
-    var var_tags = sse_decode_String(deserializer);
-    var var_createdAt = sse_decode_CastedPrimitive_i_64(deserializer);
-    var var_updatedAt = sse_decode_CastedPrimitive_i_64(deserializer);
-    var var_creatorId = sse_decode_opt_CastedPrimitive_i_64(deserializer);
-    var var_author = sse_decode_String(deserializer);
-    var var_change = sse_decode_CastedPrimitive_i_64(deserializer);
-    var var_source = sse_decode_String(deserializer);
-    var var_score = sse_decode_CastedPrimitive_i_64(deserializer);
-    var var_md5 = sse_decode_String(deserializer);
-    var var_fileSize = sse_decode_CastedPrimitive_i_64(deserializer);
-    var var_fileExt = sse_decode_String(deserializer);
-    var var_fileUrl = sse_decode_opt_String(deserializer);
-    var var_isShownInIndex = sse_decode_bool(deserializer);
-    var var_previewUrl = sse_decode_String(deserializer);
-    var var_previewWidth = sse_decode_CastedPrimitive_i_64(deserializer);
-    var var_previewHeight = sse_decode_CastedPrimitive_i_64(deserializer);
-    var var_actualPreviewWidth = sse_decode_CastedPrimitive_i_64(deserializer);
-    var var_actualPreviewHeight = sse_decode_CastedPrimitive_i_64(deserializer);
-    var var_sampleUrl = sse_decode_opt_String(deserializer);
-    var var_sampleWidth = sse_decode_CastedPrimitive_i_64(deserializer);
-    var var_sampleHeight = sse_decode_CastedPrimitive_i_64(deserializer);
-    var var_sampleFileSize = sse_decode_CastedPrimitive_i_64(deserializer);
-    var var_jpegUrl = sse_decode_opt_String(deserializer);
-    var var_jpegWidth = sse_decode_CastedPrimitive_i_64(deserializer);
-    var var_jpegHeight = sse_decode_CastedPrimitive_i_64(deserializer);
-    var var_jpegFileSize = sse_decode_CastedPrimitive_i_64(deserializer);
-    var var_rating = sse_decode_String(deserializer);
-    var var_isRatingLocked = sse_decode_bool(deserializer);
-    var var_hasChildren = sse_decode_bool(deserializer);
-    var var_parentId = sse_decode_opt_CastedPrimitive_i_64(deserializer);
-    var var_status = sse_decode_String(deserializer);
-    var var_isPending = sse_decode_bool(deserializer);
-    var var_width = sse_decode_CastedPrimitive_i_64(deserializer);
-    var var_height = sse_decode_CastedPrimitive_i_64(deserializer);
-    var var_isHeld = sse_decode_bool(deserializer);
-    var var_isNoteLocked = sse_decode_bool(deserializer);
-    return Post(
-      id: var_id,
-      tags: var_tags,
-      createdAt: var_createdAt,
-      updatedAt: var_updatedAt,
-      creatorId: var_creatorId,
-      author: var_author,
-      change: var_change,
-      source: var_source,
-      score: var_score,
-      md5: var_md5,
-      fileSize: var_fileSize,
-      fileExt: var_fileExt,
-      fileUrl: var_fileUrl,
-      isShownInIndex: var_isShownInIndex,
-      previewUrl: var_previewUrl,
-      previewWidth: var_previewWidth,
-      previewHeight: var_previewHeight,
-      actualPreviewWidth: var_actualPreviewWidth,
-      actualPreviewHeight: var_actualPreviewHeight,
-      sampleUrl: var_sampleUrl,
-      sampleWidth: var_sampleWidth,
-      sampleHeight: var_sampleHeight,
-      sampleFileSize: var_sampleFileSize,
-      jpegUrl: var_jpegUrl,
-      jpegWidth: var_jpegWidth,
-      jpegHeight: var_jpegHeight,
-      jpegFileSize: var_jpegFileSize,
-      rating: var_rating,
-      isRatingLocked: var_isRatingLocked,
-      hasChildren: var_hasChildren,
-      parentId: var_parentId,
-      status: var_status,
-      isPending: var_isPending,
-      width: var_width,
-      height: var_height,
-      isHeld: var_isHeld,
-      isNoteLocked: var_isNoteLocked,
+    var var_logicalHost = sse_decode_String(deserializer);
+    var var_httpsPort = sse_decode_u_16(deserializer);
+    var var_candidates = sse_decode_list_String(deserializer);
+    return PersistedHostRouteDto(
+      logicalHost: var_logicalHost,
+      httpsPort: var_httpsPort,
+      candidates: var_candidates,
     );
   }
 
   @protected
-  (String, String) sse_decode_record_string_string(
-    SseDeserializer deserializer,
-  ) {
+  PostFlagsDto sse_decode_post_flags_dto(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    var var_field0 = sse_decode_String(deserializer);
-    var var_field1 = sse_decode_String(deserializer);
-    return (var_field0, var_field1);
+    var var_hasChildren = sse_decode_bool(deserializer);
+    var var_parentId = sse_decode_opt_String(deserializer);
+    var var_isPending = sse_decode_bool(deserializer);
+    var var_isDeleted = sse_decode_bool(deserializer);
+    var var_isAiGenerated = sse_decode_bool(deserializer);
+    return PostFlagsDto(
+      hasChildren: var_hasChildren,
+      parentId: var_parentId,
+      isPending: var_isPending,
+      isDeleted: var_isDeleted,
+      isAiGenerated: var_isAiGenerated,
+    );
   }
 
   @protected
-  Similar sse_decode_similar(SseDeserializer deserializer) {
+  PostPageDto sse_decode_post_page_dto(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    var var_posts = sse_decode_list_post(deserializer);
-    var var_source = sse_decode_post(deserializer);
-    return Similar(posts: var_posts, source: var_source);
+    var var_items = sse_decode_list_booru_post_dto(deserializer);
+    var var_nextCursor = sse_decode_opt_String(deserializer);
+    var var_exhausted = sse_decode_bool(deserializer);
+    return PostPageDto(
+      items: var_items,
+      nextCursor: var_nextCursor,
+      exhausted: var_exhausted,
+    );
+  }
+
+  @protected
+  PreparedDownloadDto sse_decode_prepared_download_dto(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_sourceId = sse_decode_String(deserializer);
+    var var_postId = sse_decode_String(deserializer);
+    var var_variant = sse_decode_media_variant_kind(deserializer);
+    var var_url = sse_decode_String(deserializer);
+    var var_headers = sse_decode_list_http_header_dto(deserializer);
+    var var_expectedBytesDecimal = sse_decode_opt_String(deserializer);
+    var var_allowedMediaKinds = sse_decode_list_media_kind(deserializer);
+    var var_checksum = sse_decode_opt_box_autoadd_checksum_dto(deserializer);
+    var var_filename = sse_decode_String(deserializer);
+    return PreparedDownloadDto(
+      sourceId: var_sourceId,
+      postId: var_postId,
+      variant: var_variant,
+      url: var_url,
+      headers: var_headers,
+      expectedBytesDecimal: var_expectedBytesDecimal,
+      allowedMediaKinds: var_allowedMediaKinds,
+      checksum: var_checksum,
+      filename: var_filename,
+    );
+  }
+
+  @protected
+  RecoveryAction sse_decode_recovery_action(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return RecoveryAction.values[inner];
+  }
+
+  @protected
+  RouteCacheStateDto sse_decode_route_cache_state_dto(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_initialized = sse_decode_bool(deserializer);
+    var var_refreshing = sse_decode_bool(deserializer);
+    var var_routeRevision = sse_decode_String(deserializer);
+    var var_fetchedAtIso8601 = sse_decode_opt_String(deserializer);
+    var var_provider = sse_decode_opt_box_autoadd_route_provider(deserializer);
+    var var_routes = sse_decode_list_persisted_host_route_dto(deserializer);
+    return RouteCacheStateDto(
+      initialized: var_initialized,
+      refreshing: var_refreshing,
+      routeRevision: var_routeRevision,
+      fetchedAtIso8601: var_fetchedAtIso8601,
+      provider: var_provider,
+      routes: var_routes,
+    );
+  }
+
+  @protected
+  RouteProvider sse_decode_route_provider(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return RouteProvider.values[inner];
+  }
+
+  @protected
+  SearchRequestDto sse_decode_search_request_dto(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_sourceId = sse_decode_String(deserializer);
+    var var_queryText = sse_decode_String(deserializer);
+    var var_ratings = sse_decode_list_content_rating(deserializer);
+    var var_pageSize = sse_decode_u_32(deserializer);
+    var var_cursor = sse_decode_opt_String(deserializer);
+    var var_contentPolicy = sse_decode_content_policy(deserializer);
+    return SearchRequestDto(
+      sourceId: var_sourceId,
+      queryText: var_queryText,
+      ratings: var_ratings,
+      pageSize: var_pageSize,
+      cursor: var_cursor,
+      contentPolicy: var_contentPolicy,
+    );
+  }
+
+  @protected
+  SourceCapabilitiesDto sse_decode_source_capabilities_dto(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_ratings = sse_decode_list_content_rating(deserializer);
+    var var_authKind = sse_decode_auth_kind(deserializer);
+    var var_supportsSearch = sse_decode_bool(deserializer);
+    var var_supportsPostDetail = sse_decode_bool(deserializer);
+    var var_supportsAutocomplete = sse_decode_bool(deserializer);
+    var var_supportsRelatedPosts = sse_decode_bool(deserializer);
+    var var_supportsOriginal = sse_decode_bool(deserializer);
+    var var_supportsAuthenticatedMedia = sse_decode_bool(deserializer);
+    var var_supportsBackgroundDownload = sse_decode_bool(deserializer);
+    return SourceCapabilitiesDto(
+      ratings: var_ratings,
+      authKind: var_authKind,
+      supportsSearch: var_supportsSearch,
+      supportsPostDetail: var_supportsPostDetail,
+      supportsAutocomplete: var_supportsAutocomplete,
+      supportsRelatedPosts: var_supportsRelatedPosts,
+      supportsOriginal: var_supportsOriginal,
+      supportsAuthenticatedMedia: var_supportsAuthenticatedMedia,
+      supportsBackgroundDownload: var_supportsBackgroundDownload,
+    );
+  }
+
+  @protected
+  SourceCredentialsDto sse_decode_source_credentials_dto(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_username = sse_decode_opt_String(deserializer);
+    var var_userId = sse_decode_opt_String(deserializer);
+    var var_apiKey = sse_decode_opt_String(deserializer);
+    return SourceCredentialsDto(
+      username: var_username,
+      userId: var_userId,
+      apiKey: var_apiKey,
+    );
+  }
+
+  @protected
+  TagCategory sse_decode_tag_category(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return TagCategory.values[inner];
+  }
+
+  @protected
+  TagSuggestionDto sse_decode_tag_suggestion_dto(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_value = sse_decode_String(deserializer);
+    var var_label = sse_decode_String(deserializer);
+    var var_category = sse_decode_tag_category(deserializer);
+    var var_postCountDecimal = sse_decode_opt_String(deserializer);
+    return TagSuggestionDto(
+      value: var_value,
+      label: var_label,
+      category: var_category,
+      postCountDecimal: var_postCountDecimal,
+    );
+  }
+
+  @protected
+  int sse_decode_u_16(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getUint16();
   }
 
   @protected
@@ -940,90 +2865,59 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  int sse_decode_i_32(SseDeserializer deserializer) {
+  WebCookieDto sse_decode_web_cookie_dto(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getInt32();
-  }
-
-  @protected
-  void sse_encode_AnyhowException(
-    AnyhowException self,
-    SseSerializer serializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_String(self.message, serializer);
-  }
-
-  @protected
-  void
-  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
-    YandeClient self,
-    SseSerializer serializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_usize(
-      (self as YandeClientImpl).frbInternalSseEncode(move: true),
-      serializer,
+    var var_name = sse_decode_String(deserializer);
+    var var_value = sse_decode_String(deserializer);
+    var var_domain = sse_decode_String(deserializer);
+    var var_path = sse_decode_String(deserializer);
+    var var_secure = sse_decode_bool(deserializer);
+    var var_expiresAtIso8601 = sse_decode_opt_String(deserializer);
+    return WebCookieDto(
+      name: var_name,
+      value: var_value,
+      domain: var_domain,
+      path: var_path,
+      secure: var_secure,
+      expiresAtIso8601: var_expiresAtIso8601,
     );
   }
 
   @protected
   void
-  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
-    YandeClient self,
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+    BooruEngine self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_usize(
-      (self as YandeClientImpl).frbInternalSseEncode(move: false),
-      serializer,
-    );
-  }
-
-  @protected
-  void sse_encode_CastedPrimitive_i_64(int self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_i_64(sseEncodeCastedPrimitiveI64(self), serializer);
-  }
-
-  @protected
-  void sse_encode_Map_String_String_None(
-    Map<String, String> self,
-    SseSerializer serializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_list_record_string_string(
-      self.entries.map((e) => (e.key, e.value)).toList(),
+      (self as BooruEngineImpl).frbInternalSseEncode(move: true),
       serializer,
     );
   }
 
   @protected
   void
-  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
-    YandeClient self,
+  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+    BooruEngine self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_usize(
-      (self as YandeClientImpl).frbInternalSseEncode(move: null),
+      (self as BooruEngineImpl).frbInternalSseEncode(move: false),
       serializer,
     );
   }
 
   @protected
-  void sse_encode_StreamSink_frb_download_file_event_Sse(
-    RustStreamSink<FrbDownloadFileEvent> self,
+  void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+    BooruEngine self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_String(
-      self.setupAndSerialize(
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_frb_download_file_event,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-      ),
+    sse_encode_usize(
+      (self as BooruEngineImpl).frbInternalSseEncode(move: null),
       serializer,
     );
   }
@@ -1035,9 +2929,54 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_String_array_3(StringArray3 self, SseSerializer serializer) {
+  void sse_encode_auth_field_dto(AuthFieldDto self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_list_String(self.inner, serializer);
+    sse_encode_auth_field_kind(self.kind, serializer);
+    sse_encode_String(self.labelKey, serializer);
+    sse_encode_bool(self.required_, serializer);
+    sse_encode_bool(self.secret, serializer);
+    sse_encode_opt_String(self.helpUrl, serializer);
+  }
+
+  @protected
+  void sse_encode_auth_field_kind(
+    AuthFieldKind self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_auth_kind(AuthKind self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_auth_schema_dto(
+    AuthSchemaDto self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.sourceId, serializer);
+    sse_encode_list_auth_field_dto(self.fields, serializer);
+    sse_encode_bool(self.usesWebSession, serializer);
+  }
+
+  @protected
+  void sse_encode_auth_state_dto(AuthStateDto self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.sourceId, serializer);
+    sse_encode_auth_status(self.status, serializer);
+    sse_encode_opt_String(self.username, serializer);
+    sse_encode_u_32(self.authRevision, serializer);
+  }
+
+  @protected
+  void sse_encode_auth_status(AuthStatus self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
   }
 
   @protected
@@ -1047,35 +2986,202 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_booru_engine_config_dto(
+    BooruEngineConfigDto self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.appSupportDirectory, serializer);
+    sse_encode_opt_String(self.proxyUrl, serializer);
+    sse_encode_network_fallback_mode(self.fallbackMode, serializer);
+    sse_encode_bool(self.fallbackToSystemDns, serializer);
+    sse_encode_String(self.userAgent, serializer);
+  }
+
+  @protected
+  void sse_encode_booru_error_code(
+    BooruErrorCode self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_booru_error_dto(
+    BooruErrorDto self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_booru_error_code(self.code, serializer);
+    sse_encode_opt_String(self.sourceId, serializer);
+    sse_encode_String(self.userMessageKey, serializer);
+    sse_encode_String(self.diagnosticId, serializer);
+    sse_encode_opt_box_autoadd_u_32(self.httpStatus, serializer);
+    sse_encode_opt_box_autoadd_u_32(self.retryAfterSeconds, serializer);
+    sse_encode_opt_box_autoadd_recovery_action(self.action, serializer);
+  }
+
+  @protected
+  void sse_encode_booru_post_dto(BooruPostDto self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.sourceId, serializer);
+    sse_encode_String(self.postId, serializer);
+    sse_encode_String(self.postKey, serializer);
+    sse_encode_opt_String(self.webUrl, serializer);
+    sse_encode_content_rating(self.rating, serializer);
+    sse_encode_opt_box_autoadd_i_32(self.score, serializer);
+    sse_encode_opt_String(self.createdAtIso8601, serializer);
+    sse_encode_opt_String(self.sourceUrl, serializer);
+    sse_encode_list_booru_tag_dto(self.tags, serializer);
+    sse_encode_list_media_variant_dto(self.media, serializer);
+    sse_encode_post_flags_dto(self.flags, serializer);
+  }
+
+  @protected
+  void sse_encode_booru_protocol(BooruProtocol self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_booru_source_dto(
+    BooruSourceDto self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.sourceId, serializer);
+    sse_encode_String(self.displayName, serializer);
+    sse_encode_booru_protocol(self.protocol, serializer);
+    sse_encode_bool(self.enabledByDefault, serializer);
+    sse_encode_bool(self.isAiSource, serializer);
+    sse_encode_source_capabilities_dto(self.capabilities, serializer);
+  }
+
+  @protected
+  void sse_encode_booru_tag_dto(BooruTagDto self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.name, serializer);
+    sse_encode_tag_category(self.category, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_booru_engine_config_dto(
+    BooruEngineConfigDto self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_booru_engine_config_dto(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_checksum_dto(
+    ChecksumDto self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_checksum_dto(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_i_32(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_media_type(
+    MediaType self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_media_type(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_recovery_action(
+    RecoveryAction self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_recovery_action(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_route_provider(
+    RouteProvider self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_route_provider(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_search_request_dto(
+    SearchRequestDto self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_search_request_dto(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_source_credentials_dto(
+    SourceCredentialsDto self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_source_credentials_dto(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_u_32(self, serializer);
   }
 
   @protected
-  void sse_encode_frb_download_file_event(
-    FrbDownloadFileEvent self,
+  void sse_encode_checksum_algorithm(
+    ChecksumAlgorithm self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    switch (self) {
-      case FrbDownloadFileEvent_Progress(
-        received: final received,
-        total: final total,
-      ):
-        sse_encode_i_32(0, serializer);
-        sse_encode_u_32(received, serializer);
-        sse_encode_u_32(total, serializer);
-      case FrbDownloadFileEvent_Done(path: final path):
-        sse_encode_i_32(1, serializer);
-        sse_encode_String(path, serializer);
-    }
+    sse_encode_i_32(self.index, serializer);
   }
 
   @protected
-  void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer) {
+  void sse_encode_checksum_dto(ChecksumDto self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putPlatformInt64(self);
+    sse_encode_checksum_algorithm(self.algorithm, serializer);
+    sse_encode_String(self.value, serializer);
+  }
+
+  @protected
+  void sse_encode_content_policy(ContentPolicy self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_content_rating(ContentRating self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_http_header_dto(
+    HttpHeaderDto self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.name, serializer);
+    sse_encode_String(self.value, serializer);
+  }
+
+  @protected
+  void sse_encode_i_32(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putInt32(self);
   }
 
   @protected
@@ -1088,11 +3194,110 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_list_post(List<Post> self, SseSerializer serializer) {
+  void sse_encode_list_auth_field_dto(
+    List<AuthFieldDto> self,
+    SseSerializer serializer,
+  ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
-      sse_encode_post(item, serializer);
+      sse_encode_auth_field_dto(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_booru_post_dto(
+    List<BooruPostDto> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_booru_post_dto(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_booru_source_dto(
+    List<BooruSourceDto> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_booru_source_dto(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_booru_tag_dto(
+    List<BooruTagDto> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_booru_tag_dto(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_content_rating(
+    List<ContentRating> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_content_rating(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_http_header_dto(
+    List<HttpHeaderDto> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_http_header_dto(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_media_kind(
+    List<MediaKind> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_media_kind(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_media_variant_dto(
+    List<MediaVariantDto> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_media_variant_dto(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_persisted_host_route_dto(
+    List<PersistedHostRouteDto> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_persisted_host_route_dto(item, serializer);
     }
   }
 
@@ -1107,28 +3312,91 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_list_record_string_string(
-    List<(String, String)> self,
+  void sse_encode_list_tag_suggestion_dto(
+    List<TagSuggestionDto> self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
-      sse_encode_record_string_string(item, serializer);
+      sse_encode_tag_suggestion_dto(item, serializer);
     }
   }
 
   @protected
-  void sse_encode_opt_CastedPrimitive_i_64(
-    int? self,
+  void sse_encode_list_web_cookie_dto(
+    List<WebCookieDto> self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-
-    sse_encode_bool(self != null, serializer);
-    if (self != null) {
-      sse_encode_CastedPrimitive_i_64(self, serializer);
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_web_cookie_dto(item, serializer);
     }
+  }
+
+  @protected
+  void sse_encode_media_kind(MediaKind self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_media_request_dto(
+    MediaRequestDto self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.sourceId, serializer);
+    sse_encode_String(self.postId, serializer);
+    sse_encode_media_variant_kind(self.variant, serializer);
+    sse_encode_String(self.url, serializer);
+    sse_encode_list_http_header_dto(self.headers, serializer);
+    sse_encode_String(self.routeKey, serializer);
+    sse_encode_String(self.cacheKey, serializer);
+    sse_encode_u_32(self.authRevision, serializer);
+    sse_encode_String(self.routeRevision, serializer);
+    sse_encode_bool(self.allowDiskCache, serializer);
+  }
+
+  @protected
+  void sse_encode_media_type(MediaType self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_media_variant_dto(
+    MediaVariantDto self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_media_variant_kind(self.kind, serializer);
+    sse_encode_String(self.url, serializer);
+    sse_encode_opt_box_autoadd_u_32(self.width, serializer);
+    sse_encode_opt_box_autoadd_u_32(self.height, serializer);
+    sse_encode_opt_String(self.byteLengthDecimal, serializer);
+    sse_encode_opt_box_autoadd_media_type(self.mediaType, serializer);
+    sse_encode_opt_String(self.extension_, serializer);
+    sse_encode_opt_box_autoadd_checksum_dto(self.checksum, serializer);
+  }
+
+  @protected
+  void sse_encode_media_variant_kind(
+    MediaVariantKind self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_network_fallback_mode(
+    NetworkFallbackMode self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
   }
 
   @protected
@@ -1142,15 +3410,64 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_opt_String_array_3(
-    StringArray3? self,
+  void sse_encode_opt_box_autoadd_checksum_dto(
+    ChecksumDto? self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
     sse_encode_bool(self != null, serializer);
     if (self != null) {
-      sse_encode_String_array_3(self, serializer);
+      sse_encode_box_autoadd_checksum_dto(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_i_32(int? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_i_32(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_media_type(
+    MediaType? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_media_type(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_recovery_action(
+    RecoveryAction? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_recovery_action(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_route_provider(
+    RouteProvider? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_route_provider(self, serializer);
     }
   }
 
@@ -1165,62 +3482,144 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_post(Post self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_CastedPrimitive_i_64(self.id, serializer);
-    sse_encode_String(self.tags, serializer);
-    sse_encode_CastedPrimitive_i_64(self.createdAt, serializer);
-    sse_encode_CastedPrimitive_i_64(self.updatedAt, serializer);
-    sse_encode_opt_CastedPrimitive_i_64(self.creatorId, serializer);
-    sse_encode_String(self.author, serializer);
-    sse_encode_CastedPrimitive_i_64(self.change, serializer);
-    sse_encode_String(self.source, serializer);
-    sse_encode_CastedPrimitive_i_64(self.score, serializer);
-    sse_encode_String(self.md5, serializer);
-    sse_encode_CastedPrimitive_i_64(self.fileSize, serializer);
-    sse_encode_String(self.fileExt, serializer);
-    sse_encode_opt_String(self.fileUrl, serializer);
-    sse_encode_bool(self.isShownInIndex, serializer);
-    sse_encode_String(self.previewUrl, serializer);
-    sse_encode_CastedPrimitive_i_64(self.previewWidth, serializer);
-    sse_encode_CastedPrimitive_i_64(self.previewHeight, serializer);
-    sse_encode_CastedPrimitive_i_64(self.actualPreviewWidth, serializer);
-    sse_encode_CastedPrimitive_i_64(self.actualPreviewHeight, serializer);
-    sse_encode_opt_String(self.sampleUrl, serializer);
-    sse_encode_CastedPrimitive_i_64(self.sampleWidth, serializer);
-    sse_encode_CastedPrimitive_i_64(self.sampleHeight, serializer);
-    sse_encode_CastedPrimitive_i_64(self.sampleFileSize, serializer);
-    sse_encode_opt_String(self.jpegUrl, serializer);
-    sse_encode_CastedPrimitive_i_64(self.jpegWidth, serializer);
-    sse_encode_CastedPrimitive_i_64(self.jpegHeight, serializer);
-    sse_encode_CastedPrimitive_i_64(self.jpegFileSize, serializer);
-    sse_encode_String(self.rating, serializer);
-    sse_encode_bool(self.isRatingLocked, serializer);
-    sse_encode_bool(self.hasChildren, serializer);
-    sse_encode_opt_CastedPrimitive_i_64(self.parentId, serializer);
-    sse_encode_String(self.status, serializer);
-    sse_encode_bool(self.isPending, serializer);
-    sse_encode_CastedPrimitive_i_64(self.width, serializer);
-    sse_encode_CastedPrimitive_i_64(self.height, serializer);
-    sse_encode_bool(self.isHeld, serializer);
-    sse_encode_bool(self.isNoteLocked, serializer);
-  }
-
-  @protected
-  void sse_encode_record_string_string(
-    (String, String) self,
+  void sse_encode_persisted_host_route_dto(
+    PersistedHostRouteDto self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_String(self.$1, serializer);
-    sse_encode_String(self.$2, serializer);
+    sse_encode_String(self.logicalHost, serializer);
+    sse_encode_u_16(self.httpsPort, serializer);
+    sse_encode_list_String(self.candidates, serializer);
   }
 
   @protected
-  void sse_encode_similar(Similar self, SseSerializer serializer) {
+  void sse_encode_post_flags_dto(PostFlagsDto self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_list_post(self.posts, serializer);
-    sse_encode_post(self.source, serializer);
+    sse_encode_bool(self.hasChildren, serializer);
+    sse_encode_opt_String(self.parentId, serializer);
+    sse_encode_bool(self.isPending, serializer);
+    sse_encode_bool(self.isDeleted, serializer);
+    sse_encode_bool(self.isAiGenerated, serializer);
+  }
+
+  @protected
+  void sse_encode_post_page_dto(PostPageDto self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_booru_post_dto(self.items, serializer);
+    sse_encode_opt_String(self.nextCursor, serializer);
+    sse_encode_bool(self.exhausted, serializer);
+  }
+
+  @protected
+  void sse_encode_prepared_download_dto(
+    PreparedDownloadDto self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.sourceId, serializer);
+    sse_encode_String(self.postId, serializer);
+    sse_encode_media_variant_kind(self.variant, serializer);
+    sse_encode_String(self.url, serializer);
+    sse_encode_list_http_header_dto(self.headers, serializer);
+    sse_encode_opt_String(self.expectedBytesDecimal, serializer);
+    sse_encode_list_media_kind(self.allowedMediaKinds, serializer);
+    sse_encode_opt_box_autoadd_checksum_dto(self.checksum, serializer);
+    sse_encode_String(self.filename, serializer);
+  }
+
+  @protected
+  void sse_encode_recovery_action(
+    RecoveryAction self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_route_cache_state_dto(
+    RouteCacheStateDto self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_bool(self.initialized, serializer);
+    sse_encode_bool(self.refreshing, serializer);
+    sse_encode_String(self.routeRevision, serializer);
+    sse_encode_opt_String(self.fetchedAtIso8601, serializer);
+    sse_encode_opt_box_autoadd_route_provider(self.provider, serializer);
+    sse_encode_list_persisted_host_route_dto(self.routes, serializer);
+  }
+
+  @protected
+  void sse_encode_route_provider(RouteProvider self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_search_request_dto(
+    SearchRequestDto self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.sourceId, serializer);
+    sse_encode_String(self.queryText, serializer);
+    sse_encode_list_content_rating(self.ratings, serializer);
+    sse_encode_u_32(self.pageSize, serializer);
+    sse_encode_opt_String(self.cursor, serializer);
+    sse_encode_content_policy(self.contentPolicy, serializer);
+  }
+
+  @protected
+  void sse_encode_source_capabilities_dto(
+    SourceCapabilitiesDto self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_content_rating(self.ratings, serializer);
+    sse_encode_auth_kind(self.authKind, serializer);
+    sse_encode_bool(self.supportsSearch, serializer);
+    sse_encode_bool(self.supportsPostDetail, serializer);
+    sse_encode_bool(self.supportsAutocomplete, serializer);
+    sse_encode_bool(self.supportsRelatedPosts, serializer);
+    sse_encode_bool(self.supportsOriginal, serializer);
+    sse_encode_bool(self.supportsAuthenticatedMedia, serializer);
+    sse_encode_bool(self.supportsBackgroundDownload, serializer);
+  }
+
+  @protected
+  void sse_encode_source_credentials_dto(
+    SourceCredentialsDto self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.username, serializer);
+    sse_encode_opt_String(self.userId, serializer);
+    sse_encode_opt_String(self.apiKey, serializer);
+  }
+
+  @protected
+  void sse_encode_tag_category(TagCategory self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_tag_suggestion_dto(
+    TagSuggestionDto self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.value, serializer);
+    sse_encode_String(self.label, serializer);
+    sse_encode_tag_category(self.category, serializer);
+    sse_encode_opt_String(self.postCountDecimal, serializer);
+  }
+
+  @protected
+  void sse_encode_u_16(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putUint16(self);
   }
 
   @protected
@@ -1247,42 +3646,137 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_i_32(int self, SseSerializer serializer) {
+  void sse_encode_web_cookie_dto(WebCookieDto self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putInt32(self);
+    sse_encode_String(self.name, serializer);
+    sse_encode_String(self.value, serializer);
+    sse_encode_String(self.domain, serializer);
+    sse_encode_String(self.path, serializer);
+    sse_encode_bool(self.secure, serializer);
+    sse_encode_opt_String(self.expiresAtIso8601, serializer);
   }
 }
 
 @sealed
-class YandeClientImpl extends RustOpaque implements YandeClient {
+class BooruEngineImpl extends RustOpaque implements BooruEngine {
   // Not to be used by end users
-  YandeClientImpl.frbInternalDcoDecode(List<dynamic> wire)
+  BooruEngineImpl.frbInternalDcoDecode(List<dynamic> wire)
     : super.frbInternalDcoDecode(wire, _kStaticData);
 
   // Not to be used by end users
-  YandeClientImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative)
+  BooruEngineImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative)
     : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
 
   static final _kStaticData = RustArcStaticData(
     rustArcIncrementStrongCount:
-        RustLib.instance.api.rust_arc_increment_strong_count_YandeClient,
+        RustLib.instance.api.rust_arc_increment_strong_count_BooruEngine,
     rustArcDecrementStrongCount:
-        RustLib.instance.api.rust_arc_decrement_strong_count_YandeClient,
+        RustLib.instance.api.rust_arc_decrement_strong_count_BooruEngine,
     rustArcDecrementStrongCountPtr:
-        RustLib.instance.api.rust_arc_decrement_strong_count_YandeClientPtr,
+        RustLib.instance.api.rust_arc_decrement_strong_count_BooruEnginePtr,
   );
 
-  Future<List<Post>> getPosts({
-    required List<String> tags,
-    required int limit,
-    required int page,
-  }) => RustLib.instance.api.crateApiYandeClientYandeClientGetPosts(
+  Future<AuthSchemaDto> authSchema({required String sourceId}) => RustLib
+      .instance
+      .api
+      .crateApiBooruEngineBooruEngineAuthSchema(that: this, sourceId: sourceId);
+
+  Future<AuthStateDto> authState({required String sourceId}) => RustLib
+      .instance
+      .api
+      .crateApiBooruEngineBooruEngineAuthState(that: this, sourceId: sourceId);
+
+  Future<List<TagSuggestionDto>> autocomplete({
+    required String sourceId,
+    required String text,
+  }) => RustLib.instance.api.crateApiBooruEngineBooruEngineAutocomplete(
     that: this,
-    tags: tags,
-    limit: limit,
-    page: page,
+    sourceId: sourceId,
+    text: text,
   );
 
-  Future<Similar> getSimilar({required int postId}) => RustLib.instance.api
-      .crateApiYandeClientYandeClientGetSimilar(that: this, postId: postId);
+  Future<void> clearAuth({required String sourceId}) => RustLib.instance.api
+      .crateApiBooruEngineBooruEngineClearAuth(that: this, sourceId: sourceId);
+
+  Future<BooruPostDto> getPost({
+    required String sourceId,
+    required String postId,
+  }) => RustLib.instance.api.crateApiBooruEngineBooruEngineGetPost(
+    that: this,
+    sourceId: sourceId,
+    postId: postId,
+  );
+
+  Future<RouteCacheStateDto> initializeRouteCache() => RustLib.instance.api
+      .crateApiBooruEngineBooruEngineInitializeRouteCache(that: this);
+
+  Future<List<BooruSourceDto>> listSources() => RustLib.instance.api
+      .crateApiBooruEngineBooruEngineListSources(that: this);
+
+  Future<PreparedDownloadDto> prepareDownload({
+    required String sourceId,
+    required String postId,
+    required MediaVariantKind variant,
+  }) => RustLib.instance.api.crateApiBooruEngineBooruEnginePrepareDownload(
+    that: this,
+    sourceId: sourceId,
+    postId: postId,
+    variant: variant,
+  );
+
+  Future<MediaRequestDto> prepareMedia({
+    required String sourceId,
+    required String postId,
+    required MediaVariantKind variant,
+  }) => RustLib.instance.api.crateApiBooruEngineBooruEnginePrepareMedia(
+    that: this,
+    sourceId: sourceId,
+    postId: postId,
+    variant: variant,
+  );
+
+  Future<RouteCacheStateDto> refreshRouteCache() => RustLib.instance.api
+      .crateApiBooruEngineBooruEngineRefreshRouteCache(that: this);
+
+  Future<List<BooruPostDto>> relatedPosts({
+    required String sourceId,
+    required String postId,
+  }) => RustLib.instance.api.crateApiBooruEngineBooruEngineRelatedPosts(
+    that: this,
+    sourceId: sourceId,
+    postId: postId,
+  );
+
+  Future<RouteCacheStateDto> routeCacheState() => RustLib.instance.api
+      .crateApiBooruEngineBooruEngineRouteCacheState(that: this);
+
+  Future<PostPageDto> search({required SearchRequestDto request}) => RustLib
+      .instance
+      .api
+      .crateApiBooruEngineBooruEngineSearch(that: this, request: request);
+
+  Future<AuthStateDto> setCredentials({
+    required String sourceId,
+    required SourceCredentialsDto credentials,
+  }) => RustLib.instance.api.crateApiBooruEngineBooruEngineSetCredentials(
+    that: this,
+    sourceId: sourceId,
+    credentials: credentials,
+  );
+
+  Future<AuthStateDto> setWebSession({
+    required String sourceId,
+    required List<WebCookieDto> cookies,
+    required String userAgent,
+  }) => RustLib.instance.api.crateApiBooruEngineBooruEngineSetWebSession(
+    that: this,
+    sourceId: sourceId,
+    cookies: cookies,
+    userAgent: userAgent,
+  );
+
+  Future<AuthStateDto> verifyAuth({required String sourceId}) => RustLib
+      .instance
+      .api
+      .crateApiBooruEngineBooruEngineVerifyAuth(that: this, sourceId: sourceId);
 }

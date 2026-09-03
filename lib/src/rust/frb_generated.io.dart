@@ -3,16 +3,17 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
-import 'api/download.dart';
+import 'api/booru_auth.dart';
+import 'api/booru_download.dart';
+import 'api/booru_engine.dart';
+import 'api/booru_models.dart';
 import 'api/rustc.dart';
-import 'api/yande_client.dart';
+import 'booru/error.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi' as ffi;
 import 'frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_io.dart';
-import 'yande/model/post.dart';
-import 'yande/model/similar.dart';
 
 abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   RustLibApiImplPlatform({
@@ -23,90 +24,239 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   });
 
   CrossPlatformFinalizerArg
-  get rust_arc_decrement_strong_count_YandeClientPtr => wire
-      ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClientPtr;
+  get rust_arc_decrement_strong_count_BooruEnginePtr => wire
+      ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEnginePtr;
 
   @protected
-  AnyhowException dco_decode_AnyhowException(dynamic raw);
-
-  @protected
-  YandeClient
-  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
+  BooruEngine
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     dynamic raw,
   );
 
   @protected
-  YandeClient
-  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
+  BooruEngine
+  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     dynamic raw,
   );
 
   @protected
-  int dco_decode_CastedPrimitive_i_64(dynamic raw);
-
-  @protected
-  Map<String, String> dco_decode_Map_String_String_None(dynamic raw);
-
-  @protected
-  YandeClient
-  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
+  BooruEngine
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     dynamic raw,
   );
-
-  @protected
-  RustStreamSink<FrbDownloadFileEvent>
-  dco_decode_StreamSink_frb_download_file_event_Sse(dynamic raw);
 
   @protected
   String dco_decode_String(dynamic raw);
 
   @protected
-  StringArray3 dco_decode_String_array_3(dynamic raw);
+  AuthFieldDto dco_decode_auth_field_dto(dynamic raw);
+
+  @protected
+  AuthFieldKind dco_decode_auth_field_kind(dynamic raw);
+
+  @protected
+  AuthKind dco_decode_auth_kind(dynamic raw);
+
+  @protected
+  AuthSchemaDto dco_decode_auth_schema_dto(dynamic raw);
+
+  @protected
+  AuthStateDto dco_decode_auth_state_dto(dynamic raw);
+
+  @protected
+  AuthStatus dco_decode_auth_status(dynamic raw);
 
   @protected
   bool dco_decode_bool(dynamic raw);
 
   @protected
+  BooruEngineConfigDto dco_decode_booru_engine_config_dto(dynamic raw);
+
+  @protected
+  BooruErrorCode dco_decode_booru_error_code(dynamic raw);
+
+  @protected
+  BooruErrorDto dco_decode_booru_error_dto(dynamic raw);
+
+  @protected
+  BooruPostDto dco_decode_booru_post_dto(dynamic raw);
+
+  @protected
+  BooruProtocol dco_decode_booru_protocol(dynamic raw);
+
+  @protected
+  BooruSourceDto dco_decode_booru_source_dto(dynamic raw);
+
+  @protected
+  BooruTagDto dco_decode_booru_tag_dto(dynamic raw);
+
+  @protected
+  BooruEngineConfigDto dco_decode_box_autoadd_booru_engine_config_dto(
+    dynamic raw,
+  );
+
+  @protected
+  ChecksumDto dco_decode_box_autoadd_checksum_dto(dynamic raw);
+
+  @protected
+  int dco_decode_box_autoadd_i_32(dynamic raw);
+
+  @protected
+  MediaType dco_decode_box_autoadd_media_type(dynamic raw);
+
+  @protected
+  RecoveryAction dco_decode_box_autoadd_recovery_action(dynamic raw);
+
+  @protected
+  RouteProvider dco_decode_box_autoadd_route_provider(dynamic raw);
+
+  @protected
+  SearchRequestDto dco_decode_box_autoadd_search_request_dto(dynamic raw);
+
+  @protected
+  SourceCredentialsDto dco_decode_box_autoadd_source_credentials_dto(
+    dynamic raw,
+  );
+
+  @protected
   int dco_decode_box_autoadd_u_32(dynamic raw);
 
   @protected
-  FrbDownloadFileEvent dco_decode_frb_download_file_event(dynamic raw);
+  ChecksumAlgorithm dco_decode_checksum_algorithm(dynamic raw);
 
   @protected
-  PlatformInt64 dco_decode_i_64(dynamic raw);
+  ChecksumDto dco_decode_checksum_dto(dynamic raw);
+
+  @protected
+  ContentPolicy dco_decode_content_policy(dynamic raw);
+
+  @protected
+  ContentRating dco_decode_content_rating(dynamic raw);
+
+  @protected
+  HttpHeaderDto dco_decode_http_header_dto(dynamic raw);
+
+  @protected
+  int dco_decode_i_32(dynamic raw);
 
   @protected
   List<String> dco_decode_list_String(dynamic raw);
 
   @protected
-  List<Post> dco_decode_list_post(dynamic raw);
+  List<AuthFieldDto> dco_decode_list_auth_field_dto(dynamic raw);
+
+  @protected
+  List<BooruPostDto> dco_decode_list_booru_post_dto(dynamic raw);
+
+  @protected
+  List<BooruSourceDto> dco_decode_list_booru_source_dto(dynamic raw);
+
+  @protected
+  List<BooruTagDto> dco_decode_list_booru_tag_dto(dynamic raw);
+
+  @protected
+  List<ContentRating> dco_decode_list_content_rating(dynamic raw);
+
+  @protected
+  List<HttpHeaderDto> dco_decode_list_http_header_dto(dynamic raw);
+
+  @protected
+  List<MediaKind> dco_decode_list_media_kind(dynamic raw);
+
+  @protected
+  List<MediaVariantDto> dco_decode_list_media_variant_dto(dynamic raw);
+
+  @protected
+  List<PersistedHostRouteDto> dco_decode_list_persisted_host_route_dto(
+    dynamic raw,
+  );
 
   @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
-  List<(String, String)> dco_decode_list_record_string_string(dynamic raw);
+  List<TagSuggestionDto> dco_decode_list_tag_suggestion_dto(dynamic raw);
 
   @protected
-  int? dco_decode_opt_CastedPrimitive_i_64(dynamic raw);
+  List<WebCookieDto> dco_decode_list_web_cookie_dto(dynamic raw);
+
+  @protected
+  MediaKind dco_decode_media_kind(dynamic raw);
+
+  @protected
+  MediaRequestDto dco_decode_media_request_dto(dynamic raw);
+
+  @protected
+  MediaType dco_decode_media_type(dynamic raw);
+
+  @protected
+  MediaVariantDto dco_decode_media_variant_dto(dynamic raw);
+
+  @protected
+  MediaVariantKind dco_decode_media_variant_kind(dynamic raw);
+
+  @protected
+  NetworkFallbackMode dco_decode_network_fallback_mode(dynamic raw);
 
   @protected
   String? dco_decode_opt_String(dynamic raw);
 
   @protected
-  StringArray3? dco_decode_opt_String_array_3(dynamic raw);
+  ChecksumDto? dco_decode_opt_box_autoadd_checksum_dto(dynamic raw);
+
+  @protected
+  int? dco_decode_opt_box_autoadd_i_32(dynamic raw);
+
+  @protected
+  MediaType? dco_decode_opt_box_autoadd_media_type(dynamic raw);
+
+  @protected
+  RecoveryAction? dco_decode_opt_box_autoadd_recovery_action(dynamic raw);
+
+  @protected
+  RouteProvider? dco_decode_opt_box_autoadd_route_provider(dynamic raw);
 
   @protected
   int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
 
   @protected
-  Post dco_decode_post(dynamic raw);
+  PersistedHostRouteDto dco_decode_persisted_host_route_dto(dynamic raw);
 
   @protected
-  (String, String) dco_decode_record_string_string(dynamic raw);
+  PostFlagsDto dco_decode_post_flags_dto(dynamic raw);
 
   @protected
-  Similar dco_decode_similar(dynamic raw);
+  PostPageDto dco_decode_post_page_dto(dynamic raw);
+
+  @protected
+  PreparedDownloadDto dco_decode_prepared_download_dto(dynamic raw);
+
+  @protected
+  RecoveryAction dco_decode_recovery_action(dynamic raw);
+
+  @protected
+  RouteCacheStateDto dco_decode_route_cache_state_dto(dynamic raw);
+
+  @protected
+  RouteProvider dco_decode_route_provider(dynamic raw);
+
+  @protected
+  SearchRequestDto dco_decode_search_request_dto(dynamic raw);
+
+  @protected
+  SourceCapabilitiesDto dco_decode_source_capabilities_dto(dynamic raw);
+
+  @protected
+  SourceCredentialsDto dco_decode_source_credentials_dto(dynamic raw);
+
+  @protected
+  TagCategory dco_decode_tag_category(dynamic raw);
+
+  @protected
+  TagSuggestionDto dco_decode_tag_suggestion_dto(dynamic raw);
+
+  @protected
+  int dco_decode_u_16(dynamic raw);
 
   @protected
   int dco_decode_u_32(dynamic raw);
@@ -121,37 +271,23 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   BigInt dco_decode_usize(dynamic raw);
 
   @protected
-  AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
+  WebCookieDto dco_decode_web_cookie_dto(dynamic raw);
 
   @protected
-  YandeClient
-  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
+  BooruEngine
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     SseDeserializer deserializer,
   );
 
   @protected
-  YandeClient
-  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
+  BooruEngine
+  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     SseDeserializer deserializer,
   );
 
   @protected
-  int sse_decode_CastedPrimitive_i_64(SseDeserializer deserializer);
-
-  @protected
-  Map<String, String> sse_decode_Map_String_String_None(
-    SseDeserializer deserializer,
-  );
-
-  @protected
-  YandeClient
-  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
-    SseDeserializer deserializer,
-  );
-
-  @protected
-  RustStreamSink<FrbDownloadFileEvent>
-  sse_decode_StreamSink_frb_download_file_event_Sse(
+  BooruEngine
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     SseDeserializer deserializer,
   );
 
@@ -159,58 +295,258 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
-  StringArray3 sse_decode_String_array_3(SseDeserializer deserializer);
+  AuthFieldDto sse_decode_auth_field_dto(SseDeserializer deserializer);
+
+  @protected
+  AuthFieldKind sse_decode_auth_field_kind(SseDeserializer deserializer);
+
+  @protected
+  AuthKind sse_decode_auth_kind(SseDeserializer deserializer);
+
+  @protected
+  AuthSchemaDto sse_decode_auth_schema_dto(SseDeserializer deserializer);
+
+  @protected
+  AuthStateDto sse_decode_auth_state_dto(SseDeserializer deserializer);
+
+  @protected
+  AuthStatus sse_decode_auth_status(SseDeserializer deserializer);
 
   @protected
   bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
-  int sse_decode_box_autoadd_u_32(SseDeserializer deserializer);
-
-  @protected
-  FrbDownloadFileEvent sse_decode_frb_download_file_event(
+  BooruEngineConfigDto sse_decode_booru_engine_config_dto(
     SseDeserializer deserializer,
   );
 
   @protected
-  PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
+  BooruErrorCode sse_decode_booru_error_code(SseDeserializer deserializer);
+
+  @protected
+  BooruErrorDto sse_decode_booru_error_dto(SseDeserializer deserializer);
+
+  @protected
+  BooruPostDto sse_decode_booru_post_dto(SseDeserializer deserializer);
+
+  @protected
+  BooruProtocol sse_decode_booru_protocol(SseDeserializer deserializer);
+
+  @protected
+  BooruSourceDto sse_decode_booru_source_dto(SseDeserializer deserializer);
+
+  @protected
+  BooruTagDto sse_decode_booru_tag_dto(SseDeserializer deserializer);
+
+  @protected
+  BooruEngineConfigDto sse_decode_box_autoadd_booru_engine_config_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ChecksumDto sse_decode_box_autoadd_checksum_dto(SseDeserializer deserializer);
+
+  @protected
+  int sse_decode_box_autoadd_i_32(SseDeserializer deserializer);
+
+  @protected
+  MediaType sse_decode_box_autoadd_media_type(SseDeserializer deserializer);
+
+  @protected
+  RecoveryAction sse_decode_box_autoadd_recovery_action(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  RouteProvider sse_decode_box_autoadd_route_provider(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SearchRequestDto sse_decode_box_autoadd_search_request_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SourceCredentialsDto sse_decode_box_autoadd_source_credentials_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  int sse_decode_box_autoadd_u_32(SseDeserializer deserializer);
+
+  @protected
+  ChecksumAlgorithm sse_decode_checksum_algorithm(SseDeserializer deserializer);
+
+  @protected
+  ChecksumDto sse_decode_checksum_dto(SseDeserializer deserializer);
+
+  @protected
+  ContentPolicy sse_decode_content_policy(SseDeserializer deserializer);
+
+  @protected
+  ContentRating sse_decode_content_rating(SseDeserializer deserializer);
+
+  @protected
+  HttpHeaderDto sse_decode_http_header_dto(SseDeserializer deserializer);
+
+  @protected
+  int sse_decode_i_32(SseDeserializer deserializer);
 
   @protected
   List<String> sse_decode_list_String(SseDeserializer deserializer);
 
   @protected
-  List<Post> sse_decode_list_post(SseDeserializer deserializer);
+  List<AuthFieldDto> sse_decode_list_auth_field_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<BooruPostDto> sse_decode_list_booru_post_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<BooruSourceDto> sse_decode_list_booru_source_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<BooruTagDto> sse_decode_list_booru_tag_dto(SseDeserializer deserializer);
+
+  @protected
+  List<ContentRating> sse_decode_list_content_rating(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<HttpHeaderDto> sse_decode_list_http_header_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<MediaKind> sse_decode_list_media_kind(SseDeserializer deserializer);
+
+  @protected
+  List<MediaVariantDto> sse_decode_list_media_variant_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<PersistedHostRouteDto> sse_decode_list_persisted_host_route_dto(
+    SseDeserializer deserializer,
+  );
 
   @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
   @protected
-  List<(String, String)> sse_decode_list_record_string_string(
+  List<TagSuggestionDto> sse_decode_list_tag_suggestion_dto(
     SseDeserializer deserializer,
   );
 
   @protected
-  int? sse_decode_opt_CastedPrimitive_i_64(SseDeserializer deserializer);
+  List<WebCookieDto> sse_decode_list_web_cookie_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MediaKind sse_decode_media_kind(SseDeserializer deserializer);
+
+  @protected
+  MediaRequestDto sse_decode_media_request_dto(SseDeserializer deserializer);
+
+  @protected
+  MediaType sse_decode_media_type(SseDeserializer deserializer);
+
+  @protected
+  MediaVariantDto sse_decode_media_variant_dto(SseDeserializer deserializer);
+
+  @protected
+  MediaVariantKind sse_decode_media_variant_kind(SseDeserializer deserializer);
+
+  @protected
+  NetworkFallbackMode sse_decode_network_fallback_mode(
+    SseDeserializer deserializer,
+  );
 
   @protected
   String? sse_decode_opt_String(SseDeserializer deserializer);
 
   @protected
-  StringArray3? sse_decode_opt_String_array_3(SseDeserializer deserializer);
+  ChecksumDto? sse_decode_opt_box_autoadd_checksum_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  int? sse_decode_opt_box_autoadd_i_32(SseDeserializer deserializer);
+
+  @protected
+  MediaType? sse_decode_opt_box_autoadd_media_type(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  RecoveryAction? sse_decode_opt_box_autoadd_recovery_action(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  RouteProvider? sse_decode_opt_box_autoadd_route_provider(
+    SseDeserializer deserializer,
+  );
 
   @protected
   int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
-  Post sse_decode_post(SseDeserializer deserializer);
-
-  @protected
-  (String, String) sse_decode_record_string_string(
+  PersistedHostRouteDto sse_decode_persisted_host_route_dto(
     SseDeserializer deserializer,
   );
 
   @protected
-  Similar sse_decode_similar(SseDeserializer deserializer);
+  PostFlagsDto sse_decode_post_flags_dto(SseDeserializer deserializer);
+
+  @protected
+  PostPageDto sse_decode_post_page_dto(SseDeserializer deserializer);
+
+  @protected
+  PreparedDownloadDto sse_decode_prepared_download_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  RecoveryAction sse_decode_recovery_action(SseDeserializer deserializer);
+
+  @protected
+  RouteCacheStateDto sse_decode_route_cache_state_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  RouteProvider sse_decode_route_provider(SseDeserializer deserializer);
+
+  @protected
+  SearchRequestDto sse_decode_search_request_dto(SseDeserializer deserializer);
+
+  @protected
+  SourceCapabilitiesDto sse_decode_source_capabilities_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SourceCredentialsDto sse_decode_source_credentials_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  TagCategory sse_decode_tag_category(SseDeserializer deserializer);
+
+  @protected
+  TagSuggestionDto sse_decode_tag_suggestion_dto(SseDeserializer deserializer);
+
+  @protected
+  int sse_decode_u_16(SseDeserializer deserializer);
 
   @protected
   int sse_decode_u_32(SseDeserializer deserializer);
@@ -225,47 +561,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   BigInt sse_decode_usize(SseDeserializer deserializer);
 
   @protected
-  int sse_decode_i_32(SseDeserializer deserializer);
+  WebCookieDto sse_decode_web_cookie_dto(SseDeserializer deserializer);
 
   @protected
-  void sse_encode_AnyhowException(
-    AnyhowException self,
+  void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+    BooruEngine self,
     SseSerializer serializer,
   );
 
   @protected
   void
-  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
-    YandeClient self,
+  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+    BooruEngine self,
     SseSerializer serializer,
   );
 
   @protected
   void
-  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
-    YandeClient self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_CastedPrimitive_i_64(int self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_Map_String_String_None(
-    Map<String, String> self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void
-  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
-    YandeClient self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_StreamSink_frb_download_file_event_Sse(
-    RustStreamSink<FrbDownloadFileEvent> self,
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+    BooruEngine self,
     SseSerializer serializer,
   );
 
@@ -273,28 +588,181 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
-  void sse_encode_String_array_3(StringArray3 self, SseSerializer serializer);
+  void sse_encode_auth_field_dto(AuthFieldDto self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_auth_field_kind(AuthFieldKind self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_auth_kind(AuthKind self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_auth_schema_dto(AuthSchemaDto self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_auth_state_dto(AuthStateDto self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_auth_status(AuthStatus self, SseSerializer serializer);
 
   @protected
   void sse_encode_bool(bool self, SseSerializer serializer);
 
   @protected
-  void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_frb_download_file_event(
-    FrbDownloadFileEvent self,
+  void sse_encode_booru_engine_config_dto(
+    BooruEngineConfigDto self,
     SseSerializer serializer,
   );
 
   @protected
-  void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
+  void sse_encode_booru_error_code(
+    BooruErrorCode self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_booru_error_dto(BooruErrorDto self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_booru_post_dto(BooruPostDto self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_booru_protocol(BooruProtocol self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_booru_source_dto(
+    BooruSourceDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_booru_tag_dto(BooruTagDto self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_booru_engine_config_dto(
+    BooruEngineConfigDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_checksum_dto(
+    ChecksumDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_i_32(int self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_media_type(
+    MediaType self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_recovery_action(
+    RecoveryAction self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_route_provider(
+    RouteProvider self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_search_request_dto(
+    SearchRequestDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_source_credentials_dto(
+    SourceCredentialsDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_checksum_algorithm(
+    ChecksumAlgorithm self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_checksum_dto(ChecksumDto self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_content_policy(ContentPolicy self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_content_rating(ContentRating self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_http_header_dto(HttpHeaderDto self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_i_32(int self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_String(List<String> self, SseSerializer serializer);
 
   @protected
-  void sse_encode_list_post(List<Post> self, SseSerializer serializer);
+  void sse_encode_list_auth_field_dto(
+    List<AuthFieldDto> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_booru_post_dto(
+    List<BooruPostDto> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_booru_source_dto(
+    List<BooruSourceDto> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_booru_tag_dto(
+    List<BooruTagDto> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_content_rating(
+    List<ContentRating> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_http_header_dto(
+    List<HttpHeaderDto> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_media_kind(
+    List<MediaKind> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_media_variant_dto(
+    List<MediaVariantDto> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_persisted_host_route_dto(
+    List<PersistedHostRouteDto> self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_list_prim_u_8_strict(
@@ -303,20 +771,74 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_list_record_string_string(
-    List<(String, String)> self,
+  void sse_encode_list_tag_suggestion_dto(
+    List<TagSuggestionDto> self,
     SseSerializer serializer,
   );
 
   @protected
-  void sse_encode_opt_CastedPrimitive_i_64(int? self, SseSerializer serializer);
+  void sse_encode_list_web_cookie_dto(
+    List<WebCookieDto> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_media_kind(MediaKind self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_media_request_dto(
+    MediaRequestDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_media_type(MediaType self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_media_variant_dto(
+    MediaVariantDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_media_variant_kind(
+    MediaVariantKind self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_network_fallback_mode(
+    NetworkFallbackMode self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_opt_String(String? self, SseSerializer serializer);
 
   @protected
-  void sse_encode_opt_String_array_3(
-    StringArray3? self,
+  void sse_encode_opt_box_autoadd_checksum_dto(
+    ChecksumDto? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_i_32(int? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_media_type(
+    MediaType? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_recovery_action(
+    RecoveryAction? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_route_provider(
+    RouteProvider? self,
     SseSerializer serializer,
   );
 
@@ -324,16 +846,67 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);
 
   @protected
-  void sse_encode_post(Post self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_record_string_string(
-    (String, String) self,
+  void sse_encode_persisted_host_route_dto(
+    PersistedHostRouteDto self,
     SseSerializer serializer,
   );
 
   @protected
-  void sse_encode_similar(Similar self, SseSerializer serializer);
+  void sse_encode_post_flags_dto(PostFlagsDto self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_post_page_dto(PostPageDto self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_prepared_download_dto(
+    PreparedDownloadDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_recovery_action(
+    RecoveryAction self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_route_cache_state_dto(
+    RouteCacheStateDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_route_provider(RouteProvider self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_search_request_dto(
+    SearchRequestDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_source_capabilities_dto(
+    SourceCapabilitiesDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_source_credentials_dto(
+    SourceCredentialsDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_tag_category(TagCategory self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_tag_suggestion_dto(
+    TagSuggestionDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_u_16(int self, SseSerializer serializer);
 
   @protected
   void sse_encode_u_32(int self, SseSerializer serializer);
@@ -348,7 +921,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_usize(BigInt self, SseSerializer serializer);
 
   @protected
-  void sse_encode_i_32(int self, SseSerializer serializer);
+  void sse_encode_web_cookie_dto(WebCookieDto self, SseSerializer serializer);
 }
 
 // Section: wire_class
@@ -366,36 +939,36 @@ class RustLibWire implements BaseWire {
     : _lookup = dynamicLibrary.lookup;
 
   void
-  rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
+  rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     ffi.Pointer<ffi.Void> ptr,
   ) {
-    return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
+    return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
       ptr,
     );
   }
 
-  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClientPtr =
+  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEnginePtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
-        'frbgen_yande_gui_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient',
+        'frbgen_yande_gui_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine',
       );
-  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient =
-      _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClientPtr
+  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine =
+      _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEnginePtr
           .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
   void
-  rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
+  rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     ffi.Pointer<ffi.Void> ptr,
   ) {
-    return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient(
+    return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
       ptr,
     );
   }
 
-  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClientPtr =
+  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEnginePtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
-        'frbgen_yande_gui_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient',
+        'frbgen_yande_gui_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine',
       );
-  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClient =
-      _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerYandeClientPtr
+  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine =
+      _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEnginePtr
           .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 }
