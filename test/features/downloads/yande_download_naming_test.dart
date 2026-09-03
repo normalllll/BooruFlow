@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yande_gui/features/downloads/domain/yande_download_naming.dart';
+import 'package:yande_gui/features/downloads/yande_download_naming.dart';
 
 void main() {
   test('filename is readable and always contains the post id', () {

@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:yande_gui/core/downloads/download_models.dart';
-import 'package:yande_gui/services/settings_service.dart';
+import 'package:yande_gui/core/settings_service.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
