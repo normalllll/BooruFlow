@@ -42,9 +42,6 @@ postList:
   short: 投稿
   title: 投稿リスト
   titleWithTags: "タグ付き投稿: $tags"
-  freepivPromotionTitle: freepiv をチェック
-  freepivPromotionSubtitle: モダンで快適なクロスプラットフォーム対応の Pixiv 非公式クライアントです。
-  freepivPromotionAction: プロジェクトを見る
 
 postDetail:
   titleWithId: "投稿: $id"
@@ -125,8 +122,8 @@ about:
   projectUrl: プロジェクトURL
   publishPage: 公開ページ
   appVersion: アプリバージョン
-  dartVersion: Dartバージョン
-  rustVersion: Rustバージョン
+  freepivPromotionTitle: freepiv をチェック
+  freepivPromotionSubtitle: モダンで快適なクロスプラットフォーム対応の Pixiv 非公式クライアントです。
   discussion: 議論
   downloadUpdate: アップデートをダウンロード
   downloadUpdateHint: お使いのデバイス用に最新バージョンをブラウザでダウンロードしてください。

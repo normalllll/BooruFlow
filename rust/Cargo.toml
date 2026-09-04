@@ -2,15 +2,10 @@
 name = "core"
 version = "0.1.0"
 edition = "2021"
-build = "build.rs"
 
 [lib]
 name = "core"
 crate-type = ["cdylib", "staticlib"]
-
-[build-dependencies]
-rustc_version = "0.4"
-
 
 [dependencies]
 flutter_rust_bridge = "=2.13.0"

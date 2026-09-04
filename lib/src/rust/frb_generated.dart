@@ -7,7 +7,6 @@ import 'api/booru_auth.dart';
 import 'api/booru_download.dart';
 import 'api/booru_engine.dart';
 import 'api/booru_models.dart';
-import 'api/rustc.dart';
 import 'booru/error.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -69,7 +68,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => 2134417903;
+  int get rustContentHash => 925649019;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -217,8 +216,6 @@ abstract class RustLibApi extends BaseApi {
     required String sourceId,
     required String postId,
   });
-
-  String crateApiRustcRustcVersion();
 
   Future<SourceCredentialsDto> crateApiBooruAuthSourceCredentialsDtoDefault();
 
@@ -1361,28 +1358,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
-  String crateApiRustcRustcVersion() {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 32)!;
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiRustcRustcVersionConstMeta,
-        argValues: [],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiRustcRustcVersionConstMeta =>
-      const TaskConstMeta(debugName: "rustc_version", argNames: []);
-
-  @override
   Future<SourceCredentialsDto> crateApiBooruAuthSourceCredentialsDtoDefault() {
     return handler.executeNormal(
       NormalTask(
@@ -1391,7 +1366,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 33,
+            funcId: 32,
             port: port_,
           );
         },
@@ -1421,7 +1396,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 34,
+            funcId: 33,
             port: port_,
           );
         },

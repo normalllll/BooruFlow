@@ -7,7 +7,6 @@ import 'api/booru_auth.dart';
 import 'api/booru_download.dart';
 import 'api/booru_engine.dart';
 import 'api/booru_models.dart';
-import 'api/rustc.dart';
 import 'booru/error.dart';
 import 'dart:async';
 import 'dart:convert';

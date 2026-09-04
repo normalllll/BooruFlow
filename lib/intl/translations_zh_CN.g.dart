@@ -177,12 +177,6 @@ class Translations$postList$zh_CN extends Translations$postList$en {
   String get title => '帖子列表';
   @override
   String titleWithTags({required Object tags}) => '带有标签的帖子: ${tags}';
-  @override
-  String get freepivPromotionTitle => '试试 freepiv';
-  @override
-  String get freepivPromotionSubtitle => '现代、流畅的跨平台 Pixiv 第三方客户端。';
-  @override
-  String get freepivPromotionAction => '查看项目';
 }
 
 // Path: postDetail
@@ -341,9 +335,9 @@ class Translations$about$zh_CN extends Translations$about$en {
   @override
   String get appVersion => '应用版本';
   @override
-  String get dartVersion => 'Dart 版本';
+  String get freepivPromotionTitle => '试试 freepiv';
   @override
-  String get rustVersion => 'Rust 版本';
+  String get freepivPromotionSubtitle => '现代、流畅的跨平台 Pixiv 第三方客户端。';
   @override
   String get discussion => '讨论';
   @override
@@ -765,9 +759,6 @@ extension on TranslationsZhCn {
       'postList.short' => '帖子',
       'postList.title' => '帖子列表',
       'postList.titleWithTags' => ({required Object tags}) => '带有标签的帖子: ${tags}',
-      'postList.freepivPromotionTitle' => '试试 freepiv',
-      'postList.freepivPromotionSubtitle' => '现代、流畅的跨平台 Pixiv 第三方客户端。',
-      'postList.freepivPromotionAction' => '查看项目',
       'postDetail.titleWithId' => ({required Object id}) => '帖子: ${id}',
       'postDetail.tags' => '标签',
       'postDetail.details' => '详细信息',
@@ -835,8 +826,8 @@ extension on TranslationsZhCn {
       'about.projectUrl' => '项目网址',
       'about.publishPage' => '发布页面',
       'about.appVersion' => '应用版本',
-      'about.dartVersion' => 'Dart 版本',
-      'about.rustVersion' => 'Rust 版本',
+      'about.freepivPromotionTitle' => '试试 freepiv',
+      'about.freepivPromotionSubtitle' => '现代、流畅的跨平台 Pixiv 第三方客户端。',
       'about.discussion' => '讨论',
       'about.downloadUpdate' => '下载更新',
       'about.downloadUpdateHint' => '通过浏览器下载适合你设备的最新版本。',

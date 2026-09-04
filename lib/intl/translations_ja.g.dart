@@ -178,12 +178,6 @@ class _Translations$postList$ja extends Translations$postList$en {
   String get title => '投稿リスト';
   @override
   String titleWithTags({required Object tags}) => 'タグ付き投稿: ${tags}';
-  @override
-  String get freepivPromotionTitle => 'freepiv をチェック';
-  @override
-  String get freepivPromotionSubtitle => 'モダンで快適なクロスプラットフォーム対応の Pixiv 非公式クライアントです。';
-  @override
-  String get freepivPromotionAction => 'プロジェクトを見る';
 }
 
 // Path: postDetail
@@ -342,9 +336,9 @@ class _Translations$about$ja extends Translations$about$en {
   @override
   String get appVersion => 'アプリバージョン';
   @override
-  String get dartVersion => 'Dartバージョン';
+  String get freepivPromotionTitle => 'freepiv をチェック';
   @override
-  String get rustVersion => 'Rustバージョン';
+  String get freepivPromotionSubtitle => 'モダンで快適なクロスプラットフォーム対応の Pixiv 非公式クライアントです。';
   @override
   String get discussion => '議論';
   @override
@@ -761,9 +755,6 @@ extension on TranslationsJa {
       'postList.short' => '投稿',
       'postList.title' => '投稿リスト',
       'postList.titleWithTags' => ({required Object tags}) => 'タグ付き投稿: ${tags}',
-      'postList.freepivPromotionTitle' => 'freepiv をチェック',
-      'postList.freepivPromotionSubtitle' => 'モダンで快適なクロスプラットフォーム対応の Pixiv 非公式クライアントです。',
-      'postList.freepivPromotionAction' => 'プロジェクトを見る',
       'postDetail.titleWithId' => ({required Object id}) => '投稿: ${id}',
       'postDetail.tags' => 'タグ',
       'postDetail.details' => '詳細',
@@ -831,8 +822,8 @@ extension on TranslationsJa {
       'about.projectUrl' => 'プロジェクトURL',
       'about.publishPage' => '公開ページ',
       'about.appVersion' => 'アプリバージョン',
-      'about.dartVersion' => 'Dartバージョン',
-      'about.rustVersion' => 'Rustバージョン',
+      'about.freepivPromotionTitle' => 'freepiv をチェック',
+      'about.freepivPromotionSubtitle' => 'モダンで快適なクロスプラットフォーム対応の Pixiv 非公式クライアントです。',
       'about.discussion' => '議論',
       'about.downloadUpdate' => 'アップデートをダウンロード',
       'about.downloadUpdateHint' => 'お使いのデバイス用に最新バージョンをブラウザでダウンロードしてください。',

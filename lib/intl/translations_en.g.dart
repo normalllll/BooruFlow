@@ -207,15 +207,6 @@ class Translations$postList$en {
 
   /// en: 'Posts with tags: $tags'
   String titleWithTags({required Object tags}) => 'Posts with tags: ${tags}';
-
-  /// en: 'Discover freepiv'
-  String get freepivPromotionTitle => 'Discover freepiv';
-
-  /// en: 'A modern, smooth, cross-platform third-party Pixiv client.'
-  String get freepivPromotionSubtitle => 'A modern, smooth, cross-platform third-party Pixiv client.';
-
-  /// en: 'View project'
-  String get freepivPromotionAction => 'View project';
 }
 
 // Path: postDetail
@@ -429,11 +420,11 @@ class Translations$about$en {
   /// en: 'App version'
   String get appVersion => 'App version';
 
-  /// en: 'Dart version'
-  String get dartVersion => 'Dart version';
+  /// en: 'Discover freepiv'
+  String get freepivPromotionTitle => 'Discover freepiv';
 
-  /// en: 'Rust version'
-  String get rustVersion => 'Rust version';
+  /// en: 'A modern, smooth, cross-platform third-party Pixiv client.'
+  String get freepivPromotionSubtitle => 'A modern, smooth, cross-platform third-party Pixiv client.';
 
   /// en: 'Discussion'
   String get discussion => 'Discussion';
@@ -933,9 +924,6 @@ extension on Translations {
       'postList.short' => 'Post',
       'postList.title' => 'Post List',
       'postList.titleWithTags' => ({required Object tags}) => 'Posts with tags: ${tags}',
-      'postList.freepivPromotionTitle' => 'Discover freepiv',
-      'postList.freepivPromotionSubtitle' => 'A modern, smooth, cross-platform third-party Pixiv client.',
-      'postList.freepivPromotionAction' => 'View project',
       'postDetail.titleWithId' => ({required Object id}) => 'Post: ${id}',
       'postDetail.tags' => 'Tags',
       'postDetail.details' => 'Details',
@@ -1005,8 +993,8 @@ extension on Translations {
       'about.projectUrl' => 'Project URL',
       'about.publishPage' => 'Publish page',
       'about.appVersion' => 'App version',
-      'about.dartVersion' => 'Dart version',
-      'about.rustVersion' => 'Rust version',
+      'about.freepivPromotionTitle' => 'Discover freepiv',
+      'about.freepivPromotionSubtitle' => 'A modern, smooth, cross-platform third-party Pixiv client.',
       'about.discussion' => 'Discussion',
       'about.downloadUpdate' => 'Download update',
       'about.downloadUpdateHint' => 'Download the latest version for your device via your browser.',

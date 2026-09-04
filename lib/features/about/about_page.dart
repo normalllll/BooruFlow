@@ -1,12 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:booruflow/core/app_runtime.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/features/update/updater_service.dart';
-import 'package:booruflow/src/rust/api/rustc.dart';
 import 'package:booruflow/shared/widgets/auto_scaffold.dart';
 import 'package:booruflow/shared/widgets/grouped_settings_list.dart';
 
@@ -98,16 +95,6 @@ class _AboutPageState extends State<AboutPage> {
                 leading: const Icon(Icons.tag_outlined),
                 subtitle: '${AppInfo.version}+${AppInfo.buildNumber}',
               ),
-              buildItem(
-                title: t.about.dartVersion,
-                leading: const Icon(Icons.verified_outlined),
-                subtitle: Platform.version,
-              ),
-              buildItem(
-                title: t.about.rustVersion,
-                leading: const Icon(Icons.verified_outlined),
-                subtitle: rustcVersion(),
-              ),
             ],
             [
               buildItem(
@@ -133,6 +120,27 @@ class _AboutPageState extends State<AboutPage> {
                 leading: const Icon(Icons.save_alt_outlined),
                 subtitle: t.about.downloadUpdateHint,
                 onTap: doUpdate,
+              ),
+            ],
+            [
+              buildItem(
+                title: t.about.freepivPromotionTitle,
+                leading: ClipRRect(
+                  borderRadius: BorderRadius.circular(5),
+                  child: Image.asset(
+                    'assets/images/freepiv-icon.png',
+                    width: 24,
+                    height: 24,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                subtitle: t.about.freepivPromotionSubtitle,
+                onTap: () {
+                  launchUrlString(
+                    'https://github.com/normalllll/freepiv',
+                    mode: LaunchMode.externalApplication,
+                  );
+                },
               ),
             ],
           ],

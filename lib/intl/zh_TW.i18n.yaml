@@ -42,9 +42,6 @@ postList:
   short: 帖子
   title: 帖子列表
   titleWithTags: "帶有標籤的帖子: $tags"
-  freepivPromotionTitle: 試試 freepiv
-  freepivPromotionSubtitle: 現代、流暢的跨平台 Pixiv 第三方用戶端。
-  freepivPromotionAction: 查看專案
 
 postDetail:
   titleWithId: "帖子: $id"
@@ -125,8 +122,8 @@ about:
   projectUrl: 專案網址
   publishPage: 發佈頁面
   appVersion: 應用程式版本
-  dartVersion: Dart 版本
-  rustVersion: Rust 版本
+  freepivPromotionTitle: 試試 freepiv
+  freepivPromotionSubtitle: 現代、流暢的跨平台 Pixiv 第三方用戶端。
   discussion: 討論
   downloadUpdate: 下載更新
   downloadUpdateHint: 透過瀏覽器下載適合您裝置的最新版本。

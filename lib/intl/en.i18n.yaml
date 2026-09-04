@@ -42,9 +42,6 @@ postList:
   short: Post
   title: Post List
   titleWithTags: "Posts with tags: $tags"
-  freepivPromotionTitle: Discover freepiv
-  freepivPromotionSubtitle: A modern, smooth, cross-platform third-party Pixiv client.
-  freepivPromotionAction: View project
 
 postDetail:
   titleWithId: "Post: $id"
@@ -125,8 +122,8 @@ about:
   projectUrl: Project URL
   publishPage: Publish page
   appVersion: App version
-  dartVersion: Dart version
-  rustVersion: Rust version
+  freepivPromotionTitle: Discover freepiv
+  freepivPromotionSubtitle: A modern, smooth, cross-platform third-party Pixiv client.
   discussion: Discussion
   downloadUpdate: Download update
   downloadUpdateHint: Download the latest version for your device via your browser.
