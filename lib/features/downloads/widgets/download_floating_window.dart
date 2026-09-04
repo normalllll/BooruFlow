@@ -11,6 +11,7 @@ import 'package:booruflow/features/downloads/booru_download_item.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/features/posts/models/post.dart';
+import 'package:booruflow/shared/widgets/interaction_controls.dart';
 
 class DownloadFloatingWindow extends StatefulWidget {
   const DownloadFloatingWindow({
@@ -673,12 +674,12 @@ class _DownloadPanelHeader extends StatelessWidget {
     final actions = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        IconButton(
+        AppIconButton(
           tooltip: t.downloads.sync,
           icon: const Icon(Icons.sync_outlined),
           onPressed: onSync,
         ),
-        IconButton(
+        AppIconButton(
           tooltip: t.downloads.collapse,
           icon: const Icon(Icons.close_outlined),
           onPressed: onClose,

@@ -17,6 +17,7 @@ import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/shared/app_theme.dart';
 import 'package:booruflow/shared/widgets/auto_scaffold.dart';
+import 'package:booruflow/shared/widgets/interaction_controls.dart';
 
 class PostDetailPage extends ConsumerStatefulWidget {
   const PostDetailPage({super.key, required this.post});
@@ -462,8 +463,8 @@ class _PostImagePage extends StatelessWidget {
       builder: (context, constraints) {
         final imageSize = _fitImage(
           post: post,
-          maxWidth: math.max(1.0, constraints.maxWidth - 32),
-          maxHeight: math.max(1.0, constraints.maxHeight - 32),
+          maxWidth: math.max(1.0, constraints.maxWidth),
+          maxHeight: math.max(1.0, constraints.maxHeight),
         );
 
         return GestureDetector(
@@ -573,13 +574,11 @@ class _RelatedLoadError extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 6),
-              TextButton(
+              AppButton(
+                label: t.generic.retry,
+                kind: AppButtonKind.ghost,
+                compact: true,
                 onPressed: onRetry,
-                style: const ButtonStyle(
-                  splashFactory: NoSplash.splashFactory,
-                  overlayColor: WidgetStatePropertyAll(Colors.transparent),
-                ),
-                child: Text(t.generic.retry),
               ),
             ],
           ),
@@ -796,23 +795,16 @@ class _ActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final downloadButton = FilledButton.icon(
+    final downloadButton = AppButton(
+      label: t.postDetail.download,
+      kind: AppButtonKind.primary,
       onPressed: onDownload,
-      style: const ButtonStyle(
-        splashFactory: NoSplash.splashFactory,
-        overlayColor: WidgetStatePropertyAll(Colors.transparent),
-      ),
-      icon: const Icon(Icons.download_outlined),
-      label: Text(t.postDetail.download),
+      icon: Icons.download_outlined,
     );
-    final openButton = OutlinedButton.icon(
+    final openButton = AppButton(
+      label: t.postDetail.viewOriginal,
       onPressed: onOpenImage,
-      style: const ButtonStyle(
-        splashFactory: NoSplash.splashFactory,
-        overlayColor: WidgetStatePropertyAll(Colors.transparent),
-      ),
-      icon: const Icon(Icons.zoom_out_map_outlined),
-      label: Text(t.postDetail.viewOriginal),
+      icon: Icons.zoom_out_map_outlined,
     );
 
     return LayoutBuilder(
@@ -930,7 +922,7 @@ class _MetadataRow extends StatelessWidget {
           ),
           if (onCopy != null) ...[
             const SizedBox(width: 4),
-            IconButton(
+            AppIconButton(
               visualDensity: VisualDensity.compact,
               constraints: const BoxConstraints.tightFor(width: 32, height: 32),
               padding: EdgeInsets.zero,

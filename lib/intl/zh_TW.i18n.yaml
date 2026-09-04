@@ -145,6 +145,70 @@ settings:
   system: 系統
   light: 淺色模式
   dark: 深色模式
+  auto: 自動
+  downloadsOverview: 僅桌面端 · 每個圖源使用獨立子目錄
+  sourceSubfolders: 圖源子目錄
+  sourceSubfoldersDescription: 下載內容會依照圖源名稱儲存在不同資料夾。
+
+  sections:
+    sourcesAndContent: 圖源與內容
+    accounts: 帳號
+    network: 網路
+    appearance: 外觀
+    downloads: 下載
+
+  source:
+    label: 圖源
+    contentPolicy: 內容策略
+    safetyRating: 安全評級
+    noHiddenDefault: 不預設隱藏
+    noHiddenDefaultDescription: 不選取任何評級時會顯示所有貼文，包括成人內容。
+    unfiltered: 不篩選
+    animeFocused: 動漫優先
+
+  account:
+    manageAllSubtitle: 分別設定每個圖源的帳號
+    openSignInPage: 開啟登入頁面
+    cookieHeader: Cookie 標頭
+    storedLocally: 僅儲存在此裝置
+    browserUserAgent: 瀏覽器 User-Agent
+    browserUserAgentHint: 使用與已登入瀏覽器相同的 User-Agent
+    required: 必填
+    optional: 選填
+    actions: 帳號操作
+    save: 儲存
+    verify: 驗證
+    signOut: 登出
+    saved: 帳號已儲存
+    saveFailed: 無法儲存帳號
+    verified: 帳號已驗證
+    verificationFailed: 驗證失敗
+    username: 使用者名稱
+    userId: 使用者 ID
+    apiKey: API 金鑰
+    statusValue: "狀態 · $status"
+    statuses:
+      notConfigured: 尚未設定
+      configuredUnverified: 已設定，尚未驗證
+      verified: 已驗證
+      rejected: 已被拒絕
+
+  network:
+    connectionMode: 連線模式
+    fallbackToSystemDns: 失敗時改用系統 DNS
+    proxyUrl: Proxy URL
+    proxyHint: 選填 · 例如 http://127.0.0.1:7890
+    applyAndRouteCache: 套用與路由快取
+    apply: 套用網路設定
+    refreshRoutes: 重新整理路由
+    routeCacheUnavailable: 無法取得路由快取
+    routeCacheStatus: "$hosts 個主機 · 修訂 $revision"
+    applied: 網路設定已套用
+    invalidSettings: 網路設定無效
+    routeRefreshFailed: 路由重新整理失敗
+    systemDns: 系統 DNS
+    sniBypass: 略過 SNI
+    legacyIpUrl: 舊版 IP URL
 
   languageDialog:
     title: 語言

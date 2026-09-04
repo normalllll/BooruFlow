@@ -12,14 +12,15 @@ class GroupedSettingsList extends StatelessWidget {
     final horizontalPadding = wideLayout ? 24.0 : 16.0;
     final topPadding = wideLayout ? 24.0 : 16.0;
 
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 760),
-        child: ListView.separated(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final contentInset =
+            (constraints.maxWidth - 760).clamp(0.0, double.infinity) / 2;
+        return ListView.separated(
           padding: EdgeInsets.fromLTRB(
-            horizontalPadding,
+            contentInset + horizontalPadding,
             topPadding,
-            horizontalPadding,
+            contentInset + horizontalPadding,
             28,
           ),
           itemCount: groups.length,
@@ -47,7 +48,8 @@ class GroupedSettingsList extends StatelessWidget {
                       items[index],
                       if (index < items.length - 1)
                         Divider(
-                          height: 1,
+                          height: 9,
+                          thickness: 1,
                           indent: 56,
                           endIndent: 16,
                           color: colorScheme.outlineVariant,
@@ -58,8 +60,8 @@ class GroupedSettingsList extends StatelessWidget {
               ),
             );
           },
-        ),
-      ),
+        );
+      },
     );
   }
 }

@@ -94,6 +94,21 @@ class AppRouter {
             ],
           ),
           GoRoute(
+            path: AppRoute.settingsSection.path,
+            name: AppRoute.settingsSection.name,
+            pageBuilder: (context, state) {
+              final section = SettingsSection.fromPath(
+                state.pathParameters['section'],
+              );
+              return _contentPage(
+                state,
+                section == null
+                    ? const _MissingRouteDataPage()
+                    : SettingsPage(section: section),
+              );
+            },
+          ),
+          GoRoute(
             path: AppRoute.taggedPosts.path,
             name: AppRoute.taggedPosts.name,
             pageBuilder: (context, state) {

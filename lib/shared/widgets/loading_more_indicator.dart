@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:loading_more_list/loading_more_list.dart';
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/widgets/interaction_controls.dart';
 
 class LoadingMoreIndicator extends StatelessWidget {
   final IndicatorStatus status;
@@ -190,10 +191,10 @@ class _ErrorContent extends StatelessWidget {
                   style: TextStyle(color: colorScheme.error),
                 ),
                 const SizedBox(height: 16),
-                OutlinedButton.icon(
+                AppButton(
+                  label: t.generic.retry,
                   onPressed: onRetry,
-                  icon: const Icon(Icons.refresh),
-                  label: Text(t.generic.retry),
+                  icon: Icons.refresh,
                 ),
               ],
             ),

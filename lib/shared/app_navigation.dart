@@ -8,6 +8,7 @@ enum AppRoute {
   search('/search'),
   about('/about'),
   settings('/settings'),
+  settingsSection('/settings/:section'),
   taggedPosts('/search/posts'),
   postDetail('/posts/:id'),
   imageViewer('/image-viewer');
@@ -66,11 +67,16 @@ int? appDestinationIndexForPath(String path) {
   for (var index = 0; index < appDestinations.length; index++) {
     if (appDestinations[index].route.path == path) return index;
   }
+  if (path.startsWith('${AppRoute.settings.path}/')) {
+    return appDestinations.indexWhere(
+      (destination) => destination.route == AppRoute.settings,
+    );
+  }
   return null;
 }
 
 bool isPrimaryNavigationPath(String path) {
-  return appDestinationIndexForPath(path) != null;
+  return appDestinations.any((destination) => destination.route.path == path);
 }
 
 class ImageViewerRouteArgs {

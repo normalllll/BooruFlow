@@ -145,6 +145,70 @@ settings:
   system: システム
   light: ライト
   dark: ダーク
+  auto: 自動
+  downloadsOverview: デスクトップのみ · ソースごとにサブフォルダーを作成
+  sourceSubfolders: ソース別サブフォルダー
+  sourceSubfoldersDescription: ダウンロードはソース名ごとの個別フォルダーに保存されます。
+
+  sections:
+    sourcesAndContent: ソースとコンテンツ
+    accounts: アカウント
+    network: ネットワーク
+    appearance: 外観
+    downloads: ダウンロード
+
+  source:
+    label: ソース
+    contentPolicy: コンテンツポリシー
+    safetyRating: セーフティレーティング
+    noHiddenDefault: 暗黙の除外なし
+    noHiddenDefaultDescription: すべて未選択にすると、成人向けを含むすべての投稿が表示されます。
+    unfiltered: フィルターなし
+    animeFocused: アニメ優先
+
+  account:
+    manageAllSubtitle: ソースごとのアカウントを個別に設定
+    openSignInPage: ログインページを開く
+    cookieHeader: Cookie ヘッダー
+    storedLocally: このデバイス内に保存
+    browserUserAgent: ブラウザーの User-Agent
+    browserUserAgentHint: ログインしたブラウザーと同じ User-Agent を使用
+    required: 必須
+    optional: 任意
+    actions: アカウント操作
+    save: 保存
+    verify: 検証
+    signOut: サインアウト
+    saved: アカウントを保存しました
+    saveFailed: アカウントを保存できませんでした
+    verified: アカウントを検証しました
+    verificationFailed: 検証に失敗しました
+    username: ユーザー名
+    userId: ユーザー ID
+    apiKey: API キー
+    statusValue: "状態 · $status"
+    statuses:
+      notConfigured: 未設定
+      configuredUnverified: 設定済み・未検証
+      verified: 検証済み
+      rejected: 拒否されました
+
+  network:
+    connectionMode: 接続モード
+    fallbackToSystemDns: システム DNS にフォールバック
+    proxyUrl: プロキシ URL
+    proxyHint: 任意 · 例 http://127.0.0.1:7890
+    applyAndRouteCache: 適用とルートキャッシュ
+    apply: ネットワーク設定を適用
+    refreshRoutes: ルートを更新
+    routeCacheUnavailable: ルートキャッシュを利用できません
+    routeCacheStatus: "$hosts ホスト · リビジョン $revision"
+    applied: ネットワーク設定を適用しました
+    invalidSettings: ネットワーク設定が無効です
+    routeRefreshFailed: ルートの更新に失敗しました
+    systemDns: システム DNS
+    sniBypass: SNI バイパス
+    legacyIpUrl: 従来の IP URL
 
   languageDialog:
     title: 言語

@@ -10,8 +10,7 @@ import 'package:slang/generated.dart';
 import 'translations.g.dart';
 
 // Path: <root>
-class TranslationsZhCn extends Translations
-    with BaseTranslations<AppLocale, Translations> {
+class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Translations> {
   /// You can call this constructor and build your own translation instance of this locale.
   /// Constructing via the enum [AppLocale.build] is preferred.
   TranslationsZhCn({
@@ -19,10 +18,7 @@ class TranslationsZhCn extends Translations
     PluralResolver? cardinalResolver,
     PluralResolver? ordinalResolver,
     TranslationMetadata<AppLocale, Translations>? meta,
-  }) : assert(
-         overrides == null,
-         'Set "translation_overrides: true" in order to enable this feature.',
-       ),
+  }) : assert(overrides == null, 'Set "translation_overrides: true" in order to enable this feature.'),
        $meta =
            meta ??
            TranslationMetadata(
@@ -31,13 +27,8 @@ class TranslationsZhCn extends Translations
              cardinalResolver: cardinalResolver,
              ordinalResolver: ordinalResolver,
            ),
-       super(
-         cardinalResolver: cardinalResolver,
-         ordinalResolver: ordinalResolver,
-       ) {
-    super.$meta.setFlatMapFunction(
-      $meta.getTranslation,
-    ); // copy base translations to super.$meta
+       super(cardinalResolver: cardinalResolver, ordinalResolver: ordinalResolver) {
+    super.$meta.setFlatMapFunction($meta.getTranslation); // copy base translations to super.$meta
     $meta.setFlatMapFunction(_flatMapFunction);
   }
 
@@ -47,55 +38,40 @@ class TranslationsZhCn extends Translations
 
   /// Access flat map
   @override
-  dynamic operator [](String key) =>
-      $meta.getTranslation(key) ?? super.$meta.getTranslation(key);
+  dynamic operator [](String key) => $meta.getTranslation(key) ?? super.$meta.getTranslation(key);
 
   late final TranslationsZhCn _root = this; // ignore: unused_field
 
   @override
-  TranslationsZhCn $copyWith({
-    TranslationMetadata<AppLocale, Translations>? meta,
-  }) => TranslationsZhCn(meta: meta ?? this.$meta);
+  TranslationsZhCn $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) =>
+      TranslationsZhCn(meta: meta ?? this.$meta);
 
   // Translations
   @override
-  late final Translations$generic$zh_CN generic =
-      Translations$generic$zh_CN.internal(_root);
+  late final Translations$generic$zh_CN generic = Translations$generic$zh_CN.internal(_root);
   @override
-  late final Translations$booruError$zh_CN booruError =
-      Translations$booruError$zh_CN.internal(_root);
+  late final Translations$booruError$zh_CN booruError = Translations$booruError$zh_CN.internal(_root);
   @override
-  late final Translations$update$zh_CN update =
-      Translations$update$zh_CN.internal(_root);
+  late final Translations$update$zh_CN update = Translations$update$zh_CN.internal(_root);
   @override
-  late final Translations$postList$zh_CN postList =
-      Translations$postList$zh_CN.internal(_root);
+  late final Translations$postList$zh_CN postList = Translations$postList$zh_CN.internal(_root);
   @override
-  late final Translations$postDetail$zh_CN postDetail =
-      Translations$postDetail$zh_CN.internal(_root);
+  late final Translations$postDetail$zh_CN postDetail = Translations$postDetail$zh_CN.internal(_root);
   @override
-  late final Translations$postSearch$zh_CN postSearch =
-      Translations$postSearch$zh_CN.internal(_root);
+  late final Translations$postSearch$zh_CN postSearch = Translations$postSearch$zh_CN.internal(_root);
   @override
-  late final Translations$imageZoom$zh_CN imageZoom =
-      Translations$imageZoom$zh_CN.internal(_root);
+  late final Translations$imageZoom$zh_CN imageZoom = Translations$imageZoom$zh_CN.internal(_root);
   @override
-  late final Translations$downloads$zh_CN downloads =
-      Translations$downloads$zh_CN.internal(_root);
+  late final Translations$downloads$zh_CN downloads = Translations$downloads$zh_CN.internal(_root);
   @override
-  late final Translations$about$zh_CN about = Translations$about$zh_CN.internal(
-    _root,
-  );
+  late final Translations$about$zh_CN about = Translations$about$zh_CN.internal(_root);
   @override
-  late final Translations$settings$zh_CN settings =
-      Translations$settings$zh_CN.internal(_root);
+  late final Translations$settings$zh_CN settings = Translations$settings$zh_CN.internal(_root);
 }
 
 // Path: generic
 class Translations$generic$zh_CN extends Translations$generic$en {
-  Translations$generic$zh_CN.internal(TranslationsZhCn root)
-    : this._root = root,
-      super.internal(root);
+  Translations$generic$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
 
   final TranslationsZhCn _root; // ignore: unused_field
 
@@ -117,8 +93,7 @@ class Translations$generic$zh_CN extends Translations$generic$en {
   @override
   String errorWithValue({required Object value}) => '发生错误: ${value}';
   @override
-  String errorWithCause({required Object message, required Object cause}) =>
-      '${message}：${cause}';
+  String errorWithCause({required Object message, required Object cause}) => '${message}：${cause}';
   @override
   String get loading => '正在加载...';
   @override
@@ -133,9 +108,7 @@ class Translations$generic$zh_CN extends Translations$generic$en {
 
 // Path: booruError
 class Translations$booruError$zh_CN extends Translations$booruError$en {
-  Translations$booruError$zh_CN.internal(TranslationsZhCn root)
-    : this._root = root,
-      super.internal(root);
+  Translations$booruError$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
 
   final TranslationsZhCn _root; // ignore: unused_field
 
@@ -174,9 +147,7 @@ class Translations$booruError$zh_CN extends Translations$booruError$en {
 
 // Path: update
 class Translations$update$zh_CN extends Translations$update$en {
-  Translations$update$zh_CN.internal(TranslationsZhCn root)
-    : this._root = root,
-      super.internal(root);
+  Translations$update$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
 
   final TranslationsZhCn _root; // ignore: unused_field
 
@@ -186,20 +157,16 @@ class Translations$update$zh_CN extends Translations$update$en {
   @override
   String get checkUpdateFailed => '检查更新失败，请检查你的网络连接。';
   @override
-  String get selectDownloadUrlFailed =>
-      '找不到下载链接。\n请访问项目页面手动更新，或在项目 Issue 页面寻求帮助。';
+  String get selectDownloadUrlFailed => '找不到下载链接。\n请访问项目页面手动更新，或在项目 Issue 页面寻求帮助。';
   @override
-  String newVersionFound({required Object version}) =>
-      '发现新版本: ${version}。请转到“关于”页面并点击“下载更新”。';
+  String newVersionFound({required Object version}) => '发现新版本: ${version}。请转到“关于”页面并点击“下载更新”。';
   @override
   String get noNewVersionFound => '没有新版本。';
 }
 
 // Path: postList
 class Translations$postList$zh_CN extends Translations$postList$en {
-  Translations$postList$zh_CN.internal(TranslationsZhCn root)
-    : this._root = root,
-      super.internal(root);
+  Translations$postList$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
 
   final TranslationsZhCn _root; // ignore: unused_field
 
@@ -220,9 +187,7 @@ class Translations$postList$zh_CN extends Translations$postList$en {
 
 // Path: postDetail
 class Translations$postDetail$zh_CN extends Translations$postDetail$en {
-  Translations$postDetail$zh_CN.internal(TranslationsZhCn root)
-    : this._root = root,
-      super.internal(root);
+  Translations$postDetail$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
 
   final TranslationsZhCn _root; // ignore: unused_field
 
@@ -273,9 +238,7 @@ class Translations$postDetail$zh_CN extends Translations$postDetail$en {
 
 // Path: postSearch
 class Translations$postSearch$zh_CN extends Translations$postSearch$en {
-  Translations$postSearch$zh_CN.internal(TranslationsZhCn root)
-    : this._root = root,
-      super.internal(root);
+  Translations$postSearch$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
 
   final TranslationsZhCn _root; // ignore: unused_field
 
@@ -286,9 +249,7 @@ class Translations$postSearch$zh_CN extends Translations$postSearch$en {
 
 // Path: imageZoom
 class Translations$imageZoom$zh_CN extends Translations$imageZoom$en {
-  Translations$imageZoom$zh_CN.internal(TranslationsZhCn root)
-    : this._root = root,
-      super.internal(root);
+  Translations$imageZoom$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
 
   final TranslationsZhCn _root; // ignore: unused_field
 
@@ -299,9 +260,7 @@ class Translations$imageZoom$zh_CN extends Translations$imageZoom$en {
 
 // Path: downloads
 class Translations$downloads$zh_CN extends Translations$downloads$en {
-  Translations$downloads$zh_CN.internal(TranslationsZhCn root)
-    : this._root = root,
-      super.internal(root);
+  Translations$downloads$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
 
   final TranslationsZhCn _root; // ignore: unused_field
 
@@ -363,15 +322,12 @@ class Translations$downloads$zh_CN extends Translations$downloads$en {
   @override
   String get collapse => '收起';
   @override
-  late final Translations$downloads$messages$zh_CN messages =
-      Translations$downloads$messages$zh_CN.internal(_root);
+  late final Translations$downloads$messages$zh_CN messages = Translations$downloads$messages$zh_CN.internal(_root);
 }
 
 // Path: about
 class Translations$about$zh_CN extends Translations$about$en {
-  Translations$about$zh_CN.internal(TranslationsZhCn root)
-    : this._root = root,
-      super.internal(root);
+  Translations$about$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
 
   final TranslationsZhCn _root; // ignore: unused_field
 
@@ -398,9 +354,7 @@ class Translations$about$zh_CN extends Translations$about$en {
 
 // Path: settings
 class Translations$settings$zh_CN extends Translations$settings$en {
-  Translations$settings$zh_CN.internal(TranslationsZhCn root)
-    : this._root = root,
-      super.internal(root);
+  Translations$settings$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
 
   final TranslationsZhCn _root; // ignore: unused_field
 
@@ -432,38 +386,47 @@ class Translations$settings$zh_CN extends Translations$settings$en {
   @override
   String get dark => '深色模式';
   @override
+  String get auto => '自动';
+  @override
+  String get downloadsOverview => '仅桌面端 · 每个图源使用独立子目录';
+  @override
+  String get sourceSubfolders => '图源子目录';
+  @override
+  String get sourceSubfoldersDescription => '下载内容会按照图源名称保存在不同文件夹。';
+  @override
+  late final Translations$settings$sections$zh_CN sections = Translations$settings$sections$zh_CN.internal(_root);
+  @override
+  late final Translations$settings$source$zh_CN source = Translations$settings$source$zh_CN.internal(_root);
+  @override
+  late final Translations$settings$account$zh_CN account = Translations$settings$account$zh_CN.internal(_root);
+  @override
+  late final Translations$settings$network$zh_CN network = Translations$settings$network$zh_CN.internal(_root);
+  @override
   late final Translations$settings$languageDialog$zh_CN languageDialog =
       Translations$settings$languageDialog$zh_CN.internal(_root);
   @override
   late final Translations$settings$themeModeDialog$zh_CN themeModeDialog =
       Translations$settings$themeModeDialog$zh_CN.internal(_root);
   @override
-  late final Translations$settings$downloadDirectoryDialog$zh_CN
-  downloadDirectoryDialog =
+  late final Translations$settings$downloadDirectoryDialog$zh_CN downloadDirectoryDialog =
       Translations$settings$downloadDirectoryDialog$zh_CN.internal(_root);
   @override
   late final Translations$settings$bypassSniDialog$zh_CN bypassSniDialog =
       Translations$settings$bypassSniDialog$zh_CN.internal(_root);
   @override
-  late final Translations$settings$columnsPerRowDialog$zh_CN
-  columnsPerRowDialog =
+  late final Translations$settings$columnsPerRowDialog$zh_CN columnsPerRowDialog =
       Translations$settings$columnsPerRowDialog$zh_CN.internal(_root);
   @override
-  late final Translations$settings$maxConcurrentDownloadsDialog$zh_CN
-  maxConcurrentDownloadsDialog =
+  late final Translations$settings$maxConcurrentDownloadsDialog$zh_CN maxConcurrentDownloadsDialog =
       Translations$settings$maxConcurrentDownloadsDialog$zh_CN.internal(_root);
   @override
-  late final Translations$settings$maxSegmentsPerTaskDialog$zh_CN
-  maxSegmentsPerTaskDialog =
+  late final Translations$settings$maxSegmentsPerTaskDialog$zh_CN maxSegmentsPerTaskDialog =
       Translations$settings$maxSegmentsPerTaskDialog$zh_CN.internal(_root);
 }
 
 // Path: downloads.messages
-class Translations$downloads$messages$zh_CN
-    extends Translations$downloads$messages$en {
-  Translations$downloads$messages$zh_CN.internal(TranslationsZhCn root)
-    : this._root = root,
-      super.internal(root);
+class Translations$downloads$messages$zh_CN extends Translations$downloads$messages$en {
+  Translations$downloads$messages$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
 
   final TranslationsZhCn _root; // ignore: unused_field
 
@@ -494,12 +457,142 @@ class Translations$downloads$messages$zh_CN
   String saveFailedWith({required Object name}) => '保存失败: 任务 ${name}';
 }
 
+// Path: settings.sections
+class Translations$settings$sections$zh_CN extends Translations$settings$sections$en {
+  Translations$settings$sections$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+  final TranslationsZhCn _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get sourcesAndContent => '图源与内容';
+  @override
+  String get accounts => '账号';
+  @override
+  String get network => '网络';
+  @override
+  String get appearance => '外观';
+  @override
+  String get downloads => '下载';
+}
+
+// Path: settings.source
+class Translations$settings$source$zh_CN extends Translations$settings$source$en {
+  Translations$settings$source$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+  final TranslationsZhCn _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get label => '图源';
+  @override
+  String get contentPolicy => '内容策略';
+  @override
+  String get safetyRating => '安全评级';
+  @override
+  String get noHiddenDefault => '不默认隐藏';
+  @override
+  String get noHiddenDefaultDescription => '不选择任何评级时会显示所有帖子，包括成人内容。';
+  @override
+  String get unfiltered => '不筛选';
+  @override
+  String get animeFocused => '动漫优先';
+}
+
+// Path: settings.account
+class Translations$settings$account$zh_CN extends Translations$settings$account$en {
+  Translations$settings$account$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+  final TranslationsZhCn _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get manageAllSubtitle => '分别配置每个图源的账号';
+  @override
+  String get openSignInPage => '打开登录页面';
+  @override
+  String get cookieHeader => 'Cookie 请求头';
+  @override
+  String get storedLocally => '仅保存在此设备';
+  @override
+  String get browserUserAgent => '浏览器 User-Agent';
+  @override
+  String get browserUserAgentHint => '使用与已登录浏览器相同的 User-Agent';
+  @override
+  String get required => '必填';
+  @override
+  String get optional => '选填';
+  @override
+  String get actions => '账号操作';
+  @override
+  String get save => '保存';
+  @override
+  String get verify => '验证';
+  @override
+  String get signOut => '退出登录';
+  @override
+  String get saved => '账号已保存';
+  @override
+  String get saveFailed => '无法保存账号';
+  @override
+  String get verified => '账号已验证';
+  @override
+  String get verificationFailed => '验证失败';
+  @override
+  String get username => '用户名';
+  @override
+  String get userId => '用户 ID';
+  @override
+  String get apiKey => 'API 密钥';
+  @override
+  String statusValue({required Object status}) => '状态 · ${status}';
+  @override
+  late final Translations$settings$account$statuses$zh_CN statuses =
+      Translations$settings$account$statuses$zh_CN.internal(_root);
+}
+
+// Path: settings.network
+class Translations$settings$network$zh_CN extends Translations$settings$network$en {
+  Translations$settings$network$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+  final TranslationsZhCn _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get connectionMode => '连接模式';
+  @override
+  String get fallbackToSystemDns => '失败时回退到系统 DNS';
+  @override
+  String get proxyUrl => '代理 URL';
+  @override
+  String get proxyHint => '选填 · 例如 http://127.0.0.1:7890';
+  @override
+  String get applyAndRouteCache => '应用与路由缓存';
+  @override
+  String get apply => '应用网络设置';
+  @override
+  String get refreshRoutes => '刷新路由';
+  @override
+  String get routeCacheUnavailable => '无法获取路由缓存';
+  @override
+  String routeCacheStatus({required Object hosts, required Object revision}) => '${hosts} 个主机 · 修订 ${revision}';
+  @override
+  String get applied => '网络设置已应用';
+  @override
+  String get invalidSettings => '网络设置无效';
+  @override
+  String get routeRefreshFailed => '路由刷新失败';
+  @override
+  String get systemDns => '系统 DNS';
+  @override
+  String get sniBypass => '绕过 SNI';
+  @override
+  String get legacyIpUrl => '旧版 IP URL';
+}
+
 // Path: settings.languageDialog
-class Translations$settings$languageDialog$zh_CN
-    extends Translations$settings$languageDialog$en {
-  Translations$settings$languageDialog$zh_CN.internal(TranslationsZhCn root)
-    : this._root = root,
-      super.internal(root);
+class Translations$settings$languageDialog$zh_CN extends Translations$settings$languageDialog$en {
+  Translations$settings$languageDialog$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
 
   final TranslationsZhCn _root; // ignore: unused_field
 
@@ -509,11 +602,8 @@ class Translations$settings$languageDialog$zh_CN
 }
 
 // Path: settings.themeModeDialog
-class Translations$settings$themeModeDialog$zh_CN
-    extends Translations$settings$themeModeDialog$en {
-  Translations$settings$themeModeDialog$zh_CN.internal(TranslationsZhCn root)
-    : this._root = root,
-      super.internal(root);
+class Translations$settings$themeModeDialog$zh_CN extends Translations$settings$themeModeDialog$en {
+  Translations$settings$themeModeDialog$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
 
   final TranslationsZhCn _root; // ignore: unused_field
 
@@ -523,11 +613,9 @@ class Translations$settings$themeModeDialog$zh_CN
 }
 
 // Path: settings.downloadDirectoryDialog
-class Translations$settings$downloadDirectoryDialog$zh_CN
-    extends Translations$settings$downloadDirectoryDialog$en {
-  Translations$settings$downloadDirectoryDialog$zh_CN.internal(
-    TranslationsZhCn root,
-  ) : this._root = root,
+class Translations$settings$downloadDirectoryDialog$zh_CN extends Translations$settings$downloadDirectoryDialog$en {
+  Translations$settings$downloadDirectoryDialog$zh_CN.internal(TranslationsZhCn root)
+    : this._root = root,
       super.internal(root);
 
   final TranslationsZhCn _root; // ignore: unused_field
@@ -540,19 +628,13 @@ class Translations$settings$downloadDirectoryDialog$zh_CN
   @override
   String get pick => '选择目录';
   @override
-  late final Translations$settings$downloadDirectoryDialog$messages$zh_CN
-  messages =
-      Translations$settings$downloadDirectoryDialog$messages$zh_CN.internal(
-        _root,
-      );
+  late final Translations$settings$downloadDirectoryDialog$messages$zh_CN messages =
+      Translations$settings$downloadDirectoryDialog$messages$zh_CN.internal(_root);
 }
 
 // Path: settings.bypassSniDialog
-class Translations$settings$bypassSniDialog$zh_CN
-    extends Translations$settings$bypassSniDialog$en {
-  Translations$settings$bypassSniDialog$zh_CN.internal(TranslationsZhCn root)
-    : this._root = root,
-      super.internal(root);
+class Translations$settings$bypassSniDialog$zh_CN extends Translations$settings$bypassSniDialog$en {
+  Translations$settings$bypassSniDialog$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
 
   final TranslationsZhCn _root; // ignore: unused_field
 
@@ -562,11 +644,9 @@ class Translations$settings$bypassSniDialog$zh_CN
 }
 
 // Path: settings.columnsPerRowDialog
-class Translations$settings$columnsPerRowDialog$zh_CN
-    extends Translations$settings$columnsPerRowDialog$en {
-  Translations$settings$columnsPerRowDialog$zh_CN.internal(
-    TranslationsZhCn root,
-  ) : this._root = root,
+class Translations$settings$columnsPerRowDialog$zh_CN extends Translations$settings$columnsPerRowDialog$en {
+  Translations$settings$columnsPerRowDialog$zh_CN.internal(TranslationsZhCn root)
+    : this._root = root,
       super.internal(root);
 
   final TranslationsZhCn _root; // ignore: unused_field
@@ -579,9 +659,8 @@ class Translations$settings$columnsPerRowDialog$zh_CN
 // Path: settings.maxConcurrentDownloadsDialog
 class Translations$settings$maxConcurrentDownloadsDialog$zh_CN
     extends Translations$settings$maxConcurrentDownloadsDialog$en {
-  Translations$settings$maxConcurrentDownloadsDialog$zh_CN.internal(
-    TranslationsZhCn root,
-  ) : this._root = root,
+  Translations$settings$maxConcurrentDownloadsDialog$zh_CN.internal(TranslationsZhCn root)
+    : this._root = root,
       super.internal(root);
 
   final TranslationsZhCn _root; // ignore: unused_field
@@ -592,11 +671,9 @@ class Translations$settings$maxConcurrentDownloadsDialog$zh_CN
 }
 
 // Path: settings.maxSegmentsPerTaskDialog
-class Translations$settings$maxSegmentsPerTaskDialog$zh_CN
-    extends Translations$settings$maxSegmentsPerTaskDialog$en {
-  Translations$settings$maxSegmentsPerTaskDialog$zh_CN.internal(
-    TranslationsZhCn root,
-  ) : this._root = root,
+class Translations$settings$maxSegmentsPerTaskDialog$zh_CN extends Translations$settings$maxSegmentsPerTaskDialog$en {
+  Translations$settings$maxSegmentsPerTaskDialog$zh_CN.internal(TranslationsZhCn root)
+    : this._root = root,
       super.internal(root);
 
   final TranslationsZhCn _root; // ignore: unused_field
@@ -606,12 +683,30 @@ class Translations$settings$maxSegmentsPerTaskDialog$zh_CN
   String get title => '每个下载任务的最大分段数';
 }
 
+// Path: settings.account.statuses
+class Translations$settings$account$statuses$zh_CN extends Translations$settings$account$statuses$en {
+  Translations$settings$account$statuses$zh_CN.internal(TranslationsZhCn root)
+    : this._root = root,
+      super.internal(root);
+
+  final TranslationsZhCn _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get notConfigured => '尚未配置';
+  @override
+  String get configuredUnverified => '已配置，尚未验证';
+  @override
+  String get verified => '已验证';
+  @override
+  String get rejected => '已被拒绝';
+}
+
 // Path: settings.downloadDirectoryDialog.messages
 class Translations$settings$downloadDirectoryDialog$messages$zh_CN
     extends Translations$settings$downloadDirectoryDialog$messages$en {
-  Translations$settings$downloadDirectoryDialog$messages$zh_CN.internal(
-    TranslationsZhCn root,
-  ) : this._root = root,
+  Translations$settings$downloadDirectoryDialog$messages$zh_CN.internal(TranslationsZhCn root)
+    : this._root = root,
       super.internal(root);
 
   final TranslationsZhCn _root; // ignore: unused_field
@@ -639,12 +734,9 @@ extension on TranslationsZhCn {
       'generic.confirm' => '确认',
       'generic.enabled' => '启用',
       'generic.disabled' => '停用',
-      'generic.copiedWithValue' =>
-        ({required Object value}) => '已复制到剪贴板: ${value}',
+      'generic.copiedWithValue' => ({required Object value}) => '已复制到剪贴板: ${value}',
       'generic.errorWithValue' => ({required Object value}) => '发生错误: ${value}',
-      'generic.errorWithCause' =>
-        ({required Object message, required Object cause}) =>
-            '${message}：${cause}',
+      'generic.errorWithCause' => ({required Object message, required Object cause}) => '${message}：${cause}',
       'generic.loading' => '正在加载...',
       'generic.loadFailed' => '加载失败',
       'generic.retry' => '重试',
@@ -667,15 +759,12 @@ extension on TranslationsZhCn {
       'booruError.internal' => '图源引擎发生内部错误。',
       'update.checkUpdateStart' => '正在检查更新...',
       'update.checkUpdateFailed' => '检查更新失败，请检查你的网络连接。',
-      'update.selectDownloadUrlFailed' =>
-        '找不到下载链接。\n请访问项目页面手动更新，或在项目 Issue 页面寻求帮助。',
-      'update.newVersionFound' =>
-        ({required Object version}) => '发现新版本: ${version}。请转到“关于”页面并点击“下载更新”。',
+      'update.selectDownloadUrlFailed' => '找不到下载链接。\n请访问项目页面手动更新，或在项目 Issue 页面寻求帮助。',
+      'update.newVersionFound' => ({required Object version}) => '发现新版本: ${version}。请转到“关于”页面并点击“下载更新”。',
       'update.noNewVersionFound' => '没有新版本。',
       'postList.short' => '帖子',
       'postList.title' => '帖子列表',
-      'postList.titleWithTags' =>
-        ({required Object tags}) => '带有标签的帖子: ${tags}',
+      'postList.titleWithTags' => ({required Object tags}) => '带有标签的帖子: ${tags}',
       'postList.freepivPromotionTitle' => '试试 freepiv',
       'postList.freepivPromotionSubtitle' => '现代、流畅的跨平台 Pixiv 第三方客户端。',
       'postList.freepivPromotionAction' => '查看项目',
@@ -730,25 +819,18 @@ extension on TranslationsZhCn {
       'downloads.actionFailed' => '下载操作失败',
       'downloads.expand' => '展开',
       'downloads.collapse' => '收起',
-      'downloads.messages.storagePermanentlyDenied' =>
-        '你已永久拒绝存储权限。\n请在设置中手动启用存储权限。',
+      'downloads.messages.storagePermanentlyDenied' => '你已永久拒绝存储权限。\n请在设置中手动启用存储权限。',
       'downloads.messages.storageDenied' => '你已拒绝存储权限。',
       'downloads.messages.deviceInfoError' => '无法解析设备信息。',
-      'downloads.messages.photosPermanentlyDenied' =>
-        '你已永久拒绝照片权限。\n请在设置中手动启用照片权限。',
+      'downloads.messages.photosPermanentlyDenied' => '你已永久拒绝照片权限。\n请在设置中手动启用照片权限。',
       'downloads.messages.photosDenied' => '你已拒绝照片权限。',
       'downloads.messages.downloadTaskExists' => '下载任务已存在。',
       'downloads.messages.imageFileExists' => '图片文件已存在。',
-      'downloads.messages.downloadRetryWith' =>
-        ({required Object name}) => '重试下载任务: ${name}',
-      'downloads.messages.downloadStartWith' =>
-        ({required Object name}) => '开始下载任务: ${name}',
-      'downloads.messages.downloadCompletedWith' =>
-        ({required Object name}) => '下载任务完成: ${name}',
-      'downloads.messages.downloadFailedWith' =>
-        ({required Object name}) => '下载任务失败: ${name}',
-      'downloads.messages.saveFailedWith' =>
-        ({required Object name}) => '保存失败: 任务 ${name}',
+      'downloads.messages.downloadRetryWith' => ({required Object name}) => '重试下载任务: ${name}',
+      'downloads.messages.downloadStartWith' => ({required Object name}) => '开始下载任务: ${name}',
+      'downloads.messages.downloadCompletedWith' => ({required Object name}) => '下载任务完成: ${name}',
+      'downloads.messages.downloadFailedWith' => ({required Object name}) => '下载任务失败: ${name}',
+      'downloads.messages.saveFailedWith' => ({required Object name}) => '保存失败: 任务 ${name}',
       'about.title' => '关于',
       'about.projectUrl' => '项目网址',
       'about.publishPage' => '发布页面',
@@ -771,15 +853,69 @@ extension on TranslationsZhCn {
       'settings.system' => '系统',
       'settings.light' => '浅色模式',
       'settings.dark' => '深色模式',
+      'settings.auto' => '自动',
+      'settings.downloadsOverview' => '仅桌面端 · 每个图源使用独立子目录',
+      'settings.sourceSubfolders' => '图源子目录',
+      'settings.sourceSubfoldersDescription' => '下载内容会按照图源名称保存在不同文件夹。',
+      'settings.sections.sourcesAndContent' => '图源与内容',
+      'settings.sections.accounts' => '账号',
+      'settings.sections.network' => '网络',
+      'settings.sections.appearance' => '外观',
+      'settings.sections.downloads' => '下载',
+      'settings.source.label' => '图源',
+      'settings.source.contentPolicy' => '内容策略',
+      'settings.source.safetyRating' => '安全评级',
+      'settings.source.noHiddenDefault' => '不默认隐藏',
+      'settings.source.noHiddenDefaultDescription' => '不选择任何评级时会显示所有帖子，包括成人内容。',
+      'settings.source.unfiltered' => '不筛选',
+      'settings.source.animeFocused' => '动漫优先',
+      'settings.account.manageAllSubtitle' => '分别配置每个图源的账号',
+      'settings.account.openSignInPage' => '打开登录页面',
+      'settings.account.cookieHeader' => 'Cookie 请求头',
+      'settings.account.storedLocally' => '仅保存在此设备',
+      'settings.account.browserUserAgent' => '浏览器 User-Agent',
+      'settings.account.browserUserAgentHint' => '使用与已登录浏览器相同的 User-Agent',
+      'settings.account.required' => '必填',
+      'settings.account.optional' => '选填',
+      'settings.account.actions' => '账号操作',
+      'settings.account.save' => '保存',
+      'settings.account.verify' => '验证',
+      'settings.account.signOut' => '退出登录',
+      'settings.account.saved' => '账号已保存',
+      'settings.account.saveFailed' => '无法保存账号',
+      'settings.account.verified' => '账号已验证',
+      'settings.account.verificationFailed' => '验证失败',
+      'settings.account.username' => '用户名',
+      'settings.account.userId' => '用户 ID',
+      'settings.account.apiKey' => 'API 密钥',
+      'settings.account.statusValue' => ({required Object status}) => '状态 · ${status}',
+      'settings.account.statuses.notConfigured' => '尚未配置',
+      'settings.account.statuses.configuredUnverified' => '已配置，尚未验证',
+      'settings.account.statuses.verified' => '已验证',
+      'settings.account.statuses.rejected' => '已被拒绝',
+      'settings.network.connectionMode' => '连接模式',
+      'settings.network.fallbackToSystemDns' => '失败时回退到系统 DNS',
+      'settings.network.proxyUrl' => '代理 URL',
+      'settings.network.proxyHint' => '选填 · 例如 http://127.0.0.1:7890',
+      'settings.network.applyAndRouteCache' => '应用与路由缓存',
+      'settings.network.apply' => '应用网络设置',
+      'settings.network.refreshRoutes' => '刷新路由',
+      'settings.network.routeCacheUnavailable' => '无法获取路由缓存',
+      'settings.network.routeCacheStatus' =>
+        ({required Object hosts, required Object revision}) => '${hosts} 个主机 · 修订 ${revision}',
+      'settings.network.applied' => '网络设置已应用',
+      'settings.network.invalidSettings' => '网络设置无效',
+      'settings.network.routeRefreshFailed' => '路由刷新失败',
+      'settings.network.systemDns' => '系统 DNS',
+      'settings.network.sniBypass' => '绕过 SNI',
+      'settings.network.legacyIpUrl' => '旧版 IP URL',
       'settings.languageDialog.title' => '语言',
       'settings.themeModeDialog.title' => '主题模式',
       'settings.downloadDirectoryDialog.title' => '下载目录',
       'settings.downloadDirectoryDialog.pickerTitle' => '选择目录',
       'settings.downloadDirectoryDialog.pick' => '选择目录',
-      'settings.downloadDirectoryDialog.messages.setToPlatformDefault' =>
-        '下载目录已设为平台默认。',
-      'settings.downloadDirectoryDialog.messages.pathNotAbsolute' =>
-        '路径必须是绝对路径。',
+      'settings.downloadDirectoryDialog.messages.setToPlatformDefault' => '下载目录已设为平台默认。',
+      'settings.downloadDirectoryDialog.messages.pathNotAbsolute' => '路径必须是绝对路径。',
       'settings.downloadDirectoryDialog.messages.pathNotWritable' => '路径不可写入。',
       'settings.bypassSniDialog.title' => '绕过 SNI',
       'settings.columnsPerRowDialog.title' => '每行列数',

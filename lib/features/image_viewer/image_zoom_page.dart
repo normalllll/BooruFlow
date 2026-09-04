@@ -8,6 +8,7 @@ import 'package:booruflow/features/posts/widgets/booru_image.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/widgets/auto_scaffold.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:booruflow/shared/widgets/interaction_controls.dart';
 
 class ImageZoomPage extends StatefulWidget {
   final String url;
@@ -43,7 +44,7 @@ class _ImageZoomPageState extends State<ImageZoomPage> {
           : AppBar(
               title: Text(t.imageZoom.title),
               actions: [
-                IconButton(
+                AppIconButton(
                   icon: const Icon(Icons.refresh),
                   onPressed: _resetZoom,
                 ),
@@ -105,7 +106,7 @@ class _ImageZoomPageState extends State<ImageZoomPage> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: IconButton(
+                  child: AppIconButton(
                     icon: const Icon(Icons.refresh),
                     onPressed: _resetZoom,
                   ),

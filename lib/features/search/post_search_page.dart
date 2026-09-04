@@ -6,6 +6,8 @@ import 'package:booruflow/features/search/custom_tags_service.dart';
 import 'package:booruflow/features/tags/tag_translations_service.dart';
 import 'package:booruflow/shared/app_navigation.dart';
 import 'package:booruflow/shared/widgets/auto_scaffold.dart';
+import 'package:booruflow/shared/widgets/form_controls.dart';
+import 'package:booruflow/shared/widgets/interaction_controls.dart';
 
 class PostSearchPage extends StatefulWidget {
   const PostSearchPage({super.key});
@@ -145,14 +147,12 @@ class _PostSearchPageState extends State<PostSearchPage> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextField(
+                  AppTextField(
+                    label: 'Tag',
                     controller: tagController,
                     autofocus: true,
-                    decoration: InputDecoration(
-                      labelText: 'Tag',
-                      hintText: 'tag_name',
-                      errorText: tagError,
-                    ),
+                    hintText: 'tag_name',
+                    errorText: tagError,
                     onChanged: (_) {
                       if (tagError != null) {
                         setDialogState(() {
@@ -165,12 +165,10 @@ class _PostSearchPageState extends State<PostSearchPage> {
                     },
                   ),
                   const SizedBox(height: 12),
-                  TextField(
+                  AppTextField(
+                    label: 'Translation',
                     controller: translationController,
-                    decoration: const InputDecoration(
-                      labelText: 'Translation',
-                      hintText: 'Optional',
-                    ),
+                    hintText: 'Optional',
                     onSubmitted: (_) {
                       submit();
                     },
@@ -178,13 +176,18 @@ class _PostSearchPageState extends State<PostSearchPage> {
                 ],
               ),
               actions: [
-                TextButton(
+                AppButton(
+                  label: t.generic.cancel,
+                  kind: AppButtonKind.ghost,
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text(t.generic.cancel),
                 ),
-                TextButton(onPressed: submit, child: Text(t.generic.confirm)),
+                AppButton(
+                  label: t.generic.confirm,
+                  kind: AppButtonKind.primary,
+                  onPressed: submit,
+                ),
               ],
             );
           },

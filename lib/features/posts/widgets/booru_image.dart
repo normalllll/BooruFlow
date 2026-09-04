@@ -5,6 +5,7 @@ import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/features/booru/booru_service.dart';
 import 'package:booruflow/features/posts/widgets/rust_extended_network_image_provider.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:booruflow/shared/widgets/interaction_controls.dart';
 
 class BooruImage extends StatefulWidget {
   const BooruImage(
@@ -135,7 +136,7 @@ class _BooruImageState extends State<BooruImage> {
   }
 
   Widget _error(VoidCallback retry, {Object? error}) => Center(
-    child: IconButton(
+    child: AppIconButton(
       icon: const Icon(Icons.refresh_outlined),
       tooltip: error == null ? null : describeBooruError(error),
       onPressed: retry,

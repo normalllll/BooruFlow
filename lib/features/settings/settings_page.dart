@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as path;
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:booruflow/core/app_runtime.dart';
@@ -13,13 +14,45 @@ import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/intl/locale_preferences.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_toast.dart';
+import 'package:booruflow/shared/app_navigation.dart';
 import 'package:booruflow/shared/widgets/auto_scaffold.dart';
+import 'package:booruflow/shared/widgets/form_controls.dart';
 import 'package:booruflow/shared/widgets/grouped_settings_list.dart';
+import 'package:booruflow/shared/widgets/interaction_controls.dart';
 import 'package:booruflow/src/rust/api/booru_auth.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 
+enum SettingsSection {
+  sources('sources'),
+  account('account'),
+  network('network'),
+  appearance('appearance'),
+  downloads('downloads');
+
+  const SettingsSection(this.pathSegment);
+
+  final String pathSegment;
+
+  String get title => switch (this) {
+    SettingsSection.sources => t.settings.sections.sourcesAndContent,
+    SettingsSection.account => t.settings.sections.accounts,
+    SettingsSection.network => t.settings.sections.network,
+    SettingsSection.appearance => t.settings.sections.appearance,
+    SettingsSection.downloads => t.settings.sections.downloads,
+  };
+
+  static SettingsSection? fromPath(String? value) {
+    for (final section in values) {
+      if (section.pathSegment == value) return section;
+    }
+    return null;
+  }
+}
+
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
+  const SettingsPage({super.key, this.section});
+
+  final SettingsSection? section;
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -27,13 +60,7 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   final _proxy = TextEditingController();
-  final _auth = <AuthFieldKind, TextEditingController>{};
-  final _cookie = TextEditingController();
-  final _userAgent = TextEditingController();
   bool _networkBusy = false;
-  bool _authBusy = false;
-  Future<AuthSchemaDto>? _schema;
-  Future<AuthStateDto>? _authState;
   Future<RouteCacheStateDto>? _routes;
 
   BooruService get service => BooruService.instance;
@@ -43,102 +70,94 @@ class _SettingsPageState extends State<SettingsPage> {
   void initState() {
     super.initState();
     _proxy.text = SettingsService.proxyUrl ?? '';
-    _loadAuth();
     _routes = service.engine.routeCacheState();
   }
 
   @override
   void dispose() {
     _proxy.dispose();
-    _cookie.dispose();
-    _userAgent.dispose();
-    for (final controller in _auth.values) {
-      controller.dispose();
-    }
     super.dispose();
-  }
-
-  void _loadAuth() {
-    final saved = service.savedAuth(service.selectedSource.value);
-    for (final kind in AuthFieldKind.values) {
-      _auth.putIfAbsent(kind, TextEditingController.new).text =
-          saved[kind.name] ?? '';
-    }
-    _cookie.text = saved['cookieHeader'] ?? '';
-    _userAgent.text = saved['userAgent'] ?? '';
-    _schema = service.authSchema(service.selectedSource.value);
-    _authState = service.authState(service.selectedSource.value);
   }
 
   void _selectSource(String id, StateSetter refresh) {
     service.selectSource(id);
-    _loadAuth();
     refresh(() {});
     setState(() {});
   }
 
-  Future<void> _open(
-    String title,
-    Widget Function(StateSetter refresh) content,
-  ) async {
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute(
-        builder: (_) => StatefulBuilder(
-          builder: (context, refresh) => AutoScaffold(
-            titleWidget: Text(title),
-            builder: (_, _) => content(refresh),
-          ),
-        ),
-      ),
+  Future<void> _open(SettingsSection section) async {
+    await context.pushNamed<void>(
+      AppRoute.settingsSection.name,
+      pathParameters: {'section': section.pathSegment},
     );
     if (mounted) setState(() {});
   }
 
   @override
-  Widget build(BuildContext context) => AutoScaffold(
-    verticalOnlyTitleWidget: Text(t.settings.title),
-    builder: (_, _) => GroupedSettingsList(
-      groups: [
-        [
-          _category(
-            CupertinoIcons.photo_on_rectangle,
-            'Sources & content',
-            '${source.displayName} · ${_policy(SettingsService.contentPolicy)}',
-            () => _open('Sources & content', _sourceContentPage),
-          ),
-          _category(
-            CupertinoIcons.person_crop_circle,
-            'Account',
-            source.displayName,
-            () => _open('Account', _accountPage),
-          ),
-        ],
-        [
-          _category(
-            CupertinoIcons.globe,
-            'Network',
-            _networkMode(SettingsService.networkFallbackMode),
-            () => _open('Network', _networkPage),
-          ),
-          _category(
-            CupertinoIcons.paintbrush,
-            'Appearance',
-            '${_theme(SettingsService.themeMode)} · ${_language(SettingsService.language)}',
-            () => _open('Appearance', _appearancePage),
-          ),
-        ],
-        if (AppPlatform.isDesktop)
+  Widget build(BuildContext context) {
+    final section = widget.section;
+    if (section != null) {
+      return StatefulBuilder(
+        builder: (_, refresh) => AutoScaffold(
+          titleWidget: Text(section.title),
+          builder: (_, _) => _sectionContent(section, refresh),
+        ),
+      );
+    }
+    return AutoScaffold(
+      verticalOnlyTitleWidget: Text(t.settings.title),
+      builder: (_, _) => GroupedSettingsList(
+        groups: [
           [
             _category(
-              CupertinoIcons.arrow_down_to_line,
-              'Downloads',
-              'Desktop only · one subfolder per source',
-              () => _open('Downloads', _downloadsPage),
+              CupertinoIcons.photo_on_rectangle,
+              t.settings.sections.sourcesAndContent,
+              '${source.displayName} · ${_policy(SettingsService.contentPolicy)}',
+              () => _open(SettingsSection.sources),
+            ),
+            _category(
+              CupertinoIcons.person_crop_circle,
+              t.settings.sections.accounts,
+              t.settings.account.manageAllSubtitle,
+              () => _open(SettingsSection.account),
             ),
           ],
-      ],
-    ),
-  );
+          [
+            _category(
+              CupertinoIcons.globe,
+              t.settings.sections.network,
+              _networkMode(SettingsService.networkFallbackMode),
+              () => _open(SettingsSection.network),
+            ),
+            _category(
+              CupertinoIcons.paintbrush,
+              t.settings.sections.appearance,
+              '${_theme(SettingsService.themeMode)} · ${_language(SettingsService.language)}',
+              () => _open(SettingsSection.appearance),
+            ),
+          ],
+          if (AppPlatform.isDesktop)
+            [
+              _category(
+                CupertinoIcons.arrow_down_to_line,
+                t.settings.sections.downloads,
+                t.settings.downloadsOverview,
+                () => _open(SettingsSection.downloads),
+              ),
+            ],
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionContent(SettingsSection section, StateSetter refresh) =>
+      switch (section) {
+        SettingsSection.sources => _sourceContentPage(refresh),
+        SettingsSection.account => _accountPage(),
+        SettingsSection.network => _networkPage(refresh),
+        SettingsSection.appearance => _appearancePage(refresh),
+        SettingsSection.downloads => _downloadsPage(refresh),
+      };
 
   Widget _category(
     IconData icon,
@@ -158,7 +177,7 @@ class _SettingsPageState extends State<SettingsPage> {
       [
         _DropdownTile<String>(
           icon: CupertinoIcons.square_stack_3d_up,
-          title: 'Source',
+          title: t.settings.source.label,
           value: service.selectedSource.value,
           values: service.sources.map((item) => item.sourceId).toList(),
           label: (id) => service.sourceById(id).displayName,
@@ -168,7 +187,7 @@ class _SettingsPageState extends State<SettingsPage> {
       [
         _DropdownTile<ContentPolicy>(
           icon: CupertinoIcons.slider_horizontal_3,
-          title: 'Content policy',
+          title: t.settings.source.contentPolicy,
           value: SettingsService.contentPolicy,
           values: ContentPolicy.values,
           label: _policy,
@@ -178,41 +197,23 @@ class _SettingsPageState extends State<SettingsPage> {
             refresh(() {});
           },
         ),
-        ListTile(
-          leading: const Icon(CupertinoIcons.shield),
-          title: const Text('Safety rating'),
-          subtitle: Padding(
-            padding: const EdgeInsets.only(top: 9, bottom: 3),
-            child: Wrap(
-              spacing: 7,
-              runSpacing: 7,
-              children: [
-                for (final rating in source.capabilities.ratings)
-                  _RatingToggle(
-                    label: rating.shortLabel,
-                    selected: SettingsService.ratings.contains(rating),
-                    onTap: () {
-                      final next = [...SettingsService.ratings];
-                      next.contains(rating)
-                          ? next.remove(rating)
-                          : next.add(rating);
-                      SettingsService.ratings = next;
-                      service.revision.value++;
-                      refresh(() {});
-                    },
-                  ),
-              ],
-            ),
-          ),
+        _SafetyRatingTile(
+          ratings: source.capabilities.ratings,
+          selectedRatings: SettingsService.ratings,
+          onChanged: (rating) {
+            final next = [...SettingsService.ratings];
+            next.contains(rating) ? next.remove(rating) : next.add(rating);
+            SettingsService.ratings = next;
+            service.revision.value++;
+            refresh(() {});
+          },
         ),
       ],
       [
-        const ListTile(
-          leading: Icon(CupertinoIcons.info_circle),
-          title: Text('No hidden default'),
-          subtitle: Text(
-            'Leave every rating unselected to show all posts, including explicit posts.',
-          ),
+        ListTile(
+          leading: const Icon(CupertinoIcons.info_circle),
+          title: Text(t.settings.source.noHiddenDefault),
+          subtitle: Text(t.settings.source.noHiddenDefaultDescription),
         ),
       ],
     ],
@@ -223,7 +224,7 @@ class _SettingsPageState extends State<SettingsPage> {
       [
         _DropdownTile<NetworkFallbackMode>(
           icon: CupertinoIcons.antenna_radiowaves_left_right,
-          title: 'Connection mode',
+          title: t.settings.network.connectionMode,
           value: SettingsService.networkFallbackMode,
           values: NetworkFallbackMode.values,
           label: _networkMode,
@@ -234,9 +235,10 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         ListTile(
           leading: const Icon(CupertinoIcons.arrow_2_circlepath),
-          title: const Text('Fall back to system DNS'),
-          trailing: CupertinoSwitch(
+          title: Text(t.settings.network.fallbackToSystemDns),
+          trailing: AppSwitch(
             value: SettingsService.fallbackToSystemDns,
+            semanticLabel: t.settings.network.fallbackToSystemDns,
             onChanged: (value) {
               SettingsService.fallbackToSystemDns = value;
               refresh(() {});
@@ -247,13 +249,13 @@ class _SettingsPageState extends State<SettingsPage> {
       [
         _TextTile(
           icon: CupertinoIcons.link,
-          title: 'Proxy URL',
-          hint: 'Optional · for example http://127.0.0.1:7890',
+          title: t.settings.network.proxyUrl,
+          hint: t.settings.network.proxyHint,
           controller: _proxy,
         ),
         ListTile(
           leading: const Icon(CupertinoIcons.bolt),
-          title: const Text('Apply and route cache'),
+          title: Text(t.settings.network.applyAndRouteCache),
           subtitle: Padding(
             padding: const EdgeInsets.only(top: 10, bottom: 3),
             child: Column(
@@ -263,14 +265,17 @@ class _SettingsPageState extends State<SettingsPage> {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    _Button(
-                      label: _networkBusy ? 'Applying…' : 'Apply network',
-                      onTap: _networkBusy ? null : () => _applyNetwork(refresh),
+                    AppButton(
+                      label: t.settings.network.apply,
+                      kind: AppButtonKind.primary,
+                      loading: _networkBusy,
+                      onPressed: _networkBusy
+                          ? null
+                          : () => _applyNetwork(refresh),
                     ),
-                    _Button(
-                      label: 'Refresh routes',
-                      secondary: true,
-                      onTap: _networkBusy
+                    AppButton(
+                      label: t.settings.network.refreshRoutes,
+                      onPressed: _networkBusy
                           ? null
                           : () => _refreshRoutes(refresh),
                     ),
@@ -283,8 +288,11 @@ class _SettingsPageState extends State<SettingsPage> {
                     final state = snapshot.data;
                     return Text(
                       state == null
-                          ? 'Route cache unavailable'
-                          : '${state.routes.length} hosts · revision ${state.routeRevision}',
+                          ? t.settings.network.routeCacheUnavailable
+                          : t.settings.network.routeCacheStatus(
+                              hosts: state.routes.length,
+                              revision: state.routeRevision,
+                            ),
                     );
                   },
                 ),
@@ -303,10 +311,11 @@ class _SettingsPageState extends State<SettingsPage> {
       SettingsService.proxyUrl = _proxy.text;
       await service.reconfigureNetwork();
       _routes = service.engine.routeCacheState();
-      _loadAuth();
-      if (mounted) AppToast.success('Network settings applied');
+      if (mounted) AppToast.success(t.settings.network.applied);
     } catch (error) {
-      if (mounted) AppToast.errorWithCause('Invalid network settings', error);
+      if (mounted) {
+        AppToast.errorWithCause(t.settings.network.invalidSettings, error);
+      }
     } finally {
       if (mounted) refresh(() => _networkBusy = false);
     }
@@ -320,7 +329,9 @@ class _SettingsPageState extends State<SettingsPage> {
     try {
       await _routes;
     } catch (error) {
-      if (mounted) AppToast.errorWithCause('Route refresh failed', error);
+      if (mounted) {
+        AppToast.errorWithCause(t.settings.network.routeRefreshFailed, error);
+      }
     } finally {
       if (mounted) refresh(() => _networkBusy = false);
     }
@@ -369,7 +380,7 @@ class _SettingsPageState extends State<SettingsPage> {
           title: t.settings.columnsPerRow,
           value: SettingsService.waterfallColumns ?? 0,
           values: List.generate(13, (index) => index),
-          label: (value) => value == 0 ? 'Auto' : '$value',
+          label: (value) => value == 0 ? t.settings.auto : '$value',
           onChanged: (value) {
             SettingsService.waterfallColumns = value == 0 ? null : value;
             refresh(() {});
@@ -394,7 +405,7 @@ class _SettingsPageState extends State<SettingsPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (SettingsService.downloadPath != null)
-                IconButton(
+                AppIconButton(
                   tooltip: t.settings.platformDefault,
                   onPressed: () {
                     SettingsService.downloadPath = null;
@@ -425,12 +436,10 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       ],
       [
-        const ListTile(
-          leading: Icon(CupertinoIcons.folder_badge_plus),
-          title: Text('Source subfolders'),
-          subtitle: Text(
-            'Downloads are saved in a separate folder named after each source.',
-          ),
+        ListTile(
+          leading: const Icon(CupertinoIcons.folder_badge_plus),
+          title: Text(t.settings.sourceSubfolders),
+          subtitle: Text(t.settings.sourceSubfoldersDescription),
         ),
       ],
     ],
@@ -479,177 +488,325 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
-  Widget _accountPage(StateSetter refresh) => FutureBuilder<AuthSchemaDto>(
-    future: _schema,
-    builder: (_, snapshot) {
-      final schema = snapshot.data;
-      if (schema == null) {
-        return const Center(child: CupertinoActivityIndicator());
-      }
-      final fields = <Widget>[];
-      if (source.capabilities.authKind == AuthKind.none) {
-        fields.add(
-          const ListTile(
-            leading: Icon(CupertinoIcons.check_mark_circled),
-            title: Text('No account required'),
-            subtitle: Text('This source is available anonymously.'),
-          ),
-        );
-      } else if (schema.usesWebSession) {
-        fields.addAll([
-          ListTile(
-            leading: const Icon(CupertinoIcons.arrow_up_right_square),
-            title: const Text('Open sign-in page'),
-            trailing: const Icon(Icons.chevron_right_rounded, size: 20),
-            onTap: () => launchUrlString(
-              'https://anime-pictures.net/login/view',
-              mode: LaunchMode.externalApplication,
-            ),
-          ),
-          _TextTile(
-            icon: CupertinoIcons.doc_on_clipboard,
-            title: 'Cookie header',
-            hint: 'Stored locally in Hive',
-            controller: _cookie,
-            minLines: 2,
-            maxLines: 4,
-          ),
-          _TextTile(
-            icon: CupertinoIcons.device_desktop,
-            title: 'Browser User-Agent',
-            hint: 'Use the same User-Agent as the signed-in browser',
-            controller: _userAgent,
-          ),
-        ]);
-      } else {
-        for (final field in schema.fields) {
-          fields.add(
-            _TextTile(
-              icon: field.secret ? CupertinoIcons.lock : CupertinoIcons.person,
-              title: _authLabel(field.kind),
-              hint: field.required_ ? 'Required' : 'Optional',
-              controller: _auth[field.kind]!,
-              obscureText: field.secret,
-              helpUrl: field.helpUrl,
-            ),
-          );
-        }
-      }
-      return GroupedSettingsList(
-        groups: [
+  Widget _accountPage() {
+    final accountSources = service.sources
+        .where((item) => item.capabilities.authKind != AuthKind.none)
+        .toList(growable: false);
+    return GroupedSettingsList(
+      groups: [
+        for (final accountSource in accountSources)
           [
-            _DropdownTile<String>(
-              icon: CupertinoIcons.square_stack_3d_up,
-              title: 'Source',
-              value: service.selectedSource.value,
-              values: service.sources.map((item) => item.sourceId).toList(),
-              label: (id) => service.sourceById(id).displayName,
-              onChanged: (id) => _selectSource(id, refresh),
+            _AccountEditor(
+              key: ValueKey(accountSource.sourceId),
+              service: service,
+              source: accountSource,
             ),
           ],
-          fields,
-          if (source.capabilities.authKind != AuthKind.none)
-            [
-              ListTile(
-                leading: const Icon(CupertinoIcons.shield),
-                title: FutureBuilder<AuthStateDto>(
-                  future: _authState,
-                  builder: (_, value) =>
-                      Text('Status · ${value.data?.status.name ?? 'unknown'}'),
-                ),
-                subtitle: Padding(
-                  padding: const EdgeInsets.only(top: 10, bottom: 3),
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _Button(
-                        label: _authBusy ? 'Saving…' : 'Save',
-                        onTap: _authBusy
-                            ? null
-                            : () => _saveAuth(schema, refresh),
-                      ),
-                      _Button(
-                        label: 'Verify',
-                        secondary: true,
-                        onTap: _authBusy ? null : () => _verifyAuth(refresh),
-                      ),
-                      _Button(
-                        label: 'Sign out',
-                        secondary: true,
-                        onTap: _authBusy ? null : () => _clearAuth(refresh),
-                      ),
-                    ],
-                  ),
-                ),
+      ],
+    );
+  }
+}
+
+class _SafetyRatingTile extends StatelessWidget {
+  const _SafetyRatingTile({
+    required this.ratings,
+    required this.selectedRatings,
+    required this.onChanged,
+  });
+
+  final List<ContentRating> ratings;
+  final List<ContentRating> selectedRatings;
+  final ValueChanged<ContentRating> onChanged;
+
+  @override
+  Widget build(BuildContext context) => ConstrainedBox(
+    constraints: const BoxConstraints(minHeight: 64),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          const Icon(CupertinoIcons.shield),
+          const SizedBox(width: 16),
+          Text(t.settings.source.safetyRating),
+          const SizedBox(width: 12),
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              reverse: true,
+              child: Row(
+                children: [
+                  for (var index = 0; index < ratings.length; index++) ...[
+                    if (index > 0) const SizedBox(width: 7),
+                    AppChoiceToggle(
+                      label: ratings[index].shortLabel,
+                      selected: selectedRatings.contains(ratings[index]),
+                      onPressed: () => onChanged(ratings[index]),
+                    ),
+                  ],
+                ],
               ),
-            ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _AccountEditor extends StatefulWidget {
+  const _AccountEditor({
+    required this.service,
+    required this.source,
+    super.key,
+  });
+
+  final BooruService service;
+  final BooruSourceDto source;
+
+  @override
+  State<_AccountEditor> createState() => _AccountEditorState();
+}
+
+class _AccountEditorState extends State<_AccountEditor> {
+  final _auth = <AuthFieldKind, TextEditingController>{};
+  final _cookie = TextEditingController();
+  final _userAgent = TextEditingController();
+  late Future<AuthSchemaDto> _schema;
+  late Future<AuthStateDto> _authState;
+  bool _busy = false;
+
+  String get sourceId => widget.source.sourceId;
+
+  @override
+  void initState() {
+    super.initState();
+    for (final kind in AuthFieldKind.values) {
+      _auth[kind] = TextEditingController();
+    }
+    _loadSavedValues();
+    _loadRemoteState();
+  }
+
+  @override
+  void dispose() {
+    for (final controller in _auth.values) {
+      controller.dispose();
+    }
+    _cookie.dispose();
+    _userAgent.dispose();
+    super.dispose();
+  }
+
+  void _loadSavedValues() {
+    final saved = widget.service.savedAuth(sourceId);
+    for (final kind in AuthFieldKind.values) {
+      _auth[kind]!.text = saved[kind.name] ?? '';
+    }
+    _cookie.text = saved['cookieHeader'] ?? '';
+    _userAgent.text = saved['userAgent'] ?? '';
+  }
+
+  void _loadRemoteState() {
+    _schema = widget.service.authSchema(sourceId);
+    _authState = widget.service.authState(sourceId);
+  }
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder<AuthSchemaDto>(
+    future: _schema,
+    builder: (context, snapshot) {
+      final items = <Widget>[_header()];
+      final schema = snapshot.data;
+      if (schema == null) {
+        items.add(
+          ListTile(
+            leading: snapshot.hasError
+                ? const Icon(CupertinoIcons.exclamationmark_triangle)
+                : const CupertinoActivityIndicator(),
+            title: Text(
+              snapshot.hasError ? t.generic.loadFailed : t.generic.loading,
+            ),
+            trailing: snapshot.hasError
+                ? AppButton(
+                    label: t.generic.retry,
+                    onPressed: () => setState(_loadRemoteState),
+                  )
+                : null,
+          ),
+        );
+      } else {
+        items.addAll(_fields(schema));
+        items.add(_actions(schema));
+      }
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var index = 0; index < items.length; index++) ...[
+            items[index],
+            if (index < items.length - 1)
+              Divider(
+                height: 9,
+                thickness: 1,
+                indent: 56,
+                endIndent: 16,
+                color: Theme.of(context).colorScheme.outlineVariant,
+              ),
+          ],
         ],
       );
     },
   );
 
-  Future<void> _saveAuth(AuthSchemaDto schema, StateSetter refresh) async {
-    refresh(() => _authBusy = true);
-    try {
-      final id = source.sourceId;
-      if (schema.usesWebSession) {
-        _authState = Future.value(
-          await service.saveWebSession(
-            id,
-            cookieHeader: _cookie.text,
-            userAgent: _userAgent.text,
-          ),
-        );
-      } else {
-        String? value(AuthFieldKind kind) {
-          final text = _auth[kind]?.text.trim() ?? '';
-          return text.isEmpty ? null : text;
-        }
+  Widget _header() => ListTile(
+    leading: const Icon(CupertinoIcons.person_crop_circle),
+    title: Text(widget.source.displayName),
+    subtitle: FutureBuilder<AuthStateDto>(
+      future: _authState,
+      builder: (_, snapshot) => Text(
+        t.settings.account.statusValue(
+          status: snapshot.data == null
+              ? t.generic.loading
+              : _authStatusLabel(snapshot.data!.status),
+        ),
+      ),
+    ),
+  );
 
-        _authState = Future.value(
-          await service.saveCredentials(
-            id,
-            SourceCredentialsDto(
-              username: value(AuthFieldKind.username),
-              userId: value(AuthFieldKind.userId),
-              apiKey: value(AuthFieldKind.apiKey),
-            ),
+  List<Widget> _fields(AuthSchemaDto schema) {
+    if (schema.usesWebSession) {
+      return [
+        ListTile(
+          leading: const Icon(CupertinoIcons.arrow_up_right_square),
+          title: Text(t.settings.account.openSignInPage),
+          trailing: const Icon(Icons.chevron_right_rounded, size: 20),
+          onTap: () => launchUrlString(
+            _signInUrl(sourceId),
+            mode: LaunchMode.externalApplication,
           ),
-        );
+        ),
+        _TextTile(
+          icon: CupertinoIcons.doc_on_clipboard,
+          title: t.settings.account.cookieHeader,
+          hint: t.settings.account.storedLocally,
+          controller: _cookie,
+          minLines: 2,
+          maxLines: 4,
+        ),
+        _TextTile(
+          icon: CupertinoIcons.device_desktop,
+          title: t.settings.account.browserUserAgent,
+          hint: t.settings.account.browserUserAgentHint,
+          controller: _userAgent,
+        ),
+      ];
+    }
+    return [
+      for (final field in schema.fields)
+        _TextTile(
+          icon: field.secret ? CupertinoIcons.lock : CupertinoIcons.person,
+          title: _authLabel(field.kind),
+          hint: field.required_
+              ? t.settings.account.required
+              : t.settings.account.optional,
+          controller: _auth[field.kind]!,
+          obscureText: field.secret,
+          helpUrl: field.helpUrl,
+        ),
+    ];
+  }
+
+  Widget _actions(AuthSchemaDto schema) => ListTile(
+    leading: const Icon(CupertinoIcons.shield),
+    title: Text(t.settings.account.actions),
+    subtitle: Padding(
+      padding: const EdgeInsets.only(top: 10, bottom: 3),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          AppButton(
+            label: t.settings.account.save,
+            kind: AppButtonKind.primary,
+            loading: _busy,
+            onPressed: _busy ? null : () => _save(schema),
+          ),
+          AppButton(
+            label: t.settings.account.verify,
+            onPressed: _busy ? null : _verify,
+          ),
+          AppButton(
+            label: t.settings.account.signOut,
+            kind: AppButtonKind.danger,
+            onPressed: _busy ? null : _clear,
+          ),
+        ],
+      ),
+    ),
+  );
+
+  Future<void> _save(AuthSchemaDto schema) async {
+    setState(() => _busy = true);
+    try {
+      final state = schema.usesWebSession
+          ? await widget.service.saveWebSession(
+              sourceId,
+              cookieHeader: _cookie.text,
+              userAgent: _userAgent.text,
+            )
+          : await widget.service.saveCredentials(
+              sourceId,
+              SourceCredentialsDto(
+                username: _value(AuthFieldKind.username),
+                userId: _value(AuthFieldKind.userId),
+                apiKey: _value(AuthFieldKind.apiKey),
+              ),
+            );
+      if (!mounted) return;
+      setState(() => _authState = Future.value(state));
+      widget.service.revision.value++;
+      AppToast.success(t.settings.account.saved);
+    } catch (error) {
+      if (mounted) {
+        AppToast.errorWithCause(t.settings.account.saveFailed, error);
       }
-      service.revision.value++;
-      if (mounted) AppToast.success('Account saved');
-    } catch (error) {
-      if (mounted) AppToast.errorWithCause('Could not save account', error);
     } finally {
-      if (mounted) refresh(() => _authBusy = false);
+      if (mounted) setState(() => _busy = false);
     }
   }
 
-  Future<void> _verifyAuth(StateSetter refresh) async {
-    refresh(() => _authBusy = true);
+  Future<void> _verify() async {
+    setState(() => _busy = true);
     try {
-      _authState = Future.value(
-        await service.engine.verifyAuth(sourceId: source.sourceId),
-      );
-      if (mounted) AppToast.success('Account verified');
+      final state = await widget.service.engine.verifyAuth(sourceId: sourceId);
+      if (!mounted) return;
+      setState(() => _authState = Future.value(state));
+      AppToast.success(t.settings.account.verified);
     } catch (error) {
-      if (mounted) AppToast.errorWithCause('Verification failed', error);
+      if (mounted) {
+        AppToast.errorWithCause(t.settings.account.verificationFailed, error);
+      }
     } finally {
-      if (mounted) refresh(() => _authBusy = false);
+      if (mounted) setState(() => _busy = false);
     }
   }
 
-  Future<void> _clearAuth(StateSetter refresh) async {
-    refresh(() => _authBusy = true);
+  Future<void> _clear() async {
+    setState(() => _busy = true);
     try {
-      await service.clearAuth(source.sourceId);
-      _loadAuth();
-      service.revision.value++;
+      await widget.service.clearAuth(sourceId);
+      _loadSavedValues();
+      final state = await widget.service.authState(sourceId);
+      if (!mounted) return;
+      setState(() => _authState = Future.value(state));
+      widget.service.revision.value++;
     } finally {
-      if (mounted) refresh(() => _authBusy = false);
+      if (mounted) setState(() => _busy = false);
     }
+  }
+
+  String? _value(AuthFieldKind kind) {
+    final value = _auth[kind]!.text.trim();
+    return value.isEmpty ? null : value;
   }
 }
 
@@ -672,31 +829,14 @@ class _DropdownTile<T extends Object> extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ListTile(
     leading: Icon(icon),
-    title: Text(title),
-    trailing: SizedBox(
-      width: MediaQuery.sizeOf(context).width < 520 ? 132 : 210,
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<T>(
-          value: value,
-          isExpanded: true,
-          borderRadius: BorderRadius.circular(12),
-          alignment: AlignmentDirectional.centerEnd,
-          items: [
-            for (final item in values)
-              DropdownMenuItem(
-                value: item,
-                child: Text(
-                  label(item),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-          ],
-          onChanged: (value) {
-            if (value != null) onChanged(value);
-          },
-        ),
-      ),
+    title: AppSelect<T>(
+      label: title,
+      value: value,
+      items: [
+        for (final item in values)
+          AppSelectItem<T>(value: item, label: label(item)),
+      ],
+      onChanged: onChanged,
     ),
   );
 }
@@ -738,105 +878,26 @@ class _TextTile extends StatelessWidget {
     ),
     subtitle: Padding(
       padding: const EdgeInsets.only(top: 7, bottom: 3),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(hint),
-          const SizedBox(height: 7),
-          CupertinoTextField(
-            controller: controller,
-            obscureText: obscureText,
-            minLines: minLines,
-            maxLines: maxLines,
-            padding: const EdgeInsets.all(11),
-          ),
-        ],
+      child: AppTextField(
+        controller: controller,
+        hintText: hint,
+        obscureText: obscureText,
+        minLines: minLines,
+        maxLines: maxLines,
       ),
     ),
   );
 }
 
-class _RatingToggle extends StatelessWidget {
-  const _RatingToggle({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: label,
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 140),
-          width: 38,
-          height: 32,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: selected ? colors.primary : colors.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(9),
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: selected ? colors.onPrimary : colors.onSurfaceVariant,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _Button extends StatelessWidget {
-  const _Button({required this.label, this.onTap, this.secondary = false});
-  final String label;
-  final VoidCallback? onTap;
-  final bool secondary;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return GestureDetector(
-      onTap: onTap,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: secondary ? colors.surfaceContainerHighest : colors.primary,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: secondary ? colors.onSurfaceVariant : colors.onPrimary,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 String _policy(ContentPolicy value) => switch (value) {
-  ContentPolicy.unfiltered => 'Unfiltered',
-  ContentPolicy.animeFocused => 'Anime focused',
+  ContentPolicy.unfiltered => t.settings.source.unfiltered,
+  ContentPolicy.animeFocused => t.settings.source.animeFocused,
 };
 
 String _networkMode(NetworkFallbackMode value) => switch (value) {
-  NetworkFallbackMode.off => 'System DNS',
-  NetworkFallbackMode.persistedIpOverride => 'SNI bypass',
-  NetworkFallbackMode.legacyIpUrl => 'Legacy IP URL',
+  NetworkFallbackMode.off => t.settings.network.systemDns,
+  NetworkFallbackMode.persistedIpOverride => t.settings.network.sniBypass,
+  NetworkFallbackMode.legacyIpUrl => t.settings.network.legacyIpUrl,
 };
 
 String _theme(int? value) => switch (value) {
@@ -846,7 +907,7 @@ String _theme(int? value) => switch (value) {
 };
 
 String _language(int? value) => switch (value) {
-  null => 'System',
+  null => t.settings.system,
   0 => 'English',
   1 => '日本語',
   2 => '繁體中文',
@@ -854,7 +915,20 @@ String _language(int? value) => switch (value) {
 };
 
 String _authLabel(AuthFieldKind kind) => switch (kind) {
-  AuthFieldKind.username => 'Username',
-  AuthFieldKind.userId => 'User ID',
-  AuthFieldKind.apiKey => 'API key',
+  AuthFieldKind.username => t.settings.account.username,
+  AuthFieldKind.userId => t.settings.account.userId,
+  AuthFieldKind.apiKey => t.settings.account.apiKey,
+};
+
+String _authStatusLabel(AuthStatus status) => switch (status) {
+  AuthStatus.notConfigured => t.settings.account.statuses.notConfigured,
+  AuthStatus.configuredUnverified =>
+    t.settings.account.statuses.configuredUnverified,
+  AuthStatus.verified => t.settings.account.statuses.verified,
+  AuthStatus.rejected => t.settings.account.statuses.rejected,
+};
+
+String _signInUrl(String sourceId) => switch (sourceId) {
+  'anime_pictures' => 'https://anime-pictures.net/login/view',
+  _ => throw UnsupportedError('No web sign-in URL for $sourceId'),
 };

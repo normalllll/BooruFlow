@@ -10,8 +10,7 @@ import 'package:slang/generated.dart';
 import 'translations.g.dart';
 
 // Path: <root>
-class TranslationsJa extends Translations
-    with BaseTranslations<AppLocale, Translations> {
+class TranslationsJa extends Translations with BaseTranslations<AppLocale, Translations> {
   /// You can call this constructor and build your own translation instance of this locale.
   /// Constructing via the enum [AppLocale.build] is preferred.
   TranslationsJa({
@@ -19,10 +18,7 @@ class TranslationsJa extends Translations
     PluralResolver? cardinalResolver,
     PluralResolver? ordinalResolver,
     TranslationMetadata<AppLocale, Translations>? meta,
-  }) : assert(
-         overrides == null,
-         'Set "translation_overrides: true" in order to enable this feature.',
-       ),
+  }) : assert(overrides == null, 'Set "translation_overrides: true" in order to enable this feature.'),
        $meta =
            meta ??
            TranslationMetadata(
@@ -31,13 +27,8 @@ class TranslationsJa extends Translations
              cardinalResolver: cardinalResolver,
              ordinalResolver: ordinalResolver,
            ),
-       super(
-         cardinalResolver: cardinalResolver,
-         ordinalResolver: ordinalResolver,
-       ) {
-    super.$meta.setFlatMapFunction(
-      $meta.getTranslation,
-    ); // copy base translations to super.$meta
+       super(cardinalResolver: cardinalResolver, ordinalResolver: ordinalResolver) {
+    super.$meta.setFlatMapFunction($meta.getTranslation); // copy base translations to super.$meta
     $meta.setFlatMapFunction(_flatMapFunction);
   }
 
@@ -47,55 +38,40 @@ class TranslationsJa extends Translations
 
   /// Access flat map
   @override
-  dynamic operator [](String key) =>
-      $meta.getTranslation(key) ?? super.$meta.getTranslation(key);
+  dynamic operator [](String key) => $meta.getTranslation(key) ?? super.$meta.getTranslation(key);
 
   late final TranslationsJa _root = this; // ignore: unused_field
 
   @override
-  TranslationsJa $copyWith({
-    TranslationMetadata<AppLocale, Translations>? meta,
-  }) => TranslationsJa(meta: meta ?? this.$meta);
+  TranslationsJa $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) =>
+      TranslationsJa(meta: meta ?? this.$meta);
 
   // Translations
   @override
-  late final _Translations$generic$ja generic = _Translations$generic$ja._(
-    _root,
-  );
+  late final _Translations$generic$ja generic = _Translations$generic$ja._(_root);
   @override
-  late final _Translations$booruError$ja booruError =
-      _Translations$booruError$ja._(_root);
+  late final _Translations$booruError$ja booruError = _Translations$booruError$ja._(_root);
   @override
   late final _Translations$update$ja update = _Translations$update$ja._(_root);
   @override
-  late final _Translations$postList$ja postList = _Translations$postList$ja._(
-    _root,
-  );
+  late final _Translations$postList$ja postList = _Translations$postList$ja._(_root);
   @override
-  late final _Translations$postDetail$ja postDetail =
-      _Translations$postDetail$ja._(_root);
+  late final _Translations$postDetail$ja postDetail = _Translations$postDetail$ja._(_root);
   @override
-  late final _Translations$postSearch$ja postSearch =
-      _Translations$postSearch$ja._(_root);
+  late final _Translations$postSearch$ja postSearch = _Translations$postSearch$ja._(_root);
   @override
-  late final _Translations$imageZoom$ja imageZoom =
-      _Translations$imageZoom$ja._(_root);
+  late final _Translations$imageZoom$ja imageZoom = _Translations$imageZoom$ja._(_root);
   @override
-  late final _Translations$downloads$ja downloads =
-      _Translations$downloads$ja._(_root);
+  late final _Translations$downloads$ja downloads = _Translations$downloads$ja._(_root);
   @override
   late final _Translations$about$ja about = _Translations$about$ja._(_root);
   @override
-  late final _Translations$settings$ja settings = _Translations$settings$ja._(
-    _root,
-  );
+  late final _Translations$settings$ja settings = _Translations$settings$ja._(_root);
 }
 
 // Path: generic
 class _Translations$generic$ja extends Translations$generic$en {
-  _Translations$generic$ja._(TranslationsJa root)
-    : this._root = root,
-      super.internal(root);
+  _Translations$generic$ja._(TranslationsJa root) : this._root = root, super.internal(root);
 
   final TranslationsJa _root; // ignore: unused_field
 
@@ -113,13 +89,11 @@ class _Translations$generic$ja extends Translations$generic$en {
   @override
   String get disabled => '無効';
   @override
-  String copiedWithValue({required Object value}) =>
-      '${value} をクリップボードにコピーしました';
+  String copiedWithValue({required Object value}) => '${value} をクリップボードにコピーしました';
   @override
   String errorWithValue({required Object value}) => 'エラーが発生しました: ${value}';
   @override
-  String errorWithCause({required Object message, required Object cause}) =>
-      '${message}: ${cause}';
+  String errorWithCause({required Object message, required Object cause}) => '${message}: ${cause}';
   @override
   String get loading => '読み込み中...';
   @override
@@ -134,9 +108,7 @@ class _Translations$generic$ja extends Translations$generic$en {
 
 // Path: booruError
 class _Translations$booruError$ja extends Translations$booruError$en {
-  _Translations$booruError$ja._(TranslationsJa root)
-    : this._root = root,
-      super.internal(root);
+  _Translations$booruError$ja._(TranslationsJa root) : this._root = root, super.internal(root);
 
   final TranslationsJa _root; // ignore: unused_field
 
@@ -175,9 +147,7 @@ class _Translations$booruError$ja extends Translations$booruError$en {
 
 // Path: update
 class _Translations$update$ja extends Translations$update$en {
-  _Translations$update$ja._(TranslationsJa root)
-    : this._root = root,
-      super.internal(root);
+  _Translations$update$ja._(TranslationsJa root) : this._root = root, super.internal(root);
 
   final TranslationsJa _root; // ignore: unused_field
 
@@ -187,8 +157,7 @@ class _Translations$update$ja extends Translations$update$en {
   @override
   String get checkUpdateFailed => 'アップデートの確認に失敗しました。インターネット接続を確認してください。';
   @override
-  String get selectDownloadUrlFailed =>
-      'ダウンロードURLが見つかりません。\nプロジェクトページにアクセスし、手動で更新するか、プロジェクトのIssueページでヘルプを求めてください。';
+  String get selectDownloadUrlFailed => 'ダウンロードURLが見つかりません。\nプロジェクトページにアクセスし、手動で更新するか、プロジェクトのIssueページでヘルプを求めてください。';
   @override
   String newVersionFound({required Object version}) =>
       '新しいバージョンが見つかりました: ${version}。\n「ページについて」ページに移動し、「アップデートをダウンロード」をクリックしてください。';
@@ -198,9 +167,7 @@ class _Translations$update$ja extends Translations$update$en {
 
 // Path: postList
 class _Translations$postList$ja extends Translations$postList$en {
-  _Translations$postList$ja._(TranslationsJa root)
-    : this._root = root,
-      super.internal(root);
+  _Translations$postList$ja._(TranslationsJa root) : this._root = root, super.internal(root);
 
   final TranslationsJa _root; // ignore: unused_field
 
@@ -214,17 +181,14 @@ class _Translations$postList$ja extends Translations$postList$en {
   @override
   String get freepivPromotionTitle => 'freepiv をチェック';
   @override
-  String get freepivPromotionSubtitle =>
-      'モダンで快適なクロスプラットフォーム対応の Pixiv 非公式クライアントです。';
+  String get freepivPromotionSubtitle => 'モダンで快適なクロスプラットフォーム対応の Pixiv 非公式クライアントです。';
   @override
   String get freepivPromotionAction => 'プロジェクトを見る';
 }
 
 // Path: postDetail
 class _Translations$postDetail$ja extends Translations$postDetail$en {
-  _Translations$postDetail$ja._(TranslationsJa root)
-    : this._root = root,
-      super.internal(root);
+  _Translations$postDetail$ja._(TranslationsJa root) : this._root = root, super.internal(root);
 
   final TranslationsJa _root; // ignore: unused_field
 
@@ -275,9 +239,7 @@ class _Translations$postDetail$ja extends Translations$postDetail$en {
 
 // Path: postSearch
 class _Translations$postSearch$ja extends Translations$postSearch$en {
-  _Translations$postSearch$ja._(TranslationsJa root)
-    : this._root = root,
-      super.internal(root);
+  _Translations$postSearch$ja._(TranslationsJa root) : this._root = root, super.internal(root);
 
   final TranslationsJa _root; // ignore: unused_field
 
@@ -288,9 +250,7 @@ class _Translations$postSearch$ja extends Translations$postSearch$en {
 
 // Path: imageZoom
 class _Translations$imageZoom$ja extends Translations$imageZoom$en {
-  _Translations$imageZoom$ja._(TranslationsJa root)
-    : this._root = root,
-      super.internal(root);
+  _Translations$imageZoom$ja._(TranslationsJa root) : this._root = root, super.internal(root);
 
   final TranslationsJa _root; // ignore: unused_field
 
@@ -301,9 +261,7 @@ class _Translations$imageZoom$ja extends Translations$imageZoom$en {
 
 // Path: downloads
 class _Translations$downloads$ja extends Translations$downloads$en {
-  _Translations$downloads$ja._(TranslationsJa root)
-    : this._root = root,
-      super.internal(root);
+  _Translations$downloads$ja._(TranslationsJa root) : this._root = root, super.internal(root);
 
   final TranslationsJa _root; // ignore: unused_field
 
@@ -365,15 +323,12 @@ class _Translations$downloads$ja extends Translations$downloads$en {
   @override
   String get collapse => '折りたたむ';
   @override
-  late final _Translations$downloads$messages$ja messages =
-      _Translations$downloads$messages$ja._(_root);
+  late final _Translations$downloads$messages$ja messages = _Translations$downloads$messages$ja._(_root);
 }
 
 // Path: about
 class _Translations$about$ja extends Translations$about$en {
-  _Translations$about$ja._(TranslationsJa root)
-    : this._root = root,
-      super.internal(root);
+  _Translations$about$ja._(TranslationsJa root) : this._root = root, super.internal(root);
 
   final TranslationsJa _root; // ignore: unused_field
 
@@ -400,9 +355,7 @@ class _Translations$about$ja extends Translations$about$en {
 
 // Path: settings
 class _Translations$settings$ja extends Translations$settings$en {
-  _Translations$settings$ja._(TranslationsJa root)
-    : this._root = root,
-      super.internal(root);
+  _Translations$settings$ja._(TranslationsJa root) : this._root = root, super.internal(root);
 
   final TranslationsJa _root; // ignore: unused_field
 
@@ -434,52 +387,62 @@ class _Translations$settings$ja extends Translations$settings$en {
   @override
   String get dark => 'ダーク';
   @override
-  late final _Translations$settings$languageDialog$ja languageDialog =
-      _Translations$settings$languageDialog$ja._(_root);
+  String get auto => '自動';
   @override
-  late final _Translations$settings$themeModeDialog$ja themeModeDialog =
-      _Translations$settings$themeModeDialog$ja._(_root);
+  String get downloadsOverview => 'デスクトップのみ · ソースごとにサブフォルダーを作成';
   @override
-  late final _Translations$settings$downloadDirectoryDialog$ja
-  downloadDirectoryDialog = _Translations$settings$downloadDirectoryDialog$ja._(
+  String get sourceSubfolders => 'ソース別サブフォルダー';
+  @override
+  String get sourceSubfoldersDescription => 'ダウンロードはソース名ごとの個別フォルダーに保存されます。';
+  @override
+  late final _Translations$settings$sections$ja sections = _Translations$settings$sections$ja._(_root);
+  @override
+  late final _Translations$settings$source$ja source = _Translations$settings$source$ja._(_root);
+  @override
+  late final _Translations$settings$account$ja account = _Translations$settings$account$ja._(_root);
+  @override
+  late final _Translations$settings$network$ja network = _Translations$settings$network$ja._(_root);
+  @override
+  late final _Translations$settings$languageDialog$ja languageDialog = _Translations$settings$languageDialog$ja._(
     _root,
   );
   @override
-  late final _Translations$settings$bypassSniDialog$ja bypassSniDialog =
-      _Translations$settings$bypassSniDialog$ja._(_root);
+  late final _Translations$settings$themeModeDialog$ja themeModeDialog = _Translations$settings$themeModeDialog$ja._(
+    _root,
+  );
+  @override
+  late final _Translations$settings$downloadDirectoryDialog$ja downloadDirectoryDialog =
+      _Translations$settings$downloadDirectoryDialog$ja._(_root);
+  @override
+  late final _Translations$settings$bypassSniDialog$ja bypassSniDialog = _Translations$settings$bypassSniDialog$ja._(
+    _root,
+  );
   @override
   late final _Translations$settings$columnsPerRowDialog$ja columnsPerRowDialog =
       _Translations$settings$columnsPerRowDialog$ja._(_root);
   @override
-  late final _Translations$settings$maxConcurrentDownloadsDialog$ja
-  maxConcurrentDownloadsDialog =
+  late final _Translations$settings$maxConcurrentDownloadsDialog$ja maxConcurrentDownloadsDialog =
       _Translations$settings$maxConcurrentDownloadsDialog$ja._(_root);
   @override
-  late final _Translations$settings$maxSegmentsPerTaskDialog$ja
-  maxSegmentsPerTaskDialog =
+  late final _Translations$settings$maxSegmentsPerTaskDialog$ja maxSegmentsPerTaskDialog =
       _Translations$settings$maxSegmentsPerTaskDialog$ja._(_root);
 }
 
 // Path: downloads.messages
-class _Translations$downloads$messages$ja
-    extends Translations$downloads$messages$en {
-  _Translations$downloads$messages$ja._(TranslationsJa root)
-    : this._root = root,
-      super.internal(root);
+class _Translations$downloads$messages$ja extends Translations$downloads$messages$en {
+  _Translations$downloads$messages$ja._(TranslationsJa root) : this._root = root, super.internal(root);
 
   final TranslationsJa _root; // ignore: unused_field
 
   // Translations
   @override
-  String get storagePermanentlyDenied =>
-      'ストレージのアクセス許可が永久に拒否されました。\n設定で手動でストレージのアクセス許可を有効にしてください。';
+  String get storagePermanentlyDenied => 'ストレージのアクセス許可が永久に拒否されました。\n設定で手動でストレージのアクセス許可を有効にしてください。';
   @override
   String get storageDenied => 'ストレージのアクセス許可が拒否されました。';
   @override
   String get deviceInfoError => 'デバイス情報を解析できません。';
   @override
-  String get photosPermanentlyDenied =>
-      '写真のアクセス許可が永久に拒否されました。\n設定で手動で写真のアクセス許可を有効にしてください。';
+  String get photosPermanentlyDenied => '写真のアクセス許可が永久に拒否されました。\n設定で手動で写真のアクセス許可を有効にしてください。';
   @override
   String get photosDenied => '写真のアクセス許可が拒否されました。';
   @override
@@ -491,20 +454,148 @@ class _Translations$downloads$messages$ja
   @override
   String downloadStartWith({required Object name}) => 'ダウンロードタスクを開始: ${name}';
   @override
-  String downloadCompletedWith({required Object name}) =>
-      'ダウンロード完了: タスク ${name}';
+  String downloadCompletedWith({required Object name}) => 'ダウンロード完了: タスク ${name}';
   @override
   String downloadFailedWith({required Object name}) => 'ダウンロード失敗: タスク ${name}';
   @override
   String saveFailedWith({required Object name}) => '保存失敗: タスク ${name}';
 }
 
+// Path: settings.sections
+class _Translations$settings$sections$ja extends Translations$settings$sections$en {
+  _Translations$settings$sections$ja._(TranslationsJa root) : this._root = root, super.internal(root);
+
+  final TranslationsJa _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get sourcesAndContent => 'ソースとコンテンツ';
+  @override
+  String get accounts => 'アカウント';
+  @override
+  String get network => 'ネットワーク';
+  @override
+  String get appearance => '外観';
+  @override
+  String get downloads => 'ダウンロード';
+}
+
+// Path: settings.source
+class _Translations$settings$source$ja extends Translations$settings$source$en {
+  _Translations$settings$source$ja._(TranslationsJa root) : this._root = root, super.internal(root);
+
+  final TranslationsJa _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get label => 'ソース';
+  @override
+  String get contentPolicy => 'コンテンツポリシー';
+  @override
+  String get safetyRating => 'セーフティレーティング';
+  @override
+  String get noHiddenDefault => '暗黙の除外なし';
+  @override
+  String get noHiddenDefaultDescription => 'すべて未選択にすると、成人向けを含むすべての投稿が表示されます。';
+  @override
+  String get unfiltered => 'フィルターなし';
+  @override
+  String get animeFocused => 'アニメ優先';
+}
+
+// Path: settings.account
+class _Translations$settings$account$ja extends Translations$settings$account$en {
+  _Translations$settings$account$ja._(TranslationsJa root) : this._root = root, super.internal(root);
+
+  final TranslationsJa _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get manageAllSubtitle => 'ソースごとのアカウントを個別に設定';
+  @override
+  String get openSignInPage => 'ログインページを開く';
+  @override
+  String get cookieHeader => 'Cookie ヘッダー';
+  @override
+  String get storedLocally => 'このデバイス内に保存';
+  @override
+  String get browserUserAgent => 'ブラウザーの User-Agent';
+  @override
+  String get browserUserAgentHint => 'ログインしたブラウザーと同じ User-Agent を使用';
+  @override
+  String get required => '必須';
+  @override
+  String get optional => '任意';
+  @override
+  String get actions => 'アカウント操作';
+  @override
+  String get save => '保存';
+  @override
+  String get verify => '検証';
+  @override
+  String get signOut => 'サインアウト';
+  @override
+  String get saved => 'アカウントを保存しました';
+  @override
+  String get saveFailed => 'アカウントを保存できませんでした';
+  @override
+  String get verified => 'アカウントを検証しました';
+  @override
+  String get verificationFailed => '検証に失敗しました';
+  @override
+  String get username => 'ユーザー名';
+  @override
+  String get userId => 'ユーザー ID';
+  @override
+  String get apiKey => 'API キー';
+  @override
+  String statusValue({required Object status}) => '状態 · ${status}';
+  @override
+  late final _Translations$settings$account$statuses$ja statuses = _Translations$settings$account$statuses$ja._(_root);
+}
+
+// Path: settings.network
+class _Translations$settings$network$ja extends Translations$settings$network$en {
+  _Translations$settings$network$ja._(TranslationsJa root) : this._root = root, super.internal(root);
+
+  final TranslationsJa _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get connectionMode => '接続モード';
+  @override
+  String get fallbackToSystemDns => 'システム DNS にフォールバック';
+  @override
+  String get proxyUrl => 'プロキシ URL';
+  @override
+  String get proxyHint => '任意 · 例 http://127.0.0.1:7890';
+  @override
+  String get applyAndRouteCache => '適用とルートキャッシュ';
+  @override
+  String get apply => 'ネットワーク設定を適用';
+  @override
+  String get refreshRoutes => 'ルートを更新';
+  @override
+  String get routeCacheUnavailable => 'ルートキャッシュを利用できません';
+  @override
+  String routeCacheStatus({required Object hosts, required Object revision}) => '${hosts} ホスト · リビジョン ${revision}';
+  @override
+  String get applied => 'ネットワーク設定を適用しました';
+  @override
+  String get invalidSettings => 'ネットワーク設定が無効です';
+  @override
+  String get routeRefreshFailed => 'ルートの更新に失敗しました';
+  @override
+  String get systemDns => 'システム DNS';
+  @override
+  String get sniBypass => 'SNI バイパス';
+  @override
+  String get legacyIpUrl => '従来の IP URL';
+}
+
 // Path: settings.languageDialog
-class _Translations$settings$languageDialog$ja
-    extends Translations$settings$languageDialog$en {
-  _Translations$settings$languageDialog$ja._(TranslationsJa root)
-    : this._root = root,
-      super.internal(root);
+class _Translations$settings$languageDialog$ja extends Translations$settings$languageDialog$en {
+  _Translations$settings$languageDialog$ja._(TranslationsJa root) : this._root = root, super.internal(root);
 
   final TranslationsJa _root; // ignore: unused_field
 
@@ -514,11 +605,8 @@ class _Translations$settings$languageDialog$ja
 }
 
 // Path: settings.themeModeDialog
-class _Translations$settings$themeModeDialog$ja
-    extends Translations$settings$themeModeDialog$en {
-  _Translations$settings$themeModeDialog$ja._(TranslationsJa root)
-    : this._root = root,
-      super.internal(root);
+class _Translations$settings$themeModeDialog$ja extends Translations$settings$themeModeDialog$en {
+  _Translations$settings$themeModeDialog$ja._(TranslationsJa root) : this._root = root, super.internal(root);
 
   final TranslationsJa _root; // ignore: unused_field
 
@@ -528,11 +616,8 @@ class _Translations$settings$themeModeDialog$ja
 }
 
 // Path: settings.downloadDirectoryDialog
-class _Translations$settings$downloadDirectoryDialog$ja
-    extends Translations$settings$downloadDirectoryDialog$en {
-  _Translations$settings$downloadDirectoryDialog$ja._(TranslationsJa root)
-    : this._root = root,
-      super.internal(root);
+class _Translations$settings$downloadDirectoryDialog$ja extends Translations$settings$downloadDirectoryDialog$en {
+  _Translations$settings$downloadDirectoryDialog$ja._(TranslationsJa root) : this._root = root, super.internal(root);
 
   final TranslationsJa _root; // ignore: unused_field
 
@@ -544,18 +629,13 @@ class _Translations$settings$downloadDirectoryDialog$ja
   @override
   String get pick => 'ディレクトリを選択';
   @override
-  late final _Translations$settings$downloadDirectoryDialog$messages$ja
-  messages = _Translations$settings$downloadDirectoryDialog$messages$ja._(
-    _root,
-  );
+  late final _Translations$settings$downloadDirectoryDialog$messages$ja messages =
+      _Translations$settings$downloadDirectoryDialog$messages$ja._(_root);
 }
 
 // Path: settings.bypassSniDialog
-class _Translations$settings$bypassSniDialog$ja
-    extends Translations$settings$bypassSniDialog$en {
-  _Translations$settings$bypassSniDialog$ja._(TranslationsJa root)
-    : this._root = root,
-      super.internal(root);
+class _Translations$settings$bypassSniDialog$ja extends Translations$settings$bypassSniDialog$en {
+  _Translations$settings$bypassSniDialog$ja._(TranslationsJa root) : this._root = root, super.internal(root);
 
   final TranslationsJa _root; // ignore: unused_field
 
@@ -565,11 +645,8 @@ class _Translations$settings$bypassSniDialog$ja
 }
 
 // Path: settings.columnsPerRowDialog
-class _Translations$settings$columnsPerRowDialog$ja
-    extends Translations$settings$columnsPerRowDialog$en {
-  _Translations$settings$columnsPerRowDialog$ja._(TranslationsJa root)
-    : this._root = root,
-      super.internal(root);
+class _Translations$settings$columnsPerRowDialog$ja extends Translations$settings$columnsPerRowDialog$en {
+  _Translations$settings$columnsPerRowDialog$ja._(TranslationsJa root) : this._root = root, super.internal(root);
 
   final TranslationsJa _root; // ignore: unused_field
 
@@ -593,11 +670,8 @@ class _Translations$settings$maxConcurrentDownloadsDialog$ja
 }
 
 // Path: settings.maxSegmentsPerTaskDialog
-class _Translations$settings$maxSegmentsPerTaskDialog$ja
-    extends Translations$settings$maxSegmentsPerTaskDialog$en {
-  _Translations$settings$maxSegmentsPerTaskDialog$ja._(TranslationsJa root)
-    : this._root = root,
-      super.internal(root);
+class _Translations$settings$maxSegmentsPerTaskDialog$ja extends Translations$settings$maxSegmentsPerTaskDialog$en {
+  _Translations$settings$maxSegmentsPerTaskDialog$ja._(TranslationsJa root) : this._root = root, super.internal(root);
 
   final TranslationsJa _root; // ignore: unused_field
 
@@ -606,12 +680,28 @@ class _Translations$settings$maxSegmentsPerTaskDialog$ja
   String get title => '各ダウンロードタスクの最大セグメント数';
 }
 
+// Path: settings.account.statuses
+class _Translations$settings$account$statuses$ja extends Translations$settings$account$statuses$en {
+  _Translations$settings$account$statuses$ja._(TranslationsJa root) : this._root = root, super.internal(root);
+
+  final TranslationsJa _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get notConfigured => '未設定';
+  @override
+  String get configuredUnverified => '設定済み・未検証';
+  @override
+  String get verified => '検証済み';
+  @override
+  String get rejected => '拒否されました';
+}
+
 // Path: settings.downloadDirectoryDialog.messages
 class _Translations$settings$downloadDirectoryDialog$messages$ja
     extends Translations$settings$downloadDirectoryDialog$messages$en {
-  _Translations$settings$downloadDirectoryDialog$messages$ja._(
-    TranslationsJa root,
-  ) : this._root = root,
+  _Translations$settings$downloadDirectoryDialog$messages$ja._(TranslationsJa root)
+    : this._root = root,
       super.internal(root);
 
   final TranslationsJa _root; // ignore: unused_field
@@ -639,13 +729,9 @@ extension on TranslationsJa {
       'generic.confirm' => '確認',
       'generic.enabled' => '有効',
       'generic.disabled' => '無効',
-      'generic.copiedWithValue' =>
-        ({required Object value}) => '${value} をクリップボードにコピーしました',
-      'generic.errorWithValue' =>
-        ({required Object value}) => 'エラーが発生しました: ${value}',
-      'generic.errorWithCause' =>
-        ({required Object message, required Object cause}) =>
-            '${message}: ${cause}',
+      'generic.copiedWithValue' => ({required Object value}) => '${value} をクリップボードにコピーしました',
+      'generic.errorWithValue' => ({required Object value}) => 'エラーが発生しました: ${value}',
+      'generic.errorWithCause' => ({required Object message, required Object cause}) => '${message}: ${cause}',
       'generic.loading' => '読み込み中...',
       'generic.loadFailed' => '読み込みに失敗しました',
       'generic.retry' => '再試行',
@@ -668,18 +754,15 @@ extension on TranslationsJa {
       'booruError.internal' => 'Booru エンジンの内部エラーが発生しました。',
       'update.checkUpdateStart' => 'アップデートを確認中…',
       'update.checkUpdateFailed' => 'アップデートの確認に失敗しました。インターネット接続を確認してください。',
-      'update.selectDownloadUrlFailed' =>
-        'ダウンロードURLが見つかりません。\nプロジェクトページにアクセスし、手動で更新するか、プロジェクトのIssueページでヘルプを求めてください。',
+      'update.selectDownloadUrlFailed' => 'ダウンロードURLが見つかりません。\nプロジェクトページにアクセスし、手動で更新するか、プロジェクトのIssueページでヘルプを求めてください。',
       'update.newVersionFound' =>
-        ({required Object version}) =>
-            '新しいバージョンが見つかりました: ${version}。\n「ページについて」ページに移動し、「アップデートをダウンロード」をクリックしてください。',
+        ({required Object version}) => '新しいバージョンが見つかりました: ${version}。\n「ページについて」ページに移動し、「アップデートをダウンロード」をクリックしてください。',
       'update.noNewVersionFound' => '新しいバージョンが見つかりません。',
       'postList.short' => '投稿',
       'postList.title' => '投稿リスト',
       'postList.titleWithTags' => ({required Object tags}) => 'タグ付き投稿: ${tags}',
       'postList.freepivPromotionTitle' => 'freepiv をチェック',
-      'postList.freepivPromotionSubtitle' =>
-        'モダンで快適なクロスプラットフォーム対応の Pixiv 非公式クライアントです。',
+      'postList.freepivPromotionSubtitle' => 'モダンで快適なクロスプラットフォーム対応の Pixiv 非公式クライアントです。',
       'postList.freepivPromotionAction' => 'プロジェクトを見る',
       'postDetail.titleWithId' => ({required Object id}) => '投稿: ${id}',
       'postDetail.tags' => 'タグ',
@@ -732,25 +815,18 @@ extension on TranslationsJa {
       'downloads.actionFailed' => 'ダウンロード操作に失敗しました',
       'downloads.expand' => '展開',
       'downloads.collapse' => '折りたたむ',
-      'downloads.messages.storagePermanentlyDenied' =>
-        'ストレージのアクセス許可が永久に拒否されました。\n設定で手動でストレージのアクセス許可を有効にしてください。',
+      'downloads.messages.storagePermanentlyDenied' => 'ストレージのアクセス許可が永久に拒否されました。\n設定で手動でストレージのアクセス許可を有効にしてください。',
       'downloads.messages.storageDenied' => 'ストレージのアクセス許可が拒否されました。',
       'downloads.messages.deviceInfoError' => 'デバイス情報を解析できません。',
-      'downloads.messages.photosPermanentlyDenied' =>
-        '写真のアクセス許可が永久に拒否されました。\n設定で手動で写真のアクセス許可を有効にしてください。',
+      'downloads.messages.photosPermanentlyDenied' => '写真のアクセス許可が永久に拒否されました。\n設定で手動で写真のアクセス許可を有効にしてください。',
       'downloads.messages.photosDenied' => '写真のアクセス許可が拒否されました。',
       'downloads.messages.downloadTaskExists' => 'ダウンロードタスクは既に存在しています。',
       'downloads.messages.imageFileExists' => '画像ファイルは既に存在しています。',
-      'downloads.messages.downloadRetryWith' =>
-        ({required Object name}) => 'ダウンロードタスクを再試行: ${name}',
-      'downloads.messages.downloadStartWith' =>
-        ({required Object name}) => 'ダウンロードタスクを開始: ${name}',
-      'downloads.messages.downloadCompletedWith' =>
-        ({required Object name}) => 'ダウンロード完了: タスク ${name}',
-      'downloads.messages.downloadFailedWith' =>
-        ({required Object name}) => 'ダウンロード失敗: タスク ${name}',
-      'downloads.messages.saveFailedWith' =>
-        ({required Object name}) => '保存失敗: タスク ${name}',
+      'downloads.messages.downloadRetryWith' => ({required Object name}) => 'ダウンロードタスクを再試行: ${name}',
+      'downloads.messages.downloadStartWith' => ({required Object name}) => 'ダウンロードタスクを開始: ${name}',
+      'downloads.messages.downloadCompletedWith' => ({required Object name}) => 'ダウンロード完了: タスク ${name}',
+      'downloads.messages.downloadFailedWith' => ({required Object name}) => 'ダウンロード失敗: タスク ${name}',
+      'downloads.messages.saveFailedWith' => ({required Object name}) => '保存失敗: タスク ${name}',
       'about.title' => 'について',
       'about.projectUrl' => 'プロジェクトURL',
       'about.publishPage' => '公開ページ',
@@ -773,17 +849,70 @@ extension on TranslationsJa {
       'settings.system' => 'システム',
       'settings.light' => 'ライト',
       'settings.dark' => 'ダーク',
+      'settings.auto' => '自動',
+      'settings.downloadsOverview' => 'デスクトップのみ · ソースごとにサブフォルダーを作成',
+      'settings.sourceSubfolders' => 'ソース別サブフォルダー',
+      'settings.sourceSubfoldersDescription' => 'ダウンロードはソース名ごとの個別フォルダーに保存されます。',
+      'settings.sections.sourcesAndContent' => 'ソースとコンテンツ',
+      'settings.sections.accounts' => 'アカウント',
+      'settings.sections.network' => 'ネットワーク',
+      'settings.sections.appearance' => '外観',
+      'settings.sections.downloads' => 'ダウンロード',
+      'settings.source.label' => 'ソース',
+      'settings.source.contentPolicy' => 'コンテンツポリシー',
+      'settings.source.safetyRating' => 'セーフティレーティング',
+      'settings.source.noHiddenDefault' => '暗黙の除外なし',
+      'settings.source.noHiddenDefaultDescription' => 'すべて未選択にすると、成人向けを含むすべての投稿が表示されます。',
+      'settings.source.unfiltered' => 'フィルターなし',
+      'settings.source.animeFocused' => 'アニメ優先',
+      'settings.account.manageAllSubtitle' => 'ソースごとのアカウントを個別に設定',
+      'settings.account.openSignInPage' => 'ログインページを開く',
+      'settings.account.cookieHeader' => 'Cookie ヘッダー',
+      'settings.account.storedLocally' => 'このデバイス内に保存',
+      'settings.account.browserUserAgent' => 'ブラウザーの User-Agent',
+      'settings.account.browserUserAgentHint' => 'ログインしたブラウザーと同じ User-Agent を使用',
+      'settings.account.required' => '必須',
+      'settings.account.optional' => '任意',
+      'settings.account.actions' => 'アカウント操作',
+      'settings.account.save' => '保存',
+      'settings.account.verify' => '検証',
+      'settings.account.signOut' => 'サインアウト',
+      'settings.account.saved' => 'アカウントを保存しました',
+      'settings.account.saveFailed' => 'アカウントを保存できませんでした',
+      'settings.account.verified' => 'アカウントを検証しました',
+      'settings.account.verificationFailed' => '検証に失敗しました',
+      'settings.account.username' => 'ユーザー名',
+      'settings.account.userId' => 'ユーザー ID',
+      'settings.account.apiKey' => 'API キー',
+      'settings.account.statusValue' => ({required Object status}) => '状態 · ${status}',
+      'settings.account.statuses.notConfigured' => '未設定',
+      'settings.account.statuses.configuredUnverified' => '設定済み・未検証',
+      'settings.account.statuses.verified' => '検証済み',
+      'settings.account.statuses.rejected' => '拒否されました',
+      'settings.network.connectionMode' => '接続モード',
+      'settings.network.fallbackToSystemDns' => 'システム DNS にフォールバック',
+      'settings.network.proxyUrl' => 'プロキシ URL',
+      'settings.network.proxyHint' => '任意 · 例 http://127.0.0.1:7890',
+      'settings.network.applyAndRouteCache' => '適用とルートキャッシュ',
+      'settings.network.apply' => 'ネットワーク設定を適用',
+      'settings.network.refreshRoutes' => 'ルートを更新',
+      'settings.network.routeCacheUnavailable' => 'ルートキャッシュを利用できません',
+      'settings.network.routeCacheStatus' =>
+        ({required Object hosts, required Object revision}) => '${hosts} ホスト · リビジョン ${revision}',
+      'settings.network.applied' => 'ネットワーク設定を適用しました',
+      'settings.network.invalidSettings' => 'ネットワーク設定が無効です',
+      'settings.network.routeRefreshFailed' => 'ルートの更新に失敗しました',
+      'settings.network.systemDns' => 'システム DNS',
+      'settings.network.sniBypass' => 'SNI バイパス',
+      'settings.network.legacyIpUrl' => '従来の IP URL',
       'settings.languageDialog.title' => '言語',
       'settings.themeModeDialog.title' => 'テーマモード',
       'settings.downloadDirectoryDialog.title' => 'ダウンロードディレクトリ',
       'settings.downloadDirectoryDialog.pickerTitle' => 'ディレクトリを選択',
       'settings.downloadDirectoryDialog.pick' => 'ディレクトリを選択',
-      'settings.downloadDirectoryDialog.messages.setToPlatformDefault' =>
-        'ダウンロードディレクトリはプラットフォームのデフォルトに設定されています。',
-      'settings.downloadDirectoryDialog.messages.pathNotAbsolute' =>
-        'パスは絶対パスである必要があります。',
-      'settings.downloadDirectoryDialog.messages.pathNotWritable' =>
-        'パスに書き込みできません。',
+      'settings.downloadDirectoryDialog.messages.setToPlatformDefault' => 'ダウンロードディレクトリはプラットフォームのデフォルトに設定されています。',
+      'settings.downloadDirectoryDialog.messages.pathNotAbsolute' => 'パスは絶対パスである必要があります。',
+      'settings.downloadDirectoryDialog.messages.pathNotWritable' => 'パスに書き込みできません。',
       'settings.bypassSniDialog.title' => 'SNI をバイパス',
       'settings.columnsPerRowDialog.title' => '各行の列数',
       'settings.maxConcurrentDownloadsDialog.title' => '最大同時ダウンロードタスク数',

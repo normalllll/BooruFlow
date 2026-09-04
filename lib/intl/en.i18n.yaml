@@ -145,6 +145,70 @@ settings:
   system: System
   light: Light
   dark: Dark
+  auto: Auto
+  downloadsOverview: Desktop only · one subfolder per source
+  sourceSubfolders: Source subfolders
+  sourceSubfoldersDescription: Downloads are saved in a separate folder named after each source.
+
+  sections:
+    sourcesAndContent: Sources & content
+    accounts: Accounts
+    network: Network
+    appearance: Appearance
+    downloads: Downloads
+
+  source:
+    label: Source
+    contentPolicy: Content policy
+    safetyRating: Safety rating
+    noHiddenDefault: No hidden default
+    noHiddenDefaultDescription: Leave every rating unselected to show all posts, including explicit posts.
+    unfiltered: Unfiltered
+    animeFocused: Anime focused
+
+  account:
+    manageAllSubtitle: Configure every source account independently
+    openSignInPage: Open sign-in page
+    cookieHeader: Cookie header
+    storedLocally: Stored locally on this device
+    browserUserAgent: Browser User-Agent
+    browserUserAgentHint: Use the same User-Agent as the signed-in browser
+    required: Required
+    optional: Optional
+    actions: Account actions
+    save: Save
+    verify: Verify
+    signOut: Sign out
+    saved: Account saved
+    saveFailed: Could not save account
+    verified: Account verified
+    verificationFailed: Verification failed
+    username: Username
+    userId: User ID
+    apiKey: API key
+    statusValue: "Status · $status"
+    statuses:
+      notConfigured: Not configured
+      configuredUnverified: Configured, not verified
+      verified: Verified
+      rejected: Rejected
+
+  network:
+    connectionMode: Connection mode
+    fallbackToSystemDns: Fall back to system DNS
+    proxyUrl: Proxy URL
+    proxyHint: Optional · for example http://127.0.0.1:7890
+    applyAndRouteCache: Apply and route cache
+    apply: Apply network
+    refreshRoutes: Refresh routes
+    routeCacheUnavailable: Route cache unavailable
+    routeCacheStatus: "$hosts hosts · revision $revision"
+    applied: Network settings applied
+    invalidSettings: Invalid network settings
+    routeRefreshFailed: Route refresh failed
+    systemDns: System DNS
+    sniBypass: SNI bypass
+    legacyIpUrl: Legacy IP URL
 
   languageDialog:
     title: Language

@@ -145,6 +145,70 @@ settings:
   system: 系统
   light: 浅色模式
   dark: 深色模式
+  auto: 自动
+  downloadsOverview: 仅桌面端 · 每个图源使用独立子目录
+  sourceSubfolders: 图源子目录
+  sourceSubfoldersDescription: 下载内容会按照图源名称保存在不同文件夹。
+
+  sections:
+    sourcesAndContent: 图源与内容
+    accounts: 账号
+    network: 网络
+    appearance: 外观
+    downloads: 下载
+
+  source:
+    label: 图源
+    contentPolicy: 内容策略
+    safetyRating: 安全评级
+    noHiddenDefault: 不默认隐藏
+    noHiddenDefaultDescription: 不选择任何评级时会显示所有帖子，包括成人内容。
+    unfiltered: 不筛选
+    animeFocused: 动漫优先
+
+  account:
+    manageAllSubtitle: 分别配置每个图源的账号
+    openSignInPage: 打开登录页面
+    cookieHeader: Cookie 请求头
+    storedLocally: 仅保存在此设备
+    browserUserAgent: 浏览器 User-Agent
+    browserUserAgentHint: 使用与已登录浏览器相同的 User-Agent
+    required: 必填
+    optional: 选填
+    actions: 账号操作
+    save: 保存
+    verify: 验证
+    signOut: 退出登录
+    saved: 账号已保存
+    saveFailed: 无法保存账号
+    verified: 账号已验证
+    verificationFailed: 验证失败
+    username: 用户名
+    userId: 用户 ID
+    apiKey: API 密钥
+    statusValue: "状态 · $status"
+    statuses:
+      notConfigured: 尚未配置
+      configuredUnverified: 已配置，尚未验证
+      verified: 已验证
+      rejected: 已被拒绝
+
+  network:
+    connectionMode: 连接模式
+    fallbackToSystemDns: 失败时回退到系统 DNS
+    proxyUrl: 代理 URL
+    proxyHint: 选填 · 例如 http://127.0.0.1:7890
+    applyAndRouteCache: 应用与路由缓存
+    apply: 应用网络设置
+    refreshRoutes: 刷新路由
+    routeCacheUnavailable: 无法获取路由缓存
+    routeCacheStatus: "$hosts 个主机 · 修订 $revision"
+    applied: 网络设置已应用
+    invalidSettings: 网络设置无效
+    routeRefreshFailed: 路由刷新失败
+    systemDns: 系统 DNS
+    sniBypass: 绕过 SNI
+    legacyIpUrl: 旧版 IP URL
 
   languageDialog:
     title: 语言

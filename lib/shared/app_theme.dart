@@ -171,11 +171,11 @@ ThemeData _buildTheme(
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: tokens.surfaceRaised,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      fillColor: tokens.surfaceMuted,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 13, vertical: 13),
       border: _inputBorder(tokens.line),
       enabledBorder: _inputBorder(tokens.line),
-      focusedBorder: _inputBorder(primaryColor, width: 1.4),
+      focusedBorder: _inputBorder(tokens.line),
       errorBorder: _inputBorder(colorScheme.error),
       focusedErrorBorder: _inputBorder(colorScheme.error, width: 1.4),
       hintStyle: base.textTheme.bodyMedium?.copyWith(
@@ -264,7 +264,7 @@ ColorScheme _colorScheme(
 
 OutlineInputBorder _inputBorder(Color color, {double width = 1}) {
   return OutlineInputBorder(
-    borderRadius: BorderRadius.circular(8),
+    borderRadius: BorderRadius.circular(12),
     borderSide: BorderSide(color: color, width: width),
   );
 }
