@@ -4,19 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_ce_flutter/adapters.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:yande_gui/app/yande_app.dart';
-import 'package:yande_gui/app/app_http_overrides.dart';
-import 'package:yande_gui/core/downloads/download_manager.dart';
-import 'package:yande_gui/core/downloads/download_manager_configuration.dart';
-import 'package:yande_gui/core/app_runtime.dart';
-import 'package:yande_gui/core/settings_service.dart';
-import 'package:yande_gui/features/downloads/logic.dart';
-import 'package:yande_gui/features/booru/booru_service.dart';
-import 'package:yande_gui/features/search/custom_tags_service.dart';
-import 'package:yande_gui/features/tags/tag_translations_service.dart';
-import 'package:yande_gui/intl/locale_preferences.dart';
-import 'package:yande_gui/intl/translations.g.dart';
-import 'package:yande_gui/src/rust/frb_generated.dart';
+import 'package:booruflow/app/booru_flow_app.dart';
+import 'package:booruflow/app/app_http_overrides.dart';
+import 'package:booruflow/core/downloads/download_manager.dart';
+import 'package:booruflow/core/downloads/download_manager_configuration.dart';
+import 'package:booruflow/core/app_runtime.dart';
+import 'package:booruflow/core/settings_service.dart';
+import 'package:booruflow/features/downloads/logic.dart';
+import 'package:booruflow/features/booru/booru_service.dart';
+import 'package:booruflow/features/search/custom_tags_service.dart';
+import 'package:booruflow/features/tags/tag_translations_service.dart';
+import 'package:booruflow/intl/locale_preferences.dart';
+import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/src/rust/frb_generated.dart';
 
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,7 +42,9 @@ Future<void> bootstrap() async {
       maxConcurrentDownloads: () => SettingsService.maxConcurrentDownloads,
     ),
   );
-  await YandeDownloads.instance.initialize();
+  await BooruDownloads.instance.initialize();
 
-  runApp(TranslationProvider(child: const ProviderScope(child: YandeApp())));
+  runApp(
+    TranslationProvider(child: const ProviderScope(child: BooruFlowApp())),
+  );
 }

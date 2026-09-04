@@ -2,16 +2,16 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
-import 'package:yande_gui/core/downloads/download_engine.dart';
-import 'package:yande_gui/core/downloads/download_file_system.dart';
-import 'package:yande_gui/core/downloads/download_models.dart';
-import 'package:yande_gui/core/downloads/media_saver.dart';
+import 'package:booruflow/core/downloads/download_engine.dart';
+import 'package:booruflow/core/downloads/download_file_system.dart';
+import 'package:booruflow/core/downloads/download_models.dart';
+import 'package:booruflow/core/downloads/media_saver.dart';
 import 'package:path/path.dart' as p;
 
 final class NativeDownloadEngine implements DownloadEngine {
   NativeDownloadEngine({
     required this.type,
-    this.channelNamespace = 'yande_gui',
+    this.channelNamespace = 'booruflow',
   });
 
   final String channelNamespace;
@@ -173,7 +173,7 @@ final class NativeDownloadEngine implements DownloadEngine {
 }
 
 final class NativeMediaSaver implements MediaSaver {
-  NativeMediaSaver({this.channelNamespace = 'yande_gui'});
+  NativeMediaSaver({this.channelNamespace = 'booruflow'});
 
   final String channelNamespace;
 

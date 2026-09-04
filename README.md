@@ -1,8 +1,8 @@
-# Yande GUI
+# BooruFlow
 
-**A cross-platform graphical user interface for [yande.re](https://yande.re/)**
+**A cross-platform browser for multiple booru image sources**
 
-Yande GUI provides a simple, intuitive interface to browse and interact with yande.re, a well-known image board. The app is available on multiple platforms including Android, iOS, Windows, macOS, and Linux.
+BooruFlow provides one consistent interface for searching, browsing, viewing, and downloading artwork from multiple booru-compatible sources. It is available on Android, iOS, Windows, macOS, and Linux.
 
 ![Screenshot](screenshots/0.webp)
 
@@ -10,9 +10,10 @@ Yande GUI provides a simple, intuitive interface to browse and interact with yan
 
 ## Features
 
-- 🌐 **Cross-Platform Support**: Available on Android, iOS, Windows, macOS, and Linux.
-- 🖼️ **Seamless Image Browsing**: A smooth and responsive interface for browsing images.
-- 🚀 **High Performance**: Fast and lightweight, designed for efficiency across platforms.
+- 🌐 **Multiple Sources**: Yande.re, Konachan.net, Danbooru, AIBooru, Gelbooru, Wallhaven, and Anime-Pictures.
+- 🔎 **Unified Discovery**: Search, rating filters, waterfall browsing, post details, and original-image viewing.
+- ⬇️ **Reliable Downloads**: Source-aware folders, post-ID filenames, resumable native downloads, validation, proxy support, and Host/SNI fallback routing.
+- 💻 **Cross-Platform**: Android, iOS, Windows, macOS, and Linux.
 
 ---
 
@@ -20,9 +21,9 @@ Yande GUI provides a simple, intuitive interface to browse and interact with yan
 
 We welcome contributions from the community!
 
-- 🛠 **Bug Reports**: Found a bug? Open an issue on the [issue tracker](https://github.com/normalllll/yande_gui/issues).
+- 🛠 **Bug Reports**: Found a bug? Open an issue on the [issue tracker](https://github.com/normalllll/BooruFlow/issues).
 - 🌟 **Feature Requests**: Want to add a new feature? Feel free to propose your ideas!
-- 🎨 **Design Contributions**: We are recruiting artists to draw `icons` for this app. If you're interested, reach out to us!
+- 🎨 **Design Contributions**: Visual and interaction design contributions are welcome.
 
 ---
 
@@ -39,12 +40,12 @@ Join the discussion and connect with other users and developers!
 
 | Architecture | Windows                                                                                 | Linux                                                                                       | Android                                                                                             | macOS                                                                                             | iOS                                                                                      |
 |--------------|-----------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
-| x86-64(x64)  | [zip](https://github.com/normalllll/yande_gui/releases/latest/download/windows-x64.zip) | [tar.gz](https://github.com/normalllll/yande_gui/releases/latest/download/linux-x64.tar.gz) | [APK](https://github.com/normalllll/yande_gui/releases/latest/download/app-x86_64-release.apk)      | [zip](https://github.com/normalllll/yande_gui/releases/latest/download/macos-x86_64-nosigned.zip) |                                                                                          |
-| ARM64        |                                                                                         |                                                                                             | [APK](https://github.com/normalllll/yande_gui/releases/latest/download/app-arm64-v8a-release.apk)   | [zip](https://github.com/normalllll/yande_gui/releases/latest/download/macos-arm64-nosigned.zip)  | [IPA](https://github.com/normalllll/yande_gui/releases/latest/download/ios-nosigned.ipa) |
-| ARM32        |                                                                                         |                                                                                             | [APK](https://github.com/normalllll/yande_gui/releases/latest/download/app-armeabi-v7a-release.apk) |                                                                                                   |                                                                                          |
-| Universal    |                                                                                         |                                                                                             | [APK](https://github.com/normalllll/yande_gui/releases/latest/download/app-universal-release.apk)   |                                                                                                   |                                                                                          |
+| x86-64(x64)  | [zip](https://github.com/normalllll/BooruFlow/releases/latest/download/windows-x64.zip) | [tar.gz](https://github.com/normalllll/BooruFlow/releases/latest/download/linux-x64.tar.gz) | [APK](https://github.com/normalllll/BooruFlow/releases/latest/download/app-x86_64-release.apk)      | [zip](https://github.com/normalllll/BooruFlow/releases/latest/download/macos-x86_64-nosigned.zip) |                                                                                          |
+| ARM64        |                                                                                         |                                                                                             | [APK](https://github.com/normalllll/BooruFlow/releases/latest/download/app-arm64-v8a-release.apk)   | [zip](https://github.com/normalllll/BooruFlow/releases/latest/download/macos-arm64-nosigned.zip)  | [IPA](https://github.com/normalllll/BooruFlow/releases/latest/download/ios-nosigned.ipa) |
+| ARM32        |                                                                                         |                                                                                             | [APK](https://github.com/normalllll/BooruFlow/releases/latest/download/app-armeabi-v7a-release.apk) |                                                                                                   |                                                                                          |
+| Universal    |                                                                                         |                                                                                             | [APK](https://github.com/normalllll/BooruFlow/releases/latest/download/app-universal-release.apk)   |                                                                                                   |                                                                                          |
 
-Visit the [releases page](https://github.com/normalllll/yande_gui/releases) for more details on the latest versions.
+Visit the [releases page](https://github.com/normalllll/BooruFlow/releases) for more details on the latest versions.
 
 ---
 
@@ -53,7 +54,7 @@ Visit the [releases page](https://github.com/normalllll/yande_gui/releases) for 
 
 ### Prerequisites
 
-Before building or running the Yande GUI, you will need the following dependencies installed:
+Before building or running BooruFlow, install the following dependencies:
 
 - [Flutter](https://flutter.dev/docs/get-started/install): A cross-platform UI toolkit.
 - [Rust](https://www.rust-lang.org/tools/install): A powerful, performance-oriented programming language.
@@ -76,8 +77,8 @@ Before building or running the Yande GUI, you will need the following dependenci
 4. Clone the repository:
 
     ```bash
-    git clone https://github.com/normalllll/yande_gui.git
-    cd yande_gui
+    git clone https://github.com/normalllll/BooruFlow.git
+    cd BooruFlow
     ```
 
 5. Run the app:
@@ -105,4 +106,4 @@ Before building or running the Yande GUI, you will need the following dependenci
 
 ## License
 
-This project is licensed under the **GNU General Public License v3.0**. See the [LICENSE](https://github.com/normalllll/yande_gui/blob/main/LICENSE) file for more details.
+This project is licensed under the **GNU General Public License v3.0**. See the [LICENSE](https://github.com/normalllll/BooruFlow/blob/main/LICENSE) file for more details.

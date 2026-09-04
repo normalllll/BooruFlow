@@ -882,7 +882,7 @@ mod tests {
             .unwrap();
         assert_eq!(
             yande_headers.get(USER_AGENT).unwrap(),
-            "anybooru/1.0 custom-client/2"
+            "BooruFlow/1.0 custom-client/2"
         );
         assert!(!yande_headers.contains_key(COOKIE));
 

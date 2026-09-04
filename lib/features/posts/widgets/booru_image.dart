@@ -1,13 +1,13 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:yande_gui/features/booru/booru_error_presentation.dart';
-import 'package:yande_gui/features/booru/booru_service.dart';
-import 'package:yande_gui/features/posts/widgets/rust_extended_network_image_provider.dart';
-import 'package:yande_gui/src/rust/api/booru_models.dart';
+import 'package:booruflow/features/booru/booru_error_presentation.dart';
+import 'package:booruflow/features/booru/booru_service.dart';
+import 'package:booruflow/features/posts/widgets/rust_extended_network_image_provider.dart';
+import 'package:booruflow/src/rust/api/booru_models.dart';
 
-class YandeImage extends StatefulWidget {
-  const YandeImage(
+class BooruImage extends StatefulWidget {
+  const BooruImage(
     this.url, {
     super.key,
     this.sourceId,
@@ -37,10 +37,10 @@ class YandeImage extends StatefulWidget {
   final Widget? placeholderWidget;
 
   @override
-  State<YandeImage> createState() => _YandeImageState();
+  State<BooruImage> createState() => _BooruImageState();
 }
 
-class _YandeImageState extends State<YandeImage> {
+class _BooruImageState extends State<BooruImage> {
   Future<MediaRequestDto>? _request;
 
   bool get _usesRust => widget.sourceId != null && widget.postId != null;
@@ -63,7 +63,7 @@ class _YandeImageState extends State<YandeImage> {
   }
 
   @override
-  void didUpdateWidget(covariant YandeImage oldWidget) {
+  void didUpdateWidget(covariant BooruImage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.sourceId != widget.sourceId ||
         oldWidget.postId != widget.postId ||
@@ -92,7 +92,7 @@ class _YandeImageState extends State<YandeImage> {
         ExtendedNetworkImageProvider(
           widget.url,
           cache: true,
-          cacheKey: keyToMd5('anybooru:${widget.url}'),
+          cacheKey: keyToMd5('BooruFlow:${widget.url}'),
           retries: 1,
         ),
       );

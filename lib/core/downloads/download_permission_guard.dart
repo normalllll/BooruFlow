@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
-import 'package:yande_gui/core/downloads/download_file_system.dart';
-import 'package:yande_gui/core/downloads/download_models.dart';
+import 'package:booruflow/core/downloads/download_file_system.dart';
+import 'package:booruflow/core/downloads/download_models.dart';
 
 abstract interface class DownloadPermissionGuard {
   Future<void> ensureReadyForDownload();
@@ -11,7 +11,7 @@ abstract interface class DownloadPermissionGuard {
 final class NativeDownloadPermissionGuard implements DownloadPermissionGuard {
   const NativeDownloadPermissionGuard();
 
-  static const _methodChannel = MethodChannel('yande_gui/download_engine');
+  static const _methodChannel = MethodChannel('booruflow/download_engine');
 
   @override
   Future<void> ensureReadyForDownload() async {

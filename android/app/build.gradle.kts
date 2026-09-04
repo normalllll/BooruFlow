@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.normalllll.yande_gui"
+    namespace = "io.github.normalllll.booruflow"
     compileSdk = 37
     ndkVersion = "28.2.13676358"
 
@@ -15,7 +15,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "io.github.normalllll.yande_gui"
+        applicationId = "io.github.normalllll.booruflow"
         minSdk = 26
         targetSdk = 37
         versionCode = flutter.versionCode

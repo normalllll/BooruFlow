@@ -10,7 +10,7 @@ part 'download_database.g.dart';
 class DownloadJobs extends Table {
   TextColumn get id => text()();
   IntColumn get resourceId => integer()();
-  TextColumn get sourceId => text().withDefault(const Constant('yande'))();
+  TextColumn get sourceId => text().withDefault(const Constant('direct'))();
   TextColumn get postId => text().withDefault(const Constant(''))();
   IntColumn get variantIndex => integer().withDefault(const Constant(0))();
   TextColumn get url => text()();
@@ -83,7 +83,7 @@ class DownloadDatabase extends _$DownloadDatabase {
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final supportDirectory = await getApplicationSupportDirectory();
-    final directory = Directory(p.join(supportDirectory.path, 'yande_gui'));
+    final directory = Directory(p.join(supportDirectory.path, 'BooruFlow'));
     await directory.create(recursive: true);
     return NativeDatabase.createInBackground(
       File(p.join(directory.path, 'downloads.sqlite')),

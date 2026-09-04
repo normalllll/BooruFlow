@@ -2,13 +2,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:yande_gui/core/app_runtime.dart';
-import 'package:yande_gui/intl/translations.g.dart';
-import 'package:yande_gui/shared/app_toast.dart';
-import 'package:yande_gui/features/update/updater_service.dart';
-import 'package:yande_gui/src/rust/api/rustc.dart';
-import 'package:yande_gui/shared/widgets/auto_scaffold.dart';
-import 'package:yande_gui/shared/widgets/grouped_settings_list.dart';
+import 'package:booruflow/core/app_runtime.dart';
+import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/app_toast.dart';
+import 'package:booruflow/features/update/updater_service.dart';
+import 'package:booruflow/src/rust/api/rustc.dart';
+import 'package:booruflow/shared/widgets/auto_scaffold.dart';
+import 'package:booruflow/shared/widgets/grouped_settings_list.dart';
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
@@ -71,10 +71,10 @@ class _AboutPageState extends State<AboutPage> {
               buildItem(
                 title: t.about.projectUrl,
                 leading: const Icon(Icons.link_outlined),
-                subtitle: 'https://github.com/normalllll/yande_gui',
+                subtitle: 'https://github.com/normalllll/BooruFlow',
                 onTap: () {
                   launchUrlString(
-                    'https://github.com/normalllll/yande_gui',
+                    'https://github.com/normalllll/BooruFlow',
                     mode: LaunchMode.externalApplication,
                   );
                 },
@@ -83,10 +83,10 @@ class _AboutPageState extends State<AboutPage> {
                 title: t.about.publishPage,
                 leading: const Icon(Icons.new_releases_outlined),
                 subtitle:
-                    'https://github.com/normalllll/yande_gui/releases/latest',
+                    'https://github.com/normalllll/BooruFlow/releases/latest',
                 onTap: () {
                   launchUrlString(
-                    'https://github.com/normalllll/yande_gui/releases/latest',
+                    'https://github.com/normalllll/BooruFlow/releases/latest',
                     mode: LaunchMode.externalApplication,
                   );
                 },

@@ -1,4 +1,4 @@
-import 'package:yande_gui/src/rust/api/booru_models.dart';
+import 'package:booruflow/src/rust/api/booru_models.dart';
 
 extension ContentRatingLabel on ContentRating {
   String get shortLabel => switch (this) {

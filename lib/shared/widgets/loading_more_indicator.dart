@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:loading_more_list/loading_more_list.dart';
-import 'package:yande_gui/features/booru/booru_error_presentation.dart';
-import 'package:yande_gui/intl/translations.g.dart';
+import 'package:booruflow/features/booru/booru_error_presentation.dart';
+import 'package:booruflow/intl/translations.g.dart';
 
 class LoadingMoreIndicator extends StatelessWidget {
   final IndicatorStatus status;

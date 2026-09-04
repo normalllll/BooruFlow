@@ -1,14 +1,14 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:yande_gui/core/downloads/download_models.dart';
-import 'package:yande_gui/core/settings_service.dart';
+import 'package:booruflow/core/downloads/download_models.dart';
+import 'package:booruflow/core/settings_service.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-const appDownloadDirectoryName = 'YandeGUI';
+const appDownloadDirectoryName = 'BooruFlow';
 const downloadMediaDirectoryName = 'images';
-const downloadTempDirectoryName = 'yande_gui_downloads';
+const downloadTempDirectoryName = 'booruflow_downloads';
 const fallbackDownloadFilename = 'download';
 
 String resourceDownloadFilename({
@@ -131,7 +131,7 @@ Future<void> ensureWritableDirectory(Directory directory) async {
     final probe = File(
       p.join(
         directory.path,
-        '.yande_gui-write-test-${DateTime.now().microsecondsSinceEpoch}',
+        '.booruflow-write-test-${DateTime.now().microsecondsSinceEpoch}',
       ),
     );
     await probe.writeAsString('ok', flush: true);
@@ -162,7 +162,7 @@ Future<File> moveFileWithFallback({
     final staging = File(
       p.join(
         destination.parent.path,
-        '.${p.basename(destination.path)}.yande_gui-${DateTime.now().microsecondsSinceEpoch}.part',
+        '.${p.basename(destination.path)}.booruflow-${DateTime.now().microsecondsSinceEpoch}.part',
       ),
     );
     try {

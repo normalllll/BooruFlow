@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:yande_gui/features/posts/widgets/post_search_field.dart';
-import 'package:yande_gui/intl/translations.g.dart';
-import 'package:yande_gui/features/search/custom_tags_service.dart';
-import 'package:yande_gui/features/tags/tag_translations_service.dart';
-import 'package:yande_gui/shared/app_navigation.dart';
-import 'package:yande_gui/shared/widgets/auto_scaffold.dart';
+import 'package:booruflow/features/posts/widgets/post_search_field.dart';
+import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/features/search/custom_tags_service.dart';
+import 'package:booruflow/features/tags/tag_translations_service.dart';
+import 'package:booruflow/shared/app_navigation.dart';
+import 'package:booruflow/shared/widgets/auto_scaffold.dart';
 
 class PostSearchPage extends StatefulWidget {
   const PostSearchPage({super.key});

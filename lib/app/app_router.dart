@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:yande_gui/app/navigator_stack_observer.dart';
-import 'package:yande_gui/features/about/about_page.dart';
-import 'package:yande_gui/features/downloads/widgets/download_floating_window.dart';
-import 'package:yande_gui/features/image_viewer/image_zoom_page.dart';
-import 'package:yande_gui/features/posts/post_detail_page.dart';
-import 'package:yande_gui/features/posts/post_list_page.dart';
-import 'package:yande_gui/features/search/post_search_page.dart';
-import 'package:yande_gui/features/settings/settings_page.dart';
-import 'package:yande_gui/features/shell/app_shell.dart';
-import 'package:yande_gui/intl/translations.g.dart';
-import 'package:yande_gui/features/posts/models/post.dart';
-import 'package:yande_gui/shared/app_navigation.dart';
-import 'package:yande_gui/shared/widgets/auto_scaffold.dart';
+import 'package:booruflow/app/navigator_stack_observer.dart';
+import 'package:booruflow/features/about/about_page.dart';
+import 'package:booruflow/features/downloads/widgets/download_floating_window.dart';
+import 'package:booruflow/features/image_viewer/image_zoom_page.dart';
+import 'package:booruflow/features/posts/post_detail_page.dart';
+import 'package:booruflow/features/posts/post_list_page.dart';
+import 'package:booruflow/features/search/post_search_page.dart';
+import 'package:booruflow/features/settings/settings_page.dart';
+import 'package:booruflow/features/shell/app_shell.dart';
+import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/features/posts/models/post.dart';
+import 'package:booruflow/shared/app_navigation.dart';
+import 'package:booruflow/shared/widgets/auto_scaffold.dart';
 
 class AppRouter {
   const AppRouter._();

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yande_gui/core/downloads/download_models.dart';
+import 'package:booruflow/core/downloads/download_models.dart';
 
 void main() {
   test('download jobs retain source identity and source subfolder', () {

@@ -3,12 +3,12 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:yande_gui/features/posts/widgets/yande_image.dart';
-import 'package:yande_gui/core/downloads/download_manager.dart';
-import 'package:yande_gui/core/downloads/download_models.dart';
-import 'package:yande_gui/features/downloads/yande_download_item.dart';
-import 'package:yande_gui/intl/translations.g.dart';
-import 'package:yande_gui/shared/app_toast.dart';
+import 'package:booruflow/features/posts/widgets/booru_image.dart';
+import 'package:booruflow/core/downloads/download_manager.dart';
+import 'package:booruflow/core/downloads/download_models.dart';
+import 'package:booruflow/features/downloads/booru_download_item.dart';
+import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/app_toast.dart';
 
 class DownloadSummaryView extends StatelessWidget {
   const DownloadSummaryView({
@@ -95,11 +95,11 @@ class DownloadTaskList extends StatelessWidget {
     super.key,
   });
 
-  final List<YandeDownloadItem> tasks;
+  final List<BooruDownloadItem> tasks;
   final bool compact;
   final int? maxItems;
   final bool showTooltips;
-  final ValueChanged<YandeDownloadItem>? onTaskTap;
+  final ValueChanged<BooruDownloadItem>? onTaskTap;
 
   @override
   Widget build(BuildContext context) {
@@ -136,10 +136,10 @@ class DownloadTaskTile extends StatelessWidget {
     super.key,
   });
 
-  final YandeDownloadItem task;
+  final BooruDownloadItem task;
   final bool compact;
   final bool showTooltips;
-  final ValueChanged<YandeDownloadItem>? onTaskTap;
+  final ValueChanged<BooruDownloadItem>? onTaskTap;
 
   @override
   Widget build(BuildContext context) {
@@ -632,7 +632,7 @@ class _DownloadThumbnail extends StatelessWidget {
                   color: colorScheme.onSurfaceVariant,
                 ),
               )
-            : YandeImage(url, fit: BoxFit.cover),
+            : BooruImage(url, fit: BoxFit.cover),
       ),
     );
   }

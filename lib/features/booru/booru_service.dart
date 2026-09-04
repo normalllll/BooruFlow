@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:yande_gui/core/settings_service.dart';
-import 'package:yande_gui/src/rust/api/booru_auth.dart';
-import 'package:yande_gui/src/rust/api/booru_engine.dart';
-import 'package:yande_gui/src/rust/api/booru_models.dart';
+import 'package:booruflow/core/settings_service.dart';
+import 'package:booruflow/src/rust/api/booru_auth.dart';
+import 'package:booruflow/src/rust/api/booru_engine.dart';
+import 'package:booruflow/src/rust/api/booru_models.dart';
 
 final class BooruService {
   BooruService._();
@@ -55,7 +55,7 @@ final class BooruService {
         proxyUrl: SettingsService.proxyUrl,
         fallbackMode: SettingsService.networkFallbackMode,
         fallbackToSystemDns: SettingsService.fallbackToSystemDns,
-        userAgent: 'anybooru/$_version',
+        userAgent: 'BooruFlow/$_version',
       ),
     );
     _sources = await _engine.listSources();

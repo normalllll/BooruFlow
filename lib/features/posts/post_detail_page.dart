@@ -5,18 +5,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:yande_gui/features/downloads/logic.dart';
-import 'package:yande_gui/features/booru/booru_error_presentation.dart';
-import 'package:yande_gui/features/posts/widgets/yande_image.dart';
-import 'package:yande_gui/features/tags/translated_tag.dart';
-import 'package:yande_gui/intl/translations.g.dart';
-import 'package:yande_gui/features/posts/logic.dart';
-import 'package:yande_gui/shared/app_navigation.dart';
-import 'package:yande_gui/shared/app_toast.dart';
-import 'package:yande_gui/features/posts/models/post.dart';
-import 'package:yande_gui/src/rust/api/booru_models.dart';
-import 'package:yande_gui/shared/app_theme.dart';
-import 'package:yande_gui/shared/widgets/auto_scaffold.dart';
+import 'package:booruflow/features/downloads/logic.dart';
+import 'package:booruflow/features/booru/booru_error_presentation.dart';
+import 'package:booruflow/features/posts/widgets/booru_image.dart';
+import 'package:booruflow/features/tags/translated_tag.dart';
+import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/features/posts/logic.dart';
+import 'package:booruflow/shared/app_navigation.dart';
+import 'package:booruflow/shared/app_toast.dart';
+import 'package:booruflow/features/posts/models/post.dart';
+import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:booruflow/shared/app_theme.dart';
+import 'package:booruflow/shared/widgets/auto_scaffold.dart';
 
 class PostDetailPage extends ConsumerStatefulWidget {
   const PostDetailPage({super.key, required this.post});
@@ -241,7 +241,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
 
   void _downloadPost(Post targetPost) {
     HapticFeedback.mediumImpact();
-    YandeDownloads.instance.add(targetPost);
+    BooruDownloads.instance.add(targetPost);
   }
 
   void _openTag(String tag) {
@@ -474,7 +474,7 @@ class _PostImagePage extends StatelessWidget {
             child: SizedBox(
               width: imageSize.width,
               height: imageSize.height,
-              child: YandeImage(
+              child: BooruImage(
                 post.sampleUrl ?? post.previewUrl,
                 sourceId: post.sourceId,
                 postId: post.id,
@@ -484,7 +484,7 @@ class _PostImagePage extends StatelessWidget {
                 width: imageSize.width,
                 height: imageSize.height,
                 fit: BoxFit.contain,
-                placeholderWidget: YandeImage(
+                placeholderWidget: BooruImage(
                   post.previewUrl,
                   sourceId: post.sourceId,
                   postId: post.id,
@@ -644,7 +644,7 @@ class _PostDetailPanel extends StatelessWidget {
           const SizedBox(width: 6),
           Expanded(
             child: Text(
-              post.author.trim().isEmpty ? 'yande.re' : post.author,
+              post.author.trim().isEmpty ? post.sourceId : post.author,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -691,7 +691,7 @@ class _PostDetailPanel extends StatelessWidget {
       ),
       _MetadataRow(
         label: t.postDetail.author,
-        value: post.author.trim().isEmpty ? 'yande.re' : post.author,
+        value: post.author.trim().isEmpty ? post.sourceId : post.author,
       ),
       if (post.source.trim().isNotEmpty)
         _MetadataRow(

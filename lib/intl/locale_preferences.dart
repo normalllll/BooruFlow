@@ -1,4 +1,4 @@
-import 'package:yande_gui/intl/translations.g.dart';
+import 'package:booruflow/intl/translations.g.dart';
 
 AppLocale appLocaleForLanguagePreference(int? language) {
   return switch (language) {

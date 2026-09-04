@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:yande_gui/intl/translations.g.dart';
-import 'package:yande_gui/features/posts/models/post.dart';
+import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/features/posts/models/post.dart';
 
 enum AppRoute {
   posts('/'),

@@ -1,5 +1,5 @@
-name: yande_gui
-description: "Cross-platform GUI for yande"
+name: booruflow
+description: "A cross-platform browser for multiple booru image sources"
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 version: 0.10.0+37

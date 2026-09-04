@@ -4,10 +4,10 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 import 'package:vector_math/vector_math_64.dart' show Quad, Vector3, Matrix4;
-import 'package:yande_gui/features/posts/widgets/yande_image.dart';
-import 'package:yande_gui/intl/translations.g.dart';
-import 'package:yande_gui/shared/widgets/auto_scaffold.dart';
-import 'package:yande_gui/src/rust/api/booru_models.dart';
+import 'package:booruflow/features/posts/widgets/booru_image.dart';
+import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/widgets/auto_scaffold.dart';
+import 'package:booruflow/src/rust/api/booru_models.dart';
 
 class ImageZoomPage extends StatefulWidget {
   final String url;
@@ -55,7 +55,7 @@ class _ImageZoomPageState extends State<ImageZoomPage> {
             child: Center(
               child: LayoutBuilder(
                 builder: (BuildContext context, BoxConstraints constraints) {
-                  return YandeImage(
+                  return BooruImage(
                     widget.url,
                     sourceId: widget.sourceId,
                     postId: widget.postId,

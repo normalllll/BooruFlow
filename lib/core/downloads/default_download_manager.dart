@@ -6,18 +6,18 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:yande_gui/core/downloads/download_engine.dart';
-import 'package:yande_gui/core/downloads/download_file_system.dart';
-import 'package:yande_gui/core/downloads/download_manager_contract.dart';
-import 'package:yande_gui/core/downloads/download_manager_configuration.dart';
-import 'package:yande_gui/core/downloads/download_models.dart';
-import 'package:yande_gui/core/downloads/download_permission_guard.dart';
-import 'package:yande_gui/core/downloads/download_store.dart';
-import 'package:yande_gui/core/downloads/download_validator.dart';
-import 'package:yande_gui/core/downloads/media_saver.dart';
-import 'package:yande_gui/core/downloads/platform/desktop_media_saver.dart';
-import 'package:yande_gui/core/downloads/platform/native_download_engine.dart';
-import 'package:yande_gui/core/downloads/platform/rust_io_download_engine.dart';
+import 'package:booruflow/core/downloads/download_engine.dart';
+import 'package:booruflow/core/downloads/download_file_system.dart';
+import 'package:booruflow/core/downloads/download_manager_contract.dart';
+import 'package:booruflow/core/downloads/download_manager_configuration.dart';
+import 'package:booruflow/core/downloads/download_models.dart';
+import 'package:booruflow/core/downloads/download_permission_guard.dart';
+import 'package:booruflow/core/downloads/download_store.dart';
+import 'package:booruflow/core/downloads/download_validator.dart';
+import 'package:booruflow/core/downloads/media_saver.dart';
+import 'package:booruflow/core/downloads/platform/desktop_media_saver.dart';
+import 'package:booruflow/core/downloads/platform/native_download_engine.dart';
+import 'package:booruflow/core/downloads/platform/rust_io_download_engine.dart';
 
 final class DefaultDownloadManager implements DownloadManager {
   DefaultDownloadManager({

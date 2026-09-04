@@ -39,7 +39,7 @@ class $DownloadJobsTable extends DownloadJobs
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
-    defaultValue: const Constant('yande'),
+    defaultValue: const Constant('direct'),
   );
   static const VerificationMeta _postIdMeta = const VerificationMeta('postId');
   @override

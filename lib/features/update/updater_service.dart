@@ -11,7 +11,7 @@ class UpdaterService {
     HttpClient client = HttpClient();
     final request = await client.getUrl(
       Uri.parse(
-        'https://api.github.com/repos/normalllll/yande_gui/releases/latest',
+        'https://api.github.com/repos/normalllll/BooruFlow/releases/latest',
       ),
     );
     final response = await request.close();

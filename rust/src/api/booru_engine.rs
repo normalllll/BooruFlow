@@ -498,7 +498,7 @@ mod tests {
             proxy_url: None,
             fallback_mode: NetworkFallbackMode::Off,
             fallback_to_system_dns: true,
-            user_agent: "yande_gui-test".to_owned(),
+            user_agent: "booruflow-test".to_owned(),
         })
         .unwrap()
     }
@@ -638,8 +638,8 @@ mod tests {
         let manifest = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         let output_root = manifest.join("test-downloads");
         let support = manifest.join("target").join("live-test-support");
-        let bypass = std::env::var("ANYBOORU_LIVE_BYPASS").as_deref() == Ok("1");
-        let variant = match std::env::var("ANYBOORU_LIVE_VARIANT").as_deref() {
+        let bypass = std::env::var("BOORUFLOW_LIVE_BYPASS").as_deref() == Ok("1");
+        let variant = match std::env::var("BOORUFLOW_LIVE_VARIANT").as_deref() {
             Ok("thumbnail") => MediaVariantKind::Thumbnail,
             Ok("preview") => MediaVariantKind::Preview,
             Ok("sample") => MediaVariantKind::Sample,
@@ -654,18 +654,18 @@ mod tests {
                 NetworkFallbackMode::Off
             },
             fallback_to_system_dns: true,
-            user_agent: "anybooru/1.0".to_owned(),
+            user_agent: "BooruFlow/1.0".to_owned(),
         })
         .unwrap();
         if bypass {
             engine.initialize_route_cache().await.unwrap();
         }
         let mut failures = Vec::new();
-        let source_filter = std::env::var("ANYBOORU_LIVE_SOURCE").ok();
-        let post_filter = std::env::var("ANYBOORU_LIVE_POST_ID").ok();
+        let source_filter = std::env::var("BOORUFLOW_LIVE_SOURCE").ok();
+        let post_filter = std::env::var("BOORUFLOW_LIVE_POST_ID").ok();
         assert!(
             post_filter.is_none() || source_filter.is_some(),
-            "ANYBOORU_LIVE_POST_ID requires ANYBOORU_LIVE_SOURCE"
+            "BOORUFLOW_LIVE_POST_ID requires BOORUFLOW_LIVE_SOURCE"
         );
         for source in engine.list_sources() {
             if source_filter

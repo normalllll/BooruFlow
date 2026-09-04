@@ -1,12 +1,12 @@
 import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:yande_gui/intl/translations.g.dart';
-import 'package:yande_gui/shared/app_navigation.dart';
-import 'package:yande_gui/shared/app_toast.dart';
-import 'package:yande_gui/features/update/updater_service.dart';
-import 'package:yande_gui/shared/app_theme.dart';
-import 'package:yande_gui/shared/widgets/auto_scaffold.dart';
+import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/app_navigation.dart';
+import 'package:booruflow/shared/app_toast.dart';
+import 'package:booruflow/features/update/updater_service.dart';
+import 'package:booruflow/shared/app_theme.dart';
+import 'package:booruflow/shared/widgets/auto_scaffold.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({

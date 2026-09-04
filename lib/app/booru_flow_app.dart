@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yande_gui/app/app_router.dart';
-import 'package:yande_gui/core/app_runtime.dart';
-import 'package:yande_gui/core/settings_service.dart';
-import 'package:yande_gui/features/tags/tag_translations_service.dart';
-import 'package:yande_gui/intl/locale_preferences.dart';
-import 'package:yande_gui/intl/translations.g.dart';
-import 'package:yande_gui/shared/app_toast.dart';
-import 'package:yande_gui/shared/app_theme.dart';
+import 'package:booruflow/app/app_router.dart';
+import 'package:booruflow/core/app_runtime.dart';
+import 'package:booruflow/core/settings_service.dart';
+import 'package:booruflow/features/tags/tag_translations_service.dart';
+import 'package:booruflow/intl/locale_preferences.dart';
+import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/app_toast.dart';
+import 'package:booruflow/shared/app_theme.dart';
 
-class YandeApp extends ConsumerWidget {
-  const YandeApp({super.key});
+class BooruFlowApp extends ConsumerWidget {
+  const BooruFlowApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,7 +31,7 @@ class YandeApp extends ConsumerWidget {
                 languagePreferenceForAppLocale(appLocale),
           );
           return MaterialApp.router(
-            title: 'Yande GUI',
+            title: 'BooruFlow',
             routerConfig: AppRouter.router,
             darkTheme: darkTheme(darkPrimaryColor),
             theme: lightTheme(lightPrimaryColor),

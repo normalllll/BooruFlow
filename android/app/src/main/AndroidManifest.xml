@@ -3,14 +3,14 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" tools:replace="android:maxSdkVersion"/>
-    <uses-permission android:name="io.github.normalllll.yande_gui.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" tools:node="remove" />
+    <uses-permission android:name="io.github.normalllll.booruflow.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" tools:node="remove" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
 
     <application
-        android:label="Yande GUI"
+        android:label="BooruFlow"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -36,7 +36,7 @@
         </activity>
 
         <service
-            android:name="io.github.normalllll.yande_gui.download.DownloadForegroundService"
+            android:name="io.github.normalllll.booruflow.download.DownloadForegroundService"
             android:exported="false"
             android:foregroundServiceType="dataSync"
             />

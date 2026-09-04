@@ -1,6 +1,6 @@
-import 'package:yande_gui/core/downloads/default_download_manager.dart';
-import 'package:yande_gui/core/downloads/download_manager_configuration.dart';
-import 'package:yande_gui/core/downloads/download_manager_contract.dart';
+import 'package:booruflow/core/downloads/default_download_manager.dart';
+import 'package:booruflow/core/downloads/download_manager_configuration.dart';
+import 'package:booruflow/core/downloads/download_manager_contract.dart';
 
 export 'download_manager_contract.dart';
 

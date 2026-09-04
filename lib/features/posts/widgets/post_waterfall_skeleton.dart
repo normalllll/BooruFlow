@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:loading_more_list/loading_more_list.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:yande_gui/shared/app_theme.dart';
+import 'package:booruflow/shared/app_theme.dart';
 
 const _ratios = <double>[
   1.32,

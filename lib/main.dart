@@ -1,3 +1,3 @@
-import 'package:yande_gui/app/bootstrap.dart';
+import 'package:booruflow/app/bootstrap.dart';
 
 Future<void> main() => bootstrap();

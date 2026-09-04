@@ -9,10 +9,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
-import 'package:yande_gui/features/booru/booru_error_presentation.dart';
-import 'package:yande_gui/features/booru/booru_service.dart';
-import 'package:yande_gui/src/rust/api/booru_download.dart';
-import 'package:yande_gui/src/rust/api/booru_models.dart';
+import 'package:booruflow/features/booru/booru_error_presentation.dart';
+import 'package:booruflow/features/booru/booru_service.dart';
+import 'package:booruflow/src/rust/api/booru_download.dart';
+import 'package:booruflow/src/rust/api/booru_models.dart';
 
 @immutable
 final class RustExtendedNetworkImageProvider
@@ -119,10 +119,7 @@ final class RustExtendedNetworkImageProvider
         }
       }
     }
-    Error.throwWithStackTrace(
-      makeBooruErrorReadable(lastError!),
-      lastStack!,
-    );
+    Error.throwWithStackTrace(makeBooruErrorReadable(lastError!), lastStack!);
   }
 
   Future<File> _cacheFile() async {

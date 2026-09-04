@@ -14,7 +14,8 @@ class Translations with BaseTranslations<AppLocale, Translations> {
   ///
   /// Usage:
   /// final t = Translations.of(context);
-  static Translations of(BuildContext context) => InheritedLocaleData.of<AppLocale, Translations>(context).translations;
+  static Translations of(BuildContext context) =>
+      InheritedLocaleData.of<AppLocale, Translations>(context).translations;
 
   /// You can call this constructor and build your own translation instance of this locale.
   /// Constructing via the enum [AppLocale.build] is preferred.
@@ -23,7 +24,10 @@ class Translations with BaseTranslations<AppLocale, Translations> {
     PluralResolver? cardinalResolver,
     PluralResolver? ordinalResolver,
     TranslationMetadata<AppLocale, Translations>? meta,
-  }) : assert(overrides == null, 'Set "translation_overrides: true" in order to enable this feature.'),
+  }) : assert(
+         overrides == null,
+         'Set "translation_overrides: true" in order to enable this feature.',
+       ),
        $meta =
            meta ??
            TranslationMetadata(
@@ -44,20 +48,34 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 
   late final Translations _root = this; // ignore: unused_field
 
-  Translations $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) =>
-      Translations(meta: meta ?? this.$meta);
+  Translations $copyWith({
+    TranslationMetadata<AppLocale, Translations>? meta,
+  }) => Translations(meta: meta ?? this.$meta);
 
   // Translations
-  late final Translations$generic$en generic = Translations$generic$en.internal(_root);
-  late final Translations$booruError$en booruError = Translations$booruError$en.internal(_root);
-  late final Translations$update$en update = Translations$update$en.internal(_root);
-  late final Translations$postList$en postList = Translations$postList$en.internal(_root);
-  late final Translations$postDetail$en postDetail = Translations$postDetail$en.internal(_root);
-  late final Translations$postSearch$en postSearch = Translations$postSearch$en.internal(_root);
-  late final Translations$imageZoom$en imageZoom = Translations$imageZoom$en.internal(_root);
-  late final Translations$downloads$en downloads = Translations$downloads$en.internal(_root);
-  late final Translations$about$en about = Translations$about$en.internal(_root);
-  late final Translations$settings$en settings = Translations$settings$en.internal(_root);
+  late final Translations$generic$en generic = Translations$generic$en.internal(
+    _root,
+  );
+  late final Translations$booruError$en booruError =
+      Translations$booruError$en.internal(_root);
+  late final Translations$update$en update = Translations$update$en.internal(
+    _root,
+  );
+  late final Translations$postList$en postList =
+      Translations$postList$en.internal(_root);
+  late final Translations$postDetail$en postDetail =
+      Translations$postDetail$en.internal(_root);
+  late final Translations$postSearch$en postSearch =
+      Translations$postSearch$en.internal(_root);
+  late final Translations$imageZoom$en imageZoom =
+      Translations$imageZoom$en.internal(_root);
+  late final Translations$downloads$en downloads =
+      Translations$downloads$en.internal(_root);
+  late final Translations$about$en about = Translations$about$en.internal(
+    _root,
+  );
+  late final Translations$settings$en settings =
+      Translations$settings$en.internal(_root);
 }
 
 // Path: generic
@@ -87,13 +105,16 @@ class Translations$generic$en {
   String get disabled => 'Disabled';
 
   /// en: 'Copied to clipboard: $value'
-  String copiedWithValue({required Object value}) => 'Copied to clipboard: ${value}';
+  String copiedWithValue({required Object value}) =>
+      'Copied to clipboard: ${value}';
 
   /// en: 'An error occurred: $value'
-  String errorWithValue({required Object value}) => 'An error occurred: ${value}';
+  String errorWithValue({required Object value}) =>
+      'An error occurred: ${value}';
 
   /// en: '$message: $cause'
-  String errorWithCause({required Object message, required Object cause}) => '${message}: ${cause}';
+  String errorWithCause({required Object message, required Object cause}) =>
+      '${message}: ${cause}';
 
   /// en: 'Loading...'
   String get loading => 'Loading...';
@@ -123,31 +144,37 @@ class Translations$booruError$en {
   String get invalidRequest => 'The request is invalid.';
 
   /// en: 'This source does not support the requested operation.'
-  String get unsupportedCapability => 'This source does not support the requested operation.';
+  String get unsupportedCapability =>
+      'This source does not support the requested operation.';
 
   /// en: 'Sign in to this source and try again.'
   String get authenticationRequired => 'Sign in to this source and try again.';
 
   /// en: 'The source rejected the account credentials.'
-  String get authenticationRejected => 'The source rejected the account credentials.';
+  String get authenticationRejected =>
+      'The source rejected the account credentials.';
 
   /// en: 'The source denied access to this resource.'
   String get permissionDenied => 'The source denied access to this resource.';
 
   /// en: 'The source is rate limiting requests. Try again later.'
-  String get rateLimited => 'The source is rate limiting requests. Try again later.';
+  String get rateLimited =>
+      'The source is rate limiting requests. Try again later.';
 
   /// en: 'The source requires a browser challenge or a different route.'
-  String get challengeRequired => 'The source requires a browser challenge or a different route.';
+  String get challengeRequired =>
+      'The source requires a browser challenge or a different route.';
 
   /// en: 'The source is currently unavailable.'
   String get sourceUnavailable => 'The source is currently unavailable.';
 
   /// en: 'The network request failed. Check the proxy or switch nodes.'
-  String get network => 'The network request failed. Check the proxy or switch nodes.';
+  String get network =>
+      'The network request failed. Check the proxy or switch nodes.';
 
   /// en: 'The request timed out. Check the proxy or switch nodes.'
-  String get timeout => 'The request timed out. Check the proxy or switch nodes.';
+  String get timeout =>
+      'The request timed out. Check the proxy or switch nodes.';
 
   /// en: 'The source returned an invalid response.'
   String get invalidResponse => 'The source returned an invalid response.';
@@ -156,7 +183,8 @@ class Translations$booruError$en {
   String get unsafeRedirect => 'The source returned an unsafe redirect.';
 
   /// en: 'The image response could not be validated or decoded.'
-  String get mediaValidationFailed => 'The image response could not be validated or decoded.';
+  String get mediaValidationFailed =>
+      'The image response could not be validated or decoded.';
 
   /// en: 'The request was cancelled.'
   String get cancelled => 'The request was cancelled.';
@@ -177,7 +205,8 @@ class Translations$update$en {
   String get checkUpdateStart => 'Checking for updates...';
 
   /// en: 'Failed to check for updates. Please check your Internet connection.'
-  String get checkUpdateFailed => 'Failed to check for updates. Please check your Internet connection.';
+  String get checkUpdateFailed =>
+      'Failed to check for updates. Please check your Internet connection.';
 
   /// en: 'Unable to find download URL.\nPlease visit the project page to manually update or seek help on the project Issue page.'
   String get selectDownloadUrlFailed =>
@@ -212,7 +241,8 @@ class Translations$postList$en {
   String get freepivPromotionTitle => 'Discover freepiv';
 
   /// en: 'A modern, smooth, cross-platform third-party Pixiv client.'
-  String get freepivPromotionSubtitle => 'A modern, smooth, cross-platform third-party Pixiv client.';
+  String get freepivPromotionSubtitle =>
+      'A modern, smooth, cross-platform third-party Pixiv client.';
 
   /// en: 'View project'
   String get freepivPromotionAction => 'View project';
@@ -251,7 +281,8 @@ class Translations$postDetail$en {
   String get download => 'Download';
 
   /// en: 'Failed to load related images. You can retry.'
-  String get relatedLoadFailed => 'Failed to load related images. You can retry.';
+  String get relatedLoadFailed =>
+      'Failed to load related images. You can retry.';
 
   /// en: 'Created at'
   String get createdAt => 'Created at';
@@ -406,7 +437,8 @@ class Translations$downloads$en {
   /// en: 'Collapse'
   String get collapse => 'Collapse';
 
-  late final Translations$downloads$messages$en messages = Translations$downloads$messages$en.internal(_root);
+  late final Translations$downloads$messages$en messages =
+      Translations$downloads$messages$en.internal(_root);
 }
 
 // Path: about
@@ -442,7 +474,8 @@ class Translations$about$en {
   String get downloadUpdate => 'Download update';
 
   /// en: 'Download the latest version for your device via your browser.'
-  String get downloadUpdateHint => 'Download the latest version for your device via your browser.';
+  String get downloadUpdateHint =>
+      'Download the latest version for your device via your browser.';
 }
 
 // Path: settings
@@ -492,20 +525,22 @@ class Translations$settings$en {
   /// en: 'Dark'
   String get dark => 'Dark';
 
-  late final Translations$settings$languageDialog$en languageDialog = Translations$settings$languageDialog$en.internal(
-    _root,
-  );
+  late final Translations$settings$languageDialog$en languageDialog =
+      Translations$settings$languageDialog$en.internal(_root);
   late final Translations$settings$themeModeDialog$en themeModeDialog =
       Translations$settings$themeModeDialog$en.internal(_root);
-  late final Translations$settings$downloadDirectoryDialog$en downloadDirectoryDialog =
+  late final Translations$settings$downloadDirectoryDialog$en
+  downloadDirectoryDialog =
       Translations$settings$downloadDirectoryDialog$en.internal(_root);
   late final Translations$settings$bypassSniDialog$en bypassSniDialog =
       Translations$settings$bypassSniDialog$en.internal(_root);
   late final Translations$settings$columnsPerRowDialog$en columnsPerRowDialog =
       Translations$settings$columnsPerRowDialog$en.internal(_root);
-  late final Translations$settings$maxConcurrentDownloadsDialog$en maxConcurrentDownloadsDialog =
+  late final Translations$settings$maxConcurrentDownloadsDialog$en
+  maxConcurrentDownloadsDialog =
       Translations$settings$maxConcurrentDownloadsDialog$en.internal(_root);
-  late final Translations$settings$maxSegmentsPerTaskDialog$en maxSegmentsPerTaskDialog =
+  late final Translations$settings$maxSegmentsPerTaskDialog$en
+  maxSegmentsPerTaskDialog =
       Translations$settings$maxSegmentsPerTaskDialog$en.internal(_root);
 }
 
@@ -541,19 +576,24 @@ class Translations$downloads$messages$en {
   String get imageFileExists => 'The image file already exists.';
 
   /// en: 'Retry download task $name'
-  String downloadRetryWith({required Object name}) => 'Retry download task ${name}';
+  String downloadRetryWith({required Object name}) =>
+      'Retry download task ${name}';
 
   /// en: 'Start download task $name'
-  String downloadStartWith({required Object name}) => 'Start download task ${name}';
+  String downloadStartWith({required Object name}) =>
+      'Start download task ${name}';
 
   /// en: 'Download completed for task $name'
-  String downloadCompletedWith({required Object name}) => 'Download completed for task ${name}';
+  String downloadCompletedWith({required Object name}) =>
+      'Download completed for task ${name}';
 
   /// en: 'Download failed for task $name'
-  String downloadFailedWith({required Object name}) => 'Download failed for task ${name}';
+  String downloadFailedWith({required Object name}) =>
+      'Download failed for task ${name}';
 
   /// en: 'Saving failed for task $name'
-  String saveFailedWith({required Object name}) => 'Saving failed for task ${name}';
+  String saveFailedWith({required Object name}) =>
+      'Saving failed for task ${name}';
 }
 
 // Path: settings.languageDialog
@@ -597,8 +637,10 @@ class Translations$settings$downloadDirectoryDialog$en {
   /// en: 'Choose Directory'
   String get pick => 'Choose Directory';
 
-  late final Translations$settings$downloadDirectoryDialog$messages$en messages =
-      Translations$settings$downloadDirectoryDialog$messages$en.internal(_root);
+  late final Translations$settings$downloadDirectoryDialog$messages$en
+  messages = Translations$settings$downloadDirectoryDialog$messages$en.internal(
+    _root,
+  );
 }
 
 // Path: settings.bypassSniDialog
@@ -651,7 +693,9 @@ class Translations$settings$maxSegmentsPerTaskDialog$en {
 
 // Path: settings.downloadDirectoryDialog.messages
 class Translations$settings$downloadDirectoryDialog$messages$en {
-  Translations$settings$downloadDirectoryDialog$messages$en.internal(this._root);
+  Translations$settings$downloadDirectoryDialog$messages$en.internal(
+    this._root,
+  );
 
   final Translations _root; // ignore: unused_field
 
@@ -681,31 +725,46 @@ extension on Translations {
       'generic.confirm' => 'Confirm',
       'generic.enabled' => 'Enabled',
       'generic.disabled' => 'Disabled',
-      'generic.copiedWithValue' => ({required Object value}) => 'Copied to clipboard: ${value}',
-      'generic.errorWithValue' => ({required Object value}) => 'An error occurred: ${value}',
-      'generic.errorWithCause' => ({required Object message, required Object cause}) => '${message}: ${cause}',
+      'generic.copiedWithValue' =>
+        ({required Object value}) => 'Copied to clipboard: ${value}',
+      'generic.errorWithValue' =>
+        ({required Object value}) => 'An error occurred: ${value}',
+      'generic.errorWithCause' =>
+        ({required Object message, required Object cause}) =>
+            '${message}: ${cause}',
       'generic.loading' => 'Loading...',
       'generic.loadFailed' => 'Load failed',
       'generic.retry' => 'Retry',
       'generic.noMoreData' => 'No more data',
       'generic.notFound' => 'Not found',
       'booruError.invalidRequest' => 'The request is invalid.',
-      'booruError.unsupportedCapability' => 'This source does not support the requested operation.',
-      'booruError.authenticationRequired' => 'Sign in to this source and try again.',
-      'booruError.authenticationRejected' => 'The source rejected the account credentials.',
-      'booruError.permissionDenied' => 'The source denied access to this resource.',
-      'booruError.rateLimited' => 'The source is rate limiting requests. Try again later.',
-      'booruError.challengeRequired' => 'The source requires a browser challenge or a different route.',
+      'booruError.unsupportedCapability' =>
+        'This source does not support the requested operation.',
+      'booruError.authenticationRequired' =>
+        'Sign in to this source and try again.',
+      'booruError.authenticationRejected' =>
+        'The source rejected the account credentials.',
+      'booruError.permissionDenied' =>
+        'The source denied access to this resource.',
+      'booruError.rateLimited' =>
+        'The source is rate limiting requests. Try again later.',
+      'booruError.challengeRequired' =>
+        'The source requires a browser challenge or a different route.',
       'booruError.sourceUnavailable' => 'The source is currently unavailable.',
-      'booruError.network' => 'The network request failed. Check the proxy or switch nodes.',
-      'booruError.timeout' => 'The request timed out. Check the proxy or switch nodes.',
-      'booruError.invalidResponse' => 'The source returned an invalid response.',
+      'booruError.network' =>
+        'The network request failed. Check the proxy or switch nodes.',
+      'booruError.timeout' =>
+        'The request timed out. Check the proxy or switch nodes.',
+      'booruError.invalidResponse' =>
+        'The source returned an invalid response.',
       'booruError.unsafeRedirect' => 'The source returned an unsafe redirect.',
-      'booruError.mediaValidationFailed' => 'The image response could not be validated or decoded.',
+      'booruError.mediaValidationFailed' =>
+        'The image response could not be validated or decoded.',
       'booruError.cancelled' => 'The request was cancelled.',
       'booruError.internal' => 'An internal booru engine error occurred.',
       'update.checkUpdateStart' => 'Checking for updates...',
-      'update.checkUpdateFailed' => 'Failed to check for updates. Please check your Internet connection.',
+      'update.checkUpdateFailed' =>
+        'Failed to check for updates. Please check your Internet connection.',
       'update.selectDownloadUrlFailed' =>
         'Unable to find download URL.\nPlease visit the project page to manually update or seek help on the project Issue page.',
       'update.newVersionFound' =>
@@ -714,9 +773,11 @@ extension on Translations {
       'update.noNewVersionFound' => 'No new version found.',
       'postList.short' => 'Post',
       'postList.title' => 'Post List',
-      'postList.titleWithTags' => ({required Object tags}) => 'Posts with tags: ${tags}',
+      'postList.titleWithTags' =>
+        ({required Object tags}) => 'Posts with tags: ${tags}',
       'postList.freepivPromotionTitle' => 'Discover freepiv',
-      'postList.freepivPromotionSubtitle' => 'A modern, smooth, cross-platform third-party Pixiv client.',
+      'postList.freepivPromotionSubtitle' =>
+        'A modern, smooth, cross-platform third-party Pixiv client.',
       'postList.freepivPromotionAction' => 'View project',
       'postDetail.titleWithId' => ({required Object id}) => 'Post: ${id}',
       'postDetail.tags' => 'Tags',
@@ -726,7 +787,8 @@ extension on Translations {
       'postDetail.fileType' => 'File type',
       'postDetail.viewOriginal' => 'View original',
       'postDetail.download' => 'Download',
-      'postDetail.relatedLoadFailed' => 'Failed to load related images. You can retry.',
+      'postDetail.relatedLoadFailed' =>
+        'Failed to load related images. You can retry.',
       'postDetail.createdAt' => 'Created at',
       'postDetail.author' => 'Author',
       'postDetail.source' => 'Source',
@@ -771,18 +833,27 @@ extension on Translations {
       'downloads.collapse' => 'Collapse',
       'downloads.messages.storagePermanentlyDenied' =>
         'You have permanently denied storage permissions.\nPlease manually enable storage permissions in settings.',
-      'downloads.messages.storageDenied' => 'You have denied storage permissions.',
-      'downloads.messages.deviceInfoError' => 'Unable to parse device information.',
+      'downloads.messages.storageDenied' =>
+        'You have denied storage permissions.',
+      'downloads.messages.deviceInfoError' =>
+        'Unable to parse device information.',
       'downloads.messages.photosPermanentlyDenied' =>
         'You have permanently denied photos permissions.\nPlease manually enable photos permissions in settings.',
-      'downloads.messages.photosDenied' => 'You have denied photos permissions.',
-      'downloads.messages.downloadTaskExists' => 'The download task already exists.',
+      'downloads.messages.photosDenied' =>
+        'You have denied photos permissions.',
+      'downloads.messages.downloadTaskExists' =>
+        'The download task already exists.',
       'downloads.messages.imageFileExists' => 'The image file already exists.',
-      'downloads.messages.downloadRetryWith' => ({required Object name}) => 'Retry download task ${name}',
-      'downloads.messages.downloadStartWith' => ({required Object name}) => 'Start download task ${name}',
-      'downloads.messages.downloadCompletedWith' => ({required Object name}) => 'Download completed for task ${name}',
-      'downloads.messages.downloadFailedWith' => ({required Object name}) => 'Download failed for task ${name}',
-      'downloads.messages.saveFailedWith' => ({required Object name}) => 'Saving failed for task ${name}',
+      'downloads.messages.downloadRetryWith' =>
+        ({required Object name}) => 'Retry download task ${name}',
+      'downloads.messages.downloadStartWith' =>
+        ({required Object name}) => 'Start download task ${name}',
+      'downloads.messages.downloadCompletedWith' =>
+        ({required Object name}) => 'Download completed for task ${name}',
+      'downloads.messages.downloadFailedWith' =>
+        ({required Object name}) => 'Download failed for task ${name}',
+      'downloads.messages.saveFailedWith' =>
+        ({required Object name}) => 'Saving failed for task ${name}',
       'about.title' => 'About',
       'about.projectUrl' => 'Project URL',
       'about.publishPage' => 'Publish page',
@@ -791,7 +862,8 @@ extension on Translations {
       'about.rustVersion' => 'Rust version',
       'about.discussion' => 'Discussion',
       'about.downloadUpdate' => 'Download update',
-      'about.downloadUpdateHint' => 'Download the latest version for your device via your browser.',
+      'about.downloadUpdateHint' =>
+        'Download the latest version for your device via your browser.',
       'settings.title' => 'Settings',
       'settings.theme' => 'Theme',
       'settings.language' => 'Language',
@@ -810,13 +882,18 @@ extension on Translations {
       'settings.downloadDirectoryDialog.title' => 'Download Directory',
       'settings.downloadDirectoryDialog.pickerTitle' => 'Choose Directory',
       'settings.downloadDirectoryDialog.pick' => 'Choose Directory',
-      'settings.downloadDirectoryDialog.messages.setToPlatformDefault' => 'Directory set to platform default.',
-      'settings.downloadDirectoryDialog.messages.pathNotAbsolute' => 'Directory path must be absolute.',
-      'settings.downloadDirectoryDialog.messages.pathNotWritable' => 'Directory path is not writable.',
+      'settings.downloadDirectoryDialog.messages.setToPlatformDefault' =>
+        'Directory set to platform default.',
+      'settings.downloadDirectoryDialog.messages.pathNotAbsolute' =>
+        'Directory path must be absolute.',
+      'settings.downloadDirectoryDialog.messages.pathNotWritable' =>
+        'Directory path is not writable.',
       'settings.bypassSniDialog.title' => 'Bypass SNI',
       'settings.columnsPerRowDialog.title' => 'Columns per Row',
-      'settings.maxConcurrentDownloadsDialog.title' => 'Max Concurrent Download Tasks',
-      'settings.maxSegmentsPerTaskDialog.title' => 'Max Segments per Download Task',
+      'settings.maxConcurrentDownloadsDialog.title' =>
+        'Max Concurrent Download Tasks',
+      'settings.maxSegmentsPerTaskDialog.title' =>
+        'Max Segments per Download Task',
       _ => null,
     };
   }

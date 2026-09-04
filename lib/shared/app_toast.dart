@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
-import 'package:yande_gui/core/app_runtime.dart';
-import 'package:yande_gui/features/booru/booru_error_presentation.dart';
-import 'package:yande_gui/intl/translations.g.dart';
+import 'package:booruflow/core/app_runtime.dart';
+import 'package:booruflow/features/booru/booru_error_presentation.dart';
+import 'package:booruflow/intl/translations.g.dart';
 
 class AppToastWrapper extends StatelessWidget {
   const AppToastWrapper({required this.child, super.key});

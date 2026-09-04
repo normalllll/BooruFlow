@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
-import 'package:yande_gui/src/rust/api/booru_models.dart';
+import 'package:booruflow/src/rust/api/booru_models.dart';
 
 abstract interface class SettingsServiceStore {
   Map<String, dynamic> load();

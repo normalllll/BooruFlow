@@ -67,14 +67,14 @@ jobs:
             exit 1
           fi
 
-          printf '%s' "$KEYSTORE_FILE_BASE64" | base64 -d > android/app/yande-gui-key.jks
+          printf '%s' "$KEYSTORE_FILE_BASE64" | base64 -d > android/app/booruflow-key.jks
 
-          if [ ! -s android/app/yande-gui-key.jks ]; then
+          if [ ! -s android/app/booruflow-key.jks ]; then
             echo "Restored keystore is empty"
             exit 1
           fi
 
-          ls -lh android/app/yande-gui-key.jks
+          ls -lh android/app/booruflow-key.jks
 
       - name: Verify Keystore
         env:
@@ -82,7 +82,7 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
           keytool -list -v \
-            -keystore android/app/yande-gui-key.jks \
+            -keystore android/app/booruflow-key.jks \
             -storepass "$KEYSTORE_PASSWORD" \
             -alias "$KEY_ALIAS"
 
@@ -93,7 +93,7 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           flutter build apk --release \
-            --android-project-arg=KEYSTORE_FILE=yande-gui-key.jks \
+            --android-project-arg=KEYSTORE_FILE=booruflow-key.jks \
             --android-project-arg=KEYSTORE_PASSWORD="$KEYSTORE_PASSWORD" \
             --android-project-arg=KEY_ALIAS="$KEY_ALIAS" \
             --android-project-arg=KEY_PASSWORD="$KEY_PASSWORD"
@@ -157,16 +157,16 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      APP_NAME: yande-gui
-      APP_BINARY: yande_gui
-      APP_DISPLAY_NAME: Yande GUI
-      APP_URL: https://github.com/normalllll/yande_gui
+      APP_NAME: booruflow
+      APP_BINARY: booruflow
+      APP_DISPLAY_NAME: BooruFlow
+      APP_URL: https://github.com/normalllll/BooruFlow
       APP_LICENSE: GPL-3.0-only
       APP_ARCH: amd64
       RPM_ARCH: x86_64
       BUNDLE_DIR: build/linux/x64/release/bundle
       PACKAGE_ROOT: build/package-root
-      DEB_DIR: build/deb/yande-gui
+      DEB_DIR: build/deb/booruflow
 
     steps:
       - name: Check out repository
@@ -409,13 +409,13 @@ jobs:
         run: |
           export FLUTTER_BUILD_ARCH=arm64
           flutter build macos --release
-          ditto -c -k --sequesterRsrc --keepParent build/macos/Build/Products/Release/yande_gui.app macos-arm64-nosigned.zip
+          ditto -c -k --sequesterRsrc --keepParent build/macos/Build/Products/Release/BooruFlow.app macos-arm64-nosigned.zip
 
       - name: Build macOS x86_64
         run: |
           export FLUTTER_BUILD_ARCH=x86_64
           flutter build macos --release
-          ditto -c -k --sequesterRsrc --keepParent build/macos/Build/Products/Release/yande_gui.app macos-x86_64-nosigned.zip
+          ditto -c -k --sequesterRsrc --keepParent build/macos/Build/Products/Release/BooruFlow.app macos-x86_64-nosigned.zip
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3

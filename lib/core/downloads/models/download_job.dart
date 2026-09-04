@@ -22,7 +22,7 @@ class DownloadJob {
 
   factory DownloadJob.create({
     required int resourceId,
-    String sourceId = 'yande',
+    String sourceId = 'direct',
     String? postId,
     required int variantIndex,
     required Uri url,

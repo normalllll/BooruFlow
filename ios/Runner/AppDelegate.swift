@@ -15,7 +15,7 @@ import UIKit
     handleEventsForBackgroundURLSession identifier: String,
     completionHandler: @escaping () -> Void
   ) {
-    YandeDownloadBridge.shared.handleEventsForBackgroundSession(
+    BooruFlowDownloadBridge.shared.handleEventsForBackgroundSession(
       identifier: identifier,
       completionHandler: completionHandler
     )
@@ -23,7 +23,7 @@ import UIKit
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
-    YandeDownloadBridge.shared.register(
+    BooruFlowDownloadBridge.shared.register(
       messenger: engineBridge.applicationRegistrar.messenger()
     )
   }

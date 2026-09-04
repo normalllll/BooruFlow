@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "io.github.normalllll" "\0"
-            VALUE "FileDescription", "yande_gui" "\0"
+            VALUE "FileDescription", "BooruFlow" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "yande_gui" "\0"
+            VALUE "InternalName", "booruflow" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2024 io.github.normalllll. All rights reserved." "\0"
-            VALUE "OriginalFilename", "yande_gui.exe" "\0"
-            VALUE "ProductName", "yande_gui" "\0"
+            VALUE "OriginalFilename", "booruflow.exe" "\0"
+            VALUE "ProductName", "BooruFlow" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

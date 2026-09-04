@@ -1,15 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:yande_gui/core/downloads/download_manager.dart';
-import 'package:yande_gui/core/downloads/download_models.dart';
-import 'package:yande_gui/features/downloads/widgets/download_task_widgets.dart';
-import 'package:yande_gui/features/downloads/logic.dart';
-import 'package:yande_gui/features/downloads/yande_download_item.dart';
-import 'package:yande_gui/intl/translations.g.dart';
-import 'package:yande_gui/shared/app_navigation.dart';
-import 'package:yande_gui/shared/app_toast.dart';
-import 'package:yande_gui/shared/widgets/auto_scaffold.dart';
+import 'package:booruflow/core/downloads/download_manager.dart';
+import 'package:booruflow/core/downloads/download_models.dart';
+import 'package:booruflow/features/downloads/widgets/download_task_widgets.dart';
+import 'package:booruflow/features/downloads/logic.dart';
+import 'package:booruflow/features/downloads/booru_download_item.dart';
+import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/app_navigation.dart';
+import 'package:booruflow/shared/app_toast.dart';
+import 'package:booruflow/shared/widgets/auto_scaffold.dart';
 
 class DownloadsPage extends StatelessWidget {
   const DownloadsPage({super.key});
@@ -21,10 +21,10 @@ class DownloadsPage extends StatelessWidget {
     return AutoScaffold(
       verticalOnlyTitleWidget: Text(t.downloads.tasksTitle),
       builder: (context, horizontal) {
-        return StreamBuilder<List<YandeDownloadItem>>(
-          stream: YandeDownloads.instance.watchItems,
+        return StreamBuilder<List<BooruDownloadItem>>(
+          stream: BooruDownloads.instance.watchItems,
           builder: (context, snapshot) {
-            final tasks = snapshot.data ?? YandeDownloads.instance.currentItems;
+            final tasks = snapshot.data ?? BooruDownloads.instance.currentItems;
             final summary = DownloadSummary.fromTasks([
               for (final task in tasks) task.snapshot,
             ]);

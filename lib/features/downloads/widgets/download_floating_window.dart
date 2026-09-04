@@ -2,15 +2,15 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:yande_gui/core/downloads/download_manager.dart';
-import 'package:yande_gui/core/downloads/download_models.dart';
-import 'package:yande_gui/core/app_runtime.dart';
-import 'package:yande_gui/features/downloads/widgets/download_task_widgets.dart';
-import 'package:yande_gui/features/downloads/logic.dart';
-import 'package:yande_gui/features/downloads/yande_download_item.dart';
-import 'package:yande_gui/intl/translations.g.dart';
-import 'package:yande_gui/shared/app_toast.dart';
-import 'package:yande_gui/features/posts/models/post.dart';
+import 'package:booruflow/core/downloads/download_manager.dart';
+import 'package:booruflow/core/downloads/download_models.dart';
+import 'package:booruflow/core/app_runtime.dart';
+import 'package:booruflow/features/downloads/widgets/download_task_widgets.dart';
+import 'package:booruflow/features/downloads/logic.dart';
+import 'package:booruflow/features/downloads/booru_download_item.dart';
+import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/app_toast.dart';
+import 'package:booruflow/features/posts/models/post.dart';
 
 class DownloadFloatingWindow extends StatefulWidget {
   const DownloadFloatingWindow({
@@ -50,11 +50,11 @@ class _DownloadFloatingWindowState extends State<DownloadFloatingWindow> {
         Positioned.fill(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              return StreamBuilder<List<YandeDownloadItem>>(
-                stream: YandeDownloads.instance.watchItems,
+              return StreamBuilder<List<BooruDownloadItem>>(
+                stream: BooruDownloads.instance.watchItems,
                 builder: (context, snapshot) {
                   final tasks =
-                      snapshot.data ?? YandeDownloads.instance.currentItems;
+                      snapshot.data ?? BooruDownloads.instance.currentItems;
                   _rememberSessionTasks(tasks);
 
                   final panelTasks = [
@@ -119,7 +119,7 @@ class _DownloadFloatingWindowState extends State<DownloadFloatingWindow> {
   Widget _buildDesktopDock(
     Size availableSize,
     DownloadSummary summary,
-    List<YandeDownloadItem> tasks,
+    List<BooruDownloadItem> tasks,
   ) {
     final panelWidth = math.min(
       _desktopPanelSize.width,
@@ -198,7 +198,7 @@ class _DownloadFloatingWindowState extends State<DownloadFloatingWindow> {
     BuildContext context,
     BoxConstraints constraints,
     DownloadSummary summary,
-    List<YandeDownloadItem> tasks,
+    List<BooruDownloadItem> tasks,
   ) {
     final viewPadding = MediaQuery.viewPaddingOf(context);
     final windowSize = _windowSizeFor(constraints.biggest);
@@ -325,7 +325,7 @@ class _DownloadFloatingWindowState extends State<DownloadFloatingWindow> {
     });
   }
 
-  void _rememberSessionTasks(List<YandeDownloadItem> tasks) {
+  void _rememberSessionTasks(List<BooruDownloadItem> tasks) {
     for (final item in tasks) {
       final task = item.snapshot;
       if (!task.createdAt.isBefore(_sessionStartedAt) ||
@@ -349,7 +349,7 @@ class _DownloadFloatingWindowState extends State<DownloadFloatingWindow> {
     if (_expanded) setState(() => _expanded = false);
   }
 
-  void _openTask(YandeDownloadItem task) {
+  void _openTask(BooruDownloadItem task) {
     final post = task.post;
     if (post == null) return;
     _collapse();
@@ -423,12 +423,12 @@ class _DraggableDownloadWindow extends StatelessWidget {
 
   final bool expanded;
   final DownloadSummary summary;
-  final List<YandeDownloadItem> tasks;
+  final List<BooruDownloadItem> tasks;
   final ValueChanged<Offset> onDragDelta;
   final VoidCallback onToggleExpanded;
   final VoidCallback onClose;
   final VoidCallback onSync;
-  final ValueChanged<YandeDownloadItem> onTaskTap;
+  final ValueChanged<BooruDownloadItem> onTaskTap;
 
   @override
   Widget build(BuildContext context) {
@@ -550,11 +550,11 @@ class _DownloadPanel extends StatelessWidget {
   });
 
   final DownloadSummary summary;
-  final List<YandeDownloadItem> tasks;
+  final List<BooruDownloadItem> tasks;
   final ValueChanged<Offset>? onDragDelta;
   final VoidCallback onClose;
   final VoidCallback onSync;
-  final ValueChanged<YandeDownloadItem> onTaskTap;
+  final ValueChanged<BooruDownloadItem> onTaskTap;
 
   @override
   Widget build(BuildContext context) {

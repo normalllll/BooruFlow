@@ -1,8 +1,8 @@
-package io.github.normalllll.yande_gui
+package io.github.normalllll.booruflow
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
-import io.github.normalllll.yande_gui.download.DownloadBridge
+import io.github.normalllll.booruflow.download.DownloadBridge
 
 class MainActivity : FlutterActivity() {
 

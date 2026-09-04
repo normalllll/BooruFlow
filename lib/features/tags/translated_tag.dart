@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yande_gui/features/tags/tag_translations_service.dart';
+import 'package:booruflow/features/tags/tag_translations_service.dart';
 
 class TranslatedTag extends StatelessWidget {
   final String text;

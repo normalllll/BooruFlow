@@ -1,4 +1,4 @@
-package io.github.normalllll.yande_gui.download
+package io.github.normalllll.booruflow.download
 
 import android.Manifest
 import android.app.Activity
@@ -46,10 +46,10 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 
 object DownloadBridge {
-    private const val METHOD_CHANNEL = "yande_gui/download_engine"
-    private const val EVENT_CHANNEL = "yande_gui/download_engine/events"
+    private const val METHOD_CHANNEL = "booruflow/download_engine"
+    private const val EVENT_CHANNEL = "booruflow/download_engine/events"
     private const val DOWNLOAD_PERMISSION_REQUEST_CODE = 4109
-    private const val PERMISSION_PREFS = "yande_gui_download_permissions"
+    private const val PERMISSION_PREFS = "booruflow_download_permissions"
 
     @Volatile
     private var eventSink: EventChannel.EventSink? = null
@@ -548,10 +548,10 @@ class DownloadForegroundService : Service() {
     }
 
     companion object {
-        const val ACTION_CANCEL = "io.github.normalllll.yande_gui.download.CANCEL"
-        const val ACTION_CANCEL_ALL = "io.github.normalllll.yande_gui.download.CANCEL_ALL"
+        const val ACTION_CANCEL = "io.github.normalllll.booruflow.download.CANCEL"
+        const val ACTION_CANCEL_ALL = "io.github.normalllll.booruflow.download.CANCEL_ALL"
         const val EXTRA_JOB_ID = "jobId"
-        private const val CHANNEL_ID = "yande_gui_downloads"
+        private const val CHANNEL_ID = "booruflow_downloads"
         private const val NOTIFICATION_ID = 4108
 
         val backgroundExecutor = Executors.newCachedThreadPool()
@@ -638,11 +638,11 @@ object AndroidMediaSaver {
             put(MediaStore.MediaColumns.MIME_TYPE, mimeTypeFor(job.filename))
             put(MediaStore.MediaColumns.SIZE, source.length())
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/AnyBooru/${job.sourceId}")
+                put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/BooruFlow/${job.sourceId}")
                 put(MediaStore.MediaColumns.IS_PENDING, 1)
             } else {
                 @Suppress("DEPRECATION")
-                val directory = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "AnyBooru/${job.sourceId}")
+                val directory = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "BooruFlow/${job.sourceId}")
                 if (!directory.exists() && !directory.mkdirs()) {
                     throw IllegalStateException("Could not create download directory: ${directory.absolutePath}")
                 }
@@ -782,7 +782,7 @@ private fun nativeJobFromMap(map: Map<String, Any?>?): NativeDownloadJob? {
     return NativeDownloadJob(
         id = id,
         resourceId = (map["resourceId"] as? Number)?.toInt() ?: 0,
-        sourceId = map["sourceId"]?.toString()?.takeIf { it.isNotBlank() } ?: "yande",
+        sourceId = map["sourceId"]?.toString()?.takeIf { it.isNotBlank() } ?: "direct",
         url = url,
         filename = filename,
         networkOptions = NativeNetworkOptions(

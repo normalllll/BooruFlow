@@ -1,9 +1,9 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yande_gui/core/data_list_source.dart';
-import 'package:yande_gui/core/settings_service.dart';
-import 'package:yande_gui/features/booru/booru_service.dart';
-import 'package:yande_gui/features/posts/models/post.dart';
-import 'package:yande_gui/src/rust/api/booru_models.dart';
+import 'package:booruflow/core/data_list_source.dart';
+import 'package:booruflow/core/settings_service.dart';
+import 'package:booruflow/features/booru/booru_service.dart';
+import 'package:booruflow/features/posts/models/post.dart';
+import 'package:booruflow/src/rust/api/booru_models.dart';
 
 part 'logic.g.dart';
 

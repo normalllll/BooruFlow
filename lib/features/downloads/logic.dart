@@ -1,31 +1,31 @@
 import 'dart:async';
 
-import 'package:yande_gui/core/downloads/download_manager.dart';
-import 'package:yande_gui/core/downloads/download_models.dart';
-import 'package:yande_gui/features/downloads/yande_download_item.dart';
-import 'package:yande_gui/intl/translations.g.dart';
-import 'package:yande_gui/shared/app_toast.dart';
-import 'package:yande_gui/core/settings_service.dart';
-import 'package:yande_gui/features/booru/booru_service.dart';
-import 'package:yande_gui/features/posts/models/post.dart';
-import 'package:yande_gui/src/rust/api/booru_models.dart';
+import 'package:booruflow/core/downloads/download_manager.dart';
+import 'package:booruflow/core/downloads/download_models.dart';
+import 'package:booruflow/features/downloads/booru_download_item.dart';
+import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/app_toast.dart';
+import 'package:booruflow/core/settings_service.dart';
+import 'package:booruflow/features/booru/booru_service.dart';
+import 'package:booruflow/features/posts/models/post.dart';
+import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:path/path.dart' as path;
 
-final class YandeDownloads {
-  YandeDownloads._();
+final class BooruDownloads {
+  BooruDownloads._();
 
-  static final instance = YandeDownloads._();
+  static final instance = BooruDownloads._();
 
   final _posts = <int, Post>{};
   final _lastStates = <String, (DownloadStatus, SaveState)>{};
   final _itemsController =
-      StreamController<List<YandeDownloadItem>>.broadcast();
+      StreamController<List<BooruDownloadItem>>.broadcast();
   StreamSubscription<List<DownloadTaskSnapshot>>? _subscription;
-  List<YandeDownloadItem> _currentItems = const [];
+  List<BooruDownloadItem> _currentItems = const [];
   Future<void>? _initializing;
 
-  Stream<List<YandeDownloadItem>> get watchItems => _itemsController.stream;
-  List<YandeDownloadItem> get currentItems => _currentItems;
+  Stream<List<BooruDownloadItem>> get watchItems => _itemsController.stream;
+  List<BooruDownloadItem> get currentItems => _currentItems;
 
   Future<void> initialize() => _initializing ??= _initialize();
 
@@ -39,7 +39,7 @@ final class YandeDownloads {
   }
 
   Future<void> add(Post post) async {
-    var filename = 'Yande #${post.id}';
+    var filename = post.id;
     try {
       await initialize();
       final prepared = await BooruService.instance.engine.prepareDownload(
@@ -154,9 +154,9 @@ final class YandeDownloads {
     List<DownloadTaskSnapshot> snapshots, {
     required bool notifyTransitions,
   }) {
-    final next = <YandeDownloadItem>[
+    final next = <BooruDownloadItem>[
       for (final snapshot in snapshots)
-        YandeDownloadItem(
+        BooruDownloadItem(
           snapshot: snapshot,
           post: _posts[snapshot.resourceId],
         ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yande_gui/core/app_runtime.dart';
+import 'package:booruflow/core/app_runtime.dart';
 
 bool shouldUseDesktopShell(BuildContext context) {
   final size = MediaQuery.sizeOf(context);

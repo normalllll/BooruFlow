@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:yande_gui/core/downloads/download_file_system.dart';
-import 'package:yande_gui/core/downloads/download_models.dart';
-import 'package:yande_gui/core/downloads/media_saver.dart';
+import 'package:booruflow/core/downloads/download_file_system.dart';
+import 'package:booruflow/core/downloads/download_models.dart';
+import 'package:booruflow/core/downloads/media_saver.dart';
 import 'package:path/path.dart' as p;
 
 final class DesktopMediaSaver implements MediaSaver {

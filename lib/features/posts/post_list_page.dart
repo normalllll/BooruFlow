@@ -7,23 +7,23 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_more_list/loading_more_list.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:yande_gui/features/downloads/logic.dart';
-import 'package:yande_gui/features/booru/booru_service.dart';
-import 'package:yande_gui/features/posts/models/post.dart';
-import 'package:yande_gui/features/posts/widgets/post_search_field.dart';
-import 'package:yande_gui/features/posts/widgets/post_waterfall_skeleton.dart';
-import 'package:yande_gui/features/posts/resolution.dart';
-import 'package:yande_gui/features/posts/widgets/yande_image.dart';
-import 'package:yande_gui/intl/translations.g.dart';
-import 'package:yande_gui/core/settings_service.dart';
-import 'package:yande_gui/shared/app_navigation.dart';
-import 'package:yande_gui/src/rust/api/booru_models.dart';
-import 'package:yande_gui/shared/app_theme.dart';
-import 'package:yande_gui/shared/widgets/auto_scaffold.dart';
-import 'package:yande_gui/shared/widgets/data_refresh_view.dart';
-import 'package:yande_gui/shared/widgets/loading_more_indicator.dart';
+import 'package:booruflow/features/downloads/logic.dart';
+import 'package:booruflow/features/booru/booru_service.dart';
+import 'package:booruflow/features/posts/models/post.dart';
+import 'package:booruflow/features/posts/widgets/post_search_field.dart';
+import 'package:booruflow/features/posts/widgets/post_waterfall_skeleton.dart';
+import 'package:booruflow/features/posts/resolution.dart';
+import 'package:booruflow/features/posts/widgets/booru_image.dart';
+import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/core/settings_service.dart';
+import 'package:booruflow/shared/app_navigation.dart';
+import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:booruflow/shared/app_theme.dart';
+import 'package:booruflow/shared/widgets/auto_scaffold.dart';
+import 'package:booruflow/shared/widgets/data_refresh_view.dart';
+import 'package:booruflow/shared/widgets/loading_more_indicator.dart';
 
-import 'package:yande_gui/features/posts/logic.dart';
+import 'package:booruflow/features/posts/logic.dart';
 
 class PostListPage extends ConsumerStatefulWidget {
   final List<String>? tags;
@@ -243,7 +243,7 @@ class _PostListPageState extends ConsumerState<PostListPage> {
                           onTap: () => context.pushPost(post),
                           onLongPress: () {
                             HapticFeedback.mediumImpact();
-                            YandeDownloads.instance.add(post);
+                            BooruDownloads.instance.add(post);
                           },
                         );
                       }, childCount: source.length),
@@ -589,7 +589,7 @@ class _PostPreviewImage extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          YandeImage(
+          BooruImage(
             post.previewUrl,
             sourceId: post.sourceId,
             postId: post.id,
@@ -631,7 +631,9 @@ class _PostPreviewFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final author = post.author.trim().isEmpty ? 'yande.re' : post.author.trim();
+    final author = post.author.trim().isEmpty
+        ? post.sourceId
+        : post.author.trim();
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 9, 8, 9),

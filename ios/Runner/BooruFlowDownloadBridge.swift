@@ -5,19 +5,19 @@ import UIKit
 import CryptoKit
 import CFNetwork
 
-final class YandeDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDownloadDelegate {
-  static let shared = YandeDownloadBridge()
+final class BooruFlowDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDownloadDelegate {
+  static let shared = BooruFlowDownloadBridge()
 
-  private let methodChannelName = "yande_gui/download_engine"
-  private let eventChannelName = "yande_gui/download_engine/events"
-  private let queue = DispatchQueue(label: "yande_gui.download.bridge")
+  private let methodChannelName = "booruflow/download_engine"
+  private let eventChannelName = "booruflow/download_engine/events"
+  private let queue = DispatchQueue(label: "booruflow.download.bridge")
   private var eventSink: FlutterEventSink?
   private var states: [String: NativeDownloadState] = [:]
   private var tasksByJob: [String: URLSessionDownloadTask] = [:]
   private var sessionsByIdentifier: [String: URLSession] = [:]
   private var backgroundCompletionHandlers: [String: () -> Void] = [:]
-  private let sessionIdentifiersKey = "yande_gui.download.sessionIdentifiers"
-  private let defaultSessionIdentifier = "io.github.normalllll.yande_gui.download.background.direct"
+  private let sessionIdentifiersKey = "booruflow.download.sessionIdentifiers"
+  private let defaultSessionIdentifier = "io.github.normalllll.booruflow.download.background.direct"
 
   func register(messenger: FlutterBinaryMessenger) {
     let methodChannel = FlutterMethodChannel(name: methodChannelName, binaryMessenger: messenger)
@@ -359,7 +359,7 @@ final class YandeDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDownl
     let identifier: String
     if let proxyUrl, !proxyUrl.isEmpty {
       let digest = SHA256.hash(data: Data(proxyUrl.utf8)).prefix(12).map { String(format: "%02x", $0) }.joined()
-      identifier = "io.github.normalllll.yande_gui.download.background.proxy.\(digest)"
+      identifier = "io.github.normalllll.booruflow.download.background.proxy.\(digest)"
     } else {
       identifier = defaultSessionIdentifier
     }
@@ -416,7 +416,7 @@ final class YandeDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDownl
 
   private func moveDownloadedFile(location: URL, jobId: String, filename: String) throws -> URL {
     let directory = try FileManager.default.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-      .appendingPathComponent("yande_gui_downloads", isDirectory: true)
+      .appendingPathComponent("booruflow_downloads", isDirectory: true)
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     let destination = directory.appendingPathComponent("\(jobId)-\(safeFilename(filename))")
     if FileManager.default.fileExists(atPath: destination.path) {
@@ -428,7 +428,7 @@ final class YandeDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDownl
 
   private func saveToPhotos(job: NativeDownloadJob, localUrl: URL, bytesWritten: Int64, completion: @escaping (Result<[String: Any], Error>) -> Void) {
     guard hasPhotosAddAccess() else {
-      completion(.failure(NSError(domain: "yande_gui.download", code: 1, userInfo: [NSLocalizedDescriptionKey: "Photos add permission is not granted."])))
+      completion(.failure(NSError(domain: "booruflow.download", code: 1, userInfo: [NSLocalizedDescriptionKey: "Photos add permission is not granted."])))
       return
     }
 
@@ -452,7 +452,7 @@ final class YandeDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDownl
         return
       }
       if !success {
-        completion(.failure(NSError(domain: "yande_gui.download", code: 2, userInfo: [NSLocalizedDescriptionKey: "Photos save failed."])))
+        completion(.failure(NSError(domain: "booruflow.download", code: 2, userInfo: [NSLocalizedDescriptionKey: "Photos save failed."])))
         return
       }
       let savedPath = localIdentifier.map { "ph://\($0)" } ?? localUrl.path
@@ -734,16 +734,16 @@ private func safeFilename(_ filename: String) -> String {
 
 private func validateReadableFile(_ url: URL) throws {
   guard url.isFileURL else {
-    throw NSError(domain: "yande_gui.download", code: 3, userInfo: [NSLocalizedDescriptionKey: "Downloaded file URL is invalid."])
+    throw NSError(domain: "booruflow.download", code: 3, userInfo: [NSLocalizedDescriptionKey: "Downloaded file URL is invalid."])
   }
   let path = url.path
   guard FileManager.default.fileExists(atPath: path) else {
-    throw NSError(domain: "yande_gui.download", code: 4, userInfo: [NSLocalizedDescriptionKey: "Downloaded file does not exist: \(path)"])
+    throw NSError(domain: "booruflow.download", code: 4, userInfo: [NSLocalizedDescriptionKey: "Downloaded file does not exist: \(path)"])
   }
   let attributes = try FileManager.default.attributesOfItem(atPath: path)
   let size = (attributes[.size] as? NSNumber)?.int64Value ?? 0
   guard size > 0 else {
-    throw NSError(domain: "yande_gui.download", code: 5, userInfo: [NSLocalizedDescriptionKey: "Downloaded file is empty: \(path)"])
+    throw NSError(domain: "booruflow.download", code: 5, userInfo: [NSLocalizedDescriptionKey: "Downloaded file is empty: \(path)"])
   }
 }
 
@@ -802,7 +802,7 @@ private func nonEmptyString(_ value: Any?) -> String? {
 }
 
 private func downloadError(_ code: Int, _ message: String) -> NSError {
-  NSError(domain: "yande_gui.download", code: code, userInfo: [NSLocalizedDescriptionKey: message])
+  NSError(domain: "booruflow.download", code: code, userInfo: [NSLocalizedDescriptionKey: message])
 }
 
 private func compactPayload(_ payload: [String: Any?]) -> [String: Any] {

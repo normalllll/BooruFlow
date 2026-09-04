@@ -52,7 +52,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   Win32Window::Size size(window_width, window_height);
 
   FlutterWindow window(project);
-  if (!window.Create(L"Yande GUI", origin, size)) {
+  if (!window.Create(L"BooruFlow", origin, size)) {
     return EXIT_FAILURE;
   }
   window.SetQuitOnClose(true);

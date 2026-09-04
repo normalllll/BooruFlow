@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loading_more_list/loading_more_list.dart';
-import 'package:yande_gui/features/booru/booru_error_presentation.dart';
-import 'package:yande_gui/shared/widgets/loading_more_indicator.dart';
-import 'package:yande_gui/src/rust/booru/error.dart';
+import 'package:booruflow/features/booru/booru_error_presentation.dart';
+import 'package:booruflow/shared/widgets/loading_more_indicator.dart';
+import 'package:booruflow/src/rust/booru/error.dart';
 
 void main() {
   const error = BooruErrorDto(

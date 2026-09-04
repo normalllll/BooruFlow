@@ -1,5 +1,5 @@
-import 'package:yande_gui/intl/translations.g.dart';
-import 'package:yande_gui/src/rust/booru/error.dart';
+import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/src/rust/booru/error.dart';
 
 String describeBooruError(Object? error) {
   final booruError = switch (error) {
@@ -11,8 +11,7 @@ String describeBooruError(Object? error) {
 
   final primary = switch (booruError.code) {
     BooruErrorCode.invalidRequest => t.booruError.invalidRequest,
-    BooruErrorCode.unsupportedCapability =>
-      t.booruError.unsupportedCapability,
+    BooruErrorCode.unsupportedCapability => t.booruError.unsupportedCapability,
     BooruErrorCode.authenticationRequired =>
       t.booruError.authenticationRequired,
     BooruErrorCode.authenticationRejected =>
@@ -25,8 +24,7 @@ String describeBooruError(Object? error) {
     BooruErrorCode.timeout => t.booruError.timeout,
     BooruErrorCode.invalidResponse => t.booruError.invalidResponse,
     BooruErrorCode.unsafeRedirect => t.booruError.unsafeRedirect,
-    BooruErrorCode.mediaValidationFailed =>
-      t.booruError.mediaValidationFailed,
+    BooruErrorCode.mediaValidationFailed => t.booruError.mediaValidationFailed,
     BooruErrorCode.cancelled => t.booruError.cancelled,
     BooruErrorCode.internal => t.booruError.internal,
   };

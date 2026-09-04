@@ -5,10 +5,10 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = yande_gui
+PRODUCT_NAME = BooruFlow
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = io.github.normalllll.yandegui
+PRODUCT_BUNDLE_IDENTIFIER = io.github.normalllll.booruflow
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2024 io.github.normalllll. All rights reserved.

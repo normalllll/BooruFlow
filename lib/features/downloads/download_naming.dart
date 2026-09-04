@@ -1,7 +1,7 @@
 import 'package:path/path.dart' as p;
-import 'package:yande_gui/core/downloads/download_file_system.dart';
+import 'package:booruflow/core/downloads/download_file_system.dart';
 
-String yandePostDownloadFilename({
+String booruPostDownloadFilename({
   required int postId,
   required int variantIndex,
   required Uri sourceUrl,
@@ -12,7 +12,7 @@ String yandePostDownloadFilename({
       _safeExtension(p.extension(sourceUrl.path));
   final variantSuffix = variantIndex == 0 ? '' : '-$variantIndex';
   return safeDownloadFilename(
-    'yande-$postId$variantSuffix${extension == null ? '' : '.$extension'}',
+    '$postId$variantSuffix${extension == null ? '' : '.$extension'}',
   );
 }
 
