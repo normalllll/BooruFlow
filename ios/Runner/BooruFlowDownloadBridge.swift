@@ -564,14 +564,16 @@ private struct NativeDownloadJob {
   let validation: NativeValidationOptions
 
   init?(_ map: [String: Any]) {
-    guard let id = map["id"] as? String, let url = map["url"] as? String else {
+    guard let id = map["id"] as? String, let url = map["url"] as? String,
+      let networkOptions = map["networkOptions"] as? [String: Any],
+      let validation = map["validation"] as? [String: Any] else {
       return nil
     }
     self.id = id
     self.url = url
     self.filename = map["filename"] as? String ?? "download"
-    self.networkOptions = NativeNetworkOptions(map["networkOptions"] as? [String: Any] ?? [:], legacyHeaders: map["headers"] as? [String: String])
-    self.validation = NativeValidationOptions(map["validation"] as? [String: Any] ?? [:])
+    self.networkOptions = NativeNetworkOptions(networkOptions)
+    self.validation = NativeValidationOptions(validation)
   }
 
   init?(taskDescription: String?) {
@@ -586,23 +588,7 @@ private struct NativeDownloadJob {
   }
 
   init?(task: URLSessionTask) {
-    if let restored = NativeDownloadJob(taskDescription: task.taskDescription) {
-      self = restored
-      return
-    }
-    guard
-      let id = nonEmptyString(task.taskDescription),
-      let request = task.originalRequest,
-      let url = request.url?.absoluteString
-    else {
-      return nil
-    }
-    self.id = id
-    self.url = url
-    let filename = request.url?.lastPathComponent ?? ""
-    self.filename = filename.isEmpty ? "download" : filename
-    self.networkOptions = NativeNetworkOptions(["headers": request.allHTTPHeaderFields ?? [:]])
-    self.validation = NativeValidationOptions([:])
+    self.init(taskDescription: task.taskDescription)
   }
 
   func encodedTaskDescription() -> String? {
@@ -628,8 +614,8 @@ private struct NativeNetworkOptions {
   let connectTimeoutSeconds: Int
   let receiveTimeoutSeconds: Int
 
-  init(_ map: [String: Any], legacyHeaders: [String: String]? = nil) {
-    self.headers = map["headers"] as? [String: String] ?? legacyHeaders ?? [:]
+  init(_ map: [String: Any]) {
+    self.headers = map["headers"] as? [String: String] ?? [:]
     self.proxyUrl = nonEmptyString(map["proxyUrl"])
     self.connectHost = nonEmptyString(map["connectHost"])
     self.hostHeader = nonEmptyString(map["hostHeader"])

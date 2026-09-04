@@ -29,26 +29,10 @@ class SaveTarget {
   }
 
   static SaveTarget fromJson(Map<String, Object?> json) {
-    final typeName = json['type'] as String?;
-    final type =
-        _saveTargetTypeByName(typeName) ?? SaveTargetType.downloadsFolder;
     return SaveTarget(
-      type: type,
+      type: SaveTargetType.values.byName(json['type'] as String),
       directory: json['directory'] as String?,
       subdirectory: json['subdirectory'] as String?,
     );
   }
-}
-
-SaveTargetType? _saveTargetTypeByName(String? name) {
-  if (name == null) {
-    return null;
-  }
-
-  for (final value in SaveTargetType.values) {
-    if (value.name == name) {
-      return value;
-    }
-  }
-  return null;
 }

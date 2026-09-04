@@ -7,7 +7,6 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 const appDownloadDirectoryName = 'BooruFlow';
-const downloadMediaDirectoryName = 'images';
 const downloadTempDirectoryName = 'booruflow_downloads';
 const fallbackDownloadFilename = 'download';
 
@@ -70,49 +69,28 @@ Future<String> resolveDesktopDownloadDirectory({
 }) async {
   final customDirectory = explicitDirectory ?? SettingsService.downloadPath;
   if (customDirectory != null && customDirectory.isNotEmpty) {
-    return p.join(
-      customDirectory,
-      appDownloadDirectoryName,
-      downloadMediaDirectoryName,
-    );
+    return p.join(customDirectory, appDownloadDirectoryName);
   }
 
   final downloads = await getDownloadsDirectory();
   if (downloads != null) {
-    return p.join(
-      downloads.path,
-      appDownloadDirectoryName,
-      downloadMediaDirectoryName,
-    );
+    return p.join(downloads.path, appDownloadDirectoryName);
   }
 
   final home =
       Platform.environment['HOME'] ?? Platform.environment['USERPROFILE'];
   if (home != null && home.isNotEmpty) {
-    return p.join(
-      home,
-      'Downloads',
-      appDownloadDirectoryName,
-      downloadMediaDirectoryName,
-    );
+    return p.join(home, 'Downloads', appDownloadDirectoryName);
   }
 
-  return p.join(
-    Directory.current.path,
-    appDownloadDirectoryName,
-    downloadMediaDirectoryName,
-  );
+  return p.join(Directory.current.path, appDownloadDirectoryName);
 }
 
 Future<String> prepareDesktopCustomDownloadDirectory(
   String selectedDirectory,
 ) async {
   final directory = Directory(
-    p.join(
-      selectedDirectory,
-      appDownloadDirectoryName,
-      downloadMediaDirectoryName,
-    ),
+    p.join(selectedDirectory, appDownloadDirectoryName),
   );
   await ensureWritableDirectory(directory);
   return directory.path;

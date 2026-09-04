@@ -5,11 +5,9 @@ import 'package:booruflow/core/downloads/download_models.dart';
 import 'package:booruflow/features/downloads/booru_download_item.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_toast.dart';
-import 'package:booruflow/core/settings_service.dart';
 import 'package:booruflow/features/booru/booru_service.dart';
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
-import 'package:path/path.dart' as path;
 
 final class BooruDownloads {
   BooruDownloads._();
@@ -60,7 +58,6 @@ final class BooruDownloads {
               value: preparedChecksum.value,
             );
       filename = prepared.filename;
-      final configuredRoot = SettingsService.downloadPath;
       final job = DownloadJob.create(
         resourceId: post.resourceId,
         sourceId: post.sourceId,
@@ -82,12 +79,7 @@ final class BooruDownloads {
           ],
           checksum: checksum,
         ),
-        saveTarget: SaveTarget.downloadsFolder(
-          directory: configuredRoot == null
-              ? null
-              : path.join(configuredRoot, post.sourceId),
-          subdirectory: configuredRoot == null ? post.sourceId : null,
-        ),
+        saveTarget: SaveTarget.downloadsFolder(subdirectory: post.sourceId),
         thumbnailUrl: post.previewUrl,
         title:
             '${BooruService.instance.sourceById(post.sourceId).displayName} #${post.id}',

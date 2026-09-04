@@ -766,12 +766,11 @@ private fun nativeJobFromMap(map: Map<String, Any?>?): NativeDownloadJob? {
     val id = map["id"] as? String ?: return null
     val url = map["url"] as? String ?: return null
     val filename = map["filename"] as? String ?: "download"
-    val networkMap = map["networkOptions"] as? Map<*, *> ?: emptyMap<Any?, Any?>()
-    val legacyHeaders = map["headers"] as? Map<*, *>
-    val headers = (networkMap["headers"] as? Map<*, *> ?: legacyHeaders)?.mapNotNull { (key, value) ->
+    val networkMap = map["networkOptions"] as? Map<*, *> ?: return null
+    val headers = (networkMap["headers"] as? Map<*, *>)?.mapNotNull { (key, value) ->
         if (key == null || value == null) null else key.toString() to value.toString()
     }?.toMap() ?: emptyMap()
-    val validationMap = map["validation"] as? Map<*, *> ?: emptyMap<Any?, Any?>()
+    val validationMap = map["validation"] as? Map<*, *> ?: return null
     val checksumMap = validationMap["checksum"] as? Map<*, *>
     val checksum = checksumMap?.let {
         val algorithm = it["algorithm"]?.toString()?.trim()?.lowercase().orEmpty()
@@ -782,7 +781,7 @@ private fun nativeJobFromMap(map: Map<String, Any?>?): NativeDownloadJob? {
     return NativeDownloadJob(
         id = id,
         resourceId = (map["resourceId"] as? Number)?.toInt() ?: 0,
-        sourceId = map["sourceId"]?.toString()?.takeIf { it.isNotBlank() } ?: "direct",
+        sourceId = map["sourceId"]?.toString()?.takeIf { it.isNotBlank() } ?: return null,
         url = url,
         filename = filename,
         networkOptions = NativeNetworkOptions(

@@ -7,11 +7,10 @@ class DownloadChecksum {
 
   factory DownloadChecksum.fromJson(Map<String, Object?> json) {
     return DownloadChecksum(
-      algorithm: DownloadChecksumAlgorithm.values.firstWhere(
-        (value) => value.name == json['algorithm'],
-        orElse: () => DownloadChecksumAlgorithm.sha256,
+      algorithm: DownloadChecksumAlgorithm.values.byName(
+        json['algorithm'] as String,
       ),
-      value: (json['value'] as String? ?? '').trim().toLowerCase(),
+      value: json['value'] as String,
     );
   }
 
@@ -32,25 +31,17 @@ class DownloadValidationOptions {
   });
 
   factory DownloadValidationOptions.fromJson(Map<String, Object?> json) {
-    final rawTypes = json['allowedContentTypes'];
     final rawChecksum = json['checksum'];
     return DownloadValidationOptions(
-      expectedBytes: switch (json['expectedBytes']) {
-        int value => value,
-        num value => value.toInt(),
-        String value => int.tryParse(value),
-        _ => null,
-      },
-      allowedContentTypes: rawTypes is List
-          ? rawTypes
-                .whereType<Object>()
-                .map((value) => value.toString().trim().toLowerCase())
-                .where((value) => value.isNotEmpty)
-                .toList(growable: false)
-          : const <String>[],
-      checksum: rawChecksum is Map
-          ? DownloadChecksum.fromJson(rawChecksum.cast<String, Object?>())
-          : null,
+      expectedBytes: json['expectedBytes'] as int?,
+      allowedContentTypes: List<String>.from(
+        (json['allowedContentTypes'] as List?) ?? const [],
+      ),
+      checksum: rawChecksum == null
+          ? null
+          : DownloadChecksum.fromJson(
+              (rawChecksum as Map).cast<String, Object?>(),
+            ),
     );
   }
 
@@ -140,20 +131,15 @@ class DownloadNetworkOptions {
   });
 
   factory DownloadNetworkOptions.fromJson(Map<String, Object?> json) {
-    final rawHeaders = json['headers'];
     return DownloadNetworkOptions(
-      headers: rawHeaders is Map
-          ? rawHeaders.map(
-              (key, value) => MapEntry(key.toString(), value.toString()),
-            )
-          : const <String, String>{},
-      proxyUrl: _nonEmptyString(json['proxyUrl']),
-      connectHost: _nonEmptyString(json['connectHost']),
-      hostHeader: _nonEmptyString(json['hostHeader']),
-      disableTlsSni: json['disableTlsSni'] == true,
-      allowInvalidCertificates: json['allowInvalidCertificates'] == true,
-      connectTimeoutSeconds: _positiveInt(json['connectTimeoutSeconds']) ?? 30,
-      receiveTimeoutSeconds: _positiveInt(json['receiveTimeoutSeconds']) ?? 120,
+      headers: Map<String, String>.from(json['headers'] as Map),
+      proxyUrl: json['proxyUrl'] as String?,
+      connectHost: json['connectHost'] as String?,
+      hostHeader: json['hostHeader'] as String?,
+      disableTlsSni: json['disableTlsSni'] as bool,
+      allowInvalidCertificates: json['allowInvalidCertificates'] as bool,
+      connectTimeoutSeconds: json['connectTimeoutSeconds'] as int,
+      receiveTimeoutSeconds: json['receiveTimeoutSeconds'] as int,
     );
   }
 

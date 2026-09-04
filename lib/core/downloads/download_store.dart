@@ -86,7 +86,6 @@ class DriftDownloadStore implements DownloadStore {
               variantIndex: Value(job.variantIndex),
               url: Value(job.url.toString()),
               filename: Value(job.filename),
-              headersJson: Value(jsonEncode(job.networkOptions.headers)),
               networkOptionsJson: Value(
                 jsonEncode(job.networkOptions.toJson()),
               ),
@@ -252,26 +251,36 @@ class DriftDownloadStore implements DownloadStore {
     if (row == null) {
       return null;
     }
-    return DownloadJob(
-      id: row.id,
-      resourceId: row.resourceId,
-      sourceId: row.sourceId,
-      postId: row.postId.isEmpty ? row.resourceId.toString() : row.postId,
-      variantIndex: row.variantIndex,
-      url: Uri.parse(row.url),
-      filename: row.filename,
-      networkOptions: _networkOptionsFromJson(
-        row.networkOptionsJson,
-        legacyHeadersJson: row.headersJson,
-      ),
-      validation: DownloadValidationOptions.fromJson(
-        _objectMapFromJson(row.validationJson),
-      ),
-      saveTarget: SaveTarget.fromJson(_objectMapFromJson(row.saveTargetJson)),
-      thumbnailUrl: row.thumbnailUrl,
-      title: row.title,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(row.createdAt),
-    );
+    try {
+      return DownloadJob(
+        id: row.id,
+        resourceId: row.resourceId,
+        sourceId: row.sourceId,
+        postId: row.postId,
+        variantIndex: row.variantIndex,
+        url: Uri.parse(row.url),
+        filename: row.filename,
+        networkOptions: DownloadNetworkOptions.fromJson(
+          _objectMapFromJson(row.networkOptionsJson),
+        ),
+        validation: DownloadValidationOptions.fromJson(
+          _objectMapFromJson(row.validationJson),
+        ),
+        saveTarget: SaveTarget.fromJson(_objectMapFromJson(row.saveTargetJson)),
+        thumbnailUrl: row.thumbnailUrl,
+        title: row.title,
+        createdAt: DateTime.fromMillisecondsSinceEpoch(row.createdAt),
+      );
+    } on FormatException {
+      await deleteTask(jobId);
+      return null;
+    } on TypeError {
+      await deleteTask(jobId);
+      return null;
+    } on ArgumentError {
+      await deleteTask(jobId);
+      return null;
+    }
   }
 
   @override
@@ -292,14 +301,20 @@ class DriftDownloadStore implements DownloadStore {
       status: status,
       saveState: saveState,
     ).get();
-    return rows.map(_snapshotFromRow).toList(growable: false);
+    return rows
+        .map(_snapshotFromRow)
+        .whereType<DownloadTaskSnapshot>()
+        .toList(growable: false);
   }
 
   @override
   Stream<List<DownloadTaskSnapshot>> watchTasks({int? resourceId}) {
-    return _selectSnapshots(
-      resourceId: resourceId,
-    ).watch().map((rows) => rows.map(_snapshotFromRow).toList(growable: false));
+    return _selectSnapshots(resourceId: resourceId).watch().map(
+      (rows) => rows
+          .map(_snapshotFromRow)
+          .whereType<DownloadTaskSnapshot>()
+          .toList(growable: false),
+    );
   }
 
   @override
@@ -322,7 +337,10 @@ class DriftDownloadStore implements DownloadStore {
       status: DownloadStatus.downloaded,
       saveStates: const [SaveState.pending, SaveState.saving],
     ).get();
-    return rows.map(_snapshotFromRow).toList(growable: false);
+    return rows
+        .map(_snapshotFromRow)
+        .whereType<DownloadTaskSnapshot>()
+        .toList(growable: false);
   }
 
   @override
@@ -334,7 +352,10 @@ class DriftDownloadStore implements DownloadStore {
         DownloadStatus.paused,
       ],
     ).get();
-    return rows.map(_snapshotFromRow).toList(growable: false);
+    return rows
+        .map(_snapshotFromRow)
+        .whereType<DownloadTaskSnapshot>()
+        .toList(growable: false);
   }
 
   Selectable<QueryRow> _selectSnapshots({
@@ -408,7 +429,14 @@ class DriftDownloadStore implements DownloadStore {
     );
   }
 
-  DownloadTaskSnapshot _snapshotFromRow(QueryRow row) {
+  DownloadTaskSnapshot? _snapshotFromRow(QueryRow row) {
+    final status = DownloadStatus.values
+        .where((value) => value.name == row.read<String>('status'))
+        .firstOrNull;
+    final saveState = SaveState.values
+        .where((value) => value.name == row.read<String>('save_state'))
+        .firstOrNull;
+    if (status == null || saveState == null) return null;
     final filename = row.read<String>('filename');
     return DownloadTaskSnapshot(
       id: row.read<String>('id'),
@@ -417,16 +445,8 @@ class DriftDownloadStore implements DownloadStore {
       title: row.readNullable<String>('title') ?? filename,
       filename: filename,
       thumbnailUrl: row.readNullable<String>('thumbnail_url'),
-      status: _enumByName(
-        DownloadStatus.values,
-        row.read<String>('status'),
-        DownloadStatus.failed,
-      ),
-      saveState: _enumByName(
-        SaveState.values,
-        row.read<String>('save_state'),
-        SaveState.none,
-      ),
+      status: status,
+      saveState: saveState,
       receivedBytes: row.read<int>('received_bytes'),
       totalBytes: row.readNullable<int>('total_bytes'),
       progress: row.read<double>('progress').clamp(0, 1),
@@ -444,40 +464,10 @@ class DriftDownloadStore implements DownloadStore {
   }
 }
 
-T _enumByName<T extends Enum>(List<T> values, String name, T fallback) {
-  for (final value in values) {
-    if (value.name == name) {
-      return value;
-    }
-  }
-  return fallback;
-}
-
-Map<String, String> _stringMapFromJson(String source) {
-  final decoded = jsonDecode(source);
-  if (decoded is! Map) {
-    return const {};
-  }
-  return decoded.map(
-    (key, value) => MapEntry(key.toString(), value.toString()),
-  );
-}
-
 Map<String, Object?> _objectMapFromJson(String source) {
   final decoded = jsonDecode(source);
-  if (decoded is! Map) {
-    return const {};
+  if (decoded is! Map<String, dynamic>) {
+    throw const FormatException('Invalid stored download data');
   }
-  return decoded.map((key, value) => MapEntry(key.toString(), value));
-}
-
-DownloadNetworkOptions _networkOptionsFromJson(
-  String source, {
-  required String legacyHeadersJson,
-}) {
-  final json = _objectMapFromJson(source);
-  if (json.isNotEmpty) {
-    return DownloadNetworkOptions.fromJson(json);
-  }
-  return DownloadNetworkOptions(headers: _stringMapFromJson(legacyHeadersJson));
+  return decoded;
 }

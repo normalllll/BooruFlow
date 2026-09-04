@@ -36,9 +36,8 @@ class DownloadJob {
     final now = DateTime.now();
     return DownloadJob(
       id: downloadJobId(
-        resourceId: resourceId,
         sourceId: sourceId,
-        postId: postId,
+        postId: postId ?? resourceId.toString(),
         variantIndex: variantIndex,
       ),
       resourceId: resourceId,
@@ -122,14 +121,10 @@ class DownloadJob {
 }
 
 String downloadJobId({
-  required int resourceId,
-  String? sourceId,
-  String? postId,
+  required String sourceId,
+  required String postId,
   required int variantIndex,
 }) {
-  if (sourceId == null || postId == null) {
-    return 'resource_${resourceId}_variant_$variantIndex';
-  }
   String encode(String value) =>
       base64Url.encode(utf8.encode(value)).replaceAll('=', '');
   return 'booru_${encode(sourceId)}_${encode(postId)}_variant_$variantIndex';

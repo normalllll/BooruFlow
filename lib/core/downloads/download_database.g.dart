@@ -38,8 +38,7 @@ class $DownloadJobsTable extends DownloadJobs
     aliasedName,
     false,
     type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant('direct'),
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _postIdMeta = const VerificationMeta('postId');
   @override
@@ -48,8 +47,7 @@ class $DownloadJobsTable extends DownloadJobs
     aliasedName,
     false,
     type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(''),
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _variantIndexMeta = const VerificationMeta(
     'variantIndex',
@@ -82,18 +80,6 @@ class $DownloadJobsTable extends DownloadJobs
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-  );
-  static const VerificationMeta _headersJsonMeta = const VerificationMeta(
-    'headersJson',
-  );
-  @override
-  late final GeneratedColumn<String> headersJson = GeneratedColumn<String>(
-    'headers_json',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant('{}'),
   );
   static const VerificationMeta _networkOptionsJsonMeta =
       const VerificationMeta('networkOptionsJson');
@@ -182,7 +168,6 @@ class $DownloadJobsTable extends DownloadJobs
     variantIndex,
     url,
     filename,
-    headersJson,
     networkOptionsJson,
     validationJson,
     saveTargetJson,
@@ -221,12 +206,16 @@ class $DownloadJobsTable extends DownloadJobs
         _sourceIdMeta,
         sourceId.isAcceptableOrUnknown(data['source_id']!, _sourceIdMeta),
       );
+    } else if (isInserting) {
+      context.missing(_sourceIdMeta);
     }
     if (data.containsKey('post_id')) {
       context.handle(
         _postIdMeta,
         postId.isAcceptableOrUnknown(data['post_id']!, _postIdMeta),
       );
+    } else if (isInserting) {
+      context.missing(_postIdMeta);
     }
     if (data.containsKey('variant_index')) {
       context.handle(
@@ -252,15 +241,6 @@ class $DownloadJobsTable extends DownloadJobs
       );
     } else if (isInserting) {
       context.missing(_filenameMeta);
-    }
-    if (data.containsKey('headers_json')) {
-      context.handle(
-        _headersJsonMeta,
-        headersJson.isAcceptableOrUnknown(
-          data['headers_json']!,
-          _headersJsonMeta,
-        ),
-      );
     }
     if (data.containsKey('network_options_json')) {
       context.handle(
@@ -357,10 +337,6 @@ class $DownloadJobsTable extends DownloadJobs
         DriftSqlType.string,
         data['${effectivePrefix}filename'],
       )!,
-      headersJson: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}headers_json'],
-      )!,
       networkOptionsJson: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}network_options_json'],
@@ -406,7 +382,6 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   final int variantIndex;
   final String url;
   final String filename;
-  final String headersJson;
   final String networkOptionsJson;
   final String validationJson;
   final String saveTargetJson;
@@ -422,7 +397,6 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     required this.variantIndex,
     required this.url,
     required this.filename,
-    required this.headersJson,
     required this.networkOptionsJson,
     required this.validationJson,
     required this.saveTargetJson,
@@ -441,7 +415,6 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     map['variant_index'] = Variable<int>(variantIndex);
     map['url'] = Variable<String>(url);
     map['filename'] = Variable<String>(filename);
-    map['headers_json'] = Variable<String>(headersJson);
     map['network_options_json'] = Variable<String>(networkOptionsJson);
     map['validation_json'] = Variable<String>(validationJson);
     map['save_target_json'] = Variable<String>(saveTargetJson);
@@ -465,7 +438,6 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
       variantIndex: Value(variantIndex),
       url: Value(url),
       filename: Value(filename),
-      headersJson: Value(headersJson),
       networkOptionsJson: Value(networkOptionsJson),
       validationJson: Value(validationJson),
       saveTargetJson: Value(saveTargetJson),
@@ -493,7 +465,6 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
       variantIndex: serializer.fromJson<int>(json['variantIndex']),
       url: serializer.fromJson<String>(json['url']),
       filename: serializer.fromJson<String>(json['filename']),
-      headersJson: serializer.fromJson<String>(json['headersJson']),
       networkOptionsJson: serializer.fromJson<String>(
         json['networkOptionsJson'],
       ),
@@ -516,7 +487,6 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
       'variantIndex': serializer.toJson<int>(variantIndex),
       'url': serializer.toJson<String>(url),
       'filename': serializer.toJson<String>(filename),
-      'headersJson': serializer.toJson<String>(headersJson),
       'networkOptionsJson': serializer.toJson<String>(networkOptionsJson),
       'validationJson': serializer.toJson<String>(validationJson),
       'saveTargetJson': serializer.toJson<String>(saveTargetJson),
@@ -535,7 +505,6 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     int? variantIndex,
     String? url,
     String? filename,
-    String? headersJson,
     String? networkOptionsJson,
     String? validationJson,
     String? saveTargetJson,
@@ -551,7 +520,6 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     variantIndex: variantIndex ?? this.variantIndex,
     url: url ?? this.url,
     filename: filename ?? this.filename,
-    headersJson: headersJson ?? this.headersJson,
     networkOptionsJson: networkOptionsJson ?? this.networkOptionsJson,
     validationJson: validationJson ?? this.validationJson,
     saveTargetJson: saveTargetJson ?? this.saveTargetJson,
@@ -573,9 +541,6 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
           : this.variantIndex,
       url: data.url.present ? data.url.value : this.url,
       filename: data.filename.present ? data.filename.value : this.filename,
-      headersJson: data.headersJson.present
-          ? data.headersJson.value
-          : this.headersJson,
       networkOptionsJson: data.networkOptionsJson.present
           ? data.networkOptionsJson.value
           : this.networkOptionsJson,
@@ -604,7 +569,6 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
           ..write('variantIndex: $variantIndex, ')
           ..write('url: $url, ')
           ..write('filename: $filename, ')
-          ..write('headersJson: $headersJson, ')
           ..write('networkOptionsJson: $networkOptionsJson, ')
           ..write('validationJson: $validationJson, ')
           ..write('saveTargetJson: $saveTargetJson, ')
@@ -625,7 +589,6 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     variantIndex,
     url,
     filename,
-    headersJson,
     networkOptionsJson,
     validationJson,
     saveTargetJson,
@@ -645,7 +608,6 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
           other.variantIndex == this.variantIndex &&
           other.url == this.url &&
           other.filename == this.filename &&
-          other.headersJson == this.headersJson &&
           other.networkOptionsJson == this.networkOptionsJson &&
           other.validationJson == this.validationJson &&
           other.saveTargetJson == this.saveTargetJson &&
@@ -663,7 +625,6 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
   final Value<int> variantIndex;
   final Value<String> url;
   final Value<String> filename;
-  final Value<String> headersJson;
   final Value<String> networkOptionsJson;
   final Value<String> validationJson;
   final Value<String> saveTargetJson;
@@ -680,7 +641,6 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     this.variantIndex = const Value.absent(),
     this.url = const Value.absent(),
     this.filename = const Value.absent(),
-    this.headersJson = const Value.absent(),
     this.networkOptionsJson = const Value.absent(),
     this.validationJson = const Value.absent(),
     this.saveTargetJson = const Value.absent(),
@@ -693,12 +653,11 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
   DownloadJobsCompanion.insert({
     required String id,
     required int resourceId,
-    this.sourceId = const Value.absent(),
-    this.postId = const Value.absent(),
+    required String sourceId,
+    required String postId,
     this.variantIndex = const Value.absent(),
     required String url,
     required String filename,
-    this.headersJson = const Value.absent(),
     this.networkOptionsJson = const Value.absent(),
     this.validationJson = const Value.absent(),
     this.saveTargetJson = const Value.absent(),
@@ -709,6 +668,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        resourceId = Value(resourceId),
+       sourceId = Value(sourceId),
+       postId = Value(postId),
        url = Value(url),
        filename = Value(filename),
        createdAt = Value(createdAt),
@@ -721,7 +682,6 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     Expression<int>? variantIndex,
     Expression<String>? url,
     Expression<String>? filename,
-    Expression<String>? headersJson,
     Expression<String>? networkOptionsJson,
     Expression<String>? validationJson,
     Expression<String>? saveTargetJson,
@@ -739,7 +699,6 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
       if (variantIndex != null) 'variant_index': variantIndex,
       if (url != null) 'url': url,
       if (filename != null) 'filename': filename,
-      if (headersJson != null) 'headers_json': headersJson,
       if (networkOptionsJson != null)
         'network_options_json': networkOptionsJson,
       if (validationJson != null) 'validation_json': validationJson,
@@ -760,7 +719,6 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     Value<int>? variantIndex,
     Value<String>? url,
     Value<String>? filename,
-    Value<String>? headersJson,
     Value<String>? networkOptionsJson,
     Value<String>? validationJson,
     Value<String>? saveTargetJson,
@@ -778,7 +736,6 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
       variantIndex: variantIndex ?? this.variantIndex,
       url: url ?? this.url,
       filename: filename ?? this.filename,
-      headersJson: headersJson ?? this.headersJson,
       networkOptionsJson: networkOptionsJson ?? this.networkOptionsJson,
       validationJson: validationJson ?? this.validationJson,
       saveTargetJson: saveTargetJson ?? this.saveTargetJson,
@@ -813,9 +770,6 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     }
     if (filename.present) {
       map['filename'] = Variable<String>(filename.value);
-    }
-    if (headersJson.present) {
-      map['headers_json'] = Variable<String>(headersJson.value);
     }
     if (networkOptionsJson.present) {
       map['network_options_json'] = Variable<String>(networkOptionsJson.value);
@@ -854,7 +808,6 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
           ..write('variantIndex: $variantIndex, ')
           ..write('url: $url, ')
           ..write('filename: $filename, ')
-          ..write('headersJson: $headersJson, ')
           ..write('networkOptionsJson: $networkOptionsJson, ')
           ..write('validationJson: $validationJson, ')
           ..write('saveTargetJson: $saveTargetJson, ')
@@ -1566,12 +1519,11 @@ typedef $$DownloadJobsTableCreateCompanionBuilder =
     DownloadJobsCompanion Function({
       required String id,
       required int resourceId,
-      Value<String> sourceId,
-      Value<String> postId,
+      required String sourceId,
+      required String postId,
       Value<int> variantIndex,
       required String url,
       required String filename,
-      Value<String> headersJson,
       Value<String> networkOptionsJson,
       Value<String> validationJson,
       Value<String> saveTargetJson,
@@ -1590,7 +1542,6 @@ typedef $$DownloadJobsTableUpdateCompanionBuilder =
       Value<int> variantIndex,
       Value<String> url,
       Value<String> filename,
-      Value<String> headersJson,
       Value<String> networkOptionsJson,
       Value<String> validationJson,
       Value<String> saveTargetJson,
@@ -1667,11 +1618,6 @@ class $$DownloadJobsTableFilterComposer
 
   ColumnFilters<String> get filename => $composableBuilder(
     column: $table.filename,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get headersJson => $composableBuilder(
-    column: $table.headersJson,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1780,11 +1726,6 @@ class $$DownloadJobsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get headersJson => $composableBuilder(
-    column: $table.headersJson,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<String> get networkOptionsJson => $composableBuilder(
     column: $table.networkOptionsJson,
     builder: (column) => ColumnOrderings(column),
@@ -1854,11 +1795,6 @@ class $$DownloadJobsTableAnnotationComposer
 
   GeneratedColumn<String> get filename =>
       $composableBuilder(column: $table.filename, builder: (column) => column);
-
-  GeneratedColumn<String> get headersJson => $composableBuilder(
-    column: $table.headersJson,
-    builder: (column) => column,
-  );
 
   GeneratedColumn<String> get networkOptionsJson => $composableBuilder(
     column: $table.networkOptionsJson,
@@ -1952,7 +1888,6 @@ class $$DownloadJobsTableTableManager
                 Value<int> variantIndex = const Value.absent(),
                 Value<String> url = const Value.absent(),
                 Value<String> filename = const Value.absent(),
-                Value<String> headersJson = const Value.absent(),
                 Value<String> networkOptionsJson = const Value.absent(),
                 Value<String> validationJson = const Value.absent(),
                 Value<String> saveTargetJson = const Value.absent(),
@@ -1969,7 +1904,6 @@ class $$DownloadJobsTableTableManager
                 variantIndex: variantIndex,
                 url: url,
                 filename: filename,
-                headersJson: headersJson,
                 networkOptionsJson: networkOptionsJson,
                 validationJson: validationJson,
                 saveTargetJson: saveTargetJson,
@@ -1983,12 +1917,11 @@ class $$DownloadJobsTableTableManager
               ({
                 required String id,
                 required int resourceId,
-                Value<String> sourceId = const Value.absent(),
-                Value<String> postId = const Value.absent(),
+                required String sourceId,
+                required String postId,
                 Value<int> variantIndex = const Value.absent(),
                 required String url,
                 required String filename,
-                Value<String> headersJson = const Value.absent(),
                 Value<String> networkOptionsJson = const Value.absent(),
                 Value<String> validationJson = const Value.absent(),
                 Value<String> saveTargetJson = const Value.absent(),
@@ -2005,7 +1938,6 @@ class $$DownloadJobsTableTableManager
                 variantIndex: variantIndex,
                 url: url,
                 filename: filename,
-                headersJson: headersJson,
                 networkOptionsJson: networkOptionsJson,
                 validationJson: validationJson,
                 saveTargetJson: saveTargetJson,
