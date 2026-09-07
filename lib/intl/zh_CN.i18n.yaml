@@ -39,8 +39,8 @@ update:
   noNewVersionFound: 没有新版本。
 
 postList:
-  short: 帖子
-  title: 帖子列表
+  short: "首页"
+  title: "首页"
   titleWithTags: "带有标签的帖子: $tags"
 
 postDetail:
@@ -55,6 +55,8 @@ postDetail:
   relatedLoadFailed: 关联图片加载失败，可以重试。
   createdAt: 创建时间
   author: 作者
+  unknownAuthor: 未知
+  imageSource: 图源
   source: 来源
   width: 宽度
   height: 高度
@@ -143,28 +145,23 @@ settings:
   light: 浅色模式
   dark: 深色模式
   auto: 自动
-  downloadsOverview: 仅桌面端 · 每个图源使用独立子目录
-  sourceSubfolders: 图源子目录
-  sourceSubfoldersDescription: 下载内容会按照图源名称保存在不同文件夹。
+  downloadsOverview: 保存位置与下载并发
 
   sections:
-    sourcesAndContent: 图源与内容
+    sourcesAndAccounts: 图源与账号
     accounts: 账号
     network: 网络
-    appearance: 外观
+    general: 通用
     downloads: 下载
 
   source:
-    label: 图源
-    contentPolicy: 内容策略
-    safetyRating: 安全评级
-    noHiddenDefault: 不默认隐藏
-    noHiddenDefaultDescription: 不选择任何评级时会显示所有帖子，包括成人内容。
-    unfiltered: 不筛选
-    animeFocused: 动漫优先
+    defaultSource: 默认图源
+    supportedRatings: 支持的分级
+    safetyRating: "全局内容分级"
 
   account:
-    manageAllSubtitle: 分别配置每个图源的账号
+    manageAllSubtitle: 图源分级与账号配置
+    noAccountRequired: 此图源无需配置账号
     openSignInPage: 打开登录页面
     cookieHeader: Cookie 请求头
     storedLocally: 仅保存在此设备
@@ -233,3 +230,67 @@ settings:
 
   maxSegmentsPerTaskDialog:
     title: 每个下载任务的最大分段数
+
+discovery:
+  searchResults: "搜索结果"
+  allAvailable: "全部可用内容"
+  defaultRatingsHint: "分级偏好适用于所有图源。未选择分级时，显示当前图源和账号能访问的所有内容。"
+  resetFilters: "恢复默认"
+  unsupportedRatings: "当前图源不支持所选分级，请恢复默认以浏览可用内容。"
+  noFilteredPosts: "没有符合当前筛选条件的内容。"
+  noSearchResults: "没有找到符合此查询的内容。"
+  noFeedPosts: "当前图源暂时没有可展示的内容。"
+  historicalPopular: "历史热门"
+  calendarDay: "自然日"
+  calendarWeek: "自然周"
+  calendarMonth: "自然月"
+  latest: "最新"
+  popular: "热门"
+  today: "今日"
+  thisWeek: "本周"
+  thisMonth: "本月"
+  lastDay: "最近 24 小时"
+  lastThreeDays: "最近 3 天"
+  lastWeek: "最近一周"
+  lastMonth: "最近一个月"
+  lastThreeMonths: "最近三个月"
+  lastSixMonths: "最近六个月"
+  lastYear: "最近一年"
+  rankingComplete: "榜单已全部加载"
+  latestFallback: "此图源仅支持最新帖子。"
+  filters: "筛选"
+  loadMore: "加载更多"
+  filteredContinue: "当前几页没有符合筛选的帖子，继续浏览"
+  commonTags: "常用标签"
+  moreTags: "查看更多"
+  tagSource: "适用图源"
+  allTagSources: "通用"
+  manageTags: "标签管理"
+  addTag: "添加标签"
+  noCustomTags: "还没有自定义标签"
+  customTagsHint: "为常用标签设置易记的名称，搜索时更容易找到。"
+  addCustomTag: "添加为自定义标签"
+  editTag: "编辑自定义标签"
+  canonicalTag: "图源标签"
+  displayName: "显示名称（可选）"
+  invalidTag: "请输入一个非空且不含空格的标签。"
+  queryHint: "输入标签或图源查询语句…"
+  unverifiedTag: "部分标签尚未在当前图源验证，仍可提交搜索。"
+  verifiedTag: "已在当前图源验证"
+  noSuggestions: "没有建议"
+  localFallback: "在线补全暂不可用，仍可使用本地建议。"
+  retryTags: "重试常用标签"
+  artist: "画师"
+  character: "角色"
+  copyright: "作品"
+  meta: "元标签"
+  general: "通用"
+  random: "随机"
+  lifetimeViews: "累计浏览量"
+  lifetimeFavorites: "累计收藏数"
+
+mediaError:
+  title: 图片加载失败
+  details: 错误详情
+  copyDetails: 复制详情
+  decodeFailed: 下载的图片无法解码。重试会清除这张图片的缓存并重新下载。

@@ -1,323 +1,333 @@
+import 'dart:async';
+import 'package:booruflow/features/search/common_tags_sheet.dart';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:booruflow/features/posts/widgets/post_search_field.dart';
-import 'package:booruflow/intl/translations.g.dart';
-import 'package:booruflow/features/search/custom_tags_service.dart';
-import 'package:booruflow/features/tags/tag_translations_service.dart';
-import 'package:booruflow/shared/app_navigation.dart';
+import 'package:flutter/services.dart';
+import 'package:booruflow/features/booru/booru_service.dart';
+import 'package:booruflow/features/booru/booru_error_presentation.dart';
+import 'package:booruflow/features/discovery/widgets/discovery_toolbar.dart';
+import 'package:booruflow/shared/widgets/tag_label.dart';
 import 'package:booruflow/shared/widgets/auto_scaffold.dart';
+import 'package:booruflow/features/search/tag_suggestion_repository.dart';
+import 'package:booruflow/features/search/user_tags_page.dart';
+import 'package:booruflow/features/search/query.dart';
+export 'package:booruflow/features/search/query.dart' show parseQueryInput;
+import 'package:booruflow/shared/app_navigation.dart';
 import 'package:booruflow/shared/widgets/form_controls.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
+import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/src/rust/api/booru_models.dart';
 
 class PostSearchPage extends StatefulWidget {
-  const PostSearchPage({super.key});
-
+  const PostSearchPage({
+    super.key,
+    this.sourceId,
+    this.initialTags,
+    this.initialQuery,
+    this.isQueryEditor = false,
+    this.onSubmit,
+    this.repository,
+    this.invalidQuery = false,
+  });
+  final String? sourceId;
+  final List<String>? initialTags;
+  final String? initialQuery;
+  final bool isQueryEditor;
+  final void Function(String sourceId, List<String> tags)? onSubmit;
+  final TagSuggestionRepository? repository;
+  final bool invalidQuery;
   @override
   State<PostSearchPage> createState() => _PostSearchPageState();
 }
 
 class _PostSearchPageState extends State<PostSearchPage> {
-  final TextEditingController _textController = TextEditingController();
-  final ScrollController _textScrollController = ScrollController();
-  List<String> _customTags = const [];
-  final Set<String> _enteringCustomTags = <String>{};
-  final Set<String> _removingCustomTags = <String>{};
-
-  static final _knownTags = TagTranslationsService.knowTags;
-  static final Duration _customTagEnterDuration = 240.ms;
-  static final Duration _customTagExitDuration = 180.ms;
-
+  final _input = TextEditingController();
+  final _suggestionScroll = ScrollController();
+  final _overlay = OverlayPortalController()..show();
+  final _selected = <String>[];
+  final _verified = <String>{};
+  final _labels = <String, String>{};
+  late final _repository =
+      widget.repository ?? TagSuggestionRepository.instance;
+  late String _source;
+  String _locale = '';
+  Timer? _debounce;
+  int _generation = 0;
+  int _commonGeneration = 0;
+  int _highlight = -1;
+  bool _busy = false;
+  bool _commonBusy = false;
+  bool _ready = false;
+  bool _dismissed = false;
+  bool _invalidSource = false;
+  Object? _error;
+  Object? _commonError;
+  List<TagSuggestion> _suggestions = [];
+  List<TagSuggestion> _common = [];
+  bool get _composing =>
+      _input.value.composing.isValid && !_input.value.composing.isCollapsed;
+  bool get _canSubmit =>
+      !_composing && (_selected.isNotEmpty || _input.text.trim().isNotEmpty);
   @override
   void initState() {
     super.initState();
-    _customTags = CustomTagsService.tags;
-    _loadCustomTags();
+    _source = widget.sourceId ?? BooruService.instance.selectedSource.value;
+    if (!BooruService.instance.sources.any(
+      (source) => source.sourceId == _source,
+    )) {
+      _invalidSource = true;
+      _source = BooruService.instance.selectedSource.value;
+    }
+    _selected.addAll(widget.initialTags ?? []);
+    final query = widget.initialQuery ?? '';
+    _input.value = TextEditingValue(
+      text: query,
+      selection: TextSelection.collapsed(offset: query.length),
+    );
+    _input.addListener(_changed);
+    BooruService.instance.selectedSource.addListener(_globalSourceChanged);
+    BooruService.instance.revision.addListener(_networkChanged);
+    _initialize();
   }
 
   @override
-  void dispose() {
-    _textController.dispose();
-    _textScrollController.dispose();
-    super.dispose();
+  void didUpdateWidget(covariant PostSearchPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final source = widget.sourceId;
+    if (source != oldWidget.sourceId &&
+        source != null &&
+        BooruService.instance.sources.any((item) => item.sourceId == source)) {
+      _switchSource(source);
+    }
   }
 
-  Future<void> _loadCustomTags() async {
-    await CustomTagsService.initialize();
-    if (!mounted) {
-      return;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    if (_locale != locale) {
+      _locale = locale;
+      if (_ready) {
+        _changed();
+        _loadCommon();
+      }
     }
+  }
+
+  Future<void> _initialize() async {
+    try {
+      await _repository.initialize();
+      if (!mounted) return;
+      _ready = true;
+      _changed();
+      _loadCommon();
+    } catch (e) {
+      if (mounted) setState(() => _error = e);
+    }
+  }
+
+  void _globalSourceChanged() {
+    if (widget.onSubmit == null) {
+      _switchSource(BooruService.instance.selectedSource.value);
+    }
+  }
+
+  void _networkChanged() {
+    _verified.clear();
+    _changed();
+    _loadCommon();
+  }
+
+  void _switchSource(String source) {
+    if (_source == source) return;
     setState(() {
-      _customTags = CustomTagsService.tags;
-      _enteringCustomTags.removeWhere((tag) => !_customTags.contains(tag));
-      _removingCustomTags.removeWhere((tag) => !_customTags.contains(tag));
+      _source = source;
+      _verified.clear();
+      _suggestions = [];
+      _common = [];
     });
+    if (widget.onSubmit == null) BooruService.instance.selectSource(source);
+    _changed();
+    _loadCommon();
   }
 
-  List<String> _parseSearchTags(String text) {
-    return text
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((tag) => tag.isNotEmpty)
-        .toList(growable: true);
-  }
-
-  void _openPostList(String text) {
-    final tags = _parseSearchTags(text);
-    if (tags.isEmpty) {
-      return;
-    }
-    context.pushTaggedPosts(tags);
-  }
-
-  void _appendTag(String tag) {
-    final tags = _parseSearchTags(_textController.text);
-    if (tags.contains(tag)) {
-      return;
-    }
-
-    tags.add(tag);
-    _textController.text = tags.join(' ');
-    _textController.selection = TextSelection.fromPosition(
-      TextPosition(offset: _textController.text.length),
-    );
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (mounted && _textScrollController.hasClients) {
-        _textScrollController.jumpTo(
-          _textScrollController.position.maxScrollExtent,
+  void _changed() {
+    _debounce?.cancel();
+    final generation = ++_generation;
+    _highlight = -1;
+    _dismissed = false;
+    final term = QueryTerm.parse(parseQueryInput(_input.text).lastOrNull ?? '');
+    final text = term.value;
+    setState(() {
+      _error = null;
+      _busy = false;
+      _suggestions = !_ready || _composing || text.isEmpty
+          ? []
+          : _repository.local(_source, _locale, text);
+    });
+    if (!_ready || _composing || text.isEmpty) return;
+    final source = _source;
+    final locale = _locale;
+    _debounce = Timer(const Duration(milliseconds: 250), () async {
+      if (!mounted || generation != _generation) return;
+      setState(() => _busy = true);
+      try {
+        final remote = await _repository.remote(source, locale, text);
+        if (!mounted || generation != _generation) return;
+        setState(
+          () => _suggestions = _repository.merge(source, locale, text, [
+            ...remote,
+            ..._suggestions,
+          ]),
         );
+      } catch (e) {
+        if (mounted && generation == _generation) setState(() => _error = e);
+      } finally {
+        if (mounted && generation == _generation) setState(() => _busy = false);
       }
     });
   }
 
-  String? _validateCustomTag(String tag) {
-    final normalizedTag = tag.trim();
-    if (normalizedTag.isEmpty) {
-      return 'Tag is required';
+  Future<void> _loadCommon({bool refresh = false}) async {
+    if (!_ready) return;
+    final generation = ++_commonGeneration;
+    setState(() {
+      _commonBusy = true;
+      _commonError = null;
+    });
+    try {
+      final values = await _repository.common(
+        _source,
+        _locale,
+        refresh: refresh,
+      );
+      if (mounted && generation == _commonGeneration) {
+        setState(() => _common = values);
+      }
+    } catch (e) {
+      if (mounted && generation == _commonGeneration) {
+        setState(() => _commonError = e);
+      }
+    } finally {
+      if (mounted && generation == _commonGeneration) {
+        setState(() => _commonBusy = false);
+      }
     }
-    if (normalizedTag.contains(RegExp(r'\s'))) {
-      return 'Only one tag can be added at a time';
-    }
-    if (_knownTags.contains(normalizedTag)) {
-      return 'Tag already exists in known tags';
-    }
-    if (CustomTagsService.contains(normalizedTag) ||
-        _customTags.contains(normalizedTag)) {
-      return 'Tag already exists';
-    }
-    return null;
   }
 
-  Future<void> _showAddTagDialog() async {
-    await CustomTagsService.initialize();
-    if (!mounted) {
-      return;
-    }
+  String _displayName(String raw, [String? fallback]) =>
+      _repository.displayName(_source, _locale, QueryTerm.parse(raw).value) ??
+      _labels['$_source:$raw'] ??
+      fallback ??
+      raw;
+
+  void _add(TagSuggestion tag, {bool replaceTerm = false}) {
+    final terms = parseQueryInput(_input.text);
+    final operator = replaceTerm && terms.isNotEmpty
+        ? QueryTerm.parse(terms.removeLast()).operator
+        : QueryOperator.include;
+    final value = QueryTerm(
+      tag.value,
+      operator == QueryOperator.metatag ? QueryOperator.include : operator,
+    ).raw;
     setState(() {
-      _customTags = CustomTagsService.tags;
-    });
-
-    final tagController = TextEditingController();
-    final translationController = TextEditingController();
-    final input = await showDialog<({String tag, String? translation})>(
-      context: context,
-      builder: (context) {
-        String? tagError;
-
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            void submit() {
-              final tag = tagController.text.trim();
-              final error = _validateCustomTag(tag);
-              if (error != null) {
-                setDialogState(() {
-                  tagError = error;
-                });
-                return;
-              }
-
-              final translation = translationController.text.trim();
-              Navigator.of(context).pop((
-                tag: tag,
-                translation: translation.isEmpty ? null : translation,
-              ));
-            }
-
-            return AlertDialog(
-              title: const Text('Add tag'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AppTextField(
-                    label: 'Tag',
-                    controller: tagController,
-                    autofocus: true,
-                    hintText: 'tag_name',
-                    errorText: tagError,
-                    onChanged: (_) {
-                      if (tagError != null) {
-                        setDialogState(() {
-                          tagError = null;
-                        });
-                      }
-                    },
-                    onSubmitted: (_) {
-                      submit();
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  AppTextField(
-                    label: 'Translation',
-                    controller: translationController,
-                    hintText: 'Optional',
-                    onSubmitted: (_) {
-                      submit();
-                    },
-                  ),
-                ],
-              ),
-              actions: [
-                AppButton(
-                  label: t.generic.cancel,
-                  kind: AppButtonKind.ghost,
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-                AppButton(
-                  label: t.generic.confirm,
-                  kind: AppButtonKind.primary,
-                  onPressed: submit,
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-    tagController.dispose();
-    translationController.dispose();
-
-    if (input == null) {
-      return;
-    }
-
-    final changed = await CustomTagsService.add(
-      input.tag,
-      translation: input.translation,
-    );
-    if (!mounted || !changed) {
-      return;
-    }
-    setState(() {
-      _customTags = CustomTagsService.tags;
-      _enteringCustomTags.add(input.tag);
-    });
-    Future<void>.delayed(_customTagEnterDuration, () {
-      if (!mounted || !_enteringCustomTags.contains(input.tag)) {
-        return;
+      for (final term in [...terms, value]) {
+        if (!_selected.contains(term)) _selected.add(term);
       }
+      if (tag.verified) _verified.add(value);
+      if (tag.displayName != null) {
+        _labels['$_source:$value'] = tag.displayName!;
+      }
+    });
+    _input.clear();
+  }
+
+  void _submit() {
+    if (!_canSubmit) return;
+    _dismissSuggestions();
+    final tags = <String>{
+      ..._selected,
+      ...parseQueryInput(_input.text),
+    }.toList();
+    if (tags.isEmpty) return;
+    unawaited(_repository.remember(_source, tags));
+    if (widget.onSubmit != null) {
+      widget.onSubmit!(_source, List.unmodifiable(tags));
+    } else {
+      context.pushTaggedPosts(tags, sourceId: _source);
+    }
+  }
+
+  KeyEventResult _key(FocusNode node, KeyEvent event) {
+    if (_composing || event is! KeyDownEvent) return KeyEventResult.ignored;
+    if (event.logicalKey == LogicalKeyboardKey.escape) {
       setState(() {
-        _enteringCustomTags.remove(input.tag);
+        _dismissed = true;
+        _highlight = -1;
       });
-    });
-  }
-
-  Future<void> _removeCustomTag(String tag) async {
-    if (_removingCustomTags.contains(tag)) {
-      return;
+      return KeyEventResult.handled;
     }
-    setState(() {
-      _enteringCustomTags.remove(tag);
-      _removingCustomTags.add(tag);
-    });
-
-    await Future<void>.delayed(_customTagExitDuration);
-    final changed = await CustomTagsService.remove(tag);
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      _removingCustomTags.remove(tag);
-      _customTags = CustomTagsService.tags;
-      if (!changed && _customTags.contains(tag)) {
-        _enteringCustomTags.add(tag);
-      }
-    });
-  }
-
-  Widget _buildAddTagButton() {
-    return ActionChip(
-      avatar: const Icon(Icons.add, size: 18),
-      label: const Text('Tag'),
-      onPressed: _showAddTagDialog,
-    );
-  }
-
-  Widget _buildTag(String tag, {required bool isCustom}) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final translation = isCustom
-        ? CustomTagsService.translate(tag)
-        : TagTranslationsService.translate(tag);
-    final backgroundColor = isCustom
-        ? colorScheme.tertiaryContainer.withAlpha(150)
-        : colorScheme.secondaryContainer.withAlpha(150);
-    final translationColor = isCustom
-        ? colorScheme.tertiary
-        : colorScheme.primary;
-    final tagStyle = TextStyle(
-      fontSize: 16,
-      color: colorScheme.onSurface,
-      fontWeight: FontWeight.w600,
-    );
-    final translationStyle = tagStyle.copyWith(color: translationColor);
-    final isRemoving = isCustom && _removingCustomTags.contains(tag);
-
-    final tagChip = GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onTap: isRemoving ? null : () => _appendTag(tag),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          color: backgroundColor,
-        ),
-        child: Stack(
-          alignment: Alignment.centerRight,
-          children: [
-            Padding(
-              padding: EdgeInsets.only(right: isCustom ? 22 : 0),
-              child: RichText(
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                strutStyle: const StrutStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  forceStrutHeight: true,
-                ),
-                text: TextSpan(
-                  children: [
-                    TextSpan(text: tag, style: tagStyle),
-                    if (translation != null)
-                      TextSpan(text: ' #$translation', style: translationStyle),
-                  ],
-                ),
-              ),
+    if (!_dismissed && _suggestions.isNotEmpty) {
+      if (event.logicalKey == LogicalKeyboardKey.arrowDown ||
+          event.logicalKey == LogicalKeyboardKey.arrowUp) {
+        setState(
+          () => _highlight =
+              (_highlight +
+                      (event.logicalKey == LogicalKeyboardKey.arrowDown
+                          ? 1
+                          : -1))
+                  .clamp(0, _suggestions.length - 1),
+        );
+        if (_suggestionScroll.hasClients) {
+          _suggestionScroll.animateTo(
+            (_highlight * 72.0).clamp(
+              0,
+              _suggestionScroll.position.maxScrollExtent,
             ),
-            if (isCustom)
-              Positioned(
-                top: 0,
-                right: 0,
-                bottom: 0,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: isRemoving ? null : () => _removeCustomTag(tag),
-                  child: SizedBox(
-                    width: 22,
-                    child: Icon(
-                      Icons.close,
-                      size: 16,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+            duration: const Duration(milliseconds: 100),
+            curve: Curves.easeOut,
+          );
+        }
+        return KeyEventResult.handled;
+      }
+      if (_highlight >= 0 &&
+          (event.logicalKey == LogicalKeyboardKey.enter ||
+              event.logicalKey == LogicalKeyboardKey.tab)) {
+        _add(_suggestions[_highlight], replaceTerm: true);
+        return KeyEventResult.handled;
+      }
+    }
+    return KeyEventResult.ignored;
+  }
+
+  Future<void> _manageAliases() async {
+    _dismissSuggestions();
+    FocusScope.of(context).unfocus();
+    await context.pushUserTags<void>(sourceId: _source);
+    if (mounted) _changed();
+  }
+
+  Future<void> _manageSelected() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, update) => ListView(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+          children: [
+            for (final tag in _selected)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: InputChip(
+                    label: TagLabel(value: tag, translation: _displayName(tag)),
+                    onDeleted: () {
+                      setState(() => _selected.remove(tag));
+                      update(() {});
+                    },
+                    deleteIcon: const Icon(Icons.close),
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
               ),
@@ -325,118 +335,472 @@ class _PostSearchPageState extends State<PostSearchPage> {
         ),
       ),
     );
-
-    if (!isCustom) {
-      return tagChip;
-    }
-
-    return _buildAnimatedCustomTag(tag, tagChip);
   }
 
-  Widget _buildAnimatedCustomTag(String tag, Widget child) {
-    final isEntering = _enteringCustomTags.contains(tag);
-    final isRemoving = _removingCustomTags.contains(tag);
-    final isAnimating = isEntering || isRemoving;
-    final animationState = isRemoving
-        ? 'removing'
-        : isEntering
-        ? 'entering'
-        : 'stable';
-    final widthBegin = isRemoving ? 1.0 : 0.0;
-    final widthEnd = isRemoving ? 0.0 : 1.0;
-    final scaleBegin = isRemoving ? 1.0 : 0.86;
-    final scaleEnd = isRemoving ? 0.92 : 1.0;
-    final slideBegin = isRemoving ? 0.0 : 0.24;
-    final slideEnd = isRemoving ? -0.08 : 0.0;
-    final duration = isRemoving
-        ? _customTagExitDuration
-        : _customTagEnterDuration;
-
-    return IgnorePointer(ignoring: isRemoving, child: child)
-        .animate(
-          key: ValueKey('custom-tag-$animationState-$tag'),
-          autoPlay: isAnimating,
-          value: isAnimating ? null : 1,
-        )
-        .custom(
-          duration: duration,
-          curve: isRemoving ? Curves.easeInCubic : Curves.easeOutCubic,
-          begin: widthBegin,
-          end: widthEnd,
-          builder: (context, value, child) {
-            return ClipRect(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                widthFactor: value,
-                heightFactor: value,
-                child: child,
-              ),
-            );
-          },
-        )
-        .fade(
-          duration: duration,
-          curve: isRemoving ? Curves.easeOut : Curves.easeOutCubic,
-          begin: widthBegin,
-          end: widthEnd,
-        )
-        .scaleXY(
-          duration: duration,
-          curve: isRemoving ? Curves.easeInCubic : Curves.easeOutBack,
-          begin: scaleBegin,
-          end: scaleEnd,
-        )
-        .slideY(
-          duration: duration,
-          curve: isRemoving ? Curves.easeInCubic : Curves.easeOutCubic,
-          begin: slideBegin,
-          end: slideEnd,
-        );
+  Future<void> _moreCommon() async {
+    final source = _source;
+    final tag = await showModalBottomSheet<TagSuggestion>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (_) => CommonTagsSheet(
+        repository: _repository,
+        source: source,
+        locale: _locale,
+        initialTags: _common,
+      ),
+    );
+    if (mounted && tag != null && source == _source) _add(tag);
   }
 
-  Widget _buildSearchField() {
-    return PostSearchField(
-      controller: _textController,
-      scrollController: _textScrollController,
-      hintText: t.postSearch.title,
-      onSubmitted: _openPostList,
+  Future<void> _addAlias() async {
+    final alias = await editUserTag(
+      context,
+      source: _source,
+      locale: _locale,
+      value: QueryTerm.parse(parseQueryInput(_input.text).lastOrNull ?? '').value,
+    );
+    if (!mounted || alias == null) return;
+    _add(
+      TagSuggestion(
+        value: alias.value,
+        displayName: alias.displayName,
+        origin: SuggestionOrigin.userAlias,
+      ),
     );
   }
 
   @override
-  Widget build(BuildContext context) {
-    final customTagSet = _customTags.toSet();
+  void dispose() {
+    _generation++;
+    _commonGeneration++;
+    _debounce?.cancel();
+    _input.removeListener(_changed);
+    _input.dispose();
+    _suggestionScroll.dispose();
+    BooruService.instance.selectedSource.removeListener(_globalSourceChanged);
+    BooruService.instance.revision.removeListener(_networkChanged);
+    super.dispose();
+  }
 
-    return AutoScaffold(
-      builder: (context, horizontal) {
-        return Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
-              child: _buildSearchField(),
+  void _dismissSuggestions() {
+    if (!_dismissed) setState(() => _dismissed = true);
+  }
+
+  Widget _queryField() => OverlayPortal.overlayChildLayoutBuilder(
+    controller: _overlay,
+    overlayChildBuilder: (context, info) {
+      if (_dismissed || _composing || _input.text.trim().isEmpty) {
+        return const SizedBox.shrink();
+      }
+      final anchor = MatrixUtils.transformRect(
+        info.childPaintTransform,
+        Offset.zero & info.childSize,
+      );
+      // The overlay may already end above the keyboard (a resized Scaffold).
+      final media = MediaQuery.of(context);
+      final keyboardTop = media.size.height - media.viewInsets.bottom;
+      final bottom = math.min(info.overlaySize.height, keyboardTop) - 8;
+      final below = math.max(0.0, bottom - anchor.bottom - 4);
+      final above = math.max(0.0, anchor.top - media.padding.top - 4);
+      final openAbove = below < 120 && above > below;
+      final height = math.min(360.0, openAbove ? above : below);
+      return Positioned(
+        left: anchor.left,
+        width: anchor.width,
+        top: openAbove ? null : anchor.bottom + 4,
+        bottom: openAbove ? info.overlaySize.height - anchor.top + 4 : null,
+        child: TextFieldTapRegion(
+          child: Material(
+            key: const ValueKey('search-suggestions'),
+            elevation: 8,
+            borderRadius: BorderRadius.circular(8),
+            clipBehavior: Clip.antiAlias,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: height),
+              child: ListView(
+                controller: _suggestionScroll,
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                children: [
+                  if (_busy) const LinearProgressIndicator(),
+                  for (var index = 0; index < _suggestions.length; index++)
+                    _suggestionRow(_suggestions[index], index),
+                  if (!_busy && _suggestions.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Text(t.discovery.noSuggestions),
+                    ),
+                  if (_error != null)
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Text(
+                        '${t.discovery.localFallback}\n${describeBooruError(_error)}',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                  if (!_suggestions.any(
+                    (tag) =>
+                        tag.value == QueryTerm.parse(parseQueryInput(_input.text).lastOrNull ?? '').value,
+                  ))
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: AppButton(
+                        label: t.discovery.addCustomTag,
+                        kind: AppButtonKind.ghost,
+                        onPressed: _addAlias,
+                      ),
+                    ),
+                ],
+              ),
             ),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Wrap(
-                    runSpacing: 6,
-                    spacing: 6,
+          ),
+        ),
+      );
+    },
+    child: Focus(
+      onKeyEvent: _key,
+      child: AppTextField(
+        height: appFieldHeight(context),
+        autofocus: widget.isQueryEditor,
+        controller: _input,
+        hintText: t.discovery.queryHint,
+        textInputAction: TextInputAction.search,
+        onTap: () => setState(() => _dismissed = false),
+        onTapOutside: (_) => _dismissSuggestions(),
+        // Preserve composition until the IME commits it.
+        onEditingComplete: () {},
+        onSubmitted: (_) => _submit(),
+        trailing: AppIconButton(
+          constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+          padding: const EdgeInsets.all(6),
+          tooltip: t.postSearch.title,
+          icon: const Icon(Icons.search),
+          onPressed: _canSubmit ? _submit : null,
+        ),
+      ),
+    ),
+  );
+
+  Widget _suggestionRow(TagSuggestion tag, int index) {
+    final colors = Theme.of(context).colorScheme;
+    return Material(
+      key: ValueKey('suggestion-row-$index'),
+      color: index == _highlight
+          ? colors.primaryContainer
+          : index.isEven
+          ? colors.surface
+          : colors.surfaceContainerHighest,
+      child: InkWell(
+        onTap: () => _add(tag, replaceTerm: true),
+        onLongPress: () => showDialog<void>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: TagLabel(value: tag.value, translation: tag.displayName),
+            content: Text(
+              '${tag.value}\n${tag.verified ? t.discovery.verifiedTag : t.discovery.unverifiedTag}',
+            ),
+            actions: [
+              AppButton(
+                label: t.generic.ok,
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TagLabel(value: tag.value, translation: tag.displayName),
+                    Text(
+                      categoryLabel(tag.category),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              if (tag.count != null) ...[
+                const SizedBox(width: 12),
+                SizedBox(
+                  width: 64,
+                  child: Text(
+                    compactCount(tag.count!),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => Material(
+    child: SafeArea(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextFieldTapRegion(
+                child: DiscoveryToolbar(
+                  sourceId: _source,
+                  onSource: _switchSource,
+                  query: _queryField(),
+                ),
+              ),
+              if (widget.isQueryEditor && !shouldUseDesktopShell(context))
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: BackButton(),
+                ),
+              if (widget.invalidQuery || _invalidSource)
+                Text(t.booruError.invalidRequest),
+              Expanded(
+                child: SingleChildScrollView(
+                  key: const ValueKey('search-tags-scroll'),
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      _buildAddTagButton(),
-                      for (final tag in _knownTags)
-                        if (!customTagSet.contains(tag))
-                          _buildTag(tag, isCustom: false),
-                      for (final tag in _customTags)
-                        _buildTag(tag, isCustom: true),
+                      if (!_ready && _error != null)
+                        Text(describeBooruError(_error)),
+                      if (_selected.isNotEmpty) ...[
+                        SelectedTags(
+                          tags: _selected,
+                          displayName: _displayName,
+                          onRemove: (tag) =>
+                              setState(() => _selected.remove(tag)),
+                          onMore: _manageSelected,
+                        ),
+                        if (_selected.any((tag) => !_verified.contains(tag)))
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Text(
+                              t.discovery.unverifiedTag,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ),
+                        const SizedBox(height: 8),
+                      ],
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(
+                            t.discovery.commonTags,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          AppButton(
+                            label: t.discovery.manageTags,
+                            icon: Icons.sell_outlined,
+                            compact: true,
+                            kind: AppButtonKind.ghost,
+                            onPressed: _manageAliases,
+                          ),
+                          if (_common.isNotEmpty)
+                            AppButton(
+                              label: t.discovery.moreTags,
+                              compact: true,
+                              kind: AppButtonKind.ghost,
+                              onPressed: _moreCommon,
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      if (_common.isNotEmpty) ...[
+                        Wrap(
+                          key: const ValueKey('common-tags'),
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            for (final tag in _common.take(40))
+                              ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: math.min(
+                                    240,
+                                    constraints.maxWidth - 24,
+                                  ),
+                                ),
+                                child: AppButton(
+                                  compact: true,
+                                  label: TagLabel.text(
+                                    tag.value,
+                                    _displayName(tag.value, tag.displayName),
+                                  ),
+                                  labelWidget: TagLabel(
+                                    value: tag.value,
+                                    translation: _displayName(tag.value, tag.displayName),
+                                  ),
+                                  onPressed: () => _add(tag),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                      if (_commonBusy && _common.isEmpty)
+                        const LinearProgressIndicator(),
+                      if (_commonError != null)
+                        Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: AppButton(
+                            label: t.discovery.retryTags,
+                            kind: AppButtonKind.ghost,
+                            onPressed: () => _loadCommon(refresh: true),
+                          ),
+                        ),
                     ],
                   ),
                 ),
               ),
+            ],
+          );
+        },
+      ),
+    ),
+  );
+}
+
+String compactCount(String count) {
+  final number = int.tryParse(count);
+  if (number == null) return count;
+  if (number >= 1000000) return '${(number / 1000000).toStringAsFixed(1)}m';
+  if (number >= 1000) return '${(number / 1000).toStringAsFixed(1)}k';
+  return count;
+}
+
+String categoryLabel(TagCategory category) => switch (category) {
+  TagCategory.artist => t.discovery.artist,
+  TagCategory.character => t.discovery.character,
+  TagCategory.copyright => t.discovery.copyright,
+  TagCategory.meta => t.discovery.meta,
+  TagCategory.general => t.discovery.general,
+};
+
+class SelectedTags extends StatelessWidget {
+  const SelectedTags({
+    super.key,
+    required this.tags,
+    required this.displayName,
+    required this.onRemove,
+    required this.onMore,
+  });
+  final List<String> tags;
+  final String Function(String) displayName;
+  final ValueChanged<String> onRemove;
+  final VoidCallback onMore;
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final style = Theme.of(context).textTheme.labelLarge!;
+      double textWidth(String text) {
+        final painter = TextPainter(
+          text: TextSpan(text: text, style: style),
+          textDirection: Directionality.of(context),
+          textScaler: MediaQuery.textScalerOf(context),
+        )..layout();
+        final width = painter.width;
+        painter.dispose();
+        return width;
+      }
+
+      final widths = tags
+          .map(
+            (tag) => math.min(
+              math.min(240.0, constraints.maxWidth),
+              textWidth(TagLabel.text(tag, displayName(tag))) + 64,
             ),
-          ],
-        );
-      },
-    );
-  }
+          )
+          .toList();
+      final rows = <List<int>>[[], []];
+      final used = [0.0, 0.0];
+      var row = 0;
+      var visible = 0;
+      for (var i = 0; i < tags.length; i++) {
+        final gap = rows[row].isEmpty ? 0.0 : 8.0;
+        if (used[row] + gap + widths[i] > constraints.maxWidth &&
+            rows[row].isNotEmpty) {
+          row++;
+        }
+        if (row >= 2) break;
+        used[row] += (rows[row].isEmpty ? 0 : 8) + widths[i];
+        rows[row].add(i);
+        visible++;
+      }
+      final moreWidth = math.min(
+        constraints.maxWidth,
+        textWidth('+${tags.length}') + 48,
+      );
+      if (visible < tags.length) {
+        while (rows[1].isNotEmpty &&
+            used[1] + 8 + moreWidth > constraints.maxWidth) {
+          used[1] -= widths[rows[1].removeLast()] + (rows[1].isEmpty ? 0 : 8);
+          visible--;
+        }
+      }
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (var r = 0; r < 2; r++)
+            if (rows[r].isNotEmpty || r == 1 && visible < tags.length)
+              Padding(
+                padding: EdgeInsets.only(top: r == 0 ? 0 : 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (var i = 0; i < rows[r].length; i++) ...[
+                      if (i > 0) const SizedBox(width: 8),
+                      SizedBox(
+                        width: widths[rows[r][i]],
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: InputChip(
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            label: TagLabel(
+                              value: tags[rows[r][i]],
+                              translation: displayName(tags[rows[r][i]]),
+                              style: style,
+                            ),
+                            onDeleted: () => onRemove(tags[rows[r][i]]),
+                            deleteButtonTooltipMessage: t.generic.clear,
+                          ),
+                        ),
+                      ),
+                    ],
+                    if (r == 1 && visible < tags.length) ...[
+                      if (rows[r].isNotEmpty) const SizedBox(width: 8),
+                      SizedBox(
+                        width: moreWidth,
+                        child: ActionChip(
+                          label: Text(
+                            '+${tags.length - visible}',
+                            style: style,
+                            maxLines: 1,
+                          ),
+                          onPressed: onMore,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+        ],
+      );
+    },
+  );
 }

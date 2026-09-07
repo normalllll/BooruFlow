@@ -24,7 +24,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
     PluralResolver? ordinalResolver,
     TranslationMetadata<AppLocale, Translations>? meta,
   }) : assert(overrides == null, 'Set "translation_overrides: true" in order to enable this feature.'),
-       $meta =
+       _meta =
            meta ??
            TranslationMetadata(
              locale: AppLocale.en,
@@ -32,15 +32,16 @@ class Translations with BaseTranslations<AppLocale, Translations> {
              cardinalResolver: cardinalResolver,
              ordinalResolver: ordinalResolver,
            ) {
-    $meta.setFlatMapFunction(_flatMapFunction);
+    _meta.setFlatMapFunction(_flatMapFunction);
   }
 
   /// Metadata for the translations of <en>.
+  final TranslationMetadata<AppLocale, Translations> _meta;
   @override
-  final TranslationMetadata<AppLocale, Translations> $meta;
+  TranslationMetadata<AppLocale, Translations> get $meta => _meta;
 
   /// Access flat map
-  dynamic operator [](String key) => $meta.getTranslation(key);
+  dynamic operator [](String key) => _meta.getTranslation(key);
 
   late final Translations _root = this; // ignore: unused_field
 
@@ -58,6 +59,8 @@ class Translations with BaseTranslations<AppLocale, Translations> {
   late final Translations$downloads$en downloads = Translations$downloads$en.internal(_root);
   late final Translations$about$en about = Translations$about$en.internal(_root);
   late final Translations$settings$en settings = Translations$settings$en.internal(_root);
+  late final Translations$discovery$en discovery = Translations$discovery$en.internal(_root);
+  late final Translations$mediaError$en mediaError = Translations$mediaError$en.internal(_root);
 }
 
 // Path: generic
@@ -199,11 +202,11 @@ class Translations$postList$en {
 
   // Translations
 
-  /// en: 'Post'
-  String get short => 'Post';
+  /// en: 'Home'
+  String get short => 'Home';
 
-  /// en: 'Post List'
-  String get title => 'Post List';
+  /// en: 'Home'
+  String get title => 'Home';
 
   /// en: 'Posts with tags: $tags'
   String titleWithTags({required Object tags}) => 'Posts with tags: ${tags}';
@@ -249,6 +252,12 @@ class Translations$postDetail$en {
 
   /// en: 'Author'
   String get author => 'Author';
+
+  /// en: 'Unknown'
+  String get unknownAuthor => 'Unknown';
+
+  /// en: 'Image source'
+  String get imageSource => 'Image source';
 
   /// en: 'Source'
   String get source => 'Source';
@@ -486,14 +495,8 @@ class Translations$settings$en {
   /// en: 'Auto'
   String get auto => 'Auto';
 
-  /// en: 'Desktop only · one subfolder per source'
-  String get downloadsOverview => 'Desktop only · one subfolder per source';
-
-  /// en: 'Source subfolders'
-  String get sourceSubfolders => 'Source subfolders';
-
-  /// en: 'Downloads are saved in a separate folder named after each source.'
-  String get sourceSubfoldersDescription => 'Downloads are saved in a separate folder named after each source.';
+  /// en: 'Save location and download concurrency'
+  String get downloadsOverview => 'Save location and download concurrency';
 
   late final Translations$settings$sections$en sections = Translations$settings$sections$en.internal(_root);
   late final Translations$settings$source$en source = Translations$settings$source$en.internal(_root);
@@ -514,6 +517,207 @@ class Translations$settings$en {
       Translations$settings$maxConcurrentDownloadsDialog$en.internal(_root);
   late final Translations$settings$maxSegmentsPerTaskDialog$en maxSegmentsPerTaskDialog =
       Translations$settings$maxSegmentsPerTaskDialog$en.internal(_root);
+}
+
+// Path: discovery
+class Translations$discovery$en {
+  Translations$discovery$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'Search results'
+  String get searchResults => 'Search results';
+
+  /// en: 'All available'
+  String get allAvailable => 'All available';
+
+  /// en: 'Ratings apply across all sources. With none selected, show everything the current source and account can access.'
+  String get defaultRatingsHint =>
+      'Ratings apply across all sources. With none selected, show everything the current source and account can access.';
+
+  /// en: 'Restore defaults'
+  String get resetFilters => 'Restore defaults';
+
+  /// en: 'This source does not support the selected ratings. Restore defaults to browse available posts.'
+  String get unsupportedRatings =>
+      'This source does not support the selected ratings. Restore defaults to browse available posts.';
+
+  /// en: 'No posts match the current filters.'
+  String get noFilteredPosts => 'No posts match the current filters.';
+
+  /// en: 'No posts match this search.'
+  String get noSearchResults => 'No posts match this search.';
+
+  /// en: 'This source currently has no posts to display.'
+  String get noFeedPosts => 'This source currently has no posts to display.';
+
+  /// en: 'Historical popular'
+  String get historicalPopular => 'Historical popular';
+
+  /// en: 'Day'
+  String get calendarDay => 'Day';
+
+  /// en: 'Week'
+  String get calendarWeek => 'Week';
+
+  /// en: 'Month'
+  String get calendarMonth => 'Month';
+
+  /// en: 'Latest'
+  String get latest => 'Latest';
+
+  /// en: 'Popular'
+  String get popular => 'Popular';
+
+  /// en: 'Today'
+  String get today => 'Today';
+
+  /// en: 'This week'
+  String get thisWeek => 'This week';
+
+  /// en: 'This month'
+  String get thisMonth => 'This month';
+
+  /// en: 'Last 24 hours'
+  String get lastDay => 'Last 24 hours';
+
+  /// en: 'Last 3 days'
+  String get lastThreeDays => 'Last 3 days';
+
+  /// en: 'Last week'
+  String get lastWeek => 'Last week';
+
+  /// en: 'Last month'
+  String get lastMonth => 'Last month';
+
+  /// en: 'Last 3 months'
+  String get lastThreeMonths => 'Last 3 months';
+
+  /// en: 'Last 6 months'
+  String get lastSixMonths => 'Last 6 months';
+
+  /// en: 'Last year'
+  String get lastYear => 'Last year';
+
+  /// en: 'All ranked posts loaded'
+  String get rankingComplete => 'All ranked posts loaded';
+
+  /// en: 'This source supports latest posts only.'
+  String get latestFallback => 'This source supports latest posts only.';
+
+  /// en: 'Filters'
+  String get filters => 'Filters';
+
+  /// en: 'Load more'
+  String get loadMore => 'Load more';
+
+  /// en: 'No matching posts on these pages. Continue browsing'
+  String get filteredContinue => 'No matching posts on these pages. Continue browsing';
+
+  /// en: 'Common tags'
+  String get commonTags => 'Common tags';
+
+  /// en: 'Show more'
+  String get moreTags => 'Show more';
+
+  /// en: 'Source'
+  String get tagSource => 'Source';
+
+  /// en: 'All sources'
+  String get allTagSources => 'All sources';
+
+  /// en: 'Custom tags'
+  String get manageTags => 'Custom tags';
+
+  /// en: 'Add tag'
+  String get addTag => 'Add tag';
+
+  /// en: 'No custom tags yet'
+  String get noCustomTags => 'No custom tags yet';
+
+  /// en: 'Give tags memorable names to find them more easily in search.'
+  String get customTagsHint => 'Give tags memorable names to find them more easily in search.';
+
+  /// en: 'Add as a custom tag'
+  String get addCustomTag => 'Add as a custom tag';
+
+  /// en: 'Edit custom tag'
+  String get editTag => 'Edit custom tag';
+
+  /// en: 'Source tag'
+  String get canonicalTag => 'Source tag';
+
+  /// en: 'Display name (optional)'
+  String get displayName => 'Display name (optional)';
+
+  /// en: 'Enter one nonempty tag without spaces.'
+  String get invalidTag => 'Enter one nonempty tag without spaces.';
+
+  /// en: 'Enter tags or a source query…'
+  String get queryHint => 'Enter tags or a source query…';
+
+  /// en: 'Some tags are not verified for this source. You can still search.'
+  String get unverifiedTag => 'Some tags are not verified for this source. You can still search.';
+
+  /// en: 'Verified for this source'
+  String get verifiedTag => 'Verified for this source';
+
+  /// en: 'No suggestions'
+  String get noSuggestions => 'No suggestions';
+
+  /// en: 'Online suggestions unavailable; local suggestions are still available.'
+  String get localFallback => 'Online suggestions unavailable; local suggestions are still available.';
+
+  /// en: 'Retry common tags'
+  String get retryTags => 'Retry common tags';
+
+  /// en: 'Artist'
+  String get artist => 'Artist';
+
+  /// en: 'Character'
+  String get character => 'Character';
+
+  /// en: 'Series'
+  String get copyright => 'Series';
+
+  /// en: 'Meta'
+  String get meta => 'Meta';
+
+  /// en: 'General'
+  String get general => 'General';
+
+  /// en: 'Random'
+  String get random => 'Random';
+
+  /// en: 'Lifetime views'
+  String get lifetimeViews => 'Lifetime views';
+
+  /// en: 'Lifetime favorites'
+  String get lifetimeFavorites => 'Lifetime favorites';
+}
+
+// Path: mediaError
+class Translations$mediaError$en {
+  Translations$mediaError$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'Image failed to load'
+  String get title => 'Image failed to load';
+
+  /// en: 'Error details'
+  String get details => 'Error details';
+
+  /// en: 'Copy details'
+  String get copyDetails => 'Copy details';
+
+  /// en: 'The downloaded image could not be decoded. Retry will clear this image’s cache and download it again.'
+  String get decodeFailed =>
+      'The downloaded image could not be decoded. Retry will clear this image’s cache and download it again.';
 }
 
 // Path: downloads.messages
@@ -571,8 +775,8 @@ class Translations$settings$sections$en {
 
   // Translations
 
-  /// en: 'Sources & content'
-  String get sourcesAndContent => 'Sources & content';
+  /// en: 'Sources & accounts'
+  String get sourcesAndAccounts => 'Sources & accounts';
 
   /// en: 'Accounts'
   String get accounts => 'Accounts';
@@ -580,8 +784,8 @@ class Translations$settings$sections$en {
   /// en: 'Network'
   String get network => 'Network';
 
-  /// en: 'Appearance'
-  String get appearance => 'Appearance';
+  /// en: 'General'
+  String get general => 'General';
 
   /// en: 'Downloads'
   String get downloads => 'Downloads';
@@ -595,26 +799,14 @@ class Translations$settings$source$en {
 
   // Translations
 
-  /// en: 'Source'
-  String get label => 'Source';
+  /// en: 'Default source'
+  String get defaultSource => 'Default source';
 
-  /// en: 'Content policy'
-  String get contentPolicy => 'Content policy';
+  /// en: 'Supported ratings'
+  String get supportedRatings => 'Supported ratings';
 
-  /// en: 'Safety rating'
-  String get safetyRating => 'Safety rating';
-
-  /// en: 'No hidden default'
-  String get noHiddenDefault => 'No hidden default';
-
-  /// en: 'Leave every rating unselected to show all posts, including explicit posts.'
-  String get noHiddenDefaultDescription => 'Leave every rating unselected to show all posts, including explicit posts.';
-
-  /// en: 'Unfiltered'
-  String get unfiltered => 'Unfiltered';
-
-  /// en: 'Anime focused'
-  String get animeFocused => 'Anime focused';
+  /// en: 'Global content ratings'
+  String get safetyRating => 'Global content ratings';
 }
 
 // Path: settings.account
@@ -625,8 +817,11 @@ class Translations$settings$account$en {
 
   // Translations
 
-  /// en: 'Configure every source account independently'
-  String get manageAllSubtitle => 'Configure every source account independently';
+  /// en: 'Source ratings and account settings'
+  String get manageAllSubtitle => 'Source ratings and account settings';
+
+  /// en: 'No account configuration needed'
+  String get noAccountRequired => 'No account configuration needed';
 
   /// en: 'Open sign-in page'
   String get openSignInPage => 'Open sign-in page';
@@ -921,8 +1116,8 @@ extension on Translations {
         ({required Object version}) =>
             'New version found: ${version}.\nPlease go to the About page and click Download update.',
       'update.noNewVersionFound' => 'No new version found.',
-      'postList.short' => 'Post',
-      'postList.title' => 'Post List',
+      'postList.short' => 'Home',
+      'postList.title' => 'Home',
       'postList.titleWithTags' => ({required Object tags}) => 'Posts with tags: ${tags}',
       'postDetail.titleWithId' => ({required Object id}) => 'Post: ${id}',
       'postDetail.tags' => 'Tags',
@@ -935,6 +1130,8 @@ extension on Translations {
       'postDetail.relatedLoadFailed' => 'Failed to load related images. You can retry.',
       'postDetail.createdAt' => 'Created at',
       'postDetail.author' => 'Author',
+      'postDetail.unknownAuthor' => 'Unknown',
+      'postDetail.imageSource' => 'Image source',
       'postDetail.source' => 'Source',
       'postDetail.width' => 'Width',
       'postDetail.height' => 'Height',
@@ -1012,23 +1209,17 @@ extension on Translations {
       'settings.light' => 'Light',
       'settings.dark' => 'Dark',
       'settings.auto' => 'Auto',
-      'settings.downloadsOverview' => 'Desktop only · one subfolder per source',
-      'settings.sourceSubfolders' => 'Source subfolders',
-      'settings.sourceSubfoldersDescription' => 'Downloads are saved in a separate folder named after each source.',
-      'settings.sections.sourcesAndContent' => 'Sources & content',
+      'settings.downloadsOverview' => 'Save location and download concurrency',
+      'settings.sections.sourcesAndAccounts' => 'Sources & accounts',
       'settings.sections.accounts' => 'Accounts',
       'settings.sections.network' => 'Network',
-      'settings.sections.appearance' => 'Appearance',
+      'settings.sections.general' => 'General',
       'settings.sections.downloads' => 'Downloads',
-      'settings.source.label' => 'Source',
-      'settings.source.contentPolicy' => 'Content policy',
-      'settings.source.safetyRating' => 'Safety rating',
-      'settings.source.noHiddenDefault' => 'No hidden default',
-      'settings.source.noHiddenDefaultDescription' =>
-        'Leave every rating unselected to show all posts, including explicit posts.',
-      'settings.source.unfiltered' => 'Unfiltered',
-      'settings.source.animeFocused' => 'Anime focused',
-      'settings.account.manageAllSubtitle' => 'Configure every source account independently',
+      'settings.source.defaultSource' => 'Default source',
+      'settings.source.supportedRatings' => 'Supported ratings',
+      'settings.source.safetyRating' => 'Global content ratings',
+      'settings.account.manageAllSubtitle' => 'Source ratings and account settings',
+      'settings.account.noAccountRequired' => 'No account configuration needed',
       'settings.account.openSignInPage' => 'Open sign-in page',
       'settings.account.cookieHeader' => 'Cookie header',
       'settings.account.storedLocally' => 'Stored locally on this device',
@@ -1080,6 +1271,69 @@ extension on Translations {
       'settings.columnsPerRowDialog.title' => 'Columns per Row',
       'settings.maxConcurrentDownloadsDialog.title' => 'Max Concurrent Download Tasks',
       'settings.maxSegmentsPerTaskDialog.title' => 'Max Segments per Download Task',
+      'discovery.searchResults' => 'Search results',
+      'discovery.allAvailable' => 'All available',
+      'discovery.defaultRatingsHint' =>
+        'Ratings apply across all sources. With none selected, show everything the current source and account can access.',
+      'discovery.resetFilters' => 'Restore defaults',
+      'discovery.unsupportedRatings' =>
+        'This source does not support the selected ratings. Restore defaults to browse available posts.',
+      'discovery.noFilteredPosts' => 'No posts match the current filters.',
+      'discovery.noSearchResults' => 'No posts match this search.',
+      'discovery.noFeedPosts' => 'This source currently has no posts to display.',
+      'discovery.historicalPopular' => 'Historical popular',
+      'discovery.calendarDay' => 'Day',
+      'discovery.calendarWeek' => 'Week',
+      'discovery.calendarMonth' => 'Month',
+      'discovery.latest' => 'Latest',
+      'discovery.popular' => 'Popular',
+      'discovery.today' => 'Today',
+      'discovery.thisWeek' => 'This week',
+      'discovery.thisMonth' => 'This month',
+      'discovery.lastDay' => 'Last 24 hours',
+      'discovery.lastThreeDays' => 'Last 3 days',
+      'discovery.lastWeek' => 'Last week',
+      'discovery.lastMonth' => 'Last month',
+      'discovery.lastThreeMonths' => 'Last 3 months',
+      'discovery.lastSixMonths' => 'Last 6 months',
+      'discovery.lastYear' => 'Last year',
+      'discovery.rankingComplete' => 'All ranked posts loaded',
+      'discovery.latestFallback' => 'This source supports latest posts only.',
+      'discovery.filters' => 'Filters',
+      'discovery.loadMore' => 'Load more',
+      'discovery.filteredContinue' => 'No matching posts on these pages. Continue browsing',
+      'discovery.commonTags' => 'Common tags',
+      'discovery.moreTags' => 'Show more',
+      'discovery.tagSource' => 'Source',
+      'discovery.allTagSources' => 'All sources',
+      'discovery.manageTags' => 'Custom tags',
+      'discovery.addTag' => 'Add tag',
+      'discovery.noCustomTags' => 'No custom tags yet',
+      'discovery.customTagsHint' => 'Give tags memorable names to find them more easily in search.',
+      'discovery.addCustomTag' => 'Add as a custom tag',
+      'discovery.editTag' => 'Edit custom tag',
+      'discovery.canonicalTag' => 'Source tag',
+      'discovery.displayName' => 'Display name (optional)',
+      'discovery.invalidTag' => 'Enter one nonempty tag without spaces.',
+      'discovery.queryHint' => 'Enter tags or a source query…',
+      'discovery.unverifiedTag' => 'Some tags are not verified for this source. You can still search.',
+      'discovery.verifiedTag' => 'Verified for this source',
+      'discovery.noSuggestions' => 'No suggestions',
+      'discovery.localFallback' => 'Online suggestions unavailable; local suggestions are still available.',
+      'discovery.retryTags' => 'Retry common tags',
+      'discovery.artist' => 'Artist',
+      'discovery.character' => 'Character',
+      'discovery.copyright' => 'Series',
+      'discovery.meta' => 'Meta',
+      'discovery.general' => 'General',
+      'discovery.random' => 'Random',
+      'discovery.lifetimeViews' => 'Lifetime views',
+      'discovery.lifetimeFavorites' => 'Lifetime favorites',
+      'mediaError.title' => 'Image failed to load',
+      'mediaError.details' => 'Error details',
+      'mediaError.copyDetails' => 'Copy details',
+      'mediaError.decodeFailed' =>
+        'The downloaded image could not be decoded. Retry will clear this image’s cache and download it again.',
       _ => null,
     };
   }

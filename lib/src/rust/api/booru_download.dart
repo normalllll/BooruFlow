@@ -3,13 +3,14 @@
 
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
+import '../booru/error.dart';
 import '../frb_generated.dart';
 import 'booru_models.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'booru_download.freezed.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `assert_fields_are_eq`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`
 
 @freezed
 sealed class DownloadEventDto with _$DownloadEventDto {
@@ -59,6 +60,8 @@ class DownloadRequestDto {
 sealed class MediaFetchEventDto with _$MediaFetchEventDto {
   const MediaFetchEventDto._();
 
+  const factory MediaFetchEventDto.failed({required BooruErrorDto error}) =
+      MediaFetchEventDto_Failed;
   const factory MediaFetchEventDto.chunk({
     required Uint8List bytes,
     required String receivedBytesDecimal,

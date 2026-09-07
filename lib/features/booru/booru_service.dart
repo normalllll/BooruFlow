@@ -24,7 +24,24 @@ final class BooruService {
 
   BooruEngine get engine => _engine;
   List<BooruSourceDto> get sources => List.unmodifiable(_sources);
+  @visibleForTesting
+  void useSourcesForTesting(List<BooruSourceDto> sources) {
+    _sources = List.unmodifiable(sources);
+    selectedSource.value = sources.first.sourceId;
+  }
+
   BooruSourceDto get currentSource => sourceById(selectedSource.value);
+  String cacheRevision(String sourceId) =>
+      _storedRevision('$sourceId:revision', 'anonymous');
+  String get networkCacheRevision =>
+      _storedRevision('networkRevision', 'initial');
+
+  String _storedRevision(String key, String fallback) {
+    final value = _credentials.get(key);
+    if (value is String && value.isNotEmpty) return value;
+    if (value != null) unawaited(_credentials.delete(key));
+    return fallback;
+  }
 
   BooruSourceDto sourceById(String sourceId) =>
       _sources.firstWhere((source) => source.sourceId == sourceId);
@@ -33,18 +50,21 @@ final class BooruService {
     _version = version;
     _supportDirectory = (await getApplicationSupportDirectory()).path;
     _credentials = await Hive.openBox<dynamic>(_credentialBoxName);
-    selectedSource.value = SettingsService.sourceId;
+    selectedSource.value = SettingsService.defaultSourceId;
     await _createEngine();
   }
 
   Future<void> reconfigureNetwork() async {
     await _createEngine();
+    await _credentials.put(
+      'networkRevision',
+      DateTime.now().microsecondsSinceEpoch.toString(),
+    );
     revision.value++;
   }
 
   void selectSource(String sourceId) {
     if (!_sources.any((source) => source.sourceId == sourceId)) return;
-    SettingsService.sourceId = sourceId;
     selectedSource.value = sourceId;
   }
 
@@ -88,7 +108,16 @@ final class BooruService {
       'userId': value.userId,
       'apiKey': value.apiKey,
     });
-    return _engine.setCredentials(sourceId: sourceId, credentials: value);
+    final state = await _engine.setCredentials(
+      sourceId: sourceId,
+      credentials: value,
+    );
+    await _credentials.put(
+      '$sourceId:revision',
+      DateTime.now().microsecondsSinceEpoch.toString(),
+    );
+    revision.value++;
+    return state;
   }
 
   Future<AuthStateDto> saveWebSession(
@@ -101,24 +130,46 @@ final class BooruService {
       'cookieHeader': cookieHeader,
       'userAgent': userAgent,
     });
-    return _engine.setWebSession(
+    final state = await _engine.setWebSession(
       sourceId: sourceId,
       cookies: cookies,
       userAgent: userAgent,
     );
+    await _credentials.put(
+      '$sourceId:revision',
+      DateTime.now().microsecondsSinceEpoch.toString(),
+    );
+    revision.value++;
+    return state;
   }
 
   Future<void> clearAuth(String sourceId) async {
     await _credentials.delete(sourceId);
     await _engine.clearAuth(sourceId: sourceId);
+    await _credentials.put(
+      '$sourceId:revision',
+      DateTime.now().microsecondsSinceEpoch.toString(),
+    );
+    revision.value++;
   }
 
   Map<String, String> savedAuth(String sourceId) {
     final raw = _credentials.get(sourceId);
-    if (raw is! Map) return const {};
-    return raw.map(
-      (key, value) => MapEntry(key.toString(), value?.toString() ?? ''),
-    );
+    const fields = {
+      'username',
+      'userId',
+      'apiKey',
+      'cookieHeader',
+      'userAgent',
+    };
+    if (raw is! Map ||
+        raw.entries.any(
+          (entry) => !fields.contains(entry.key) || entry.value is! String,
+        )) {
+      if (raw != null) unawaited(_credentials.delete(sourceId));
+      return const {};
+    }
+    return Map<String, String>.from(raw);
   }
 
   Future<void> _restoreCredentials() async {

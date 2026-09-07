@@ -36,6 +36,9 @@ pub enum DownloadEventDto {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum MediaFetchEventDto {
+    Failed {
+        error: crate::booru::error::BooruErrorDto,
+    },
     Chunk {
         bytes: Vec<u8>,
         received_bytes_decimal: String,

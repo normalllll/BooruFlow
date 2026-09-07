@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:go_router/go_router.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/features/posts/models/post.dart';
@@ -9,7 +10,9 @@ enum AppRoute {
   about('/about'),
   settings('/settings'),
   settingsSection('/settings/:section'),
+  userTags('/settings/custom-tags'),
   taggedPosts('/search/posts'),
+  searchEditor('/search/edit'),
   postDetail('/posts/:id'),
   imageViewer('/image-viewer');
 
@@ -33,8 +36,8 @@ class AppDestination {
 const appDestinations = <AppDestination>[
   AppDestination(
     route: AppRoute.posts,
-    icon: Icons.list_alt_outlined,
-    selectedIcon: Icons.list_alt,
+    icon: Icons.home_outlined,
+    selectedIcon: Icons.home,
   ),
   AppDestination(
     route: AppRoute.search,
@@ -95,7 +98,27 @@ class ImageViewerRouteArgs {
   final String postId;
 }
 
+class SearchQuery {
+  SearchQuery({required this.sourceId, required Iterable<String> tags})
+    : tags = List.unmodifiable(tags);
+  final String sourceId;
+  final List<String> tags;
+}
+
 extension AppNavigation on BuildContext {
+  Future<SearchQuery?> editSearch(
+    List<String> tags, {
+    required String sourceId,
+  }) => pushNamed<SearchQuery>(
+    AppRoute.searchEditor.name,
+    queryParameters: {'source': sourceId, 'tags': jsonEncode(tags)},
+  );
+
+  Future<T?> pushUserTags<T>({String? sourceId}) => pushNamed<T>(
+    AppRoute.userTags.name,
+    queryParameters: {'source': ?sourceId},
+  );
+
   Future<T?> pushPost<T>(Post post) {
     return pushNamed<T>(
       AppRoute.postDetail.name,
@@ -104,12 +127,22 @@ extension AppNavigation on BuildContext {
     );
   }
 
-  Future<T?> pushTaggedPosts<T>(List<String> tags) {
+  Future<T?> pushTaggedPosts<T>(List<String> tags, {required String sourceId}) {
     return pushNamed<T>(
       AppRoute.taggedPosts.name,
-      queryParameters: {'q': tags.join(' ')},
+      queryParameters: {'tags': jsonEncode(tags), 'source': sourceId},
     );
   }
+
+  void replaceTaggedPosts(List<String> tags, {required String sourceId}) {
+    replaceNamed(
+      AppRoute.taggedPosts.name,
+      queryParameters: {'tags': jsonEncode(tags), 'source': sourceId},
+    );
+  }
+
+  Future<T?> pushSearch<T>({required String sourceId}) =>
+      pushNamed<T>(AppRoute.search.name, queryParameters: {'source': sourceId});
 
   Future<T?> pushImageViewer<T>({
     required String url,

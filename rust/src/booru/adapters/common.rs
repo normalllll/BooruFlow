@@ -14,6 +14,32 @@ pub fn string(value: &Value, key: &str) -> Option<String> {
     value.get(key).and_then(value_string)
 }
 
+/// Usernames must be supplied as text by the source, never inferred from IDs.
+pub fn username(value: &Value, pointer: &str) -> Option<String> {
+    value
+        .pointer(pointer)
+        .and_then(Value::as_str)
+        .map(str::trim)
+        .filter(|name| !name.is_empty())
+        .map(str::to_owned)
+}
+
+#[test]
+fn usernames_do_not_fall_back_to_numeric_ids_or_empty_text() {
+    for value in [
+        serde_json::json!({}),
+        serde_json::json!({"author": 123}),
+        serde_json::json!({"author": "  "}),
+        serde_json::json!({"author": null}),
+    ] {
+        assert_eq!(username(&value, "/author"), None);
+    }
+    assert_eq!(
+        username(&serde_json::json!({"author": "123"}), "/author"),
+        Some("123".into())
+    );
+}
+
 pub fn value_string(value: &Value) -> Option<String> {
     match value {
         Value::String(value) if !value.is_empty() => Some(value.clone()),

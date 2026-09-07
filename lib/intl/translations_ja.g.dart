@@ -19,7 +19,7 @@ class TranslationsJa extends Translations with BaseTranslations<AppLocale, Trans
     PluralResolver? ordinalResolver,
     TranslationMetadata<AppLocale, Translations>? meta,
   }) : assert(overrides == null, 'Set "translation_overrides: true" in order to enable this feature.'),
-       $meta =
+       _meta =
            meta ??
            TranslationMetadata(
              locale: AppLocale.ja,
@@ -28,17 +28,17 @@ class TranslationsJa extends Translations with BaseTranslations<AppLocale, Trans
              ordinalResolver: ordinalResolver,
            ),
        super(cardinalResolver: cardinalResolver, ordinalResolver: ordinalResolver) {
-    super.$meta.setFlatMapFunction($meta.getTranslation); // copy base translations to super.$meta
-    $meta.setFlatMapFunction(_flatMapFunction);
+    _meta.setFlatMapFunction(_flatMapFunction);
   }
 
   /// Metadata for the translations of <ja>.
+  final TranslationMetadata<AppLocale, Translations> _meta;
   @override
-  final TranslationMetadata<AppLocale, Translations> $meta;
+  TranslationMetadata<AppLocale, Translations> get $meta => _meta;
 
   /// Access flat map
   @override
-  dynamic operator [](String key) => $meta.getTranslation(key) ?? super.$meta.getTranslation(key);
+  dynamic operator [](String key) => _meta.getTranslation(key) ?? super[key];
 
   late final TranslationsJa _root = this; // ignore: unused_field
 
@@ -67,6 +67,10 @@ class TranslationsJa extends Translations with BaseTranslations<AppLocale, Trans
   late final _Translations$about$ja about = _Translations$about$ja._(_root);
   @override
   late final _Translations$settings$ja settings = _Translations$settings$ja._(_root);
+  @override
+  late final _Translations$discovery$ja discovery = _Translations$discovery$ja._(_root);
+  @override
+  late final _Translations$mediaError$ja mediaError = _Translations$mediaError$ja._(_root);
 }
 
 // Path: generic
@@ -173,9 +177,9 @@ class _Translations$postList$ja extends Translations$postList$en {
 
   // Translations
   @override
-  String get short => '投稿';
+  String get short => 'ホーム';
   @override
-  String get title => '投稿リスト';
+  String get title => 'ホーム';
   @override
   String titleWithTags({required Object tags}) => 'タグ付き投稿: ${tags}';
 }
@@ -209,6 +213,10 @@ class _Translations$postDetail$ja extends Translations$postDetail$en {
   String get createdAt => '作成日時';
   @override
   String get author => '作者';
+  @override
+  String get unknownAuthor => '不明';
+  @override
+  String get imageSource => '画像サイト';
   @override
   String get source => 'ソース';
   @override
@@ -383,11 +391,7 @@ class _Translations$settings$ja extends Translations$settings$en {
   @override
   String get auto => '自動';
   @override
-  String get downloadsOverview => 'デスクトップのみ · ソースごとにサブフォルダーを作成';
-  @override
-  String get sourceSubfolders => 'ソース別サブフォルダー';
-  @override
-  String get sourceSubfoldersDescription => 'ダウンロードはソース名ごとの個別フォルダーに保存されます。';
+  String get downloadsOverview => '保存先と同時ダウンロード数';
   @override
   late final _Translations$settings$sections$ja sections = _Translations$settings$sections$ja._(_root);
   @override
@@ -420,6 +424,144 @@ class _Translations$settings$ja extends Translations$settings$en {
   @override
   late final _Translations$settings$maxSegmentsPerTaskDialog$ja maxSegmentsPerTaskDialog =
       _Translations$settings$maxSegmentsPerTaskDialog$ja._(_root);
+}
+
+// Path: discovery
+class _Translations$discovery$ja extends Translations$discovery$en {
+  _Translations$discovery$ja._(TranslationsJa root) : this._root = root, super.internal(root);
+
+  final TranslationsJa _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get searchResults => '検索結果';
+  @override
+  String get allAvailable => '表示可能なすべてのコンテンツ';
+  @override
+  String get defaultRatingsHint => 'レーティング設定はすべての画像ソースに共通です。未選択時は、現在の画像ソースとアカウントで閲覧できるすべてのコンテンツを表示します。';
+  @override
+  String get resetFilters => '初期設定に戻す';
+  @override
+  String get unsupportedRatings => '選択したレーティングはこの画像ソースで利用できません。初期設定に戻してください。';
+  @override
+  String get noFilteredPosts => '現在の絞り込み条件に一致する投稿はありません。';
+  @override
+  String get noSearchResults => '検索条件に一致する投稿はありません。';
+  @override
+  String get noFeedPosts => 'この画像ソースには現在表示できる投稿がありません。';
+  @override
+  String get historicalPopular => '過去の人気';
+  @override
+  String get calendarDay => '日別';
+  @override
+  String get calendarWeek => '週別';
+  @override
+  String get calendarMonth => '月別';
+  @override
+  String get latest => '最新';
+  @override
+  String get popular => '人気';
+  @override
+  String get today => '今日';
+  @override
+  String get thisWeek => '今週';
+  @override
+  String get thisMonth => '今月';
+  @override
+  String get lastDay => '過去24時間';
+  @override
+  String get lastThreeDays => '過去3日間';
+  @override
+  String get lastWeek => '過去1週間';
+  @override
+  String get lastMonth => '過去1か月';
+  @override
+  String get lastThreeMonths => '過去3か月';
+  @override
+  String get lastSixMonths => '過去6か月';
+  @override
+  String get lastYear => '過去1年';
+  @override
+  String get rankingComplete => 'ランキングをすべて読み込みました';
+  @override
+  String get latestFallback => 'このサイトでは最新の投稿のみ利用できます。';
+  @override
+  String get filters => '絞り込み';
+  @override
+  String get loadMore => 'さらに読み込む';
+  @override
+  String get filteredContinue => 'この範囲に該当する投稿はありません。続きを表示';
+  @override
+  String get commonTags => 'よく使われるタグ';
+  @override
+  String get moreTags => 'もっと見る';
+  @override
+  String get tagSource => '対象サイト';
+  @override
+  String get allTagSources => 'すべてのサイト';
+  @override
+  String get manageTags => 'カスタムタグ';
+  @override
+  String get addTag => 'タグを追加';
+  @override
+  String get noCustomTags => 'カスタムタグはまだありません';
+  @override
+  String get customTagsHint => 'タグに覚えやすい名前を付けると、検索で見つけやすくなります。';
+  @override
+  String get addCustomTag => 'カスタムタグとして追加';
+  @override
+  String get editTag => 'カスタムタグを編集';
+  @override
+  String get canonicalTag => 'サイトのタグ';
+  @override
+  String get displayName => '表示名（任意）';
+  @override
+  String get invalidTag => '空白を含まないタグを1つ入力してください。';
+  @override
+  String get queryHint => 'タグやサイトの検索式を入力…';
+  @override
+  String get unverifiedTag => 'このサイトで未確認のタグがあります。そのまま検索できます。';
+  @override
+  String get verifiedTag => 'このサイトで確認済み';
+  @override
+  String get noSuggestions => '候補がありません';
+  @override
+  String get localFallback => 'オンライン候補を取得できません。ローカル候補を利用できます。';
+  @override
+  String get retryTags => 'よく使われるタグを再取得';
+  @override
+  String get artist => '作者';
+  @override
+  String get character => 'キャラクター';
+  @override
+  String get copyright => '作品';
+  @override
+  String get meta => 'メタ';
+  @override
+  String get general => '一般';
+  @override
+  String get random => 'ランダム';
+  @override
+  String get lifetimeViews => '累計閲覧数';
+  @override
+  String get lifetimeFavorites => '累計お気に入り数';
+}
+
+// Path: mediaError
+class _Translations$mediaError$ja extends Translations$mediaError$en {
+  _Translations$mediaError$ja._(TranslationsJa root) : this._root = root, super.internal(root);
+
+  final TranslationsJa _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get title => '画像の読み込みに失敗しました';
+  @override
+  String get details => 'エラーの詳細';
+  @override
+  String get copyDetails => '詳細をコピー';
+  @override
+  String get decodeFailed => 'ダウンロードした画像をデコードできませんでした。再試行すると、この画像のキャッシュを削除して再ダウンロードします。';
 }
 
 // Path: downloads.messages
@@ -463,13 +605,13 @@ class _Translations$settings$sections$ja extends Translations$settings$sections$
 
   // Translations
   @override
-  String get sourcesAndContent => 'ソースとコンテンツ';
+  String get sourcesAndAccounts => 'サイトとアカウント';
   @override
   String get accounts => 'アカウント';
   @override
   String get network => 'ネットワーク';
   @override
-  String get appearance => '外観';
+  String get general => '一般';
   @override
   String get downloads => 'ダウンロード';
 }
@@ -482,19 +624,11 @@ class _Translations$settings$source$ja extends Translations$settings$source$en {
 
   // Translations
   @override
-  String get label => 'ソース';
+  String get defaultSource => '既定のサイト';
   @override
-  String get contentPolicy => 'コンテンツポリシー';
+  String get supportedRatings => '対応するレーティング';
   @override
-  String get safetyRating => 'セーフティレーティング';
-  @override
-  String get noHiddenDefault => '暗黙の除外なし';
-  @override
-  String get noHiddenDefaultDescription => 'すべて未選択にすると、成人向けを含むすべての投稿が表示されます。';
-  @override
-  String get unfiltered => 'フィルターなし';
-  @override
-  String get animeFocused => 'アニメ優先';
+  String get safetyRating => '全画像ソースのレーティング';
 }
 
 // Path: settings.account
@@ -505,7 +639,9 @@ class _Translations$settings$account$ja extends Translations$settings$account$en
 
   // Translations
   @override
-  String get manageAllSubtitle => 'ソースごとのアカウントを個別に設定';
+  String get manageAllSubtitle => 'サイトのレーティングとアカウント設定';
+  @override
+  String get noAccountRequired => 'アカウント設定は不要です';
   @override
   String get openSignInPage => 'ログインページを開く';
   @override
@@ -752,8 +888,8 @@ extension on TranslationsJa {
       'update.newVersionFound' =>
         ({required Object version}) => '新しいバージョンが見つかりました: ${version}。\n「ページについて」ページに移動し、「アップデートをダウンロード」をクリックしてください。',
       'update.noNewVersionFound' => '新しいバージョンが見つかりません。',
-      'postList.short' => '投稿',
-      'postList.title' => '投稿リスト',
+      'postList.short' => 'ホーム',
+      'postList.title' => 'ホーム',
       'postList.titleWithTags' => ({required Object tags}) => 'タグ付き投稿: ${tags}',
       'postDetail.titleWithId' => ({required Object id}) => '投稿: ${id}',
       'postDetail.tags' => 'タグ',
@@ -766,6 +902,8 @@ extension on TranslationsJa {
       'postDetail.relatedLoadFailed' => '関連画像の読み込みに失敗しました。再試行できます。',
       'postDetail.createdAt' => '作成日時',
       'postDetail.author' => '作者',
+      'postDetail.unknownAuthor' => '不明',
+      'postDetail.imageSource' => '画像サイト',
       'postDetail.source' => 'ソース',
       'postDetail.width' => '幅',
       'postDetail.height' => '高さ',
@@ -841,22 +979,17 @@ extension on TranslationsJa {
       'settings.light' => 'ライト',
       'settings.dark' => 'ダーク',
       'settings.auto' => '自動',
-      'settings.downloadsOverview' => 'デスクトップのみ · ソースごとにサブフォルダーを作成',
-      'settings.sourceSubfolders' => 'ソース別サブフォルダー',
-      'settings.sourceSubfoldersDescription' => 'ダウンロードはソース名ごとの個別フォルダーに保存されます。',
-      'settings.sections.sourcesAndContent' => 'ソースとコンテンツ',
+      'settings.downloadsOverview' => '保存先と同時ダウンロード数',
+      'settings.sections.sourcesAndAccounts' => 'サイトとアカウント',
       'settings.sections.accounts' => 'アカウント',
       'settings.sections.network' => 'ネットワーク',
-      'settings.sections.appearance' => '外観',
+      'settings.sections.general' => '一般',
       'settings.sections.downloads' => 'ダウンロード',
-      'settings.source.label' => 'ソース',
-      'settings.source.contentPolicy' => 'コンテンツポリシー',
-      'settings.source.safetyRating' => 'セーフティレーティング',
-      'settings.source.noHiddenDefault' => '暗黙の除外なし',
-      'settings.source.noHiddenDefaultDescription' => 'すべて未選択にすると、成人向けを含むすべての投稿が表示されます。',
-      'settings.source.unfiltered' => 'フィルターなし',
-      'settings.source.animeFocused' => 'アニメ優先',
-      'settings.account.manageAllSubtitle' => 'ソースごとのアカウントを個別に設定',
+      'settings.source.defaultSource' => '既定のサイト',
+      'settings.source.supportedRatings' => '対応するレーティング',
+      'settings.source.safetyRating' => '全画像ソースのレーティング',
+      'settings.account.manageAllSubtitle' => 'サイトのレーティングとアカウント設定',
+      'settings.account.noAccountRequired' => 'アカウント設定は不要です',
       'settings.account.openSignInPage' => 'ログインページを開く',
       'settings.account.cookieHeader' => 'Cookie ヘッダー',
       'settings.account.storedLocally' => 'このデバイス内に保存',
@@ -908,6 +1041,66 @@ extension on TranslationsJa {
       'settings.columnsPerRowDialog.title' => '各行の列数',
       'settings.maxConcurrentDownloadsDialog.title' => '最大同時ダウンロードタスク数',
       'settings.maxSegmentsPerTaskDialog.title' => '各ダウンロードタスクの最大セグメント数',
+      'discovery.searchResults' => '検索結果',
+      'discovery.allAvailable' => '表示可能なすべてのコンテンツ',
+      'discovery.defaultRatingsHint' => 'レーティング設定はすべての画像ソースに共通です。未選択時は、現在の画像ソースとアカウントで閲覧できるすべてのコンテンツを表示します。',
+      'discovery.resetFilters' => '初期設定に戻す',
+      'discovery.unsupportedRatings' => '選択したレーティングはこの画像ソースで利用できません。初期設定に戻してください。',
+      'discovery.noFilteredPosts' => '現在の絞り込み条件に一致する投稿はありません。',
+      'discovery.noSearchResults' => '検索条件に一致する投稿はありません。',
+      'discovery.noFeedPosts' => 'この画像ソースには現在表示できる投稿がありません。',
+      'discovery.historicalPopular' => '過去の人気',
+      'discovery.calendarDay' => '日別',
+      'discovery.calendarWeek' => '週別',
+      'discovery.calendarMonth' => '月別',
+      'discovery.latest' => '最新',
+      'discovery.popular' => '人気',
+      'discovery.today' => '今日',
+      'discovery.thisWeek' => '今週',
+      'discovery.thisMonth' => '今月',
+      'discovery.lastDay' => '過去24時間',
+      'discovery.lastThreeDays' => '過去3日間',
+      'discovery.lastWeek' => '過去1週間',
+      'discovery.lastMonth' => '過去1か月',
+      'discovery.lastThreeMonths' => '過去3か月',
+      'discovery.lastSixMonths' => '過去6か月',
+      'discovery.lastYear' => '過去1年',
+      'discovery.rankingComplete' => 'ランキングをすべて読み込みました',
+      'discovery.latestFallback' => 'このサイトでは最新の投稿のみ利用できます。',
+      'discovery.filters' => '絞り込み',
+      'discovery.loadMore' => 'さらに読み込む',
+      'discovery.filteredContinue' => 'この範囲に該当する投稿はありません。続きを表示',
+      'discovery.commonTags' => 'よく使われるタグ',
+      'discovery.moreTags' => 'もっと見る',
+      'discovery.tagSource' => '対象サイト',
+      'discovery.allTagSources' => 'すべてのサイト',
+      'discovery.manageTags' => 'カスタムタグ',
+      'discovery.addTag' => 'タグを追加',
+      'discovery.noCustomTags' => 'カスタムタグはまだありません',
+      'discovery.customTagsHint' => 'タグに覚えやすい名前を付けると、検索で見つけやすくなります。',
+      'discovery.addCustomTag' => 'カスタムタグとして追加',
+      'discovery.editTag' => 'カスタムタグを編集',
+      'discovery.canonicalTag' => 'サイトのタグ',
+      'discovery.displayName' => '表示名（任意）',
+      'discovery.invalidTag' => '空白を含まないタグを1つ入力してください。',
+      'discovery.queryHint' => 'タグやサイトの検索式を入力…',
+      'discovery.unverifiedTag' => 'このサイトで未確認のタグがあります。そのまま検索できます。',
+      'discovery.verifiedTag' => 'このサイトで確認済み',
+      'discovery.noSuggestions' => '候補がありません',
+      'discovery.localFallback' => 'オンライン候補を取得できません。ローカル候補を利用できます。',
+      'discovery.retryTags' => 'よく使われるタグを再取得',
+      'discovery.artist' => '作者',
+      'discovery.character' => 'キャラクター',
+      'discovery.copyright' => '作品',
+      'discovery.meta' => 'メタ',
+      'discovery.general' => '一般',
+      'discovery.random' => 'ランダム',
+      'discovery.lifetimeViews' => '累計閲覧数',
+      'discovery.lifetimeFavorites' => '累計お気に入り数',
+      'mediaError.title' => '画像の読み込みに失敗しました',
+      'mediaError.details' => 'エラーの詳細',
+      'mediaError.copyDetails' => '詳細をコピー',
+      'mediaError.decodeFailed' => 'ダウンロードした画像をデコードできませんでした。再試行すると、この画像のキャッシュを削除して再ダウンロードします。',
       _ => null,
     };
   }

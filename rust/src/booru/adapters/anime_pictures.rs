@@ -2,7 +2,7 @@ use crate::api::booru_auth::{AuthStateDto, AuthStatus};
 use crate::api::booru_models::{ContentRating, MediaType, MediaVariantKind, TagCategory};
 use crate::booru::adapter::{BooruAdapter, PreparedMedia, RequestContext};
 use crate::booru::adapters::common::{
-    media, parse_json, signed32, string, unsigned, unsigned32, validate_media_hosts,
+    media, parse_json, signed32, string, unsigned, unsigned32, username, validate_media_hosts,
 };
 use crate::booru::error::{BooruErrorCode, BooruErrorDto, BooruResult};
 use crate::booru::model::{Post, PostFlags, PostId, PostPage, SearchQuery, Tag};
@@ -113,6 +113,7 @@ impl AnimePicturesAdapter {
             rating: anime_rating(unsigned(value, "erotics")),
             score: signed32(value, "score"),
             created_at_iso8601: string(value, "pubtime").map(normalize_time),
+            author: username(value, "/user/name").or_else(|| username(value, "/user_name")),
             source_url: string(value, "source"),
             tags,
             media: variants,
@@ -212,7 +213,7 @@ impl BooruAdapter for AnimePicturesAdapter {
         let post_object = post
             .as_object_mut()
             .ok_or_else(|| BooruErrorDto::invalid_response(self.definition.id))?;
-        for key in ["file_url", "tags"] {
+        for key in ["file_url", "tags", "user", "user_name"] {
             if let Some(value) = json.get(key) {
                 post_object.insert(key.to_owned(), value.clone());
             }
@@ -321,6 +322,13 @@ mod tests {
         )
     }
 
+    #[test]
+    fn preserves_source_username_in_dto() {
+        let fixture = serde_json::json!({"id":1,"md5":"abcdef0123456789abcdef0123456789","user":{"name":" Alice "}});
+        let post = adapter().parse_post(&fixture, false).unwrap();
+        assert_eq!(post.author.as_deref(), Some("Alice"));
+        assert_eq!(post.into_dto().author.as_deref(), Some("Alice"));
+    }
     #[test]
     fn parses_listing_preview_urls() {
         let fixture = br#"{"posts":[{"id":834153,"width":1309,"height":2000,"size":2397010,"ext":".png","md5":"abcdef0123456789abcdef0123456789","erotics":1,"pubtime":"2024-06-01 12:00:00"}],"max_pages":2}"#;

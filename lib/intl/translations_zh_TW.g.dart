@@ -19,7 +19,7 @@ class TranslationsZhTw extends Translations with BaseTranslations<AppLocale, Tra
     PluralResolver? ordinalResolver,
     TranslationMetadata<AppLocale, Translations>? meta,
   }) : assert(overrides == null, 'Set "translation_overrides: true" in order to enable this feature.'),
-       $meta =
+       _meta =
            meta ??
            TranslationMetadata(
              locale: AppLocale.zhTw,
@@ -28,17 +28,17 @@ class TranslationsZhTw extends Translations with BaseTranslations<AppLocale, Tra
              ordinalResolver: ordinalResolver,
            ),
        super(cardinalResolver: cardinalResolver, ordinalResolver: ordinalResolver) {
-    super.$meta.setFlatMapFunction($meta.getTranslation); // copy base translations to super.$meta
-    $meta.setFlatMapFunction(_flatMapFunction);
+    _meta.setFlatMapFunction(_flatMapFunction);
   }
 
   /// Metadata for the translations of <zh-TW>.
+  final TranslationMetadata<AppLocale, Translations> _meta;
   @override
-  final TranslationMetadata<AppLocale, Translations> $meta;
+  TranslationMetadata<AppLocale, Translations> get $meta => _meta;
 
   /// Access flat map
   @override
-  dynamic operator [](String key) => $meta.getTranslation(key) ?? super.$meta.getTranslation(key);
+  dynamic operator [](String key) => _meta.getTranslation(key) ?? super[key];
 
   late final TranslationsZhTw _root = this; // ignore: unused_field
 
@@ -67,6 +67,10 @@ class TranslationsZhTw extends Translations with BaseTranslations<AppLocale, Tra
   late final Translations$about$zh_TW about = Translations$about$zh_TW.internal(_root);
   @override
   late final Translations$settings$zh_TW settings = Translations$settings$zh_TW.internal(_root);
+  @override
+  late final Translations$discovery$zh_TW discovery = Translations$discovery$zh_TW.internal(_root);
+  @override
+  late final Translations$mediaError$zh_TW mediaError = Translations$mediaError$zh_TW.internal(_root);
 }
 
 // Path: generic
@@ -172,9 +176,9 @@ class Translations$postList$zh_TW extends Translations$postList$en {
 
   // Translations
   @override
-  String get short => '帖子';
+  String get short => '首頁';
   @override
-  String get title => '帖子列表';
+  String get title => '首頁';
   @override
   String titleWithTags({required Object tags}) => '帶有標籤的帖子: ${tags}';
 }
@@ -208,6 +212,10 @@ class Translations$postDetail$zh_TW extends Translations$postDetail$en {
   String get createdAt => '建立時間';
   @override
   String get author => '作者';
+  @override
+  String get unknownAuthor => '未知';
+  @override
+  String get imageSource => '圖源';
   @override
   String get source => '來源';
   @override
@@ -382,11 +390,7 @@ class Translations$settings$zh_TW extends Translations$settings$en {
   @override
   String get auto => '自動';
   @override
-  String get downloadsOverview => '僅桌面端 · 每個圖源使用獨立子目錄';
-  @override
-  String get sourceSubfolders => '圖源子目錄';
-  @override
-  String get sourceSubfoldersDescription => '下載內容會依照圖源名稱儲存在不同資料夾。';
+  String get downloadsOverview => '儲存位置與同時下載數';
   @override
   late final Translations$settings$sections$zh_TW sections = Translations$settings$sections$zh_TW.internal(_root);
   @override
@@ -416,6 +420,144 @@ class Translations$settings$zh_TW extends Translations$settings$en {
   @override
   late final Translations$settings$maxSegmentsPerTaskDialog$zh_TW maxSegmentsPerTaskDialog =
       Translations$settings$maxSegmentsPerTaskDialog$zh_TW.internal(_root);
+}
+
+// Path: discovery
+class Translations$discovery$zh_TW extends Translations$discovery$en {
+  Translations$discovery$zh_TW.internal(TranslationsZhTw root) : this._root = root, super.internal(root);
+
+  final TranslationsZhTw _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get searchResults => '搜尋結果';
+  @override
+  String get allAvailable => '全部可用內容';
+  @override
+  String get defaultRatingsHint => '分級偏好適用於所有圖源。未選擇分級時，顯示目前圖源和帳號能存取的所有內容。';
+  @override
+  String get resetFilters => '恢復預設';
+  @override
+  String get unsupportedRatings => '目前圖源不支援所選分級，請恢復預設以瀏覽可用內容。';
+  @override
+  String get noFilteredPosts => '沒有符合目前篩選條件的內容。';
+  @override
+  String get noSearchResults => '沒有找到符合此查詢的內容。';
+  @override
+  String get noFeedPosts => '目前圖源暫時沒有可展示的內容。';
+  @override
+  String get historicalPopular => '歷史熱門';
+  @override
+  String get calendarDay => '自然日';
+  @override
+  String get calendarWeek => '自然週';
+  @override
+  String get calendarMonth => '自然月';
+  @override
+  String get latest => '最新';
+  @override
+  String get popular => '熱門';
+  @override
+  String get today => '今日';
+  @override
+  String get thisWeek => '本週';
+  @override
+  String get thisMonth => '本月';
+  @override
+  String get lastDay => '最近 24 小時';
+  @override
+  String get lastThreeDays => '最近 3 天';
+  @override
+  String get lastWeek => '最近一週';
+  @override
+  String get lastMonth => '最近一個月';
+  @override
+  String get lastThreeMonths => '最近三個月';
+  @override
+  String get lastSixMonths => '最近六個月';
+  @override
+  String get lastYear => '最近一年';
+  @override
+  String get rankingComplete => '榜單已全部載入';
+  @override
+  String get latestFallback => '此圖源僅支援最新貼文。';
+  @override
+  String get filters => '篩選';
+  @override
+  String get loadMore => '載入更多';
+  @override
+  String get filteredContinue => '目前幾頁沒有符合篩選的貼文，繼續瀏覽';
+  @override
+  String get commonTags => '常用標籤';
+  @override
+  String get moreTags => '查看更多';
+  @override
+  String get tagSource => '適用圖源';
+  @override
+  String get allTagSources => '通用';
+  @override
+  String get manageTags => '標籤管理';
+  @override
+  String get addTag => '新增標籤';
+  @override
+  String get noCustomTags => '還沒有自訂標籤';
+  @override
+  String get customTagsHint => '為常用標籤設定好記的名稱，搜尋時更容易找到。';
+  @override
+  String get addCustomTag => '新增為自訂標籤';
+  @override
+  String get editTag => '編輯自訂標籤';
+  @override
+  String get canonicalTag => '圖源標籤';
+  @override
+  String get displayName => '顯示名稱（選填）';
+  @override
+  String get invalidTag => '請輸入一個非空且不含空格的標籤。';
+  @override
+  String get queryHint => '輸入標籤或圖源查詢語句…';
+  @override
+  String get unverifiedTag => '部分標籤尚未在目前圖源驗證，仍可提交搜尋。';
+  @override
+  String get verifiedTag => '已在目前圖源驗證';
+  @override
+  String get noSuggestions => '沒有建議';
+  @override
+  String get localFallback => '線上補全暫時無法使用，仍可使用本機建議。';
+  @override
+  String get retryTags => '重試常用標籤';
+  @override
+  String get artist => '繪師';
+  @override
+  String get character => '角色';
+  @override
+  String get copyright => '作品';
+  @override
+  String get meta => '中繼標籤';
+  @override
+  String get general => '一般';
+  @override
+  String get random => '隨機';
+  @override
+  String get lifetimeViews => '累計瀏覽量';
+  @override
+  String get lifetimeFavorites => '累計收藏數';
+}
+
+// Path: mediaError
+class Translations$mediaError$zh_TW extends Translations$mediaError$en {
+  Translations$mediaError$zh_TW.internal(TranslationsZhTw root) : this._root = root, super.internal(root);
+
+  final TranslationsZhTw _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get title => '圖片載入失敗';
+  @override
+  String get details => '錯誤詳情';
+  @override
+  String get copyDetails => '複製詳情';
+  @override
+  String get decodeFailed => '下載的圖片無法解碼。重試會清除這張圖片的快取並重新下載。';
 }
 
 // Path: downloads.messages
@@ -459,13 +601,13 @@ class Translations$settings$sections$zh_TW extends Translations$settings$section
 
   // Translations
   @override
-  String get sourcesAndContent => '圖源與內容';
+  String get sourcesAndAccounts => '圖源與帳號';
   @override
   String get accounts => '帳號';
   @override
   String get network => '網路';
   @override
-  String get appearance => '外觀';
+  String get general => '一般';
   @override
   String get downloads => '下載';
 }
@@ -478,19 +620,11 @@ class Translations$settings$source$zh_TW extends Translations$settings$source$en
 
   // Translations
   @override
-  String get label => '圖源';
+  String get defaultSource => '預設圖源';
   @override
-  String get contentPolicy => '內容策略';
+  String get supportedRatings => '支援的分級';
   @override
-  String get safetyRating => '安全評級';
-  @override
-  String get noHiddenDefault => '不預設隱藏';
-  @override
-  String get noHiddenDefaultDescription => '不選取任何評級時會顯示所有貼文，包括成人內容。';
-  @override
-  String get unfiltered => '不篩選';
-  @override
-  String get animeFocused => '動漫優先';
+  String get safetyRating => '全域內容分級';
 }
 
 // Path: settings.account
@@ -501,7 +635,9 @@ class Translations$settings$account$zh_TW extends Translations$settings$account$
 
   // Translations
   @override
-  String get manageAllSubtitle => '分別設定每個圖源的帳號';
+  String get manageAllSubtitle => '圖源分級與帳號設定';
+  @override
+  String get noAccountRequired => '此圖源無需設定帳號';
   @override
   String get openSignInPage => '開啟登入頁面';
   @override
@@ -756,8 +892,8 @@ extension on TranslationsZhTw {
       'update.selectDownloadUrlFailed' => '找不到下載連結。\n請訪問專案頁面以手動更新或在專案Issue頁尋求幫助。',
       'update.newVersionFound' => ({required Object version}) => '發現新版本: ${version}。請轉到「關於」頁面並點擊「下載更新」。',
       'update.noNewVersionFound' => '沒有新版本。',
-      'postList.short' => '帖子',
-      'postList.title' => '帖子列表',
+      'postList.short' => '首頁',
+      'postList.title' => '首頁',
       'postList.titleWithTags' => ({required Object tags}) => '帶有標籤的帖子: ${tags}',
       'postDetail.titleWithId' => ({required Object id}) => '帖子: ${id}',
       'postDetail.tags' => '標籤',
@@ -770,6 +906,8 @@ extension on TranslationsZhTw {
       'postDetail.relatedLoadFailed' => '關聯圖片載入失敗，可以重試。',
       'postDetail.createdAt' => '建立時間',
       'postDetail.author' => '作者',
+      'postDetail.unknownAuthor' => '未知',
+      'postDetail.imageSource' => '圖源',
       'postDetail.source' => '來源',
       'postDetail.width' => '寬度',
       'postDetail.height' => '高度',
@@ -845,22 +983,17 @@ extension on TranslationsZhTw {
       'settings.light' => '淺色模式',
       'settings.dark' => '深色模式',
       'settings.auto' => '自動',
-      'settings.downloadsOverview' => '僅桌面端 · 每個圖源使用獨立子目錄',
-      'settings.sourceSubfolders' => '圖源子目錄',
-      'settings.sourceSubfoldersDescription' => '下載內容會依照圖源名稱儲存在不同資料夾。',
-      'settings.sections.sourcesAndContent' => '圖源與內容',
+      'settings.downloadsOverview' => '儲存位置與同時下載數',
+      'settings.sections.sourcesAndAccounts' => '圖源與帳號',
       'settings.sections.accounts' => '帳號',
       'settings.sections.network' => '網路',
-      'settings.sections.appearance' => '外觀',
+      'settings.sections.general' => '一般',
       'settings.sections.downloads' => '下載',
-      'settings.source.label' => '圖源',
-      'settings.source.contentPolicy' => '內容策略',
-      'settings.source.safetyRating' => '安全評級',
-      'settings.source.noHiddenDefault' => '不預設隱藏',
-      'settings.source.noHiddenDefaultDescription' => '不選取任何評級時會顯示所有貼文，包括成人內容。',
-      'settings.source.unfiltered' => '不篩選',
-      'settings.source.animeFocused' => '動漫優先',
-      'settings.account.manageAllSubtitle' => '分別設定每個圖源的帳號',
+      'settings.source.defaultSource' => '預設圖源',
+      'settings.source.supportedRatings' => '支援的分級',
+      'settings.source.safetyRating' => '全域內容分級',
+      'settings.account.manageAllSubtitle' => '圖源分級與帳號設定',
+      'settings.account.noAccountRequired' => '此圖源無需設定帳號',
       'settings.account.openSignInPage' => '開啟登入頁面',
       'settings.account.cookieHeader' => 'Cookie 標頭',
       'settings.account.storedLocally' => '僅儲存在此裝置',
@@ -912,6 +1045,66 @@ extension on TranslationsZhTw {
       'settings.columnsPerRowDialog.title' => '每行列數',
       'settings.maxConcurrentDownloadsDialog.title' => '最大同時下載任務數',
       'settings.maxSegmentsPerTaskDialog.title' => '每個下載任務的最大分段數',
+      'discovery.searchResults' => '搜尋結果',
+      'discovery.allAvailable' => '全部可用內容',
+      'discovery.defaultRatingsHint' => '分級偏好適用於所有圖源。未選擇分級時，顯示目前圖源和帳號能存取的所有內容。',
+      'discovery.resetFilters' => '恢復預設',
+      'discovery.unsupportedRatings' => '目前圖源不支援所選分級，請恢復預設以瀏覽可用內容。',
+      'discovery.noFilteredPosts' => '沒有符合目前篩選條件的內容。',
+      'discovery.noSearchResults' => '沒有找到符合此查詢的內容。',
+      'discovery.noFeedPosts' => '目前圖源暫時沒有可展示的內容。',
+      'discovery.historicalPopular' => '歷史熱門',
+      'discovery.calendarDay' => '自然日',
+      'discovery.calendarWeek' => '自然週',
+      'discovery.calendarMonth' => '自然月',
+      'discovery.latest' => '最新',
+      'discovery.popular' => '熱門',
+      'discovery.today' => '今日',
+      'discovery.thisWeek' => '本週',
+      'discovery.thisMonth' => '本月',
+      'discovery.lastDay' => '最近 24 小時',
+      'discovery.lastThreeDays' => '最近 3 天',
+      'discovery.lastWeek' => '最近一週',
+      'discovery.lastMonth' => '最近一個月',
+      'discovery.lastThreeMonths' => '最近三個月',
+      'discovery.lastSixMonths' => '最近六個月',
+      'discovery.lastYear' => '最近一年',
+      'discovery.rankingComplete' => '榜單已全部載入',
+      'discovery.latestFallback' => '此圖源僅支援最新貼文。',
+      'discovery.filters' => '篩選',
+      'discovery.loadMore' => '載入更多',
+      'discovery.filteredContinue' => '目前幾頁沒有符合篩選的貼文，繼續瀏覽',
+      'discovery.commonTags' => '常用標籤',
+      'discovery.moreTags' => '查看更多',
+      'discovery.tagSource' => '適用圖源',
+      'discovery.allTagSources' => '通用',
+      'discovery.manageTags' => '標籤管理',
+      'discovery.addTag' => '新增標籤',
+      'discovery.noCustomTags' => '還沒有自訂標籤',
+      'discovery.customTagsHint' => '為常用標籤設定好記的名稱，搜尋時更容易找到。',
+      'discovery.addCustomTag' => '新增為自訂標籤',
+      'discovery.editTag' => '編輯自訂標籤',
+      'discovery.canonicalTag' => '圖源標籤',
+      'discovery.displayName' => '顯示名稱（選填）',
+      'discovery.invalidTag' => '請輸入一個非空且不含空格的標籤。',
+      'discovery.queryHint' => '輸入標籤或圖源查詢語句…',
+      'discovery.unverifiedTag' => '部分標籤尚未在目前圖源驗證，仍可提交搜尋。',
+      'discovery.verifiedTag' => '已在目前圖源驗證',
+      'discovery.noSuggestions' => '沒有建議',
+      'discovery.localFallback' => '線上補全暫時無法使用，仍可使用本機建議。',
+      'discovery.retryTags' => '重試常用標籤',
+      'discovery.artist' => '繪師',
+      'discovery.character' => '角色',
+      'discovery.copyright' => '作品',
+      'discovery.meta' => '中繼標籤',
+      'discovery.general' => '一般',
+      'discovery.random' => '隨機',
+      'discovery.lifetimeViews' => '累計瀏覽量',
+      'discovery.lifetimeFavorites' => '累計收藏數',
+      'mediaError.title' => '圖片載入失敗',
+      'mediaError.details' => '錯誤詳情',
+      'mediaError.copyDetails' => '複製詳情',
+      'mediaError.decodeFailed' => '下載的圖片無法解碼。重試會清除這張圖片的快取並重新下載。',
       _ => null,
     };
   }

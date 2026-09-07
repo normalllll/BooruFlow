@@ -14,10 +14,10 @@ pub fn looks_like_challenge(headers: &HeaderMap, body: &[u8], expected_json: boo
         .unwrap_or_default()
         .to_ascii_lowercase();
     let prefix = String::from_utf8_lossy(&body[..body.len().min(4096)]).to_ascii_lowercase();
-    (expected_json && content_type.contains("text/html"))
-        || (expected_json
-            && (prefix.trim_start().starts_with("<!doctype html")
-                || prefix.trim_start().starts_with("<html")))
+    (expected_json
+        && (content_type.contains("text/html")
+            || prefix.trim_start().starts_with("<!doctype html")
+            || prefix.trim_start().starts_with("<html")))
         || prefix.contains("cf-chl-")
         || prefix.contains("cloudflare ray id")
         || prefix.contains("just a moment...")

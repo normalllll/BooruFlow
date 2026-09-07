@@ -14,6 +14,7 @@ import 'package:booruflow/features/posts/logic.dart';
 import 'package:booruflow/shared/app_navigation.dart';
 import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/features/posts/models/post.dart';
+import 'package:booruflow/features/posts/post_attribution.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/shared/app_theme.dart';
 import 'package:booruflow/shared/widgets/auto_scaffold.dart';
@@ -64,7 +65,16 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
       }
     }
     final pageIndex = _pageIndex.clamp(0, imagePosts.length - 1);
-    final selectedPost = imagePosts[pageIndex];
+    var selectedPost = imagePosts[pageIndex];
+    if (selectedPost.author.isEmpty) {
+      final detail = ref.watch(
+        postAttributionDetailProvider((
+          sourceId: selectedPost.sourceId,
+          postId: selectedPost.id,
+        )),
+      );
+      if (detail case AsyncData(:final value)) selectedPost = value;
+    }
     final loadingRelated = relatedValue is AsyncLoading;
     final relatedError = switch (relatedValue) {
       AsyncError(:final error) => error,
@@ -246,7 +256,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
   }
 
   void _openTag(String tag) {
-    context.pushTaggedPosts([tag]);
+    context.pushTaggedPosts([tag], sourceId: widget.post.sourceId);
   }
 
   Future<void> _copyValue(String value) async {
@@ -459,6 +469,7 @@ class _PostImagePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final thumbnail = post.variant(MediaVariantKind.thumbnail);
     return LayoutBuilder(
       builder: (context, constraints) {
         final imageSize = _fitImage(
@@ -485,15 +496,17 @@ class _PostImagePage extends StatelessWidget {
                 width: imageSize.width,
                 height: imageSize.height,
                 fit: BoxFit.contain,
-                placeholderWidget: BooruImage(
-                  post.previewUrl,
-                  sourceId: post.sourceId,
-                  postId: post.id,
-                  variant: post.displayMedia.kind,
-                  width: imageSize.width,
-                  height: imageSize.height,
-                  fit: BoxFit.contain,
-                ),
+                placeholderWidget: thumbnail == null
+                    ? null
+                    : BooruImage(
+                        thumbnail.url,
+                        sourceId: post.sourceId,
+                        postId: post.id,
+                        variant: thumbnail.kind,
+                        width: imageSize.width,
+                        height: imageSize.height,
+                        fit: BoxFit.contain,
+                      ),
               ),
             ),
           ),
@@ -643,12 +656,36 @@ class _PostDetailPanel extends StatelessWidget {
           const SizedBox(width: 6),
           Expanded(
             child: Text(
-              post.author.trim().isEmpty ? post.sourceId : post.author,
+              post.authorLabel,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
                 fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 6),
+      Row(
+        children: [
+          Tooltip(
+            message: t.postDetail.imageSource,
+            child: Icon(
+              Icons.public,
+              size: 16,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              post.sourceName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
           ),
@@ -688,13 +725,11 @@ class _PostDetailPanel extends StatelessWidget {
         label: t.postDetail.createdAt,
         value: _formatDateTime(post.createdAt),
       ),
-      _MetadataRow(
-        label: t.postDetail.author,
-        value: post.author.trim().isEmpty ? post.sourceId : post.author,
-      ),
+      _MetadataRow(label: t.postDetail.author, value: post.authorLabel),
       if (post.source.trim().isNotEmpty)
         _MetadataRow(
           label: t.postDetail.source,
+          icon: Icons.link,
           value: post.source,
           onTap: sourceIsUrl ? () => onOpenSource(post.source) : null,
           onCopy: () => onCopy(post.source),
@@ -878,12 +913,14 @@ class _MetadataRow extends StatelessWidget {
   const _MetadataRow({
     required this.label,
     required this.value,
+    this.icon,
     this.onTap,
     this.onCopy,
   });
 
   final String label;
   final String value;
+  final IconData? icon;
   final VoidCallback? onTap;
   final VoidCallback? onCopy;
 
@@ -906,15 +943,22 @@ class _MetadataRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SizedBox(
-            width: 94,
-            child: Text(
-              label,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
+          if (icon != null) ...[
+            Tooltip(
+              message: label,
+              child: Icon(icon, size: 16, color: colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(width: 6),
+          ] else
+            SizedBox(
+              width: 94,
+              child: Text(
+                label,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
-          ),
           Expanded(
             child: onTap == null
                 ? valueWidget

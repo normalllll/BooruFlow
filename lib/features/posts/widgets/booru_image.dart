@@ -1,5 +1,7 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:booruflow/intl/translations.g.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/features/booru/booru_service.dart';
@@ -22,6 +24,8 @@ class BooruImage extends StatefulWidget {
     this.fit,
     this.imageBuilder,
     this.placeholderWidget,
+    this.decodeWidth,
+    this.refreshRevision = 0,
   });
 
   final String url;
@@ -36,6 +40,8 @@ class BooruImage extends StatefulWidget {
   final BoxFit? fit;
   final Widget Function(Widget imageWidget)? imageBuilder;
   final Widget? placeholderWidget;
+  final int? decodeWidth;
+  final int refreshRevision;
 
   @override
   State<BooruImage> createState() => _BooruImageState();
@@ -43,6 +49,10 @@ class BooruImage extends StatefulWidget {
 
 class _BooruImageState extends State<BooruImage> {
   Future<MediaRequestDto>? _request;
+  bool _failed = false;
+  bool _retrying = false;
+  int _reloadRevision = 0;
+  ImageProvider? _provider;
 
   bool get _usesRust => widget.sourceId != null && widget.postId != null;
 
@@ -69,12 +79,17 @@ class _BooruImageState extends State<BooruImage> {
     if (oldWidget.sourceId != widget.sourceId ||
         oldWidget.postId != widget.postId ||
         oldWidget.variant != widget.variant ||
+        oldWidget.allowDiskCache != widget.allowDiskCache ||
         oldWidget.url != widget.url) {
       _prepare();
+    } else if (oldWidget.refreshRevision != widget.refreshRevision && _failed) {
+      _retry();
     }
   }
 
   void _prepare() {
+    _failed = false;
+    _provider = null;
     _request = _usesRust
         ? BooruService.instance.engine.prepareMediaUrl(
             sourceId: widget.sourceId!,
@@ -92,7 +107,7 @@ class _BooruImageState extends State<BooruImage> {
       return _image(
         ExtendedNetworkImageProvider(
           widget.url,
-          cache: true,
+          cache: widget.allowDiskCache,
           cacheKey: keyToMd5('BooruFlow:${widget.url}'),
           retries: 1,
         ),
@@ -101,30 +116,40 @@ class _BooruImageState extends State<BooruImage> {
     return FutureBuilder<MediaRequestDto>(
       future: _request,
       builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return _placeholder();
+        }
         if (snapshot.hasError) {
-          return _error(() => setState(_prepare), error: snapshot.error);
+          _failed = true;
+          return _error(_retry, error: snapshot.error);
         }
         final request = snapshot.data;
         if (request == null) return _placeholder();
-        return _image(RustExtendedNetworkImageProvider(request: request));
+        return _image(
+          RustExtendedNetworkImageProvider(
+            request: request,
+            decodeWidth: widget.decodeWidth,
+            reloadRevision: _reloadRevision,
+          ),
+        );
       },
     );
   }
 
   Widget _image(ImageProvider provider) {
+    _provider = provider;
     return ExtendedImage(
+      key: ValueKey(_reloadRevision),
       image: provider,
       handleLoadingProgress: true,
       loadStateChanged: (state) {
+        _failed = state.extendedImageLoadState == LoadState.failed;
         return switch (state.extendedImageLoadState) {
           LoadState.loading => _placeholder(progress: _progress(state)),
           LoadState.completed => widget.imageBuilder?.call(
             state.completedWidget,
           ),
-          LoadState.failed => _error(
-            state.reLoadImage,
-            error: state.lastException,
-          ),
+          LoadState.failed => _error(_retry, error: state.lastException),
         };
       },
       color: widget.color,
@@ -135,13 +160,95 @@ class _BooruImageState extends State<BooruImage> {
     );
   }
 
+  Future<void> _retry() async {
+    if (_retrying) return;
+    _retrying = true;
+    final provider = _provider;
+    final url = widget.url;
+    try {
+      if (provider is RustExtendedNetworkImageProvider) {
+        await provider.clearCache();
+      } else {
+        await provider?.evict();
+        if (!_usesRust) {
+          await clearDiskCachedImage(url, cacheKey: keyToMd5('BooruFlow:$url'));
+        }
+      }
+    } finally {
+      _retrying = false;
+      if (mounted && widget.url == url) {
+        setState(() {
+          _reloadRevision++;
+          _prepare();
+        });
+      }
+    }
+  }
+
   Widget _error(VoidCallback retry, {Object? error}) => Center(
-    child: AppIconButton(
-      icon: const Icon(Icons.refresh_outlined),
-      tooltip: error == null ? null : describeBooruError(error),
-      onPressed: retry,
+    child: Wrap(
+      alignment: WrapAlignment.center,
+      children: [
+        AppIconButton(
+          icon: const Icon(Icons.refresh_outlined),
+          tooltip: t.generic.retry,
+          onPressed: retry,
+        ),
+        AppIconButton(
+          icon: const Icon(Icons.info_outline),
+          tooltip: t.mediaError.details,
+          onPressed: () => _showError(error, retry),
+        ),
+      ],
     ),
   );
+
+  Future<void> _showError(Object? error, VoidCallback retry) async {
+    final details = error is MediaImageException
+        ? error.toString()
+        : 'source=${widget.sourceId ?? "unknown"} · post=${widget.postId ?? "unknown"} · variant=${widget.variant.name}\n${describeBooruError(error)}';
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(t.mediaError.title),
+        content: SizedBox(
+          width: 560,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  error is MediaImageException && error.stage == 'decode'
+                      ? t.mediaError.decodeFailed
+                      : t.generic.loadFailed,
+                ),
+                const SizedBox(height: 12),
+                SelectableText(details),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Clipboard.setData(ClipboardData(text: details)),
+            child: Text(t.mediaError.copyDetails),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(t.generic.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              retry();
+            },
+            child: Text(t.generic.retry),
+          ),
+        ],
+      ),
+    );
+  }
 
   double? _progress(ExtendedImageState state) {
     final event = state.loadingProgress;

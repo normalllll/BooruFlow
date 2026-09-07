@@ -4,4 +4,4 @@ pub mod gelbooru;
 pub mod moebooru;
 pub mod wallhaven;
 
-mod common;
+pub(crate) mod common;

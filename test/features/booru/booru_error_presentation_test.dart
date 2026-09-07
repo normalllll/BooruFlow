@@ -4,6 +4,7 @@ import 'package:loading_more_list/loading_more_list.dart';
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/shared/widgets/loading_more_indicator.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
+import 'package:booruflow/shared/widgets/interaction_controls.dart';
 
 void main() {
   const error = BooruErrorDto(
@@ -52,4 +53,34 @@ void main() {
     expect(find.textContaining('id=booru-test-id'), findsOneWidget);
     expect(find.textContaining("Instance of 'BooruErrorDto'"), findsNothing);
   });
+
+  testWidgets(
+    'rate limit disables retry until cooldown expires and survives rebuild',
+    (tester) async {
+      var retries = 0;
+      Widget page() => MaterialApp(
+        home: Scaffold(
+          body: LoadingMoreIndicator(
+            status: IndicatorStatus.fullScreenError,
+            errorRefresh: () => retries++,
+            error: error,
+          ),
+        ),
+      );
+      await tester.pumpWidget(page());
+      expect(
+        tester.widget<AppButton>(find.byType(AppButton)).onPressed,
+        isNull,
+      );
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpWidget(page());
+      expect(find.textContaining('(7s)'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 7));
+      await tester.ensureVisible(find.byType(AppButton));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(AppButton));
+      expect(retries, 1);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

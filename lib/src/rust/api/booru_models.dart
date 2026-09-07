@@ -6,7 +6,7 @@
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `hash`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `hash`
 
 Future<String> postKey({required String sourceId, required String postId}) =>
     RustLib.instance.api.crateApiBooruModelsPostKey(
@@ -62,6 +62,7 @@ class BooruEngineConfigDto {
 
 class BooruPostDto {
   final String sourceId;
+  final String? author;
   final String postId;
   final String postKey;
   final String? webUrl;
@@ -75,6 +76,7 @@ class BooruPostDto {
 
   const BooruPostDto({
     required this.sourceId,
+    this.author,
     required this.postId,
     required this.postKey,
     this.webUrl,
@@ -90,6 +92,7 @@ class BooruPostDto {
   @override
   int get hashCode =>
       sourceId.hashCode ^
+      author.hashCode ^
       postId.hashCode ^
       postKey.hashCode ^
       webUrl.hashCode ^
@@ -107,6 +110,7 @@ class BooruPostDto {
       other is BooruPostDto &&
           runtimeType == other.runtimeType &&
           sourceId == other.sourceId &&
+          author == other.author &&
           postId == other.postId &&
           postKey == other.postKey &&
           webUrl == other.webUrl &&
@@ -184,6 +188,13 @@ class BooruTagDto {
           category == other.category;
 }
 
+enum CapabilityAvailability {
+  unsupported,
+  requiresProbe,
+  available,
+  temporarilyUnavailable,
+}
+
 enum ChecksumAlgorithm {
   md5,
   sha256;
@@ -210,12 +221,46 @@ class ChecksumDto {
           value == other.value;
 }
 
-enum ContentPolicy {
-  animeFocused,
-  unfiltered;
+class CommonTagsPageDto {
+  final List<TagSuggestionDto> items;
+  final int? nextPage;
 
-  static Future<ContentPolicy> default_() =>
-      RustLib.instance.api.crateApiBooruModelsContentPolicyDefault();
+  const CommonTagsPageDto({required this.items, this.nextPage});
+
+  @override
+  int get hashCode => items.hashCode ^ nextPage.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CommonTagsPageDto &&
+          runtimeType == other.runtimeType &&
+          items == other.items &&
+          nextPage == other.nextPage;
+}
+
+class CommonTagsRequestDto {
+  final String sourceId;
+  final int page;
+  final int pageSize;
+
+  const CommonTagsRequestDto({
+    required this.sourceId,
+    required this.page,
+    required this.pageSize,
+  });
+
+  @override
+  int get hashCode => sourceId.hashCode ^ page.hashCode ^ pageSize.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CommonTagsRequestDto &&
+          runtimeType == other.runtimeType &&
+          sourceId == other.sourceId &&
+          page == other.page &&
+          pageSize == other.pageSize;
 }
 
 enum ContentRating {
@@ -227,6 +272,113 @@ enum ContentRating {
 
   static Future<ContentRating> default_() =>
       RustLib.instance.api.crateApiBooruModelsContentRatingDefault();
+}
+
+class DiscoveryCapabilitiesDto {
+  final CapabilityAvailability popular;
+  final CapabilityAvailability commonTags;
+  final List<PopularRange> popularRanges;
+  final List<PopularRange> historicalRanges;
+  final PopularTimeBasis timeBasis;
+  final int? finitePopularLimit;
+  final List<FeedKind> additionalFeeds;
+  final int autocompleteMinChars;
+
+  const DiscoveryCapabilitiesDto({
+    required this.popular,
+    required this.commonTags,
+    required this.popularRanges,
+    required this.historicalRanges,
+    required this.timeBasis,
+    this.finitePopularLimit,
+    required this.additionalFeeds,
+    required this.autocompleteMinChars,
+  });
+
+  @override
+  int get hashCode =>
+      popular.hashCode ^
+      commonTags.hashCode ^
+      popularRanges.hashCode ^
+      historicalRanges.hashCode ^
+      timeBasis.hashCode ^
+      finitePopularLimit.hashCode ^
+      additionalFeeds.hashCode ^
+      autocompleteMinChars.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DiscoveryCapabilitiesDto &&
+          runtimeType == other.runtimeType &&
+          popular == other.popular &&
+          commonTags == other.commonTags &&
+          popularRanges == other.popularRanges &&
+          historicalRanges == other.historicalRanges &&
+          timeBasis == other.timeBasis &&
+          finitePopularLimit == other.finitePopularLimit &&
+          additionalFeeds == other.additionalFeeds &&
+          autocompleteMinChars == other.autocompleteMinChars;
+}
+
+enum FeedKind {
+  latest,
+  recentPopular,
+  historicalPopular,
+  random,
+  lifetimeViews,
+  lifetimeFavorites,
+}
+
+class FeedRequestDto {
+  final String sourceId;
+  final FeedKind kind;
+  final PopularRange? range;
+
+  /// A date, not an instant. Calendar feeds are anchored in their cursor.
+  final String? date;
+  final String? seed;
+  final List<ContentRating> ratings;
+
+  /// Upstream page-size hint; finite rankings may return their whole list.
+  final int pageSize;
+  final String? cursor;
+
+  const FeedRequestDto({
+    required this.sourceId,
+    required this.kind,
+    this.range,
+    this.date,
+    this.seed,
+    required this.ratings,
+    required this.pageSize,
+    this.cursor,
+  });
+
+  @override
+  int get hashCode =>
+      sourceId.hashCode ^
+      kind.hashCode ^
+      range.hashCode ^
+      date.hashCode ^
+      seed.hashCode ^
+      ratings.hashCode ^
+      pageSize.hashCode ^
+      cursor.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FeedRequestDto &&
+          runtimeType == other.runtimeType &&
+          sourceId == other.sourceId &&
+          kind == other.kind &&
+          range == other.range &&
+          date == other.date &&
+          seed == other.seed &&
+          ratings == other.ratings &&
+          pageSize == other.pageSize &&
+          cursor == other.cursor;
 }
 
 class HttpHeaderDto {
@@ -413,6 +565,14 @@ class PersistedHostRouteDto {
           candidates == other.candidates;
 }
 
+enum PopularRange { day, threeDays, week, month, threeMonths, sixMonths, year }
+
+enum PopularTimeBasis {
+  indexTimeWindow,
+  calendarUploadPeriod,
+  sourceActivityWindow,
+}
+
 class PostFlagsDto {
   final bool hasChildren;
   final String? parentId;
@@ -522,7 +682,6 @@ class SearchRequestDto {
   final List<ContentRating> ratings;
   final int pageSize;
   final String? cursor;
-  final ContentPolicy contentPolicy;
 
   const SearchRequestDto({
     required this.sourceId,
@@ -530,7 +689,6 @@ class SearchRequestDto {
     required this.ratings,
     required this.pageSize,
     this.cursor,
-    required this.contentPolicy,
   });
 
   @override
@@ -539,8 +697,7 @@ class SearchRequestDto {
       queryText.hashCode ^
       ratings.hashCode ^
       pageSize.hashCode ^
-      cursor.hashCode ^
-      contentPolicy.hashCode;
+      cursor.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -551,11 +708,11 @@ class SearchRequestDto {
           queryText == other.queryText &&
           ratings == other.ratings &&
           pageSize == other.pageSize &&
-          cursor == other.cursor &&
-          contentPolicy == other.contentPolicy;
+          cursor == other.cursor;
 }
 
 class SourceCapabilitiesDto {
+  final DiscoveryCapabilitiesDto discovery;
   final List<ContentRating> ratings;
   final AuthKind authKind;
   final bool supportsSearch;
@@ -567,6 +724,7 @@ class SourceCapabilitiesDto {
   final bool supportsBackgroundDownload;
 
   const SourceCapabilitiesDto({
+    required this.discovery,
     required this.ratings,
     required this.authKind,
     required this.supportsSearch,
@@ -580,6 +738,7 @@ class SourceCapabilitiesDto {
 
   @override
   int get hashCode =>
+      discovery.hashCode ^
       ratings.hashCode ^
       authKind.hashCode ^
       supportsSearch.hashCode ^
@@ -595,6 +754,7 @@ class SourceCapabilitiesDto {
       identical(this, other) ||
       other is SourceCapabilitiesDto &&
           runtimeType == other.runtimeType &&
+          discovery == other.discovery &&
           ratings == other.ratings &&
           authKind == other.authKind &&
           supportsSearch == other.supportsSearch &&

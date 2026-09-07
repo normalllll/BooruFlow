@@ -176,7 +176,7 @@ return done(_that.path);case _:
 
 class DownloadEventDto_Progress extends DownloadEventDto {
   const DownloadEventDto_Progress({required this.receivedBytesDecimal, this.totalBytesDecimal, required this.progress}): super._();
-
+  
 
  final  String receivedBytesDecimal;
  final  String? totalBytesDecimal;
@@ -246,7 +246,7 @@ as double,
 
 class DownloadEventDto_Done extends DownloadEventDto {
   const DownloadEventDto_Done({required this.path}): super._();
-
+  
 
  final  String path;
 
@@ -310,63 +310,30 @@ as String,
 /// @nodoc
 mixin _$MediaFetchEventDto {
 
- Uint8List get bytes; String get receivedBytesDecimal; String? get totalBytesDecimal;
-/// Create a copy of MediaFetchEventDto
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-$MediaFetchEventDtoCopyWith<MediaFetchEventDto> get copyWith => _$MediaFetchEventDtoCopyWithImpl<MediaFetchEventDto>(this as MediaFetchEventDto, _$identity);
+
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MediaFetchEventDto&&const DeepCollectionEquality().equals(other.bytes, bytes)&&(identical(other.receivedBytesDecimal, receivedBytesDecimal) || other.receivedBytesDecimal == receivedBytesDecimal)&&(identical(other.totalBytesDecimal, totalBytesDecimal) || other.totalBytesDecimal == totalBytesDecimal));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MediaFetchEventDto);
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(bytes),receivedBytesDecimal,totalBytesDecimal);
+int get hashCode => runtimeType.hashCode;
 
 @override
 String toString() {
-  return 'MediaFetchEventDto(bytes: $bytes, receivedBytesDecimal: $receivedBytesDecimal, totalBytesDecimal: $totalBytesDecimal)';
+  return 'MediaFetchEventDto()';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class $MediaFetchEventDtoCopyWith<$Res>  {
-  factory $MediaFetchEventDtoCopyWith(MediaFetchEventDto value, $Res Function(MediaFetchEventDto) _then) = _$MediaFetchEventDtoCopyWithImpl;
-@useResult
-$Res call({
- Uint8List bytes, String receivedBytesDecimal, String? totalBytesDecimal
-});
-
-
-
-
-}
-/// @nodoc
-class _$MediaFetchEventDtoCopyWithImpl<$Res>
-    implements $MediaFetchEventDtoCopyWith<$Res> {
-  _$MediaFetchEventDtoCopyWithImpl(this._self, this._then);
-
-  final MediaFetchEventDto _self;
-  final $Res Function(MediaFetchEventDto) _then;
-
-/// Create a copy of MediaFetchEventDto
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? bytes = null,Object? receivedBytesDecimal = null,Object? totalBytesDecimal = freezed,}) {
-  return _then(_self.copyWith(
-bytes: null == bytes ? _self.bytes : bytes // ignore: cast_nullable_to_non_nullable
-as Uint8List,receivedBytesDecimal: null == receivedBytesDecimal ? _self.receivedBytesDecimal : receivedBytesDecimal // ignore: cast_nullable_to_non_nullable
-as String,totalBytesDecimal: freezed == totalBytesDecimal ? _self.totalBytesDecimal : totalBytesDecimal // ignore: cast_nullable_to_non_nullable
-as String?,
-  ));
-}
-
+class $MediaFetchEventDtoCopyWith<$Res>  {
+$MediaFetchEventDtoCopyWith(MediaFetchEventDto _, $Res Function(MediaFetchEventDto) __);
 }
 
 
@@ -384,10 +351,11 @@ extension MediaFetchEventDtoPatterns on MediaFetchEventDto {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( MediaFetchEventDto_Chunk value)?  chunk,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( MediaFetchEventDto_Failed value)?  failed,TResult Function( MediaFetchEventDto_Chunk value)?  chunk,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
-case MediaFetchEventDto_Chunk() when chunk != null:
+case MediaFetchEventDto_Failed() when failed != null:
+return failed(_that);case MediaFetchEventDto_Chunk() when chunk != null:
 return chunk(_that);case _:
   return orElse();
 
@@ -406,10 +374,11 @@ return chunk(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( MediaFetchEventDto_Chunk value)  chunk,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( MediaFetchEventDto_Failed value)  failed,required TResult Function( MediaFetchEventDto_Chunk value)  chunk,}){
 final _that = this;
 switch (_that) {
-case MediaFetchEventDto_Chunk():
+case MediaFetchEventDto_Failed():
+return failed(_that);case MediaFetchEventDto_Chunk():
 return chunk(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
@@ -424,10 +393,11 @@ return chunk(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( MediaFetchEventDto_Chunk value)?  chunk,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( MediaFetchEventDto_Failed value)?  failed,TResult? Function( MediaFetchEventDto_Chunk value)?  chunk,}){
 final _that = this;
 switch (_that) {
-case MediaFetchEventDto_Chunk() when chunk != null:
+case MediaFetchEventDto_Failed() when failed != null:
+return failed(_that);case MediaFetchEventDto_Chunk() when chunk != null:
 return chunk(_that);case _:
   return null;
 
@@ -445,9 +415,10 @@ return chunk(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Uint8List bytes,  String receivedBytesDecimal,  String? totalBytesDecimal)?  chunk,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( BooruErrorDto error)?  failed,TResult Function( Uint8List bytes,  String receivedBytesDecimal,  String? totalBytesDecimal)?  chunk,required TResult orElse(),}) {final _that = this;
 switch (_that) {
-case MediaFetchEventDto_Chunk() when chunk != null:
+case MediaFetchEventDto_Failed() when failed != null:
+return failed(_that.error);case MediaFetchEventDto_Chunk() when chunk != null:
 return chunk(_that.bytes,_that.receivedBytesDecimal,_that.totalBytesDecimal);case _:
   return orElse();
 
@@ -466,9 +437,10 @@ return chunk(_that.bytes,_that.receivedBytesDecimal,_that.totalBytesDecimal);cas
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Uint8List bytes,  String receivedBytesDecimal,  String? totalBytesDecimal)  chunk,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( BooruErrorDto error)  failed,required TResult Function( Uint8List bytes,  String receivedBytesDecimal,  String? totalBytesDecimal)  chunk,}) {final _that = this;
 switch (_that) {
-case MediaFetchEventDto_Chunk():
+case MediaFetchEventDto_Failed():
+return failed(_that.error);case MediaFetchEventDto_Chunk():
 return chunk(_that.bytes,_that.receivedBytesDecimal,_that.totalBytesDecimal);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -483,9 +455,10 @@ return chunk(_that.bytes,_that.receivedBytesDecimal,_that.totalBytesDecimal);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Uint8List bytes,  String receivedBytesDecimal,  String? totalBytesDecimal)?  chunk,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( BooruErrorDto error)?  failed,TResult? Function( Uint8List bytes,  String receivedBytesDecimal,  String? totalBytesDecimal)?  chunk,}) {final _that = this;
 switch (_that) {
-case MediaFetchEventDto_Chunk() when chunk != null:
+case MediaFetchEventDto_Failed() when failed != null:
+return failed(_that.error);case MediaFetchEventDto_Chunk() when chunk != null:
 return chunk(_that.bytes,_that.receivedBytesDecimal,_that.totalBytesDecimal);case _:
   return null;
 
@@ -497,17 +470,83 @@ return chunk(_that.bytes,_that.receivedBytesDecimal,_that.totalBytesDecimal);cas
 /// @nodoc
 
 
-class MediaFetchEventDto_Chunk extends MediaFetchEventDto {
-  const MediaFetchEventDto_Chunk({required this.bytes, required this.receivedBytesDecimal, this.totalBytesDecimal}): super._();
+class MediaFetchEventDto_Failed extends MediaFetchEventDto {
+  const MediaFetchEventDto_Failed({required this.error}): super._();
+  
 
-
-@override final  Uint8List bytes;
-@override final  String receivedBytesDecimal;
-@override final  String? totalBytesDecimal;
+ final  BooruErrorDto error;
 
 /// Create a copy of MediaFetchEventDto
 /// with the given fields replaced by the non-null parameter values.
-@override @JsonKey(includeFromJson: false, includeToJson: false)
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$MediaFetchEventDto_FailedCopyWith<MediaFetchEventDto_Failed> get copyWith => _$MediaFetchEventDto_FailedCopyWithImpl<MediaFetchEventDto_Failed>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MediaFetchEventDto_Failed&&(identical(other.error, error) || other.error == error));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,error);
+
+@override
+String toString() {
+  return 'MediaFetchEventDto.failed(error: $error)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $MediaFetchEventDto_FailedCopyWith<$Res> implements $MediaFetchEventDtoCopyWith<$Res> {
+  factory $MediaFetchEventDto_FailedCopyWith(MediaFetchEventDto_Failed value, $Res Function(MediaFetchEventDto_Failed) _then) = _$MediaFetchEventDto_FailedCopyWithImpl;
+@useResult
+$Res call({
+ BooruErrorDto error
+});
+
+
+
+
+}
+/// @nodoc
+class _$MediaFetchEventDto_FailedCopyWithImpl<$Res>
+    implements $MediaFetchEventDto_FailedCopyWith<$Res> {
+  _$MediaFetchEventDto_FailedCopyWithImpl(this._self, this._then);
+
+  final MediaFetchEventDto_Failed _self;
+  final $Res Function(MediaFetchEventDto_Failed) _then;
+
+/// Create a copy of MediaFetchEventDto
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? error = null,}) {
+  return _then(MediaFetchEventDto_Failed(
+error: null == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
+as BooruErrorDto,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class MediaFetchEventDto_Chunk extends MediaFetchEventDto {
+  const MediaFetchEventDto_Chunk({required this.bytes, required this.receivedBytesDecimal, this.totalBytesDecimal}): super._();
+  
+
+ final  Uint8List bytes;
+ final  String receivedBytesDecimal;
+ final  String? totalBytesDecimal;
+
+/// Create a copy of MediaFetchEventDto
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
 $MediaFetchEventDto_ChunkCopyWith<MediaFetchEventDto_Chunk> get copyWith => _$MediaFetchEventDto_ChunkCopyWithImpl<MediaFetchEventDto_Chunk>(this, _$identity);
 
@@ -533,7 +572,7 @@ String toString() {
 /// @nodoc
 abstract mixin class $MediaFetchEventDto_ChunkCopyWith<$Res> implements $MediaFetchEventDtoCopyWith<$Res> {
   factory $MediaFetchEventDto_ChunkCopyWith(MediaFetchEventDto_Chunk value, $Res Function(MediaFetchEventDto_Chunk) _then) = _$MediaFetchEventDto_ChunkCopyWithImpl;
-@override @useResult
+@useResult
 $Res call({
  Uint8List bytes, String receivedBytesDecimal, String? totalBytesDecimal
 });
@@ -552,7 +591,7 @@ class _$MediaFetchEventDto_ChunkCopyWithImpl<$Res>
 
 /// Create a copy of MediaFetchEventDto
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? bytes = null,Object? receivedBytesDecimal = null,Object? totalBytesDecimal = freezed,}) {
+@pragma('vm:prefer-inline') $Res call({Object? bytes = null,Object? receivedBytesDecimal = null,Object? totalBytesDecimal = freezed,}) {
   return _then(MediaFetchEventDto_Chunk(
 bytes: null == bytes ? _self.bytes : bytes // ignore: cast_nullable_to_non_nullable
 as Uint8List,receivedBytesDecimal: null == receivedBytesDecimal ? _self.receivedBytesDecimal : receivedBytesDecimal // ignore: cast_nullable_to_non_nullable

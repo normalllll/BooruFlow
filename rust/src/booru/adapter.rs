@@ -25,6 +25,18 @@ pub trait BooruAdapter: Send + Sync {
 
     async fn search(&self, ctx: &RequestContext, query: SearchQuery) -> BooruResult<PostPage>;
 
+    async fn feed(
+        &self,
+        ctx: &RequestContext,
+        request: crate::api::booru_models::FeedRequestDto,
+    ) -> BooruResult<PostPage> {
+        if request.kind != crate::api::booru_models::FeedKind::Latest {
+            return Err(self.unsupported());
+        }
+        self.search(ctx, crate::booru::discovery::latest_query(request))
+            .await
+    }
+
     async fn get_post(&self, ctx: &RequestContext, id: &PostId) -> BooruResult<Post>;
 
     async fn autocomplete(

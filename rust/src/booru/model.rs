@@ -1,6 +1,6 @@
 use crate::api::booru_models::{
-    post_key, BooruPostDto, BooruTagDto, ChecksumDto, ContentPolicy, ContentRating, MediaType,
-    MediaVariantDto, MediaVariantKind, PostFlagsDto, TagCategory,
+    post_key, BooruPostDto, BooruTagDto, ChecksumDto, ContentRating, MediaType, MediaVariantDto,
+    MediaVariantKind, PostFlagsDto, TagCategory,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -12,7 +12,6 @@ pub struct SearchQuery {
     pub ratings: Vec<ContentRating>,
     pub page_size: u32,
     pub cursor: Option<String>,
-    pub content_policy: ContentPolicy,
 }
 
 #[derive(Debug, Clone)]
@@ -25,6 +24,7 @@ pub struct PostPage {
 #[derive(Debug, Clone)]
 pub struct Post {
     pub source_id: String,
+    pub author: Option<String>,
     pub id: PostId,
     pub web_url: Option<String>,
     pub rating: ContentRating,
@@ -68,6 +68,7 @@ impl Post {
         let key = post_key(&self.source_id, &self.id.0);
         BooruPostDto {
             source_id: self.source_id,
+            author: self.author,
             post_id: self.id.0,
             post_key: key,
             web_url: self.web_url,

@@ -96,11 +96,11 @@ impl SessionStore {
             }
         }
         cookies.retain(|cookie| {
-            !cookie
+            cookie
                 .expires_at_iso8601
                 .as_deref()
                 .and_then(parse_expiry)
-                .is_some_and(|expires| expires <= time::OffsetDateTime::now_utc())
+                .is_none_or(|expires| expires > time::OffsetDateTime::now_utc())
         });
         if cookies.is_empty() {
             return Err(BooruErrorDto::invalid_request(Some(source_id)));

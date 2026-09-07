@@ -107,10 +107,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  BooruErrorDto dco_decode_box_autoadd_booru_error_dto(dynamic raw);
+
+  @protected
   ChecksumDto dco_decode_box_autoadd_checksum_dto(dynamic raw);
 
   @protected
+  CommonTagsRequestDto dco_decode_box_autoadd_common_tags_request_dto(
+    dynamic raw,
+  );
+
+  @protected
   DownloadRequestDto dco_decode_box_autoadd_download_request_dto(dynamic raw);
+
+  @protected
+  FeedRequestDto dco_decode_box_autoadd_feed_request_dto(dynamic raw);
 
   @protected
   int dco_decode_box_autoadd_i_32(dynamic raw);
@@ -120,6 +131,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   MediaType dco_decode_box_autoadd_media_type(dynamic raw);
+
+  @protected
+  PopularRange dco_decode_box_autoadd_popular_range(dynamic raw);
 
   @protected
   RecoveryAction dco_decode_box_autoadd_recovery_action(dynamic raw);
@@ -139,16 +153,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int dco_decode_box_autoadd_u_32(dynamic raw);
 
   @protected
+  CapabilityAvailability dco_decode_capability_availability(dynamic raw);
+
+  @protected
   ChecksumAlgorithm dco_decode_checksum_algorithm(dynamic raw);
 
   @protected
   ChecksumDto dco_decode_checksum_dto(dynamic raw);
 
   @protected
-  ContentPolicy dco_decode_content_policy(dynamic raw);
+  CommonTagsPageDto dco_decode_common_tags_page_dto(dynamic raw);
+
+  @protected
+  CommonTagsRequestDto dco_decode_common_tags_request_dto(dynamic raw);
 
   @protected
   ContentRating dco_decode_content_rating(dynamic raw);
+
+  @protected
+  DiscoveryCapabilitiesDto dco_decode_discovery_capabilities_dto(dynamic raw);
 
   @protected
   DownloadEventDto dco_decode_download_event_dto(dynamic raw);
@@ -158,6 +181,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   double dco_decode_f_64(dynamic raw);
+
+  @protected
+  FeedKind dco_decode_feed_kind(dynamic raw);
+
+  @protected
+  FeedRequestDto dco_decode_feed_request_dto(dynamic raw);
 
   @protected
   HttpHeaderDto dco_decode_http_header_dto(dynamic raw);
@@ -184,6 +213,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<ContentRating> dco_decode_list_content_rating(dynamic raw);
 
   @protected
+  List<FeedKind> dco_decode_list_feed_kind(dynamic raw);
+
+  @protected
   List<HttpHeaderDto> dco_decode_list_http_header_dto(dynamic raw);
 
   @protected
@@ -196,6 +228,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<PersistedHostRouteDto> dco_decode_list_persisted_host_route_dto(
     dynamic raw,
   );
+
+  @protected
+  List<PopularRange> dco_decode_list_popular_range(dynamic raw);
 
   @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
@@ -240,6 +275,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   MediaType? dco_decode_opt_box_autoadd_media_type(dynamic raw);
 
   @protected
+  PopularRange? dco_decode_opt_box_autoadd_popular_range(dynamic raw);
+
+  @protected
   RecoveryAction? dco_decode_opt_box_autoadd_recovery_action(dynamic raw);
 
   @protected
@@ -250,6 +288,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PersistedHostRouteDto dco_decode_persisted_host_route_dto(dynamic raw);
+
+  @protected
+  PopularRange dco_decode_popular_range(dynamic raw);
+
+  @protected
+  PopularTimeBasis dco_decode_popular_time_basis(dynamic raw);
 
   @protected
   PostFlagsDto dco_decode_post_flags_dto(dynamic raw);
@@ -385,10 +429,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  BooruErrorDto sse_decode_box_autoadd_booru_error_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   ChecksumDto sse_decode_box_autoadd_checksum_dto(SseDeserializer deserializer);
 
   @protected
+  CommonTagsRequestDto sse_decode_box_autoadd_common_tags_request_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   DownloadRequestDto sse_decode_box_autoadd_download_request_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FeedRequestDto sse_decode_box_autoadd_feed_request_dto(
     SseDeserializer deserializer,
   );
 
@@ -402,6 +461,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   MediaType sse_decode_box_autoadd_media_type(SseDeserializer deserializer);
+
+  @protected
+  PopularRange sse_decode_box_autoadd_popular_range(
+    SseDeserializer deserializer,
+  );
 
   @protected
   RecoveryAction sse_decode_box_autoadd_recovery_action(
@@ -427,16 +491,33 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int sse_decode_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
+  CapabilityAvailability sse_decode_capability_availability(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   ChecksumAlgorithm sse_decode_checksum_algorithm(SseDeserializer deserializer);
 
   @protected
   ChecksumDto sse_decode_checksum_dto(SseDeserializer deserializer);
 
   @protected
-  ContentPolicy sse_decode_content_policy(SseDeserializer deserializer);
+  CommonTagsPageDto sse_decode_common_tags_page_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  CommonTagsRequestDto sse_decode_common_tags_request_dto(
+    SseDeserializer deserializer,
+  );
 
   @protected
   ContentRating sse_decode_content_rating(SseDeserializer deserializer);
+
+  @protected
+  DiscoveryCapabilitiesDto sse_decode_discovery_capabilities_dto(
+    SseDeserializer deserializer,
+  );
 
   @protected
   DownloadEventDto sse_decode_download_event_dto(SseDeserializer deserializer);
@@ -448,6 +529,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   double sse_decode_f_64(SseDeserializer deserializer);
+
+  @protected
+  FeedKind sse_decode_feed_kind(SseDeserializer deserializer);
+
+  @protected
+  FeedRequestDto sse_decode_feed_request_dto(SseDeserializer deserializer);
 
   @protected
   HttpHeaderDto sse_decode_http_header_dto(SseDeserializer deserializer);
@@ -482,6 +569,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<FeedKind> sse_decode_list_feed_kind(SseDeserializer deserializer);
+
+  @protected
   List<HttpHeaderDto> sse_decode_list_http_header_dto(
     SseDeserializer deserializer,
   );
@@ -496,6 +586,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<PersistedHostRouteDto> sse_decode_list_persisted_host_route_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<PopularRange> sse_decode_list_popular_range(
     SseDeserializer deserializer,
   );
 
@@ -554,6 +649,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  PopularRange? sse_decode_opt_box_autoadd_popular_range(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   RecoveryAction? sse_decode_opt_box_autoadd_recovery_action(
     SseDeserializer deserializer,
   );
@@ -570,6 +670,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PersistedHostRouteDto sse_decode_persisted_host_route_dto(
     SseDeserializer deserializer,
   );
+
+  @protected
+  PopularRange sse_decode_popular_range(SseDeserializer deserializer);
+
+  @protected
+  PopularTimeBasis sse_decode_popular_time_basis(SseDeserializer deserializer);
 
   @protected
   PostFlagsDto sse_decode_post_flags_dto(SseDeserializer deserializer);
@@ -730,14 +836,32 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_booru_error_dto(
+    BooruErrorDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_checksum_dto(
     ChecksumDto self,
     SseSerializer serializer,
   );
 
   @protected
+  void sse_encode_box_autoadd_common_tags_request_dto(
+    CommonTagsRequestDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_download_request_dto(
     DownloadRequestDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_feed_request_dto(
+    FeedRequestDto self,
     SseSerializer serializer,
   );
 
@@ -753,6 +877,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_media_type(
     MediaType self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_popular_range(
+    PopularRange self,
     SseSerializer serializer,
   );
 
@@ -784,6 +914,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer);
 
   @protected
+  void sse_encode_capability_availability(
+    CapabilityAvailability self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_checksum_algorithm(
     ChecksumAlgorithm self,
     SseSerializer serializer,
@@ -793,10 +929,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_checksum_dto(ChecksumDto self, SseSerializer serializer);
 
   @protected
-  void sse_encode_content_policy(ContentPolicy self, SseSerializer serializer);
+  void sse_encode_common_tags_page_dto(
+    CommonTagsPageDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_common_tags_request_dto(
+    CommonTagsRequestDto self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_content_rating(ContentRating self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_discovery_capabilities_dto(
+    DiscoveryCapabilitiesDto self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_download_event_dto(
@@ -812,6 +963,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_f_64(double self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_feed_kind(FeedKind self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_feed_request_dto(
+    FeedRequestDto self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_http_header_dto(HttpHeaderDto self, SseSerializer serializer);
@@ -853,6 +1013,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_feed_kind(List<FeedKind> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_http_header_dto(
     List<HttpHeaderDto> self,
     SseSerializer serializer,
@@ -873,6 +1036,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_persisted_host_route_dto(
     List<PersistedHostRouteDto> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_popular_range(
+    List<PopularRange> self,
     SseSerializer serializer,
   );
 
@@ -949,6 +1118,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_popular_range(
+    PopularRange? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_recovery_action(
     RecoveryAction? self,
     SseSerializer serializer,
@@ -966,6 +1141,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_persisted_host_route_dto(
     PersistedHostRouteDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_popular_range(PopularRange self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_popular_time_basis(
+    PopularTimeBasis self,
     SseSerializer serializer,
   );
 

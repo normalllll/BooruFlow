@@ -19,7 +19,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
     PluralResolver? ordinalResolver,
     TranslationMetadata<AppLocale, Translations>? meta,
   }) : assert(overrides == null, 'Set "translation_overrides: true" in order to enable this feature.'),
-       $meta =
+       _meta =
            meta ??
            TranslationMetadata(
              locale: AppLocale.zhCn,
@@ -28,17 +28,17 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
              ordinalResolver: ordinalResolver,
            ),
        super(cardinalResolver: cardinalResolver, ordinalResolver: ordinalResolver) {
-    super.$meta.setFlatMapFunction($meta.getTranslation); // copy base translations to super.$meta
-    $meta.setFlatMapFunction(_flatMapFunction);
+    _meta.setFlatMapFunction(_flatMapFunction);
   }
 
   /// Metadata for the translations of <zh-CN>.
+  final TranslationMetadata<AppLocale, Translations> _meta;
   @override
-  final TranslationMetadata<AppLocale, Translations> $meta;
+  TranslationMetadata<AppLocale, Translations> get $meta => _meta;
 
   /// Access flat map
   @override
-  dynamic operator [](String key) => $meta.getTranslation(key) ?? super.$meta.getTranslation(key);
+  dynamic operator [](String key) => _meta.getTranslation(key) ?? super[key];
 
   late final TranslationsZhCn _root = this; // ignore: unused_field
 
@@ -67,6 +67,10 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
   late final Translations$about$zh_CN about = Translations$about$zh_CN.internal(_root);
   @override
   late final Translations$settings$zh_CN settings = Translations$settings$zh_CN.internal(_root);
+  @override
+  late final Translations$discovery$zh_CN discovery = Translations$discovery$zh_CN.internal(_root);
+  @override
+  late final Translations$mediaError$zh_CN mediaError = Translations$mediaError$zh_CN.internal(_root);
 }
 
 // Path: generic
@@ -172,9 +176,9 @@ class Translations$postList$zh_CN extends Translations$postList$en {
 
   // Translations
   @override
-  String get short => '帖子';
+  String get short => '首页';
   @override
-  String get title => '帖子列表';
+  String get title => '首页';
   @override
   String titleWithTags({required Object tags}) => '带有标签的帖子: ${tags}';
 }
@@ -208,6 +212,10 @@ class Translations$postDetail$zh_CN extends Translations$postDetail$en {
   String get createdAt => '创建时间';
   @override
   String get author => '作者';
+  @override
+  String get unknownAuthor => '未知';
+  @override
+  String get imageSource => '图源';
   @override
   String get source => '来源';
   @override
@@ -382,11 +390,7 @@ class Translations$settings$zh_CN extends Translations$settings$en {
   @override
   String get auto => '自动';
   @override
-  String get downloadsOverview => '仅桌面端 · 每个图源使用独立子目录';
-  @override
-  String get sourceSubfolders => '图源子目录';
-  @override
-  String get sourceSubfoldersDescription => '下载内容会按照图源名称保存在不同文件夹。';
+  String get downloadsOverview => '保存位置与下载并发';
   @override
   late final Translations$settings$sections$zh_CN sections = Translations$settings$sections$zh_CN.internal(_root);
   @override
@@ -416,6 +420,144 @@ class Translations$settings$zh_CN extends Translations$settings$en {
   @override
   late final Translations$settings$maxSegmentsPerTaskDialog$zh_CN maxSegmentsPerTaskDialog =
       Translations$settings$maxSegmentsPerTaskDialog$zh_CN.internal(_root);
+}
+
+// Path: discovery
+class Translations$discovery$zh_CN extends Translations$discovery$en {
+  Translations$discovery$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+  final TranslationsZhCn _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get searchResults => '搜索结果';
+  @override
+  String get allAvailable => '全部可用内容';
+  @override
+  String get defaultRatingsHint => '分级偏好适用于所有图源。未选择分级时，显示当前图源和账号能访问的所有内容。';
+  @override
+  String get resetFilters => '恢复默认';
+  @override
+  String get unsupportedRatings => '当前图源不支持所选分级，请恢复默认以浏览可用内容。';
+  @override
+  String get noFilteredPosts => '没有符合当前筛选条件的内容。';
+  @override
+  String get noSearchResults => '没有找到符合此查询的内容。';
+  @override
+  String get noFeedPosts => '当前图源暂时没有可展示的内容。';
+  @override
+  String get historicalPopular => '历史热门';
+  @override
+  String get calendarDay => '自然日';
+  @override
+  String get calendarWeek => '自然周';
+  @override
+  String get calendarMonth => '自然月';
+  @override
+  String get latest => '最新';
+  @override
+  String get popular => '热门';
+  @override
+  String get today => '今日';
+  @override
+  String get thisWeek => '本周';
+  @override
+  String get thisMonth => '本月';
+  @override
+  String get lastDay => '最近 24 小时';
+  @override
+  String get lastThreeDays => '最近 3 天';
+  @override
+  String get lastWeek => '最近一周';
+  @override
+  String get lastMonth => '最近一个月';
+  @override
+  String get lastThreeMonths => '最近三个月';
+  @override
+  String get lastSixMonths => '最近六个月';
+  @override
+  String get lastYear => '最近一年';
+  @override
+  String get rankingComplete => '榜单已全部加载';
+  @override
+  String get latestFallback => '此图源仅支持最新帖子。';
+  @override
+  String get filters => '筛选';
+  @override
+  String get loadMore => '加载更多';
+  @override
+  String get filteredContinue => '当前几页没有符合筛选的帖子，继续浏览';
+  @override
+  String get commonTags => '常用标签';
+  @override
+  String get moreTags => '查看更多';
+  @override
+  String get tagSource => '适用图源';
+  @override
+  String get allTagSources => '通用';
+  @override
+  String get manageTags => '标签管理';
+  @override
+  String get addTag => '添加标签';
+  @override
+  String get noCustomTags => '还没有自定义标签';
+  @override
+  String get customTagsHint => '为常用标签设置易记的名称，搜索时更容易找到。';
+  @override
+  String get addCustomTag => '添加为自定义标签';
+  @override
+  String get editTag => '编辑自定义标签';
+  @override
+  String get canonicalTag => '图源标签';
+  @override
+  String get displayName => '显示名称（可选）';
+  @override
+  String get invalidTag => '请输入一个非空且不含空格的标签。';
+  @override
+  String get queryHint => '输入标签或图源查询语句…';
+  @override
+  String get unverifiedTag => '部分标签尚未在当前图源验证，仍可提交搜索。';
+  @override
+  String get verifiedTag => '已在当前图源验证';
+  @override
+  String get noSuggestions => '没有建议';
+  @override
+  String get localFallback => '在线补全暂不可用，仍可使用本地建议。';
+  @override
+  String get retryTags => '重试常用标签';
+  @override
+  String get artist => '画师';
+  @override
+  String get character => '角色';
+  @override
+  String get copyright => '作品';
+  @override
+  String get meta => '元标签';
+  @override
+  String get general => '通用';
+  @override
+  String get random => '随机';
+  @override
+  String get lifetimeViews => '累计浏览量';
+  @override
+  String get lifetimeFavorites => '累计收藏数';
+}
+
+// Path: mediaError
+class Translations$mediaError$zh_CN extends Translations$mediaError$en {
+  Translations$mediaError$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+  final TranslationsZhCn _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get title => '图片加载失败';
+  @override
+  String get details => '错误详情';
+  @override
+  String get copyDetails => '复制详情';
+  @override
+  String get decodeFailed => '下载的图片无法解码。重试会清除这张图片的缓存并重新下载。';
 }
 
 // Path: downloads.messages
@@ -459,13 +601,13 @@ class Translations$settings$sections$zh_CN extends Translations$settings$section
 
   // Translations
   @override
-  String get sourcesAndContent => '图源与内容';
+  String get sourcesAndAccounts => '图源与账号';
   @override
   String get accounts => '账号';
   @override
   String get network => '网络';
   @override
-  String get appearance => '外观';
+  String get general => '通用';
   @override
   String get downloads => '下载';
 }
@@ -478,19 +620,11 @@ class Translations$settings$source$zh_CN extends Translations$settings$source$en
 
   // Translations
   @override
-  String get label => '图源';
+  String get defaultSource => '默认图源';
   @override
-  String get contentPolicy => '内容策略';
+  String get supportedRatings => '支持的分级';
   @override
-  String get safetyRating => '安全评级';
-  @override
-  String get noHiddenDefault => '不默认隐藏';
-  @override
-  String get noHiddenDefaultDescription => '不选择任何评级时会显示所有帖子，包括成人内容。';
-  @override
-  String get unfiltered => '不筛选';
-  @override
-  String get animeFocused => '动漫优先';
+  String get safetyRating => '全局内容分级';
 }
 
 // Path: settings.account
@@ -501,7 +635,9 @@ class Translations$settings$account$zh_CN extends Translations$settings$account$
 
   // Translations
   @override
-  String get manageAllSubtitle => '分别配置每个图源的账号';
+  String get manageAllSubtitle => '图源分级与账号配置';
+  @override
+  String get noAccountRequired => '此图源无需配置账号';
   @override
   String get openSignInPage => '打开登录页面';
   @override
@@ -756,8 +892,8 @@ extension on TranslationsZhCn {
       'update.selectDownloadUrlFailed' => '找不到下载链接。\n请访问项目页面手动更新，或在项目 Issue 页面寻求帮助。',
       'update.newVersionFound' => ({required Object version}) => '发现新版本: ${version}。请转到“关于”页面并点击“下载更新”。',
       'update.noNewVersionFound' => '没有新版本。',
-      'postList.short' => '帖子',
-      'postList.title' => '帖子列表',
+      'postList.short' => '首页',
+      'postList.title' => '首页',
       'postList.titleWithTags' => ({required Object tags}) => '带有标签的帖子: ${tags}',
       'postDetail.titleWithId' => ({required Object id}) => '帖子: ${id}',
       'postDetail.tags' => '标签',
@@ -770,6 +906,8 @@ extension on TranslationsZhCn {
       'postDetail.relatedLoadFailed' => '关联图片加载失败，可以重试。',
       'postDetail.createdAt' => '创建时间',
       'postDetail.author' => '作者',
+      'postDetail.unknownAuthor' => '未知',
+      'postDetail.imageSource' => '图源',
       'postDetail.source' => '来源',
       'postDetail.width' => '宽度',
       'postDetail.height' => '高度',
@@ -845,22 +983,17 @@ extension on TranslationsZhCn {
       'settings.light' => '浅色模式',
       'settings.dark' => '深色模式',
       'settings.auto' => '自动',
-      'settings.downloadsOverview' => '仅桌面端 · 每个图源使用独立子目录',
-      'settings.sourceSubfolders' => '图源子目录',
-      'settings.sourceSubfoldersDescription' => '下载内容会按照图源名称保存在不同文件夹。',
-      'settings.sections.sourcesAndContent' => '图源与内容',
+      'settings.downloadsOverview' => '保存位置与下载并发',
+      'settings.sections.sourcesAndAccounts' => '图源与账号',
       'settings.sections.accounts' => '账号',
       'settings.sections.network' => '网络',
-      'settings.sections.appearance' => '外观',
+      'settings.sections.general' => '通用',
       'settings.sections.downloads' => '下载',
-      'settings.source.label' => '图源',
-      'settings.source.contentPolicy' => '内容策略',
-      'settings.source.safetyRating' => '安全评级',
-      'settings.source.noHiddenDefault' => '不默认隐藏',
-      'settings.source.noHiddenDefaultDescription' => '不选择任何评级时会显示所有帖子，包括成人内容。',
-      'settings.source.unfiltered' => '不筛选',
-      'settings.source.animeFocused' => '动漫优先',
-      'settings.account.manageAllSubtitle' => '分别配置每个图源的账号',
+      'settings.source.defaultSource' => '默认图源',
+      'settings.source.supportedRatings' => '支持的分级',
+      'settings.source.safetyRating' => '全局内容分级',
+      'settings.account.manageAllSubtitle' => '图源分级与账号配置',
+      'settings.account.noAccountRequired' => '此图源无需配置账号',
       'settings.account.openSignInPage' => '打开登录页面',
       'settings.account.cookieHeader' => 'Cookie 请求头',
       'settings.account.storedLocally' => '仅保存在此设备',
@@ -912,6 +1045,66 @@ extension on TranslationsZhCn {
       'settings.columnsPerRowDialog.title' => '每行列数',
       'settings.maxConcurrentDownloadsDialog.title' => '最大同时下载任务数',
       'settings.maxSegmentsPerTaskDialog.title' => '每个下载任务的最大分段数',
+      'discovery.searchResults' => '搜索结果',
+      'discovery.allAvailable' => '全部可用内容',
+      'discovery.defaultRatingsHint' => '分级偏好适用于所有图源。未选择分级时，显示当前图源和账号能访问的所有内容。',
+      'discovery.resetFilters' => '恢复默认',
+      'discovery.unsupportedRatings' => '当前图源不支持所选分级，请恢复默认以浏览可用内容。',
+      'discovery.noFilteredPosts' => '没有符合当前筛选条件的内容。',
+      'discovery.noSearchResults' => '没有找到符合此查询的内容。',
+      'discovery.noFeedPosts' => '当前图源暂时没有可展示的内容。',
+      'discovery.historicalPopular' => '历史热门',
+      'discovery.calendarDay' => '自然日',
+      'discovery.calendarWeek' => '自然周',
+      'discovery.calendarMonth' => '自然月',
+      'discovery.latest' => '最新',
+      'discovery.popular' => '热门',
+      'discovery.today' => '今日',
+      'discovery.thisWeek' => '本周',
+      'discovery.thisMonth' => '本月',
+      'discovery.lastDay' => '最近 24 小时',
+      'discovery.lastThreeDays' => '最近 3 天',
+      'discovery.lastWeek' => '最近一周',
+      'discovery.lastMonth' => '最近一个月',
+      'discovery.lastThreeMonths' => '最近三个月',
+      'discovery.lastSixMonths' => '最近六个月',
+      'discovery.lastYear' => '最近一年',
+      'discovery.rankingComplete' => '榜单已全部加载',
+      'discovery.latestFallback' => '此图源仅支持最新帖子。',
+      'discovery.filters' => '筛选',
+      'discovery.loadMore' => '加载更多',
+      'discovery.filteredContinue' => '当前几页没有符合筛选的帖子，继续浏览',
+      'discovery.commonTags' => '常用标签',
+      'discovery.moreTags' => '查看更多',
+      'discovery.tagSource' => '适用图源',
+      'discovery.allTagSources' => '通用',
+      'discovery.manageTags' => '标签管理',
+      'discovery.addTag' => '添加标签',
+      'discovery.noCustomTags' => '还没有自定义标签',
+      'discovery.customTagsHint' => '为常用标签设置易记的名称，搜索时更容易找到。',
+      'discovery.addCustomTag' => '添加为自定义标签',
+      'discovery.editTag' => '编辑自定义标签',
+      'discovery.canonicalTag' => '图源标签',
+      'discovery.displayName' => '显示名称（可选）',
+      'discovery.invalidTag' => '请输入一个非空且不含空格的标签。',
+      'discovery.queryHint' => '输入标签或图源查询语句…',
+      'discovery.unverifiedTag' => '部分标签尚未在当前图源验证，仍可提交搜索。',
+      'discovery.verifiedTag' => '已在当前图源验证',
+      'discovery.noSuggestions' => '没有建议',
+      'discovery.localFallback' => '在线补全暂不可用，仍可使用本地建议。',
+      'discovery.retryTags' => '重试常用标签',
+      'discovery.artist' => '画师',
+      'discovery.character' => '角色',
+      'discovery.copyright' => '作品',
+      'discovery.meta' => '元标签',
+      'discovery.general' => '通用',
+      'discovery.random' => '随机',
+      'discovery.lifetimeViews' => '累计浏览量',
+      'discovery.lifetimeFavorites' => '累计收藏数',
+      'mediaError.title' => '图片加载失败',
+      'mediaError.details' => '错误详情',
+      'mediaError.copyDetails' => '复制详情',
+      'mediaError.decodeFailed' => '下载的图片无法解码。重试会清除这张图片的缓存并重新下载。',
       _ => null,
     };
   }

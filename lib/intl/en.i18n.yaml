@@ -39,8 +39,8 @@ update:
   noNewVersionFound: No new version found.
 
 postList:
-  short: Post
-  title: Post List
+  short: "Home"
+  title: "Home"
   titleWithTags: "Posts with tags: $tags"
 
 postDetail:
@@ -55,6 +55,8 @@ postDetail:
   relatedLoadFailed: Failed to load related images. You can retry.
   createdAt: Created at
   author: Author
+  unknownAuthor: Unknown
+  imageSource: Image source
   source: Source
   width: Width
   height: Height
@@ -143,28 +145,23 @@ settings:
   light: Light
   dark: Dark
   auto: Auto
-  downloadsOverview: Desktop only · one subfolder per source
-  sourceSubfolders: Source subfolders
-  sourceSubfoldersDescription: Downloads are saved in a separate folder named after each source.
+  downloadsOverview: Save location and download concurrency
 
   sections:
-    sourcesAndContent: Sources & content
+    sourcesAndAccounts: Sources & accounts
     accounts: Accounts
     network: Network
-    appearance: Appearance
+    general: General
     downloads: Downloads
 
   source:
-    label: Source
-    contentPolicy: Content policy
-    safetyRating: Safety rating
-    noHiddenDefault: No hidden default
-    noHiddenDefaultDescription: Leave every rating unselected to show all posts, including explicit posts.
-    unfiltered: Unfiltered
-    animeFocused: Anime focused
+    defaultSource: Default source
+    supportedRatings: Supported ratings
+    safetyRating: "Global content ratings"
 
   account:
-    manageAllSubtitle: Configure every source account independently
+    manageAllSubtitle: Source ratings and account settings
+    noAccountRequired: No account configuration needed
     openSignInPage: Open sign-in page
     cookieHeader: Cookie header
     storedLocally: Stored locally on this device
@@ -233,3 +230,67 @@ settings:
 
   maxSegmentsPerTaskDialog:
     title: Max Segments per Download Task
+
+discovery:
+  searchResults: "Search results"
+  allAvailable: "All available"
+  defaultRatingsHint: "Ratings apply across all sources. With none selected, show everything the current source and account can access."
+  resetFilters: "Restore defaults"
+  unsupportedRatings: "This source does not support the selected ratings. Restore defaults to browse available posts."
+  noFilteredPosts: "No posts match the current filters."
+  noSearchResults: "No posts match this search."
+  noFeedPosts: "This source currently has no posts to display."
+  historicalPopular: "Historical popular"
+  calendarDay: "Day"
+  calendarWeek: "Week"
+  calendarMonth: "Month"
+  latest: "Latest"
+  popular: "Popular"
+  today: "Today"
+  thisWeek: "This week"
+  thisMonth: "This month"
+  lastDay: "Last 24 hours"
+  lastThreeDays: "Last 3 days"
+  lastWeek: "Last week"
+  lastMonth: "Last month"
+  lastThreeMonths: "Last 3 months"
+  lastSixMonths: "Last 6 months"
+  lastYear: "Last year"
+  rankingComplete: "All ranked posts loaded"
+  latestFallback: "This source supports latest posts only."
+  filters: "Filters"
+  loadMore: "Load more"
+  filteredContinue: "No matching posts on these pages. Continue browsing"
+  commonTags: "Common tags"
+  moreTags: "Show more"
+  tagSource: "Source"
+  allTagSources: "All sources"
+  manageTags: "Custom tags"
+  addTag: "Add tag"
+  noCustomTags: "No custom tags yet"
+  customTagsHint: "Give tags memorable names to find them more easily in search."
+  addCustomTag: "Add as a custom tag"
+  editTag: "Edit custom tag"
+  canonicalTag: "Source tag"
+  displayName: "Display name (optional)"
+  invalidTag: "Enter one nonempty tag without spaces."
+  queryHint: "Enter tags or a source query…"
+  unverifiedTag: "Some tags are not verified for this source. You can still search."
+  verifiedTag: "Verified for this source"
+  noSuggestions: "No suggestions"
+  localFallback: "Online suggestions unavailable; local suggestions are still available."
+  retryTags: "Retry common tags"
+  artist: "Artist"
+  character: "Character"
+  copyright: "Series"
+  meta: "Meta"
+  general: "General"
+  random: "Random"
+  lifetimeViews: "Lifetime views"
+  lifetimeFavorites: "Lifetime favorites"
+
+mediaError:
+  title: Image failed to load
+  details: Error details
+  copyDetails: Copy details
+  decodeFailed: The downloaded image could not be decoded. Retry will clear this image’s cache and download it again.

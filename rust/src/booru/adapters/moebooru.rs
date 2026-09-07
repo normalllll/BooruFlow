@@ -6,7 +6,7 @@ use crate::api::booru_models::{
 use crate::booru::adapter::{BooruAdapter, RequestContext};
 use crate::booru::adapters::common::{
     boolean, media, parse_json, rating, signed32, string, tag_list, unix_to_iso8601, unsigned,
-    unsigned32, validate_media_hosts,
+    unsigned32, username, validate_media_hosts,
 };
 use crate::booru::error::{BooruErrorDto, BooruResult};
 use crate::booru::model::{Post, PostFlags, PostId, PostPage, SearchQuery};
@@ -100,6 +100,7 @@ impl MoebooruAdapter {
             rating: rating(string(value, "rating").as_deref()),
             score: signed32(value, "score"),
             created_at_iso8601: unix_to_iso8601(unsigned(value, "created_at")),
+            author: username(value, "/author"),
             source_url: string(value, "source"),
             tags: tag_list(
                 string(value, "tags").as_deref().unwrap_or_default(),
@@ -164,6 +165,60 @@ impl BooruAdapter for MoebooruAdapter {
             next_cursor: (!exhausted).then(|| (page + 1).to_string()),
             exhausted,
             items,
+        })
+    }
+
+    async fn feed(
+        &self,
+        ctx: &RequestContext,
+        request: crate::api::booru_models::FeedRequestDto,
+    ) -> BooruResult<PostPage> {
+        use crate::api::booru_models::FeedKind;
+        use crate::booru::discovery::{latest_query, parse_date, period, scale};
+        if request.kind == FeedKind::Latest {
+            return self.search(ctx, latest_query(request)).await;
+        }
+        if request.cursor.is_some() {
+            return Err(BooruErrorDto::invalid_request(Some(self.definition.id)));
+        }
+        let range = request
+            .range
+            .ok_or_else(|| BooruErrorDto::invalid_request(Some(self.definition.id)))?;
+        let (endpoint, query) = match request.kind {
+            FeedKind::RecentPopular => (
+                "popular_recent".to_owned(),
+                vec![("period".into(), period(range, false).into())],
+            ),
+            FeedKind::HistoricalPopular => {
+                let date = parse_date(
+                    self.definition.id,
+                    request.date.as_deref().unwrap_or_default(),
+                )?;
+                (
+                    format!("popular_by_{}", scale(range)),
+                    vec![
+                        ("year".into(), date.year().to_string()),
+                        ("month".into(), (date.month() as u8).to_string()),
+                        ("day".into(), date.day().to_string()),
+                    ],
+                )
+            }
+            _ => return Err(self.unsupported()),
+        };
+        let url = reqwest::Url::parse(&format!(
+            "{}/post/{endpoint}.json",
+            self.definition.api_base
+        ))
+        .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+        let mut spec = RequestSpec::get(url, ResponseKind::Json);
+        spec.query = query;
+        let response = ctx.runtime.execute(&self.definition, spec).await?;
+        let mut items = self.parse_posts(&response.body)?;
+        items.retain(|post| request.ratings.contains(&post.rating));
+        Ok(PostPage {
+            items,
+            next_cursor: None,
+            exhausted: true,
         })
     }
 
@@ -267,6 +322,13 @@ mod tests {
         )
     }
 
+    #[test]
+    fn preserves_source_username_in_dto() {
+        let fixture = serde_json::json!({"id":1,"file_url":"https://files.yande.re/a.jpg","author":" Alice "});
+        let post = adapter().parse_post(&fixture).unwrap();
+        assert_eq!(post.author.as_deref(), Some("Alice"));
+        assert_eq!(post.into_dto().author.as_deref(), Some("Alice"));
+    }
     #[test]
     fn parses_moebooru_post_and_variants() {
         let fixture = br#"[{"id":123,"tags":"artist character","created_at":1700000000,"score":8,"md5":"0123456789abcdef0123456789abcdef","file_size":500,"file_ext":"jpg","file_url":"https://files.yande.re/a.jpg","preview_url":"https://assets.yande.re/p.jpg","preview_width":150,"preview_height":200,"width":1000,"height":2000,"rating":"q","has_children":true}]"#;

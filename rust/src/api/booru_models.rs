@@ -11,13 +11,6 @@ pub enum ContentRating {
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
-pub enum ContentPolicy {
-    #[default]
-    AnimeFocused,
-    Unfiltered,
-}
-
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TagCategory {
     Artist,
     Copyright,
@@ -162,6 +155,7 @@ pub struct PostFlagsDto {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct BooruPostDto {
     pub source_id: String,
+    pub author: Option<String>,
     pub post_id: String,
     pub post_key: String,
     pub web_url: Option<String>,
@@ -176,6 +170,7 @@ pub struct BooruPostDto {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SourceCapabilitiesDto {
+    pub discovery: DiscoveryCapabilitiesDto,
     pub ratings: Vec<ContentRating>,
     pub auth_kind: AuthKind,
     pub supports_search: bool,
@@ -185,6 +180,81 @@ pub struct SourceCapabilitiesDto {
     pub supports_original: bool,
     pub supports_authenticated_media: bool,
     pub supports_background_download: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum CapabilityAvailability {
+    Unsupported,
+    RequiresProbe,
+    Available,
+    TemporarilyUnavailable,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum FeedKind {
+    Latest,
+    RecentPopular,
+    HistoricalPopular,
+    Random,
+    LifetimeViews,
+    LifetimeFavorites,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum PopularRange {
+    Day,
+    ThreeDays,
+    Week,
+    Month,
+    ThreeMonths,
+    SixMonths,
+    Year,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum PopularTimeBasis {
+    IndexTimeWindow,
+    CalendarUploadPeriod,
+    SourceActivityWindow,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DiscoveryCapabilitiesDto {
+    pub popular: CapabilityAvailability,
+    pub common_tags: CapabilityAvailability,
+    pub popular_ranges: Vec<PopularRange>,
+    pub historical_ranges: Vec<PopularRange>,
+    pub time_basis: PopularTimeBasis,
+    pub finite_popular_limit: Option<u32>,
+    pub additional_feeds: Vec<FeedKind>,
+    pub autocomplete_min_chars: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct FeedRequestDto {
+    pub source_id: String,
+    pub kind: FeedKind,
+    pub range: Option<PopularRange>,
+    /// A date, not an instant. Calendar feeds are anchored in their cursor.
+    pub date: Option<String>,
+    pub seed: Option<String>,
+    pub ratings: Vec<ContentRating>,
+    /// Upstream page-size hint; finite rankings may return their whole list.
+    pub page_size: u32,
+    pub cursor: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CommonTagsRequestDto {
+    pub source_id: String,
+    pub page: u32,
+    pub page_size: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CommonTagsPageDto {
+    pub items: Vec<TagSuggestionDto>,
+    pub next_page: Option<u32>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -204,7 +274,6 @@ pub struct SearchRequestDto {
     pub ratings: Vec<ContentRating>,
     pub page_size: u32,
     pub cursor: Option<String>,
-    pub content_policy: ContentPolicy,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

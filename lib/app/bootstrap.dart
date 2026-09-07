@@ -12,7 +12,6 @@ import 'package:booruflow/core/app_runtime.dart';
 import 'package:booruflow/core/settings_service.dart';
 import 'package:booruflow/features/downloads/logic.dart';
 import 'package:booruflow/features/booru/booru_service.dart';
-import 'package:booruflow/features/search/custom_tags_service.dart';
 import 'package:booruflow/features/tags/tag_translations_service.dart';
 import 'package:booruflow/intl/locale_preferences.dart';
 import 'package:booruflow/intl/translations.g.dart';
@@ -32,7 +31,6 @@ Future<void> bootstrap() async {
   await BooruService.instance.initialize(packageInfo.version);
 
   final appLocale = applyLanguagePreference(SettingsService.language);
-  await CustomTagsService.initialize();
   await TagTranslationsService.loadAll();
   TagTranslationsService.update(
     SettingsService.language ?? languagePreferenceForAppLocale(appLocale),

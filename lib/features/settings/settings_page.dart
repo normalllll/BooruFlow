@@ -24,9 +24,8 @@ import 'package:booruflow/src/rust/api/booru_models.dart';
 
 enum SettingsSection {
   sources('sources'),
-  account('account'),
   network('network'),
-  appearance('appearance'),
+  general('general'),
   downloads('downloads');
 
   const SettingsSection(this.pathSegment);
@@ -34,10 +33,9 @@ enum SettingsSection {
   final String pathSegment;
 
   String get title => switch (this) {
-    SettingsSection.sources => t.settings.sections.sourcesAndContent,
-    SettingsSection.account => t.settings.sections.accounts,
+    SettingsSection.sources => t.settings.sections.sourcesAndAccounts,
     SettingsSection.network => t.settings.sections.network,
-    SettingsSection.appearance => t.settings.sections.appearance,
+    SettingsSection.general => t.settings.sections.general,
     SettingsSection.downloads => t.settings.sections.downloads,
   };
 
@@ -64,25 +62,24 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<RouteCacheStateDto>? _routes;
 
   BooruService get service => BooruService.instance;
-  BooruSourceDto get source => service.currentSource;
+  late String _accountSource;
+  final _visitedSources = <String>{};
 
   @override
   void initState() {
     super.initState();
     _proxy.text = SettingsService.proxyUrl ?? '';
-    _routes = service.engine.routeCacheState();
+    _accountSource = service.selectedSource.value;
+    _visitedSources.add(_accountSource);
+    if (widget.section == SettingsSection.network) {
+      _routes = service.engine.routeCacheState();
+    }
   }
 
   @override
   void dispose() {
     _proxy.dispose();
     super.dispose();
-  }
-
-  void _selectSource(String id, StateSetter refresh) {
-    service.selectSource(id);
-    refresh(() {});
-    setState(() {});
   }
 
   Future<void> _open(SettingsSection section) async {
@@ -109,17 +106,26 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (_, _) => GroupedSettingsList(
         groups: [
           [
+            _DropdownTile<String>(
+              icon: CupertinoIcons.square_stack_3d_up,
+              title: t.settings.source.defaultSource,
+              value: SettingsService.defaultSourceId,
+              values: service.sources.map((item) => item.sourceId).toList(),
+              label: (id) => service.sourceById(id).displayName,
+              onChanged: (id) =>
+                  setState(() => SettingsService.defaultSourceId = id),
+            ),
             _category(
               CupertinoIcons.photo_on_rectangle,
-              t.settings.sections.sourcesAndContent,
-              '${source.displayName} · ${_policy(SettingsService.contentPolicy)}',
+              t.settings.sections.sourcesAndAccounts,
+              t.settings.account.manageAllSubtitle,
               () => _open(SettingsSection.sources),
             ),
             _category(
-              CupertinoIcons.person_crop_circle,
-              t.settings.sections.accounts,
-              t.settings.account.manageAllSubtitle,
-              () => _open(SettingsSection.account),
+              Icons.sell_outlined,
+              t.discovery.manageTags,
+              t.discovery.displayName,
+              () => context.pushUserTags<void>(),
             ),
           ],
           [
@@ -131,9 +137,9 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             _category(
               CupertinoIcons.paintbrush,
-              t.settings.sections.appearance,
+              t.settings.sections.general,
               '${_theme(SettingsService.themeMode)} · ${_language(SettingsService.language)}',
-              () => _open(SettingsSection.appearance),
+              () => _open(SettingsSection.general),
             ),
           ],
           if (AppPlatform.isDesktop)
@@ -152,10 +158,9 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _sectionContent(SettingsSection section, StateSetter refresh) =>
       switch (section) {
-        SettingsSection.sources => _sourceContentPage(refresh),
-        SettingsSection.account => _accountPage(),
+        SettingsSection.sources => _sourceAccountPage(refresh),
         SettingsSection.network => _networkPage(refresh),
-        SettingsSection.appearance => _appearancePage(refresh),
+        SettingsSection.general => _generalPage(refresh),
         SettingsSection.downloads => _downloadsPage(refresh),
       };
 
@@ -170,53 +175,6 @@ class _SettingsPageState extends State<SettingsPage> {
     subtitle: Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis),
     trailing: const Icon(Icons.chevron_right_rounded, size: 20),
     onTap: onTap,
-  );
-
-  Widget _sourceContentPage(StateSetter refresh) => GroupedSettingsList(
-    groups: [
-      [
-        _DropdownTile<String>(
-          icon: CupertinoIcons.square_stack_3d_up,
-          title: t.settings.source.label,
-          value: service.selectedSource.value,
-          values: service.sources.map((item) => item.sourceId).toList(),
-          label: (id) => service.sourceById(id).displayName,
-          onChanged: (id) => _selectSource(id, refresh),
-        ),
-      ],
-      [
-        _DropdownTile<ContentPolicy>(
-          icon: CupertinoIcons.slider_horizontal_3,
-          title: t.settings.source.contentPolicy,
-          value: SettingsService.contentPolicy,
-          values: ContentPolicy.values,
-          label: _policy,
-          onChanged: (value) {
-            SettingsService.contentPolicy = value;
-            service.revision.value++;
-            refresh(() {});
-          },
-        ),
-        _SafetyRatingTile(
-          ratings: source.capabilities.ratings,
-          selectedRatings: SettingsService.ratings,
-          onChanged: (rating) {
-            final next = [...SettingsService.ratings];
-            next.contains(rating) ? next.remove(rating) : next.add(rating);
-            SettingsService.ratings = next;
-            service.revision.value++;
-            refresh(() {});
-          },
-        ),
-      ],
-      [
-        ListTile(
-          leading: const Icon(CupertinoIcons.info_circle),
-          title: Text(t.settings.source.noHiddenDefault),
-          subtitle: Text(t.settings.source.noHiddenDefaultDescription),
-        ),
-      ],
-    ],
   );
 
   Widget _networkPage(StateSetter refresh) => GroupedSettingsList(
@@ -337,7 +295,7 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
-  Widget _appearancePage(StateSetter refresh) => GroupedSettingsList(
+  Widget _generalPage(StateSetter refresh) => GroupedSettingsList(
     groups: [
       [
         _DropdownTile<String>(
@@ -435,13 +393,6 @@ class _SettingsPageState extends State<SettingsPage> {
           refresh,
         ),
       ],
-      [
-        ListTile(
-          leading: const Icon(CupertinoIcons.folder_badge_plus),
-          title: Text(t.settings.sourceSubfolders),
-          subtitle: Text(t.settings.sourceSubfoldersDescription),
-        ),
-      ],
     ],
   );
 
@@ -488,21 +439,118 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
-  Widget _accountPage() {
-    final accountSources = service.sources
-        .where((item) => item.capabilities.authKind != AuthKind.none)
-        .toList(growable: false);
-    return GroupedSettingsList(
-      groups: [
-        for (final accountSource in accountSources)
-          [
-            _AccountEditor(
-              key: ValueKey(accountSource.sourceId),
-              service: service,
-              source: accountSource,
-            ),
-          ],
-      ],
+  Widget _sourceAccountPage(StateSetter refresh) {
+    final sources = service.sources;
+    final activeIndex = sources.indexWhere(
+      (item) => item.sourceId == _accountSource,
+    );
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 760),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(
+            MediaQuery.sizeOf(context).width < 600 ? 16 : 24,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Card(
+                margin: EdgeInsets.zero,
+                clipBehavior: Clip.antiAlias,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: _SafetyRatingTile(
+                    ratings: SettingsService.configurableRatings,
+                    selectedRatings: SettingsService.ratings,
+                    onChanged: (rating) {
+                      final next = [...SettingsService.ratings];
+                      next.contains(rating)
+                          ? next.remove(rating)
+                          : next.add(rating);
+                      SettingsService.ratings = next;
+                      refresh(() {});
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              DefaultTabController(
+                length: sources.length,
+                initialIndex: activeIndex < 0 ? 0 : activeIndex,
+                child: TabBar(
+                  isScrollable: true,
+                  tabAlignment: TabAlignment.start,
+                  dividerColor: Colors.transparent,
+                  tabs: [
+                    for (final source in sources) Tab(text: source.displayName),
+                  ],
+                  onTap: (index) => setState(() {
+                    _accountSource = sources[index].sourceId;
+                    _visitedSources.add(_accountSource);
+                  }),
+                ),
+              ),
+              const SizedBox(height: 12),
+              for (final source in sources)
+                if (_visitedSources.contains(source.sourceId))
+                  Offstage(
+                    key: ValueKey('source-settings-${source.sourceId}'),
+                    offstage: source.sourceId != _accountSource,
+                    child: Card(
+                      margin: EdgeInsets.zero,
+                      clipBehavior: Clip.antiAlias,
+                      child: ListTileTheme.merge(
+                        tileColor: Colors.transparent,
+                        shape: const RoundedRectangleBorder(),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ListTile(
+                              leading: const Icon(CupertinoIcons.shield),
+                              title: Text(t.settings.source.supportedRatings),
+                              subtitle: Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Wrap(
+                                  spacing: 12,
+                                  runSpacing: 8,
+                                  children: [
+                                    for (final rating
+                                        in source.capabilities.ratings)
+                                      Text(rating.shortLabel),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const Divider(height: 1, indent: 16, endIndent: 16),
+                            if (source.capabilities.authKind != AuthKind.none)
+                              _AccountEditor(
+                                key: ValueKey(source.sourceId),
+                                service: service,
+                                source: source,
+                              )
+                            else
+                              ListTile(
+                                leading: const Icon(
+                                  CupertinoIcons.person_crop_circle,
+                                ),
+                                title: Text(
+                                  t.settings.account.noAccountRequired,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -519,37 +567,30 @@ class _SafetyRatingTile extends StatelessWidget {
   final ValueChanged<ContentRating> onChanged;
 
   @override
-  Widget build(BuildContext context) => ConstrainedBox(
-    constraints: const BoxConstraints(minHeight: 64),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Row(
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Text(
+        t.settings.source.safetyRating,
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
+      const SizedBox(height: 12),
+      Row(
         children: [
-          const Icon(CupertinoIcons.shield),
-          const SizedBox(width: 16),
-          Text(t.settings.source.safetyRating),
-          const SizedBox(width: 12),
-          Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              reverse: true,
-              child: Row(
-                children: [
-                  for (var index = 0; index < ratings.length; index++) ...[
-                    if (index > 0) const SizedBox(width: 7),
-                    AppChoiceToggle(
-                      label: ratings[index].shortLabel,
-                      selected: selectedRatings.contains(ratings[index]),
-                      onPressed: () => onChanged(ratings[index]),
-                    ),
-                  ],
-                ],
+          for (final rating in ratings)
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(right: rating == ratings.last ? 0 : 8),
+                child: AppChoiceToggle(
+                  label: rating.shortLabel,
+                  selected: selectedRatings.contains(rating),
+                  onPressed: () => onChanged(rating),
+                ),
               ),
             ),
-          ),
         ],
       ),
-    ),
+    ],
   );
 }
 
@@ -888,11 +929,6 @@ class _TextTile extends StatelessWidget {
     ),
   );
 }
-
-String _policy(ContentPolicy value) => switch (value) {
-  ContentPolicy.unfiltered => t.settings.source.unfiltered,
-  ContentPolicy.animeFocused => t.settings.source.animeFocused,
-};
 
 String _networkMode(NetworkFallbackMode value) => switch (value) {
   NetworkFallbackMode.off => t.settings.network.systemDns,

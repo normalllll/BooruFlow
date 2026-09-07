@@ -2,6 +2,7 @@ pub(crate) mod adapter;
 pub(crate) mod adapters;
 pub(crate) mod auth;
 pub(crate) mod capabilities;
+pub(crate) mod discovery;
 pub(crate) mod error;
 pub(crate) mod media;
 pub(crate) mod model;

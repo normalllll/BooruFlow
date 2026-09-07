@@ -60,10 +60,40 @@ pub struct NetworkRuntime {
     sessions: Arc<SessionStore>,
     clients: Mutex<HashMap<String, Client>>,
     limiters: HashMap<&'static str, RateLimiter>,
+    cooldowns: Mutex<HashMap<&'static str, std::time::Instant>>,
     pub route_cache: RouteCache,
 }
 
 impl NetworkRuntime {
+    fn check_cooldown(&self, source: &'static str) -> BooruResult<()> {
+        if let Some(seconds) = self.cooldowns.lock().ok().and_then(|values| {
+            values
+                .get(source)
+                .and_then(|until| until.checked_duration_since(std::time::Instant::now()))
+                .map(|remaining| {
+                    u32::try_from(remaining.as_secs().saturating_add(1)).unwrap_or(u32::MAX)
+                })
+        }) {
+            return Err(BooruErrorDto::new(
+                BooruErrorCode::RateLimited,
+                Some(source),
+                "booru.error.rateLimited",
+            )
+            .with_retry_after(Some(seconds)));
+        }
+        Ok(())
+    }
+
+    fn defer_source(&self, source: &'static str, seconds: u32) {
+        if let Ok(mut values) = self.cooldowns.lock() {
+            if let Some(until) =
+                std::time::Instant::now().checked_add(Duration::from_secs(u64::from(seconds)))
+            {
+                values.insert(source, until);
+            }
+        }
+    }
+
     pub fn new(
         mut config: BooruEngineConfigDto,
         sources: &[SourceDefinition],
@@ -91,6 +121,7 @@ impl NetworkRuntime {
             sessions,
             clients: Mutex::new(HashMap::new()),
             limiters,
+            cooldowns: Mutex::new(HashMap::new()),
         })
     }
 
@@ -161,6 +192,7 @@ impl NetworkRuntime {
                 MAX_ATTEMPTS
             };
             for attempt in 1..=attempt_count {
+                self.check_cooldown(source.id)?;
                 if legacy_ip.is_some() {
                     let index = usize::try_from(attempt - 1).unwrap_or_default();
                     request_url
@@ -217,7 +249,16 @@ impl NetworkRuntime {
                             continue 'request;
                         }
                         let retry_after = retry_after_seconds(&response_headers);
-                        if matches!(status.as_u16(), 429 | 502 | 503) && attempt < MAX_ATTEMPTS {
+                        if status.as_u16() == 429 {
+                            self.defer_source(source.id, retry_after.unwrap_or(60));
+                            return Err(classify_status(
+                                source.id,
+                                status,
+                                Some(retry_after.unwrap_or(60)),
+                                self.sessions.is_configured(source.id),
+                            ));
+                        }
+                        if matches!(status.as_u16(), 502 | 503) && attempt < MAX_ATTEMPTS {
                             tokio::time::sleep(retry_delay(attempt, retry_after)).await;
                             continue;
                         }
@@ -229,7 +270,7 @@ impl NetworkRuntime {
                         if looks_like_challenge(
                             &response_headers,
                             &body,
-                            spec.response_kind == ResponseKind::Json,
+                            status.is_success() && spec.response_kind == ResponseKind::Json,
                         ) {
                             return Err(BooruErrorDto::new(
                                 BooruErrorCode::ChallengeRequired,
@@ -372,6 +413,7 @@ impl NetworkRuntime {
                         )
                         .map_err(|_| BooruErrorDto::invalid_request(Some(source.id)))?;
                 }
+                self.check_cooldown(source.id)?;
                 let response = match client
                     .get(request_url.clone())
                     .headers(headers.clone())
@@ -389,7 +431,17 @@ impl NetworkRuntime {
                 };
                 let status = response.status();
                 let retry_after = retry_after_seconds(response.headers());
-                if matches!(status.as_u16(), 429 | 502 | 503) && attempt < MAX_ATTEMPTS {
+                if status.as_u16() == 429 {
+                    let seconds = retry_after.unwrap_or(60);
+                    self.defer_source(source.id, seconds);
+                    return Err(classify_status(
+                        source.id,
+                        status,
+                        Some(seconds),
+                        self.sessions.is_configured(source.id),
+                    ));
+                }
+                if matches!(status.as_u16(), 502 | 503) && attempt < MAX_ATTEMPTS {
                     tokio::time::sleep(retry_delay(attempt, retry_after)).await;
                     continue;
                 }
@@ -713,7 +765,21 @@ fn retry_after_seconds(headers: &HeaderMap) -> Option<u32> {
     headers
         .get(RETRY_AFTER)
         .and_then(|value| value.to_str().ok())
-        .and_then(|value| value.parse::<u32>().ok())
+        .and_then(|value| {
+            value.parse::<u32>().ok().or_else(|| {
+                let date = time::OffsetDateTime::parse(
+                    value,
+                    &time::format_description::well_known::Rfc2822,
+                )
+                .ok()?;
+                u32::try_from(
+                    (date - time::OffsetDateTime::now_utc())
+                        .whole_seconds()
+                        .max(0),
+                )
+                .ok()
+            })
+        })
 }
 
 fn retry_delay(attempt: u32, retry_after: Option<u32>) -> Duration {
@@ -805,6 +871,55 @@ mod tests {
     fn retry_after_is_bounded() {
         assert_eq!(retry_delay(1, Some(500)), Duration::from_secs(30));
         assert_eq!(retry_delay(2, None), Duration::from_millis(500));
+    }
+
+    #[test]
+    fn retry_after_supports_seconds_and_http_dates() {
+        let mut headers = HeaderMap::new();
+        headers.insert(RETRY_AFTER, HeaderValue::from_static("120"));
+        assert_eq!(retry_after_seconds(&headers), Some(120));
+        let future = time::OffsetDateTime::now_utc() + time::Duration::minutes(2);
+        let date = future
+            .format(&time::format_description::well_known::Rfc2822)
+            .unwrap();
+        headers.insert(RETRY_AFTER, HeaderValue::from_str(&date).unwrap());
+        assert!(matches!(retry_after_seconds(&headers), Some(118..=120)));
+        headers.insert(RETRY_AFTER, HeaderValue::from_static("invalid"));
+        assert_eq!(retry_after_seconds(&headers), None);
+    }
+
+    #[tokio::test]
+    async fn source_cooldown_rejects_queued_requests_before_network() {
+        let sources = builtin_sources();
+        let directory = tempfile::tempdir().unwrap();
+        let runtime = NetworkRuntime::new(
+            BooruEngineConfigDto {
+                app_support_directory: directory.path().to_string_lossy().to_string(),
+                proxy_url: None,
+                fallback_mode: NetworkFallbackMode::Off,
+                fallback_to_system_dns: true,
+                user_agent: "test".into(),
+            },
+            &sources,
+            Arc::new(SessionStore::default()),
+        )
+        .unwrap();
+        runtime.defer_source("yande", 120);
+        let source = sources.iter().find(|source| source.id == "yande").unwrap();
+        let error = runtime
+            .execute(
+                source,
+                RequestSpec::get(
+                    Url::parse("https://yande.re/post.json").unwrap(),
+                    ResponseKind::Json,
+                ),
+            )
+            .await
+            .unwrap_err();
+        assert_eq!(error.code, BooruErrorCode::RateLimited);
+        assert!(runtime.check_cooldown("danbooru").is_ok());
+        runtime.defer_source("yande", 0);
+        assert!(runtime.check_cooldown("yande").is_ok());
     }
 
     #[test]

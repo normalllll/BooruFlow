@@ -39,8 +39,8 @@ update:
   noNewVersionFound: 新しいバージョンが見つかりません。
 
 postList:
-  short: 投稿
-  title: 投稿リスト
+  short: "ホーム"
+  title: "ホーム"
   titleWithTags: "タグ付き投稿: $tags"
 
 postDetail:
@@ -55,6 +55,8 @@ postDetail:
   relatedLoadFailed: 関連画像の読み込みに失敗しました。再試行できます。
   createdAt: 作成日時
   author: 作者
+  unknownAuthor: 不明
+  imageSource: 画像サイト
   source: ソース
   width: 幅
   height: 高さ
@@ -143,28 +145,23 @@ settings:
   light: ライト
   dark: ダーク
   auto: 自動
-  downloadsOverview: デスクトップのみ · ソースごとにサブフォルダーを作成
-  sourceSubfolders: ソース別サブフォルダー
-  sourceSubfoldersDescription: ダウンロードはソース名ごとの個別フォルダーに保存されます。
+  downloadsOverview: 保存先と同時ダウンロード数
 
   sections:
-    sourcesAndContent: ソースとコンテンツ
+    sourcesAndAccounts: サイトとアカウント
     accounts: アカウント
     network: ネットワーク
-    appearance: 外観
+    general: 一般
     downloads: ダウンロード
 
   source:
-    label: ソース
-    contentPolicy: コンテンツポリシー
-    safetyRating: セーフティレーティング
-    noHiddenDefault: 暗黙の除外なし
-    noHiddenDefaultDescription: すべて未選択にすると、成人向けを含むすべての投稿が表示されます。
-    unfiltered: フィルターなし
-    animeFocused: アニメ優先
+    defaultSource: 既定のサイト
+    supportedRatings: 対応するレーティング
+    safetyRating: "全画像ソースのレーティング"
 
   account:
-    manageAllSubtitle: ソースごとのアカウントを個別に設定
+    manageAllSubtitle: サイトのレーティングとアカウント設定
+    noAccountRequired: アカウント設定は不要です
     openSignInPage: ログインページを開く
     cookieHeader: Cookie ヘッダー
     storedLocally: このデバイス内に保存
@@ -233,3 +230,67 @@ settings:
 
   maxSegmentsPerTaskDialog:
     title: 各ダウンロードタスクの最大セグメント数
+
+discovery:
+  searchResults: "検索結果"
+  allAvailable: "表示可能なすべてのコンテンツ"
+  defaultRatingsHint: "レーティング設定はすべての画像ソースに共通です。未選択時は、現在の画像ソースとアカウントで閲覧できるすべてのコンテンツを表示します。"
+  resetFilters: "初期設定に戻す"
+  unsupportedRatings: "選択したレーティングはこの画像ソースで利用できません。初期設定に戻してください。"
+  noFilteredPosts: "現在の絞り込み条件に一致する投稿はありません。"
+  noSearchResults: "検索条件に一致する投稿はありません。"
+  noFeedPosts: "この画像ソースには現在表示できる投稿がありません。"
+  historicalPopular: "過去の人気"
+  calendarDay: "日別"
+  calendarWeek: "週別"
+  calendarMonth: "月別"
+  latest: "最新"
+  popular: "人気"
+  today: "今日"
+  thisWeek: "今週"
+  thisMonth: "今月"
+  lastDay: "過去24時間"
+  lastThreeDays: "過去3日間"
+  lastWeek: "過去1週間"
+  lastMonth: "過去1か月"
+  lastThreeMonths: "過去3か月"
+  lastSixMonths: "過去6か月"
+  lastYear: "過去1年"
+  rankingComplete: "ランキングをすべて読み込みました"
+  latestFallback: "このサイトでは最新の投稿のみ利用できます。"
+  filters: "絞り込み"
+  loadMore: "さらに読み込む"
+  filteredContinue: "この範囲に該当する投稿はありません。続きを表示"
+  commonTags: "よく使われるタグ"
+  moreTags: "もっと見る"
+  tagSource: "対象サイト"
+  allTagSources: "すべてのサイト"
+  manageTags: "カスタムタグ"
+  addTag: "タグを追加"
+  noCustomTags: "カスタムタグはまだありません"
+  customTagsHint: "タグに覚えやすい名前を付けると、検索で見つけやすくなります。"
+  addCustomTag: "カスタムタグとして追加"
+  editTag: "カスタムタグを編集"
+  canonicalTag: "サイトのタグ"
+  displayName: "表示名（任意）"
+  invalidTag: "空白を含まないタグを1つ入力してください。"
+  queryHint: "タグやサイトの検索式を入力…"
+  unverifiedTag: "このサイトで未確認のタグがあります。そのまま検索できます。"
+  verifiedTag: "このサイトで確認済み"
+  noSuggestions: "候補がありません"
+  localFallback: "オンライン候補を取得できません。ローカル候補を利用できます。"
+  retryTags: "よく使われるタグを再取得"
+  artist: "作者"
+  character: "キャラクター"
+  copyright: "作品"
+  meta: "メタ"
+  general: "一般"
+  random: "ランダム"
+  lifetimeViews: "累計閲覧数"
+  lifetimeFavorites: "累計お気に入り数"
+
+mediaError:
+  title: 画像の読み込みに失敗しました
+  details: エラーの詳細
+  copyDetails: 詳細をコピー
+  decodeFailed: ダウンロードした画像をデコードできませんでした。再試行すると、この画像のキャッシュを削除して再ダウンロードします。

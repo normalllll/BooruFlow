@@ -74,7 +74,7 @@ pub fn builtin_sources() -> Vec<SourceDefinition> {
         ContentRating::Questionable,
         ContentRating::Explicit,
     ];
-    vec![
+    let mut sources = vec![
         SourceDefinition {
             id: "yande",
             display_name: "Yande.re",
@@ -187,7 +187,17 @@ pub fn builtin_sources() -> Vec<SourceDefinition> {
             max_concurrency: 3,
             enabled_by_default: true,
             is_ai_source: false,
-            capabilities: capabilities(all_ratings.clone(), AuthKind::ApiKey, false, false, false),
+            capabilities: capabilities(
+                vec![
+                    ContentRating::General,
+                    ContentRating::Sensitive,
+                    ContentRating::Explicit,
+                ],
+                AuthKind::ApiKey,
+                false,
+                false,
+                false,
+            ),
         },
         SourceDefinition {
             id: "anime_pictures",
@@ -209,7 +219,14 @@ pub fn builtin_sources() -> Vec<SourceDefinition> {
             is_ai_source: false,
             capabilities: capabilities(all_ratings, AuthKind::WebSession, false, false, true),
         },
-    ]
+    ];
+    for source in &mut sources {
+        source.capabilities.discovery = crate::booru::discovery::capabilities(source);
+        if source.family == ProtocolFamily::Gelbooru {
+            source.capabilities.supports_autocomplete = true;
+        }
+    }
+    sources
 }
 
 #[cfg(test)]

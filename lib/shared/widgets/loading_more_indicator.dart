@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:loading_more_list/loading_more_list.dart';
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
+import 'package:booruflow/src/rust/booru/error.dart';
 
 class LoadingMoreIndicator extends StatelessWidget {
   final IndicatorStatus status;
@@ -53,18 +55,15 @@ class LoadingMoreIndicator extends StatelessWidget {
         }
         break;
       case IndicatorStatus.error:
-        widget = _FooterIndicator(
-          icon: Icon(
-            Icons.error_outline,
-            size: 20,
-            color: Theme.of(context).colorScheme.error,
-          ),
-          label: t.generic.loadFailed,
-          onTap: errorRefresh,
+        widget = _ErrorContent(
+          error: error,
+          message: describeBooruError(error),
+          onRetry: errorRefresh,
         );
         break;
       case IndicatorStatus.fullScreenError:
         widget = _ErrorContent(
+          error: error,
           message: describeBooruError(error),
           onRetry: errorRefresh,
         );
@@ -106,11 +105,10 @@ class LoadingMoreIndicator extends StatelessWidget {
 }
 
 class _FooterIndicator extends StatelessWidget {
-  const _FooterIndicator({required this.icon, required this.label, this.onTap});
+  const _FooterIndicator({required this.icon, required this.label});
 
   final Widget icon;
   final String label;
-  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -120,7 +118,7 @@ class _FooterIndicator extends StatelessWidget {
         child: _InlineStatus(icon: icon, label: label),
       ),
     );
-    return onTap == null ? content : InkWell(onTap: onTap, child: content);
+    return content;
   }
 }
 
@@ -160,14 +158,64 @@ class _InlineStatus extends StatelessWidget {
   }
 }
 
-class _ErrorContent extends StatelessWidget {
-  const _ErrorContent({required this.message, required this.onRetry});
+class _ErrorContent extends StatefulWidget {
+  const _ErrorContent({
+    required this.message,
+    required this.onRetry,
+    this.error,
+  });
 
   final String message;
   final VoidCallback onRetry;
+  final Object? error;
+
+  @override
+  State<_ErrorContent> createState() => _ErrorContentState();
+}
+
+class _ErrorContentState extends State<_ErrorContent> {
+  Timer? _timer;
+  int _remaining = 0;
+  @override
+  void initState() {
+    super.initState();
+    _startCooldown();
+  }
+
+  @override
+  void didUpdateWidget(covariant _ErrorContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.error != widget.error) _startCooldown();
+  }
+
+  void _startCooldown() {
+    _timer?.cancel();
+    final error = switch (widget.error) {
+      BooruReadableException(:final cause) => cause,
+      BooruErrorDto value => value,
+      _ => null,
+    };
+    final seconds = error?.code == BooruErrorCode.rateLimited
+        ? (error?.retryAfterSeconds ?? 60).clamp(0, 86400)
+        : 0;
+    _remaining = seconds;
+    if (seconds > 0) {
+      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        setState(() => _remaining = (seconds - timer.tick).clamp(0, seconds));
+        if (_remaining == 0) timer.cancel();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final message = widget.message;
     final colorScheme = Theme.of(context).colorScheme;
     final hasDetailedMessage = message.contains('\n') || message.length > 120;
 
@@ -192,8 +240,10 @@ class _ErrorContent extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 AppButton(
-                  label: t.generic.retry,
-                  onPressed: onRetry,
+                  label: _remaining > 0
+                      ? '${t.generic.retry} (${_remaining}s)'
+                      : t.generic.retry,
+                  onPressed: _remaining > 0 ? null : widget.onRetry,
                   icon: Icons.refresh,
                 ),
               ],

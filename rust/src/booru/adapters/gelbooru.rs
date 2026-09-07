@@ -3,7 +3,7 @@ use crate::api::booru_models::{MediaVariantKind, TagCategory};
 use crate::booru::adapter::{BooruAdapter, RequestContext};
 use crate::booru::adapters::common::{
     media, parse_json, rating, signed32, string, tag_list, unix_to_iso8601, unsigned, unsigned32,
-    validate_media_hosts,
+    username, validate_media_hosts,
 };
 use crate::booru::error::{BooruErrorCode, BooruErrorDto, BooruResult};
 use crate::booru::model::{Post, PostFlags, PostId, PostPage, SearchQuery};
@@ -93,6 +93,7 @@ impl GelbooruAdapter {
             rating: rating(string(value, "rating").as_deref()),
             score: signed32(value, "score"),
             created_at_iso8601,
+            author: username(value, "/owner"),
             source_url: string(value, "source"),
             tags: tag_list(
                 string(value, "tags").as_deref().unwrap_or_default(),
@@ -160,21 +161,36 @@ impl GelbooruAdapter {
     fn parse_public_listing(&self, bytes: &[u8], limit: usize) -> BooruResult<Vec<Post>> {
         let html = std::str::from_utf8(bytes)
             .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
-        let ids = html.split("s=view&amp;id=").skip(1).filter_map(|tail| {
-            let id = tail
-                .bytes()
-                .take_while(u8::is_ascii_digit)
-                .map(char::from)
-                .collect::<String>();
-            (!id.is_empty()).then_some(id)
-        });
-        let previews = html
-            .split("src=\"")
-            .skip(1)
-            .filter_map(|tail| tail.split_once('"').map(|(url, _)| url))
-            .filter(|url| url.contains("/thumbnails/"));
         let mut posts = Vec::new();
-        for (id, preview) in ids.zip(previews).take(limit) {
+        for anchor in html.split("<a ").skip(1) {
+            let Some((anchor, _)) = anchor.split_once("</a>") else {
+                continue;
+            };
+            let Some((_, tail)) = anchor
+                .split_once("s=view&amp;id=")
+                .or_else(|| anchor.split_once("s=view&id="))
+            else {
+                continue;
+            };
+            let id = tail
+                .chars()
+                .take_while(char::is_ascii_digit)
+                .collect::<String>();
+            let Some((_, image)) = anchor.split_once("<img ") else {
+                continue;
+            };
+            let Some(preview) =
+                html_attribute(image, "src").filter(|url| url.contains("/thumbnails/"))
+            else {
+                continue;
+            };
+            if id.is_empty() {
+                continue;
+            }
+            let title = html_attribute(image, "title").unwrap_or_default();
+            let source_rating = title
+                .split_whitespace()
+                .find_map(|part| part.strip_prefix("rating:"));
             let preview = media(
                 MediaVariantKind::Thumbnail,
                 Some(preview.to_owned()),
@@ -194,14 +210,22 @@ impl GelbooruAdapter {
                     "{}/index.php?page=post&s=view&id={id}",
                     self.definition.web_base
                 )),
-                rating: crate::api::booru_models::ContentRating::Unknown,
+                rating: rating(source_rating),
                 score: None,
                 created_at_iso8601: None,
+                author: title
+                    .split_whitespace()
+                    .find_map(|part| part.strip_prefix("user:"))
+                    .filter(|name| !name.is_empty())
+                    .map(decode_username),
                 source_url: None,
                 tags: Vec::new(),
                 media: vec![preview],
                 flags: PostFlags::default(),
             });
+            if posts.len() >= limit {
+                break;
+            }
         }
         if posts.is_empty() {
             Err(BooruErrorDto::invalid_response(self.definition.id))
@@ -240,6 +264,17 @@ impl GelbooruAdapter {
             rating: crate::api::booru_models::ContentRating::Unknown,
             score: None,
             created_at_iso8601: None,
+            author: html.split_once("Posted:").and_then(|(_, info)| {
+                let info = info.split("</li>").next()?;
+                info.split("<a ").skip(1).find_map(|anchor| {
+                    let href = html_attribute(anchor, "href")?;
+                    if !href.contains("s=profile") {
+                        return None;
+                    }
+                    let name = anchor.split_once('>')?.1.split_once("</a>")?.0.trim();
+                    (!name.is_empty() && !name.contains('<')).then(|| decode_username(name))
+                })
+            }),
             source_url: None,
             tags: Vec::new(),
             media: vec![original],
@@ -271,10 +306,10 @@ impl BooruAdapter for GelbooruAdapter {
                 )
                 .await?;
             let mut items = self.parse_public_listing(&response.body, limit as usize)?;
+            let item_count = u32::try_from(items.len()).unwrap_or(0);
             if !query.ratings.is_empty() {
                 items.retain(|post| query.ratings.contains(&post.rating));
             }
-            let item_count = u32::try_from(items.len()).unwrap_or(0);
             return Ok(PostPage {
                 exhausted: item_count < limit,
                 next_cursor: (item_count >= limit)
@@ -344,6 +379,25 @@ impl BooruAdapter for GelbooruAdapter {
     }
 }
 
+fn html_attribute<'a>(element: &'a str, name: &str) -> Option<&'a str> {
+    for quote in ['"', '\''] {
+        let prefix = format!("{name}={quote}");
+        if let Some((_, tail)) = element.split_once(&prefix) {
+            return tail.split_once(quote).map(|(value, _)| value);
+        }
+    }
+    None
+}
+
+fn decode_username(value: &str) -> String {
+    value
+        .replace("&quot;", "\"")
+        .replace("&#39;", "'")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&amp;", "&")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -359,6 +413,13 @@ mod tests {
         )
     }
 
+    #[test]
+    fn preserves_source_username_in_dto() {
+        let fixture = serde_json::json!({"id":1,"file_url":"https://img3.gelbooru.com/a.jpg","owner":" Alice "});
+        let post = adapter().parse_post(&fixture).unwrap();
+        assert_eq!(post.author.as_deref(), Some("Alice"));
+        assert_eq!(post.into_dto().author.as_deref(), Some("Alice"));
+    }
     #[test]
     fn parses_wrapped_response_and_string_numbers() {
         let fixture = br#"{"@attributes":{"count":1},"post":[{"id":"42","width":"1000","height":"800","rating":"general","tags":"alice solo","file_url":"https://img3.gelbooru.com/a.jpg","file_size":"99"}]}"#;
@@ -390,12 +451,24 @@ mod tests {
     }
 
     #[test]
+    fn public_listing_keeps_each_rating_with_its_own_post() {
+        let fixture = br#"<a href="?s=view&amp;id=999">unrelated</a><a href="?s=view&amp;id=42"><img src="https://img3.gelbooru.com/thumbnails/a.jpg" title="sky rating:general"></a><a href="?s=view&amp;id=43"><img src="https://img3.gelbooru.com/thumbnails/b.jpg" title="rating:explicit"></a>"#;
+        let posts = adapter().parse_public_listing(fixture, 10).unwrap();
+        assert_eq!(posts.len(), 2);
+        assert_eq!(posts[0].id.0, "42");
+        assert_eq!(posts[0].rating, ContentRating::General);
+        assert_eq!(posts[1].id.0, "43");
+        assert_eq!(posts[1].rating, ContentRating::Explicit);
+    }
+
+    #[test]
     fn parses_anonymous_public_detail_original() {
-        let fixture = br#"<meta property="og:image" content="https://img3.gelbooru.com/images/aa/bb/original.png">"#;
+        let fixture = br#"<meta property="og:image" content="https://img3.gelbooru.com/images/aa/bb/original.png"><li>Posted: today by <a href="index.php?page=account&amp;s=profile&amp;id=12">Alice &amp; Bob</a></li>"#;
         let post = adapter()
             .parse_public_detail(&PostId("42".to_owned()), fixture)
             .unwrap();
         assert_eq!(post.media[0].kind, MediaVariantKind::Original);
         assert!(post.media[0].url.ends_with("/original.png"));
+        assert_eq!(post.author.as_deref(), Some("Alice & Bob"));
     }
 }

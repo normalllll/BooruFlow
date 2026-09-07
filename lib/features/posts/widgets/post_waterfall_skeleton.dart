@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:loading_more_list/loading_more_list.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:booruflow/shared/app_theme.dart';
+import 'package:booruflow/features/posts/widgets/post_preview_footer.dart';
 
 const _ratios = <double>[
   1.32,
@@ -104,7 +105,7 @@ class _PostSkeletonCard extends StatelessWidget {
     final tokens = AppThemeTokens.of(context);
     final radius = BorderRadius.circular(8);
 
-    return Skeletonizer.zone(
+    return Skeletonizer(
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: tokens.surfaceRaised,
@@ -129,16 +130,11 @@ class _PostSkeletonCard extends StatelessWidget {
                   height: double.infinity,
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.fromLTRB(10, 9, 8, 9),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Bone.text(width: 72),
-                    SizedBox(height: 7),
-                    Bone.text(width: 108),
-                  ],
-                ),
+              PostPreviewFooter(
+                postId: '0000000',
+                author: 'username',
+                score: 123,
+                accentColor: tokens.brand,
               ),
             ],
           ),

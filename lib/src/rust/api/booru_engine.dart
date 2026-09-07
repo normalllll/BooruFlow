@@ -10,7 +10,7 @@ import 'booru_download.dart';
 import 'booru_models.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `context`, `unsupported`
+// These functions are ignored because they are not marked as `pub`: `context`, `stream_media_inner`, `unsupported`
 // These functions are ignored because they have generic arguments: `download_to_file`
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<BooruEngine>>
@@ -26,9 +26,13 @@ abstract class BooruEngine implements RustOpaqueInterface {
 
   Future<void> clearAuth({required String sourceId});
 
+  Future<CommonTagsPageDto> commonTags({required CommonTagsRequestDto request});
+
   Stream<DownloadEventDto> downloadToFileStream({
     required DownloadRequestDto request,
   });
+
+  Future<PostPageDto> feed({required FeedRequestDto request});
 
   Future<BooruPostDto> getPost({
     required String sourceId,

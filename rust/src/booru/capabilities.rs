@@ -8,6 +8,7 @@ pub fn capabilities(
     authenticated_media: bool,
 ) -> SourceCapabilitiesDto {
     SourceCapabilitiesDto {
+        discovery: crate::booru::discovery::unsupported_capabilities(),
         ratings,
         auth_kind,
         supports_search: true,

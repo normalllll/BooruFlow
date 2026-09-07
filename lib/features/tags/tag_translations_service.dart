@@ -55,4 +55,9 @@ class TagTranslationsService {
   static String? translate(String tag) {
     return _translations?[tag];
   }
+
+  static bool matchesAnyLanguage(String tag, String query) =>
+      [_en, _ja, _zhTW, _zhCN].any(
+        (map) => map[tag]?.toLowerCase().contains(query.toLowerCase()) ?? false,
+      );
 }

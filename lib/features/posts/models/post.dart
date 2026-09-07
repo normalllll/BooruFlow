@@ -21,7 +21,7 @@ final class Post {
   ContentRating get rating => dto.rating;
   int get score => dto.score ?? 0;
   String get tags => dto.tags.map((tag) => tag.name).join(' ');
-  String get author => dto.sourceId;
+  String get author => dto.author?.trim() ?? '';
   String get source => dto.sourceUrl ?? dto.webUrl ?? '';
   bool get hasChildren => dto.flags.hasChildren;
   String? get parentId => dto.flags.parentId;
@@ -36,8 +36,8 @@ final class Post {
   }
 
   MediaVariantDto get displayMedia =>
-      variant(MediaVariantKind.preview) ??
       variant(MediaVariantKind.sample) ??
+      variant(MediaVariantKind.preview) ??
       variant(MediaVariantKind.thumbnail) ??
       dto.media.first;
 

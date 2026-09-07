@@ -39,8 +39,8 @@ update:
   noNewVersionFound: 沒有新版本。
 
 postList:
-  short: 帖子
-  title: 帖子列表
+  short: "首頁"
+  title: "首頁"
   titleWithTags: "帶有標籤的帖子: $tags"
 
 postDetail:
@@ -55,6 +55,8 @@ postDetail:
   relatedLoadFailed: 關聯圖片載入失敗，可以重試。
   createdAt: 建立時間
   author: 作者
+  unknownAuthor: 未知
+  imageSource: 圖源
   source: 來源
   width: 寬度
   height: 高度
@@ -143,28 +145,23 @@ settings:
   light: 淺色模式
   dark: 深色模式
   auto: 自動
-  downloadsOverview: 僅桌面端 · 每個圖源使用獨立子目錄
-  sourceSubfolders: 圖源子目錄
-  sourceSubfoldersDescription: 下載內容會依照圖源名稱儲存在不同資料夾。
+  downloadsOverview: 儲存位置與同時下載數
 
   sections:
-    sourcesAndContent: 圖源與內容
+    sourcesAndAccounts: 圖源與帳號
     accounts: 帳號
     network: 網路
-    appearance: 外觀
+    general: 一般
     downloads: 下載
 
   source:
-    label: 圖源
-    contentPolicy: 內容策略
-    safetyRating: 安全評級
-    noHiddenDefault: 不預設隱藏
-    noHiddenDefaultDescription: 不選取任何評級時會顯示所有貼文，包括成人內容。
-    unfiltered: 不篩選
-    animeFocused: 動漫優先
+    defaultSource: 預設圖源
+    supportedRatings: 支援的分級
+    safetyRating: "全域內容分級"
 
   account:
-    manageAllSubtitle: 分別設定每個圖源的帳號
+    manageAllSubtitle: 圖源分級與帳號設定
+    noAccountRequired: 此圖源無需設定帳號
     openSignInPage: 開啟登入頁面
     cookieHeader: Cookie 標頭
     storedLocally: 僅儲存在此裝置
@@ -233,3 +230,67 @@ settings:
 
   maxSegmentsPerTaskDialog:
     title: 每個下載任務的最大分段數
+
+discovery:
+  searchResults: "搜尋結果"
+  allAvailable: "全部可用內容"
+  defaultRatingsHint: "分級偏好適用於所有圖源。未選擇分級時，顯示目前圖源和帳號能存取的所有內容。"
+  resetFilters: "恢復預設"
+  unsupportedRatings: "目前圖源不支援所選分級，請恢復預設以瀏覽可用內容。"
+  noFilteredPosts: "沒有符合目前篩選條件的內容。"
+  noSearchResults: "沒有找到符合此查詢的內容。"
+  noFeedPosts: "目前圖源暫時沒有可展示的內容。"
+  historicalPopular: "歷史熱門"
+  calendarDay: "自然日"
+  calendarWeek: "自然週"
+  calendarMonth: "自然月"
+  latest: "最新"
+  popular: "熱門"
+  today: "今日"
+  thisWeek: "本週"
+  thisMonth: "本月"
+  lastDay: "最近 24 小時"
+  lastThreeDays: "最近 3 天"
+  lastWeek: "最近一週"
+  lastMonth: "最近一個月"
+  lastThreeMonths: "最近三個月"
+  lastSixMonths: "最近六個月"
+  lastYear: "最近一年"
+  rankingComplete: "榜單已全部載入"
+  latestFallback: "此圖源僅支援最新貼文。"
+  filters: "篩選"
+  loadMore: "載入更多"
+  filteredContinue: "目前幾頁沒有符合篩選的貼文，繼續瀏覽"
+  commonTags: "常用標籤"
+  moreTags: "查看更多"
+  tagSource: "適用圖源"
+  allTagSources: "通用"
+  manageTags: "標籤管理"
+  addTag: "新增標籤"
+  noCustomTags: "還沒有自訂標籤"
+  customTagsHint: "為常用標籤設定好記的名稱，搜尋時更容易找到。"
+  addCustomTag: "新增為自訂標籤"
+  editTag: "編輯自訂標籤"
+  canonicalTag: "圖源標籤"
+  displayName: "顯示名稱（選填）"
+  invalidTag: "請輸入一個非空且不含空格的標籤。"
+  queryHint: "輸入標籤或圖源查詢語句…"
+  unverifiedTag: "部分標籤尚未在目前圖源驗證，仍可提交搜尋。"
+  verifiedTag: "已在目前圖源驗證"
+  noSuggestions: "沒有建議"
+  localFallback: "線上補全暫時無法使用，仍可使用本機建議。"
+  retryTags: "重試常用標籤"
+  artist: "繪師"
+  character: "角色"
+  copyright: "作品"
+  meta: "中繼標籤"
+  general: "一般"
+  random: "隨機"
+  lifetimeViews: "累計瀏覽量"
+  lifetimeFavorites: "累計收藏數"
+
+mediaError:
+  title: 圖片載入失敗
+  details: 錯誤詳情
+  copyDetails: 複製詳情
+  decodeFailed: 下載的圖片無法解碼。重試會清除這張圖片的快取並重新下載。

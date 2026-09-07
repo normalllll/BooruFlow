@@ -75,6 +75,7 @@ impl BooruEngine {
         let adapter = self.registry.get(&request.source_id)?;
         let capabilities = &adapter.definition().capabilities;
         if !capabilities.supports_search
+            || request.query_text.trim().is_empty()
             || request.page_size == 0
             || request
                 .ratings
@@ -85,10 +86,17 @@ impl BooruEngine {
         }
         let query = SearchQuery {
             text: request.query_text,
-            ratings: request.ratings,
+            ratings: crate::booru::discovery::resolve_ratings(
+                adapter.definition(),
+                request.ratings,
+                self.context()
+                    .runtime
+                    .auth_state(&request.source_id)?
+                    .status
+                    != crate::api::booru_auth::AuthStatus::NotConfigured,
+            ),
             page_size: request.page_size,
             cursor: request.cursor,
-            content_policy: request.content_policy,
         };
         let page = adapter.search(&self.context(), query).await?;
         Ok(PostPageDto {
@@ -112,10 +120,70 @@ impl BooruEngine {
         text: String,
     ) -> BooruResult<Vec<TagSuggestionDto>> {
         let adapter = self.registry.get(&source_id)?;
+        if text.trim().chars().count()
+            < adapter
+                .definition()
+                .capabilities
+                .discovery
+                .autocomplete_min_chars as usize
+        {
+            return Err(BooruErrorDto::invalid_request(Some(&source_id)));
+        }
         if !adapter.definition().capabilities.supports_autocomplete {
             return Err(unsupported(&source_id));
         }
+        if adapter.definition().family == ProtocolFamily::Gelbooru {
+            return Ok(crate::booru::discovery::tags(
+                &self.context(),
+                adapter.definition(),
+                Some(text.trim()),
+                1,
+                20,
+            )
+            .await?
+            .items);
+        }
         adapter.autocomplete(&self.context(), text.trim()).await
+    }
+
+    pub async fn feed(
+        &self,
+        mut request: crate::api::booru_models::FeedRequestDto,
+    ) -> BooruResult<PostPageDto> {
+        let adapter = self.registry.get(&request.source_id)?;
+        crate::booru::discovery::validate_feed(adapter.definition(), &request)?;
+        request.ratings = crate::booru::discovery::resolve_ratings(
+            adapter.definition(),
+            request.ratings,
+            self.context()
+                .runtime
+                .auth_state(&request.source_id)?
+                .status
+                != crate::api::booru_auth::AuthStatus::NotConfigured,
+        );
+        let ratings = request.ratings.clone();
+        let mut page = adapter.feed(&self.context(), request).await?;
+        page.items.retain(|post| ratings.contains(&post.rating));
+        Ok(PostPageDto {
+            items: page.items.into_iter().map(|post| post.into_dto()).collect(),
+            next_cursor: page.next_cursor,
+            exhausted: page.exhausted,
+        })
+    }
+
+    pub async fn common_tags(
+        &self,
+        request: crate::api::booru_models::CommonTagsRequestDto,
+    ) -> BooruResult<crate::api::booru_models::CommonTagsPageDto> {
+        let adapter = self.registry.get(&request.source_id)?;
+        crate::booru::discovery::tags(
+            &self.context(),
+            adapter.definition(),
+            None,
+            request.page,
+            request.page_size,
+        )
+        .await
     }
 
     pub async fn related_posts(
@@ -274,6 +342,18 @@ impl BooruEngine {
         &self,
         request: MediaRequestDto,
         sink: StreamSink<MediaFetchEventDto>,
+    ) {
+        // FRB exposes the sink as a Dart stream; a returned Result belongs to a
+        // separate, unawaited Future. Deliver failures on the same event stream.
+        if let Err(error) = self.stream_media_inner(request, &sink).await {
+            let _ = sink.add(MediaFetchEventDto::Failed { error });
+        }
+    }
+
+    async fn stream_media_inner(
+        &self,
+        request: MediaRequestDto,
+        sink: &StreamSink<MediaFetchEventDto>,
     ) -> BooruResult<()> {
         let adapter = self.registry.get(&request.source_id)?;
         let prepared = PreparedDownloadDto {
@@ -349,11 +429,13 @@ impl BooruEngine {
                         "booru.error.imageDecodeFailed",
                     )
                 })??;
+            let mut delivered = 0;
             for chunk in png.chunks(64 * 1024) {
+                delivered += chunk.len();
                 sink.add(MediaFetchEventDto::Chunk {
                     bytes: chunk.to_vec(),
-                    received_bytes_decimal: received.to_string(),
-                    total_bytes_decimal: total.map(|value| value.to_string()),
+                    received_bytes_decimal: delivered.to_string(),
+                    total_bytes_decimal: Some(png.len().to_string()),
                 })
                 .map_err(|_| {
                     BooruErrorDto::new(
@@ -489,7 +571,216 @@ fn unsupported(source_id: &str) -> BooruErrorDto {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::booru_models::{ContentPolicy, ContentRating, NetworkFallbackMode};
+    use crate::api::booru_models::{ContentRating, NetworkFallbackMode};
+
+    #[tokio::test]
+    async fn empty_search_and_autocomplete_do_not_reach_network() {
+        let engine = engine();
+        for source in engine.list_sources() {
+            let error = engine
+                .autocomplete(source.source_id.clone(), "  ".into())
+                .await
+                .unwrap_err();
+            assert_eq!(error.code, BooruErrorCode::InvalidRequest);
+            let error = engine
+                .search(SearchRequestDto {
+                    source_id: source.source_id,
+                    query_text: " ".into(),
+                    ratings: vec![ContentRating::General],
+                    page_size: 40,
+                    cursor: None,
+                })
+                .await
+                .unwrap_err();
+            assert_eq!(error.code, BooruErrorCode::InvalidRequest);
+        }
+    }
+
+    #[tokio::test]
+    #[ignore = "manual default home acceptance, no media downloads"]
+    async fn live_default_home_all_sources() {
+        use crate::api::booru_models::{FeedKind, FeedRequestDto};
+        let engine = engine();
+        let mut failures = vec![];
+        for source in engine.list_sources() {
+            let result = tokio::time::timeout(
+                std::time::Duration::from_secs(30),
+                engine.feed(FeedRequestDto {
+                    source_id: source.source_id.clone(),
+                    kind: FeedKind::Latest,
+                    range: None,
+                    date: None,
+                    seed: None,
+                    ratings: vec![],
+                    page_size: 40,
+                    cursor: None,
+                }),
+            )
+            .await;
+            match result {
+                Ok(Ok(page)) if !page.items.is_empty() => {
+                    println!("HOME {}: {} items", source.source_id, page.items.len())
+                }
+                other => failures.push(format!(
+                    "{}: {:?}",
+                    source.source_id,
+                    other.map(|r| r.map(|p| (p.items.len(), p.exhausted)).map_err(|e| e.code))
+                )),
+            }
+        }
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+    }
+
+    #[tokio::test]
+    #[ignore = "manual discovery API smoke, no media downloads"]
+    async fn live_discovery_smoke() {
+        use crate::api::booru_models::{
+            CapabilityAvailability, CommonTagsRequestDto, FeedKind, FeedRequestDto,
+        };
+        let engine = engine();
+        let source_filter = std::env::var("BOORUFLOW_LIVE_SOURCE").ok();
+        for source in engine.list_sources() {
+            if source_filter
+                .as_deref()
+                .is_some_and(|id| id != source.source_id)
+            {
+                continue;
+            }
+            let mut modes = vec![(FeedKind::Latest, None)];
+            modes.extend(
+                source
+                    .capabilities
+                    .discovery
+                    .popular_ranges
+                    .iter()
+                    .take(3)
+                    .map(|range| (FeedKind::RecentPopular, Some(*range))),
+            );
+            modes.extend(
+                source
+                    .capabilities
+                    .discovery
+                    .historical_ranges
+                    .iter()
+                    .map(|range| (FeedKind::HistoricalPopular, Some(*range))),
+            );
+            for (kind, range) in modes {
+                let request = FeedRequestDto {
+                    source_id: source.source_id.clone(),
+                    kind,
+                    range,
+                    date: (kind == FeedKind::HistoricalPopular).then(|| "2026-08-01".into()),
+                    seed: None,
+                    ratings: vec![ContentRating::General],
+                    page_size: 12,
+                    cursor: None,
+                };
+                let result =
+                    tokio::time::timeout(std::time::Duration::from_secs(25), engine.feed(request))
+                        .await;
+                match result {
+                    Ok(Ok(page)) => println!(
+                        "DISCOVERY {} {kind:?} {range:?}: OK items={} exhausted={}",
+                        source.source_id,
+                        page.items.len(),
+                        page.exhausted
+                    ),
+                    Ok(Err(error)) => println!(
+                        "DISCOVERY {} {kind:?} {range:?}: {:?} HTTP={:?}",
+                        source.source_id, error.code, error.http_status
+                    ),
+                    Err(_) => {
+                        println!("DISCOVERY {} {kind:?} {range:?}: TIMEOUT", source.source_id)
+                    }
+                }
+            }
+            if source.capabilities.discovery.common_tags != CapabilityAvailability::Unsupported {
+                match tokio::time::timeout(
+                    std::time::Duration::from_secs(25),
+                    engine.common_tags(CommonTagsRequestDto {
+                        source_id: source.source_id.clone(),
+                        page: 1,
+                        page_size: 12,
+                    }),
+                )
+                .await
+                {
+                    Ok(Ok(page)) => {
+                        println!("TAGS {}: OK count={}", source.source_id, page.items.len())
+                    }
+                    Ok(Err(error)) => println!(
+                        "TAGS {}: {:?} HTTP={:?}",
+                        source.source_id, error.code, error.http_status
+                    ),
+                    Err(_) => println!("TAGS {}: TIMEOUT", source.source_id),
+                }
+                match tokio::time::timeout(
+                    std::time::Duration::from_secs(25),
+                    engine.autocomplete(source.source_id.clone(), "sky".into()),
+                )
+                .await
+                {
+                    Ok(Ok(items)) => println!(
+                        "AUTOCOMPLETE {}: OK count={}",
+                        source.source_id,
+                        items.len()
+                    ),
+                    Ok(Err(error)) => println!(
+                        "AUTOCOMPLETE {}: {:?} HTTP={:?}",
+                        source.source_id, error.code, error.http_status
+                    ),
+                    Err(_) => println!("AUTOCOMPLETE {}: TIMEOUT", source.source_id),
+                }
+            }
+        }
+    }
+
+    #[tokio::test]
+    #[ignore = "manual Wallhaven extra discovery acceptance"]
+    async fn live_wallhaven_extra_feeds() {
+        use crate::api::booru_models::{FeedKind, FeedRequestDto};
+        let engine = engine();
+        for kind in [
+            FeedKind::Random,
+            FeedKind::LifetimeViews,
+            FeedKind::LifetimeFavorites,
+        ] {
+            let mut cursor = None;
+            let mut ids = BTreeSet::new();
+            for page in 1..=3 {
+                let result = engine
+                    .feed(FeedRequestDto {
+                        source_id: "wallhaven".into(),
+                        kind,
+                        range: None,
+                        date: None,
+                        seed: if kind == FeedKind::Random {
+                            Some("bflow1".into())
+                        } else {
+                            None
+                        },
+                        ratings: vec![ContentRating::General],
+                        page_size: 24,
+                        cursor,
+                    })
+                    .await
+                    .unwrap();
+                assert!(!result.items.is_empty());
+                for post in &result.items {
+                    assert!(ids.insert(post.post_key.clone()), "duplicate in {kind:?}");
+                }
+                println!(
+                    "EXTRA {kind:?} page={page} items={} unique={}",
+                    result.items.len(),
+                    ids.len()
+                );
+                cursor = result.next_cursor;
+                if result.exhausted {
+                    break;
+                }
+            }
+        }
+    }
 
     fn engine() -> BooruEngine {
         let directory = tempfile::tempdir().unwrap().keep();
@@ -543,7 +834,6 @@ mod tests {
                 ratings: vec![ContentRating::Sensitive],
                 page_size: 20,
                 cursor: None,
-                content_policy: ContentPolicy::AnimeFocused,
             })
             .await
             .unwrap_err();
@@ -695,13 +985,15 @@ mod tests {
                 }
             } else {
                 match engine
-                    .search(SearchRequestDto {
+                    .feed(crate::api::booru_models::FeedRequestDto {
                         source_id: source.source_id.clone(),
-                        query_text: String::new(),
-                        ratings: Vec::new(),
+                        kind: crate::api::booru_models::FeedKind::Latest,
+                        range: None,
+                        date: None,
+                        seed: None,
+                        ratings: source.capabilities.ratings.clone(),
                         page_size: 5,
                         cursor: None,
-                        content_policy: ContentPolicy::Unfiltered,
                     })
                     .await
                 {

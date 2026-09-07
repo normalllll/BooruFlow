@@ -1,10 +1,8 @@
 use crate::api::booru_auth::AuthStateDto;
-use crate::api::booru_models::{
-    ContentPolicy, ContentRating, MediaVariantKind, TagCategory, TagSuggestionDto,
-};
+use crate::api::booru_models::{ContentRating, MediaVariantKind, TagCategory, TagSuggestionDto};
 use crate::booru::adapter::{BooruAdapter, RequestContext};
 use crate::booru::adapters::common::{
-    boolean, media, parse_json, signed32, string, tag_list, unsigned, unsigned32,
+    boolean, media, parse_json, signed32, string, tag_list, unsigned, unsigned32, username,
     validate_media_hosts,
 };
 use crate::booru::error::{BooruErrorCode, BooruErrorDto, BooruResult};
@@ -13,15 +11,11 @@ use crate::booru::network::{RequestSpec, ResponseKind};
 use crate::booru::source::SourceDefinition;
 use async_trait::async_trait;
 use serde_json::Value;
-use std::collections::BTreeSet;
 
-const ANIME_REJECT_TAGS: &[&str] = &[
-    "photo_(medium)",
-    "photograph",
-    "real_life",
-    "3d_(artwork)",
-    "ai-assisted",
-];
+// Danbooru's `only` projection does not expand `*`: `*,uploader[name]`
+// returns only the uploader association on both Danbooru and AIBooru.
+// Keep every field consumed by parse_post explicit when adding associations.
+const POST_FIELDS: &str = "id,image_width,image_height,file_ext,md5,preview_file_url,large_file_url,file_url,file_size,tag_string_artist,tag_string_copyright,tag_string_character,tag_string_general,tag_string_meta,rating,score,created_at,uploader[name],uploader_name,source,has_children,parent_id,status,is_deleted";
 
 pub struct DanbooruAdapter {
     definition: SourceDefinition,
@@ -106,7 +100,14 @@ impl DanbooruAdapter {
             variants.push(media);
         }
         if variants.is_empty() {
-            return Err(BooruErrorDto::invalid_response(self.definition.id));
+            if !media_is_hidden(value) {
+                return Err(BooruErrorDto::invalid_response(self.definition.id));
+            }
+            return Err(BooruErrorDto::new(
+                BooruErrorCode::PermissionDenied,
+                Some(self.definition.id),
+                "booru.error.permissionDenied",
+            ));
         }
         validate_media_hosts(&self.definition, &variants)?;
         let mut tags = Vec::new();
@@ -132,6 +133,7 @@ impl DanbooruAdapter {
             rating: danbooru_rating(string(value, "rating").as_deref()),
             score: signed32(value, "score"),
             created_at_iso8601: string(value, "created_at"),
+            author: username(value, "/uploader/name").or_else(|| username(value, "/uploader_name")),
             source_url: string(value, "source"),
             tags,
             media: variants,
@@ -163,8 +165,12 @@ impl BooruAdapter for DanbooruAdapter {
                 .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
             let mut spec = RequestSpec::get(url, ResponseKind::Json);
             spec.query = vec![
+                ("only".to_owned(), POST_FIELDS.to_owned()),
                 ("tags".to_owned(), query.text.trim().to_owned()),
-                ("limit".to_owned(), limit.to_string()),
+                (
+                    "limit".to_owned(),
+                    (limit as usize - result.len()).to_string(),
+                ),
             ];
             if let Some(cursor_value) = cursor.as_deref() {
                 validate_danbooru_cursor(cursor_value)?;
@@ -179,9 +185,9 @@ impl BooruAdapter for DanbooruAdapter {
             }
             cursor = upstream.last_id.map(|id| format!("b{id}"));
             let upstream_len = upstream.raw_count;
+            let requested_count = limit as usize - result.len();
             for post in upstream.items {
                 if rating_selected(post.rating, &query.ratings)
-                    && (query.content_policy == ContentPolicy::Unfiltered || anime_focused(&post))
                     && !result.iter().any(|existing: &Post| existing.id == post.id)
                 {
                     result.push(post);
@@ -193,7 +199,7 @@ impl BooruAdapter for DanbooruAdapter {
             if result.len() >= limit as usize {
                 break;
             }
-            if upstream_len < limit as usize {
+            if upstream_len < requested_count {
                 exhausted = true;
                 break;
             }
@@ -205,14 +211,60 @@ impl BooruAdapter for DanbooruAdapter {
         })
     }
 
+    async fn feed(
+        &self,
+        ctx: &RequestContext,
+        request: crate::api::booru_models::FeedRequestDto,
+    ) -> BooruResult<PostPage> {
+        use crate::api::booru_models::FeedKind;
+        use crate::booru::discovery::{latest_query, scale, RankingCursor};
+        if request.kind == FeedKind::Latest {
+            return self.search(ctx, latest_query(request)).await;
+        }
+        if !matches!(
+            request.kind,
+            FeedKind::RecentPopular | FeedKind::HistoricalPopular
+        ) {
+            return Err(self.unsupported());
+        }
+        let cursor = RankingCursor::new(&request)?;
+        let limit = request.page_size.min(self.definition.max_page_size);
+        let url = reqwest::Url::parse(&format!(
+            "{}/explore/posts/popular.json",
+            self.definition.api_base
+        ))
+        .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+        let mut spec = RequestSpec::get(url, ResponseKind::Json);
+        spec.query = vec![
+            ("only".to_owned(), POST_FIELDS.to_owned()),
+            ("scale".into(), scale(request.range.unwrap()).into()),
+            ("date".into(), cursor.date.clone()),
+            ("page".into(), cursor.page.to_string()),
+            ("limit".into(), limit.to_string()),
+        ];
+        let response = ctx.runtime.execute(&self.definition, spec).await?;
+        let parsed = self.parse_posts(&response.body)?;
+        let exhausted = parsed.raw_count < limit as usize;
+        let items = parsed
+            .items
+            .into_iter()
+            .filter(|post| rating_selected(post.rating, &request.ratings))
+            .collect();
+        let next_cursor = if exhausted { None } else { cursor.next() };
+        Ok(PostPage {
+            items,
+            exhausted: next_cursor.is_none(),
+            next_cursor,
+        })
+    }
+
     async fn get_post(&self, ctx: &RequestContext, id: &PostId) -> BooruResult<Post> {
         validate_post_id(id)?;
         let url = reqwest::Url::parse(&format!("{}/posts/{}.json", self.definition.api_base, id.0))
             .map_err(|_| BooruErrorDto::invalid_request(Some(self.definition.id)))?;
-        let response = ctx
-            .runtime
-            .execute(&self.definition, RequestSpec::get(url, ResponseKind::Json))
-            .await?;
+        let mut spec = RequestSpec::get(url, ResponseKind::Json);
+        spec.query.push(("only".to_owned(), POST_FIELDS.to_owned()));
+        let response = ctx.runtime.execute(&self.definition, spec).await?;
         let json = parse_json(self.definition.id, &response.body)?;
         self.parse_post(&json)
     }
@@ -284,19 +336,14 @@ fn append_tags(value: &Value, key: &str, category: TagCategory, output: &mut Vec
 }
 
 fn media_is_hidden(value: &Value) -> bool {
-    let has_media = ["preview_file_url", "large_file_url", "file_url"]
+    // Danbooru omits file URLs for posts the current user cannot view,
+    // including posts with none of the banned/deleted/pending flags set.
+    ["preview_file_url", "large_file_url", "file_url"]
         .iter()
-        .any(|key| string(value, key).is_some());
-    if has_media {
-        return false;
-    }
-    boolean(value, "is_banned")
-        || boolean(value, "is_deleted")
-        || boolean(value, "is_pending")
-        || matches!(
-            string(value, "status").as_deref(),
-            Some("banned" | "deleted" | "pending")
-        )
+        .all(|key| {
+            matches!(value.get(key), None | Some(Value::Null))
+                || value.get(key).and_then(Value::as_str) == Some("")
+        })
 }
 
 fn rating_selected(rating: ContentRating, selected: &[ContentRating]) -> bool {
@@ -311,23 +358,6 @@ fn danbooru_rating(value: Option<&str>) -> ContentRating {
         "e" | "explicit" => ContentRating::Explicit,
         _ => ContentRating::Unknown,
     }
-}
-
-fn anime_focused(post: &Post) -> bool {
-    let names = post
-        .tags
-        .iter()
-        .map(|tag| tag.name.as_str())
-        .collect::<BTreeSet<_>>();
-    if ANIME_REJECT_TAGS.iter().any(|tag| names.contains(tag)) {
-        return false;
-    }
-    post.tags.iter().any(|tag| {
-        matches!(
-            tag.category,
-            TagCategory::Artist | TagCategory::Copyright | TagCategory::Character
-        )
-    })
 }
 
 fn validate_danbooru_cursor(cursor: &str) -> BooruResult<()> {
@@ -363,6 +393,75 @@ mod tests {
         )
     }
 
+    #[tokio::test]
+    #[ignore = "requires the public Danbooru and AIBooru APIs; JSON only"]
+    async fn live_projected_posts_include_media_and_uploader() {
+        let client = reqwest::Client::builder()
+            .user_agent("BooruFlow/0.10.0")
+            .timeout(std::time::Duration::from_secs(30))
+            .build()
+            .unwrap();
+        for source_id in ["danbooru", "aibooru"] {
+            let adapter = adapter(source_id);
+            for path in ["/posts.json", "/explore/posts/popular.json"] {
+                let mut url =
+                    reqwest::Url::parse(&format!("{}{path}", adapter.definition.api_base)).unwrap();
+                url.query_pairs_mut()
+                    .append_pair("only", POST_FIELDS)
+                    .append_pair("limit", "3");
+                let bytes = client
+                    .get(url)
+                    .send()
+                    .await
+                    .unwrap()
+                    .error_for_status()
+                    .unwrap()
+                    .bytes()
+                    .await
+                    .unwrap();
+                let page = adapter
+                    .parse_posts(&bytes)
+                    .unwrap_or_else(|error| panic!("{source_id}{path}: {error}"));
+                assert!(
+                    !page.items.is_empty(),
+                    "{source_id}{path}: no visible posts"
+                );
+                let post = &page.items[0];
+                assert!(post.author.is_some(), "{source_id}{path}: missing uploader");
+                let mut url = reqwest::Url::parse(&format!(
+                    "{}/posts/{}.json",
+                    adapter.definition.api_base, post.id.0
+                ))
+                .unwrap();
+                url.query_pairs_mut().append_pair("only", POST_FIELDS);
+                let bytes = client
+                    .get(url)
+                    .send()
+                    .await
+                    .unwrap()
+                    .error_for_status()
+                    .unwrap()
+                    .bytes()
+                    .await
+                    .unwrap();
+                let detail = adapter
+                    .parse_post(&parse_json(source_id, &bytes).unwrap())
+                    .unwrap();
+                assert_eq!(detail.id, post.id);
+                assert_eq!(detail.author, post.author);
+                assert!(!detail.media.is_empty());
+                eprintln!("{source_id}{path}: list and detail parsed with uploader and media");
+            }
+        }
+    }
+
+    #[test]
+    fn preserves_source_username_in_dto() {
+        let fixture = serde_json::json!({"id":1,"file_url":"https://cdn.aibooru.online/a.jpg","uploader":{"name":" Alice "},"tag_string_artist":"someone_else"});
+        let post = adapter("aibooru").parse_post(&fixture).unwrap();
+        assert_eq!(post.author.as_deref(), Some("Alice"));
+        assert_eq!(post.into_dto().author.as_deref(), Some("Alice"));
+    }
     #[test]
     fn parses_tag_categories_and_ai_flag() {
         let fixture = br#"[{"id":8123456,"rating":"e","score":12,"image_width":1200,"image_height":800,"file_size":99,"file_ext":"png","file_url":"https://cdn.aibooru.online/a.png","preview_file_url":"https://cdn.aibooru.online/p.jpg","tag_string_artist":"alice","tag_string_character":"miku","tag_string_copyright":"vocaloid","tag_string_general":"solo","tag_string_meta":"highres"}]"#;
@@ -373,21 +472,6 @@ mod tests {
             .tags
             .iter()
             .any(|tag| tag.category == TagCategory::Artist));
-    }
-
-    #[test]
-    fn anime_filter_rejects_photos_but_not_explicit_art() {
-        let mut post = adapter("danbooru")
-            .parse_posts(br#"[{"id":1,"rating":"e","preview_file_url":"https://cdn.donmai.us/p.jpg","tag_string_artist":"alice","tag_string_general":"solo"}]"#)
-            .unwrap()
-            .items
-            .remove(0);
-        assert!(anime_focused(&post));
-        post.tags.push(Tag {
-            name: "photo_(medium)".to_owned(),
-            category: TagCategory::Meta,
-        });
-        assert!(!anime_focused(&post));
     }
 
     #[test]
@@ -431,9 +515,43 @@ mod tests {
     }
 
     #[test]
-    fn still_rejects_an_unflagged_post_without_media() {
-        assert!(adapter("danbooru")
-            .parse_posts(br#"[{"id":1,"rating":"g"}]"#)
-            .is_err());
+    fn skips_unflagged_hidden_posts_and_keeps_raw_pagination() {
+        let parsed = adapter("danbooru")
+            .parse_posts(br#"[{"id":12145229,"preview_file_url":"https://cdn.donmai.us/p.jpg"},{"id":12145228,"rating":"e","is_banned":false,"is_deleted":false,"is_pending":false,"media_asset":{}}]"#)
+            .unwrap();
+        assert_eq!(parsed.items.len(), 1);
+        assert_eq!(parsed.raw_count, 2);
+        assert_eq!(parsed.last_id.as_deref(), Some("12145228"));
+    }
+
+    #[test]
+    fn all_hidden_page_keeps_cursor_and_detail_reports_access_denied() {
+        let adapter = adapter("danbooru");
+        let parsed = adapter
+            .parse_posts(br#"[{"id":2},{"id":1,"file_url":null,"preview_file_url":""}]"#)
+            .unwrap();
+        assert!(parsed.items.is_empty());
+        assert_eq!(parsed.raw_count, 2);
+        assert_eq!(parsed.last_id.as_deref(), Some("1"));
+        assert_eq!(
+            adapter
+                .parse_post(&serde_json::json!({"id":1}))
+                .unwrap_err()
+                .code,
+            BooruErrorCode::PermissionDenied
+        );
+    }
+
+    #[test]
+    fn malformed_records_and_unsafe_media_are_not_silently_skipped() {
+        let adapter = adapter("danbooru");
+        for bytes in [
+            br#"[{}]"#.as_slice(),
+            br#"[null]"#,
+            br#"[{"id":1,"file_url":123}]"#,
+            br#"[{"id":1,"file_url":"https://example.com/p.jpg"}]"#,
+        ] {
+            assert!(adapter.parse_posts(bytes).is_err());
+        }
     }
 }

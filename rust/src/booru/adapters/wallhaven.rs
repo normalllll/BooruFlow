@@ -2,7 +2,7 @@ use crate::api::booru_auth::{AuthStateDto, AuthStatus};
 use crate::api::booru_models::{ContentRating, MediaType, MediaVariantKind, TagCategory};
 use crate::booru::adapter::{BooruAdapter, RequestContext};
 use crate::booru::adapters::common::{
-    media, parse_json, rating, signed32, string, tag_list, unsigned, unsigned32,
+    media, parse_json, rating, signed32, string, tag_list, unsigned, unsigned32, username,
     validate_media_hosts,
 };
 use crate::booru::error::{BooruErrorCode, BooruErrorDto, BooruResult};
@@ -104,6 +104,7 @@ impl WallhavenAdapter {
             rating: rating(string(value, "purity").as_deref()),
             score: signed32(value, "favorites"),
             created_at_iso8601: normalize_time(string(value, "created_at")),
+            author: username(value, "/uploader/username"),
             source_url: string(value, "source"),
             tags,
             media: variants,
@@ -152,6 +153,8 @@ impl BooruAdapter for WallhavenAdapter {
             .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
         let mut spec = RequestSpec::get(url, ResponseKind::Json);
         spec.query = vec![
+            ("sorting".to_owned(), "date_added".to_owned()),
+            ("order".to_owned(), "desc".to_owned()),
             ("q".to_owned(), query.text.trim().to_owned()),
             ("categories".to_owned(), "010".to_owned()),
             ("purity".to_owned(), purity_bits(&query.ratings)),
@@ -166,6 +169,68 @@ impl BooruAdapter for WallhavenAdapter {
         Ok(PostPage {
             items,
             next_cursor: (!exhausted).then(|| format_cursor(current + 1, response_seed.as_deref())),
+            exhausted,
+        })
+    }
+
+    async fn feed(
+        &self,
+        ctx: &RequestContext,
+        request: crate::api::booru_models::FeedRequestDto,
+    ) -> BooruResult<PostPage> {
+        use crate::api::booru_models::FeedKind;
+        if request.kind == FeedKind::Latest {
+            return self
+                .search(ctx, crate::booru::discovery::latest_query(request))
+                .await;
+        }
+        let sorting = match request.kind {
+            FeedKind::RecentPopular => "toplist",
+            FeedKind::Random => "random",
+            FeedKind::LifetimeViews => "views",
+            FeedKind::LifetimeFavorites => "favorites",
+            _ => return Err(self.unsupported()),
+        };
+        if request.ratings.contains(&ContentRating::Explicit)
+            && ctx.runtime.auth_state(self.definition.id)?.status == AuthStatus::NotConfigured
+        {
+            return Err(BooruErrorDto::new(
+                BooruErrorCode::AuthenticationRequired,
+                Some(self.definition.id),
+                "booru.error.authenticationRequired",
+            ));
+        }
+        let (page, cursor_seed) = parse_cursor(request.cursor.as_deref())?;
+        let url = reqwest::Url::parse(&format!("{}/search", self.definition.api_base))
+            .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+        let mut spec = RequestSpec::get(url, ResponseKind::Json);
+        spec.query = vec![
+            ("sorting".into(), sorting.into()),
+            ("order".into(), "desc".into()),
+            ("categories".into(), "010".into()),
+            ("purity".into(), purity_bits(&request.ratings)),
+            ("page".into(), page.to_string()),
+        ];
+        if let Some(range) = request.range {
+            spec.query.push((
+                "topRange".into(),
+                crate::booru::discovery::period(range, true).into(),
+            ));
+        }
+        let seed = cursor_seed.or(request.seed);
+        if let Some(seed) = &seed {
+            spec.query.push(("seed".into(), seed.clone()));
+        }
+        let response = ctx.runtime.execute(&self.definition, spec).await?;
+        let (items, current, last, response_seed) = self.parse_listing(&response.body)?;
+        let seed = response_seed.or(seed);
+        if request.kind == FeedKind::Random && seed.is_none() {
+            return Err(BooruErrorDto::invalid_response(self.definition.id));
+        }
+        let exhausted = current >= last || items.is_empty() || current == u32::MAX;
+        Ok(PostPage {
+            items,
+            next_cursor: (!exhausted).then(|| format_cursor(current + 1, seed.as_deref())),
             exhausted,
         })
     }
@@ -282,6 +347,13 @@ mod tests {
         )
     }
 
+    #[test]
+    fn preserves_source_username_in_dto() {
+        let fixture = serde_json::json!({"id":"94x38z","path":"https://w.wallhaven.cc/full/94/wallhaven-94x38z.jpg","uploader":{"username":" Alice "}});
+        let post = adapter().parse_post(&fixture).unwrap();
+        assert_eq!(post.author.as_deref(), Some("Alice"));
+        assert_eq!(post.into_dto().author.as_deref(), Some("Alice"));
+    }
     #[test]
     fn parses_alphanumeric_id_and_pagination_seed() {
         let fixture = br#"{"data":[{"id":"94x38z","url":"https://wallhaven.cc/w/94x38z","purity":"sketchy","dimension_x":1920,"dimension_y":1080,"file_size":123,"file_type":"image/jpeg","path":"https://w.wallhaven.cc/full/94/wallhaven-94x38z.jpg","thumbs":{"small":"https://th.wallhaven.cc/small/94/94x38z.jpg"}}],"meta":{"current_page":1,"last_page":2,"seed":"abc123"}}"#;
