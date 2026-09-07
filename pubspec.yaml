@@ -64,3 +64,4 @@ flutter:
   assets:
     - assets/tag_translations/
     - assets/images/freepiv-icon.png
+    - assets/branding/app_icon_source.png

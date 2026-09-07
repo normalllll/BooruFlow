@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
 import 'package:booruflow/core/app_runtime.dart';
+import 'package:booruflow/app/window/native_window.dart';
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/intl/translations.g.dart';
 
@@ -17,6 +18,13 @@ class AppToastWrapper extends StatelessWidget {
             ? Alignment.topRight
             : Alignment.bottomCenter,
         maxToastLimit: 5,
+        marginBuilder: (context, alignment) {
+          final y = alignment.resolve(Directionality.of(context)).y;
+          return EdgeInsets.only(
+            top: y <= -0.5 ? 12 + desktopTitleBarInset : 0,
+            bottom: y >= 0.5 ? 12 : 0,
+          );
+        },
       ),
       child: child,
     );

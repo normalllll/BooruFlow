@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:booruflow/app/app_router.dart';
+import 'package:booruflow/app/window/title_bar.dart';
 import 'package:booruflow/core/app_runtime.dart';
 import 'package:booruflow/core/settings_service.dart';
 import 'package:booruflow/features/tags/tag_translations_service.dart';
@@ -59,9 +60,11 @@ class BooruFlowApp extends ConsumerWidget {
             },
             debugShowCheckedModeBanner: false,
             builder: (context, child) {
-              return GestureDetector(
-                onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-                child: child ?? const SizedBox.shrink(),
+              return DesktopWindowFrame(
+                child: GestureDetector(
+                  onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                  child: child ?? const SizedBox.shrink(),
+                ),
               );
             },
           );
