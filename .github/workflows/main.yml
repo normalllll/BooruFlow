@@ -244,7 +244,7 @@ jobs:
           EOF
           chmod +x "$PACKAGE_ROOT/usr/bin/$APP_NAME"
 
-          cp "icon-512.png" "$PACKAGE_ROOT/usr/share/icons/hicolor/512x512/apps/$APP_NAME.png"
+          cp -r linux/icons/hicolor/. "$PACKAGE_ROOT/usr/share/icons/hicolor/"
 
           cat > "$PACKAGE_ROOT/usr/share/applications/$APP_NAME.desktop" << EOF
           [Desktop Entry]
