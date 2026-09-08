@@ -1,93 +1,48 @@
 # BooruFlow
 
-**A cross-platform browser for multiple booru image sources**
+English | [Simplified Chinese](README_zh_cn.md)
 
-BooruFlow provides one consistent interface for searching, browsing, viewing, and downloading artwork from multiple booru-compatible sources. It is available on Android, iOS, Windows, macOS, and Linux.
+**An open-source, cross-platform booru browser and image downloader.**
+
+Search, browse, and download artwork from Danbooru, Gelbooru, Yande.re, and other image sources on Android, Windows, Linux, macOS, and iOS.
+
+[Download](https://github.com/normalllll/yande_gui/releases/latest) | [Features](#features) | [Screenshots](#screenshots)
 
 ![Screenshot](screenshots/0.webp)
 
----
-
 ## Features
 
-- 🌐 **Multiple Sources**: Yande.re, Konachan.net, Danbooru, AIBooru, Gelbooru, Wallhaven, and Anime-Pictures.
-- 🔎 **Unified Discovery**: Search, rating filters, waterfall browsing, post details, and original-image viewing.
-- ⬇️ **Reliable Downloads**: Source-aware folders, post-ID filenames, resumable native downloads, validation, proxy support, and Host/SNI fallback routing.
-- 💻 **Cross-Platform**: Android, iOS, Windows, macOS, and Linux.
+- **Multiple sources:** Yande.re, Konachan.net, Danbooru, AIBooru, Gelbooru, Wallhaven, and Anime-Pictures.
+- **Search and discovery:** Tag search, rating filters, waterfall browsing, and popular posts where supported.
+- **Image details:** View original images, tags, artist and source information, metadata, and related posts.
+- **Download management:** Track progress, pause and resume tasks, retry failed downloads, and organize files by source.
+- **Accounts and networking:** Configure accounts, proxies, and connection settings for each source.
+- **Personalization:** Themes, layout settings, tag translations, and English, Simplified Chinese, Traditional Chinese, and Japanese interfaces.
 
----
+## Download and install
+
+Download packages from [GitHub Releases](https://github.com/normalllll/yande_gui/releases/latest).
+
+| Platform | Package | Installation |
+|---|---|---|
+| Android | [app-arm64-v8a-release.apk](https://github.com/normalllll/yande_gui/releases/latest/download/app-arm64-v8a-release.apk) | Suitable for most current phones. Choose [app-universal-release.apk](https://github.com/normalllll/yande_gui/releases/latest/download/app-universal-release.apk) if unsure about your architecture |
+| Windows | [windows-x64.zip](https://github.com/normalllll/yande_gui/releases/latest/download/windows-x64.zip) | Extract the archive and run the app |
+| Linux | [linux_amd64.deb](https://github.com/normalllll/yande_gui/releases/latest/download/linux_amd64.deb), [linux_amd64.rpm](https://github.com/normalllll/yande_gui/releases/latest/download/linux_amd64.rpm), or [linux-x64.tar.gz](https://github.com/normalllll/yande_gui/releases/latest/download/linux-x64.tar.gz) | Choose the package for your distribution. Builds target Ubuntu 24.04; older systems may lack required libraries |
+| macOS | [macos-universal-nosigned.zip](https://github.com/normalllll/yande_gui/releases/latest/download/macos-universal-nosigned.zip) | Supports Apple Silicon and Intel. The app is not notarized |
+| iOS | [ios-nosigned.ipa](https://github.com/normalllll/yande_gui/releases/latest/download/ios-nosigned.ipa) | Requires signing before installation |
+
+Android ARM32 and x86_64 packages are also available. Check the release assets for the packages included in each version.
 
 ## Contributing
 
-We welcome contributions from the community!
+Report bugs or suggest features in [Issues](https://github.com/normalllll/yande_gui/issues). For bugs, include your platform, image source, and steps to reproduce. Code, design, and translation contributions are welcome.
 
-- 🛠 **Bug Reports**: Found a bug? Open an issue on the [issue tracker](https://github.com/normalllll/BooruFlow/issues).
-- 🌟 **Feature Requests**: Want to add a new feature? Feel free to propose your ideas!
-- 🎨 **Design Contributions**: Visual and interaction design contributions are welcome.
-
----
+See the [development guide](DEVELOPMENT.md) for building, testing, and release instructions.
 
 ## Community
 
-Join the discussion and connect with other users and developers!
-
 [![Telegram](https://img.shields.io/badge/chat-Telegram-blue.svg)](https://t.me/+ONtNV3HTQ0NhMzVh)
 [![Discord](https://img.shields.io/badge/chat-Discord-blue.svg)](https://discord.gg/jQatz6965H)
-
----
-
-## Downloads
-
-| Architecture | Windows                                                                                 | Linux                                                                                       | Android                                                                                             | macOS                                                                                             | iOS                                                                                      |
-|--------------|-----------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
-| x86-64(x64)  | [zip](https://github.com/normalllll/BooruFlow/releases/latest/download/windows-x64.zip) | [tar.gz](https://github.com/normalllll/BooruFlow/releases/latest/download/linux-x64.tar.gz) | [APK](https://github.com/normalllll/BooruFlow/releases/latest/download/app-x86_64-release.apk)      | [zip](https://github.com/normalllll/BooruFlow/releases/latest/download/macos-x86_64-nosigned.zip) |                                                                                          |
-| ARM64        |                                                                                         |                                                                                             | [APK](https://github.com/normalllll/BooruFlow/releases/latest/download/app-arm64-v8a-release.apk)   | [zip](https://github.com/normalllll/BooruFlow/releases/latest/download/macos-arm64-nosigned.zip)  | [IPA](https://github.com/normalllll/BooruFlow/releases/latest/download/ios-nosigned.ipa) |
-| ARM32        |                                                                                         |                                                                                             | [APK](https://github.com/normalllll/BooruFlow/releases/latest/download/app-armeabi-v7a-release.apk) |                                                                                                   |                                                                                          |
-| Universal    |                                                                                         |                                                                                             | [APK](https://github.com/normalllll/BooruFlow/releases/latest/download/app-universal-release.apk)   |                                                                                                   |                                                                                          |
-
-Visit the [releases page](https://github.com/normalllll/BooruFlow/releases) for more details on the latest versions.
-
----
-
-
-## Getting Started
-
-### Prerequisites
-
-Before building or running BooruFlow, install the following dependencies:
-
-- [Flutter](https://flutter.dev/docs/get-started/install): A cross-platform UI toolkit.
-- [Rust](https://www.rust-lang.org/tools/install): A powerful, performance-oriented programming language.
-- [flutter_rust_bridge](https://github.com/fzyzcjy/flutter_rust_bridge): A tool for integrating Flutter and Rust.
-
-### Installation
-
-1. **Install Flutter** by following the [official guide](https://flutter.dev/docs/get-started/install).
-2. **Install Rust** using `rustup` by following the [official guide](https://www.rust-lang.org/tools/install).
-3. **Install flutter_rust_bridge 2.13.0** by running the following command:
-
-    ```bash
-    cargo install flutter_rust_bridge_codegen --version 2.13.0 --locked
-    ```
-
-   Regenerate the bridge after changing the Rust API with
-   `flutter_rust_bridge_codegen generate`. Native libraries are built and
-   bundled through Flutter Native Assets; Cargokit is not required.
-
-4. Clone the repository:
-
-    ```bash
-    git clone https://github.com/normalllll/BooruFlow.git
-    cd BooruFlow
-    ```
-
-5. Run the app:
-
-    ```bash
-    flutter run
-    ```
-
----
 
 ## Screenshots
 
@@ -101,9 +56,6 @@ Before building or running BooruFlow, install the following dependencies:
 | ![Mobile Screenshot 1](screenshots/mobile/img0.webp) | ![Mobile Screenshot 2](screenshots/mobile/img1.webp) |
 |------------------------------------------------------|------------------------------------------------------|
 
----
-
-
 ## License
 
-This project is licensed under the **GNU General Public License v3.0**. See the [LICENSE](https://github.com/normalllll/BooruFlow/blob/main/LICENSE) file for more details.
+Licensed under the GNU General Public License v3.0. See [LICENSE](LICENSE).
