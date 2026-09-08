@@ -226,6 +226,12 @@ async fn open_prepared_inner(
     spec.headers = prepared
         .headers
         .iter()
+        .filter(|header| {
+            !matches!(
+                header.name.to_ascii_lowercase().as_str(),
+                "cookie" | "authorization" | "user-agent" | "x-api-key"
+            )
+        })
         .map(|header| (header.name.clone(), header.value.clone()))
         .collect();
     spec.allow_protected_headers = true;
@@ -234,6 +240,7 @@ async fn open_prepared_inner(
     }
 
     spec.follow_redirects = false;
+    let auth_revision = runtime.auth_state(source.id)?.auth_revision;
     let response = open_media(runtime, source, spec, throttle).await?;
     if !response.status().is_redirection() {
         return Ok(response);
@@ -254,6 +261,14 @@ async fn open_prepared_inner(
         .collect::<Vec<_>>()
         .join("; ");
     let mut redirected = RequestSpec::get(target, ResponseKind::Media);
+    redirected.expected_auth_revision = Some(auth_revision);
+    if runtime.auth_state(source.id)?.auth_revision != auth_revision {
+        return Err(BooruError::new(
+            BooruErrorCode::Cancelled,
+            Some(source.id),
+            "booru.error.cancelled",
+        ));
+    }
     let redirect_cookie = if temporary_cookie.is_empty() {
         "sitelang=en".to_owned()
     } else {

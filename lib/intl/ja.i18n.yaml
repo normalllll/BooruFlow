@@ -189,10 +189,35 @@ settings:
       rejected: 拒否されました
 
   network:
+    proxyCompact: "プロキシ"
+    checkCompact: "テスト"
+    detailsCompact: "詳細"
+    advancedCompact: "詳細設定"
+    uncheckedCompact: "未確認"
+    checkingCompact: "確認中"
+    apiShort: "API"
+    imagesShort: "画像"
+    saveCompact: "保存"
+    proxyProtocol: "プロキシ方式"
+    proxyHost: "IP またはホスト名"
+    proxyPort: "ポート"
+    proxyReachable: 接続可能
+    proxyUnreachable: 接続できません
+    proxyProbe: "プロキシ接続をテスト"
+    proxyProbeHint: "入力中のプロキシを保存せずにテストします。各サイトの結果を個別に表示します。"
+    sourceAvailable: "利用可能"
+    sourcePartial: "一部利用可能"
+    sourceUnavailable: "利用不可"
+    checkAllSources: "すべてのサイトをテスト"
+    mediaAvailable: "画像：利用可能"
+    mediaUnavailable: "画像：失敗またはテスト画像なし"
+    dnsDetails: "DNS ルート詳細（可用性とは別）"
+    sourceProbeHelp: "緑：API と画像が成功、黄：一部成功、赤：失敗。各サイトを並列にテストし、約26秒でタイムアウトします。"
     dnsProvider: "DNS サービス"
+    sourceSummary: "利用可能 $available · 問題あり $issues"
     servicesTitle: "全画像サイトの状態"
     servicesHint: "IP 解決と API の接続を個別に確認します。API が利用可能でも、すべての画像を取得できるとは限りません。"
-    noFallback: "選択した DNS のみを使用します。失敗時はエラーを表示し、システム DNS や別のサービスには切り替えません。"
+    noFallback: "DNS プロバイダーは下のルート更新に使用します。システム DNS モードはキャッシュ IP を使用しません。SNI 回避はキャッシュ IP を使用し、失敗時に自動で切り替えません。"
     checkProgress: "DNS $done/$total · API $checked/$sources"
     checkSummary: "API 利用可能 $available/$total · DNS 失敗 $failed 件"
     loadingStatus: "キャッシュの状態を読み込み中…"
@@ -210,6 +235,16 @@ settings:
     ipNotCached: "IP 解決済み · まだ保存されていません"
     connectionMode: 接続モード
     proxyUrl: プロキシ URL
+    proxyTitle: カスタムネットワークプロキシ
+    proxyModeOverride: カスタムプロキシを優先し、通常の SNI と証明書検証を維持します。SNI 回避は併用しません。接続モードはカスタムプロキシを無効にした後に適用されます。
+    proxyApply: プロキシ設定を適用
+    proxyDisable: カスタムプロキシを無効化
+    proxyActive: "適用済み：$endpoint（接続は未確認）"
+    proxyInactive: カスタムプロキシなし · 接続モードとシステムのプロキシ設定を使用
+    proxyPending: 変更は未適用です。「プロキシ設定を適用」を押してください。
+    proxyHelp: アドレスを入力して下のボタンを押してください。プロキシサービスの起動が必要です。画像一覧、画像、新しいダウンロード要求に適用されます。
+    proxyCheckHelp: カスタムプロキシはキャッシュ IP ルートより優先されます。適用後は下の API チェックで接続を確認してください。DNS の成功はプロキシの動作確認にはなりません。
+    proxyInvalid: 有効な IP またはホスト名とポート（1–65535）を別々に入力してください。アドレスに方式やパスを含めないでください。
     proxyHint: 任意 · 例 http://127.0.0.1:7890
     applyAndRouteCache: 適用とルートキャッシュ
     apply: ネットワーク設定を適用
@@ -313,3 +348,31 @@ mediaError:
   details: エラーの詳細
   copyDetails: 詳細をコピー
   decodeFailed: ダウンロードした画像をデコードできませんでした。再試行すると、この画像のキャッシュを削除して再ダウンロードします。
+
+webChallenge:
+  title: ウェブ認証
+  open: 認証ページを開く
+  windowTitle: "$source · 認証後にウィンドウを閉じてください"
+  instructions: ページの人間確認を手動で完了してから、戻るかウィンドウを閉じてください。認証データを保存し、画像ソースを再読み込みします。
+  finish: 完了して戻る
+  saving: ウェブセッションを読み取り、確認しています…
+  waiting: ウェブ認証を実行中…
+  clear: 認証データを消去
+  clearAll: すべてのウェブ認証データを消去
+  clearDescription: Cookie、ブラウザー識別情報、ウェブキャッシュを消去し、進行中の認証を停止します。
+  cleared: ウェブ認証データを消去しました
+  verified: 確認済み・アクセス可能
+  saved: 保存済み・再確認待ち
+  empty: 保存された認証データはありません
+  failed: ウェブ認証が完了しませんでした。再試行してください。
+  pageLoadFailed: ページを読み込めませんでした。認証ページを開き直すか、ネットワーク設定を確認してください。
+  webViewUnavailable: この環境ではウェブコンポーネントを使用できません。Windows では Microsoft Edge WebView2 Runtime をインストールまたは更新してください。
+  proxyUnsupported: 現在のプロキシ設定には対応していません。設定を変更して再試行してください。
+  busy: 別のウェブ認証またはデータ消去を実行中です。
+  cancelled: ウェブ認証をキャンセルしました。
+  timedOut: ウェブ認証がタイムアウトしました。ページを開き直してください。
+  storageFailed: 認証データを保存または消去できませんでした。以前のセッションは保持されています。
+  captureFailed: ウェブセッションを読み取れませんでした。認証ページを開き直してください。
+  cleanupFailed: ウェブデータの消去が完了していません。しばらくしてから再試行してください。
+  operationSuperseded: データの消去またはネットワーク設定の変更により、認証をキャンセルしました。
+  noCookies: 使用可能な認証データがありません。人間確認を完了してから戻ってください。

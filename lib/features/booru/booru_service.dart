@@ -16,6 +16,7 @@ final class BooruService {
 
   final selectedSource = ValueNotifier<String>('yande');
   final revision = ValueNotifier<int>(0);
+  final _webChallengeRevisions = <String, String>{};
   late BooruEngine _engine;
   late List<BooruSource> _sources;
   late Box<dynamic> _credentials;
@@ -31,8 +32,12 @@ final class BooruService {
   }
 
   BooruSource get currentSource => sourceById(selectedSource.value);
-  String cacheRevision(String sourceId) =>
-      _storedRevision('$sourceId:revision', 'anonymous');
+  String cacheRevision(String sourceId) {
+    final stored = _storedRevision('$sourceId:revision', 'anonymous');
+    final browser = _webChallengeRevisions[sourceId];
+    return browser == null ? stored : '$stored:$browser';
+  }
+
   String get networkCacheRevision =>
       _storedRevision('networkRevision', 'initial');
 
@@ -95,6 +100,25 @@ final class BooruService {
     await _restoreCredentials();
     // Load persisted routes only. DNS refresh is an explicit, visible action.
     await _engine.initializeRouteCache();
+    final restored = await _engine.restoreWebChallenges();
+    if (restored.isNotEmpty) {
+      await recordWebChallengeChanges(
+        restored.map((state) => state.sourceId).toList(),
+      );
+    }
+  }
+
+  Future<void> recordWebChallengeChanges(List<String> sourceIds) async {
+    final stamp = DateTime.now().microsecondsSinceEpoch.toString();
+    for (final sourceId in sourceIds) {
+      _webChallengeRevisions[sourceId] = stamp;
+      try {
+        await _credentials.put('$sourceId:revision', stamp);
+      } catch (_) {
+        /* Cache bookkeeping cannot undo a committed Rust session. */
+      }
+    }
+    revision.value++;
   }
 
   Future<AuthState> authState(String sourceId) =>

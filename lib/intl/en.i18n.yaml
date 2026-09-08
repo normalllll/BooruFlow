@@ -189,10 +189,35 @@ settings:
       rejected: Rejected
 
   network:
+    proxyCompact: "Proxy"
+    checkCompact: "Test"
+    detailsCompact: "Details"
+    advancedCompact: "Advanced"
+    uncheckedCompact: "Not tested"
+    checkingCompact: "Testing"
+    apiShort: "API"
+    imagesShort: "Images"
+    saveCompact: "Save"
+    proxyProtocol: "Proxy protocol"
+    proxyHost: "IP or hostname"
+    proxyPort: "Port"
+    proxyReachable: Reachable
+    proxyUnreachable: Unreachable
+    proxyProbe: "Test proxy connectivity"
+    proxyProbeHint: "Tests the entered proxy without saving it. Each source is checked independently."
+    sourceAvailable: "Available"
+    sourcePartial: "Partially available"
+    sourceUnavailable: "Unavailable"
+    checkAllSources: "Check all sources"
+    mediaAvailable: "Images: available"
+    mediaUnavailable: "Images: failed or no test image"
+    dnsDetails: "DNS route details (separate from availability)"
+    sourceProbeHelp: "Green: API and image checks passed; yellow: partially passed; red: failed. Sources run concurrently with a 26-second limit."
     dnsProvider: "DNS service"
+    sourceSummary: "$available available · $issues issues"
     servicesTitle: "Services status"
     servicesHint: "IP resolution and API availability are checked separately. API results do not guarantee every image can be downloaded."
-    noFallback: "Only the selected DNS service is used. A failure is reported directly; there is no system DNS or provider fallback."
+    noFallback: "The DNS provider is used for route refresh below. System DNS mode does not use cached IPs. SNI bypass uses cached IPs without automatic fallback."
     checkProgress: "DNS $done/$total · API $checked/$sources"
     checkSummary: "API available: $available/$total · DNS failures: $failed"
     loadingStatus: "Reading saved status…"
@@ -210,6 +235,16 @@ settings:
     ipNotCached: "IP resolved · not yet saved"
     connectionMode: Connection mode
     proxyUrl: Proxy URL
+    proxyTitle: Custom network proxy
+    proxyModeOverride: The custom proxy takes priority and keeps normal SNI and certificate verification. SNI bypass is not combined with a proxy. The connection mode takes effect after disabling the custom proxy.
+    proxyApply: Apply proxy settings
+    proxyDisable: Disable custom proxy
+    proxyActive: "Applied: $endpoint (connection not confirmed)"
+    proxyInactive: No custom proxy · Uses the connection mode and system proxy settings
+    proxyPending: Changes are pending. Click Apply proxy settings.
+    proxyHelp: Enter a proxy address and click the button below. Start the proxy service first. Applies to source lists, images and new download requests.
+    proxyCheckHelp: A custom proxy takes priority over cached IP routes. Use the source API checks below to confirm connectivity; successful DNS resolution does not test the proxy.
+    proxyInvalid: Enter a valid IP or hostname and a port from 1–65535 in separate fields. Omit the protocol and path from the address.
     proxyHint: Optional · for example http://127.0.0.1:7890
     applyAndRouteCache: Apply and route cache
     apply: Apply network
@@ -219,7 +254,7 @@ settings:
     applied: Network settings applied
     invalidSettings: Invalid network settings
     routeRefreshFailed: Route refresh failed
-    systemDns: System DNS
+    systemDns: Use system DNS
     sniBypass: SNI bypass
     legacyIpUrl: Legacy IP URL
 
@@ -313,3 +348,31 @@ mediaError:
   details: Error details
   copyDetails: Copy details
   decodeFailed: The downloaded image could not be decoded. Retry will clear this image’s cache and download it again.
+
+webChallenge:
+  title: Web verification
+  open: Open verification page
+  windowTitle: "$source · Close this window after verification"
+  instructions: Complete the page's verification manually, then go back or close the window. The app will save the verification data and reload the source.
+  finish: Finish and return
+  saving: Reading and verifying the web session…
+  waiting: Web verification in progress…
+  clear: Clear verification data
+  clearAll: Clear all web verification data
+  clearDescription: Remove cookies, browser identity and web cache, and stop pending verification.
+  cleared: Web verification data cleared
+  verified: Verified and accessible
+  saved: Saved; awaiting verification
+  empty: No saved verification data
+  failed: Web verification did not complete. Please retry.
+  pageLoadFailed: The page failed to load. Reopen verification or check network settings.
+  webViewUnavailable: The web component is unavailable on this platform. On Windows, install or update Microsoft Edge WebView2 Runtime.
+  proxyUnsupported: The web component does not support the current proxy settings. Change them and retry.
+  busy: Another web verification or cleanup is in progress.
+  cancelled: Web verification cancelled.
+  timedOut: Web verification timed out. Open the page again.
+  storageFailed: Verification data could not be saved or cleared. The previous session was retained.
+  captureFailed: The web session could not be read. Open verification again.
+  cleanupFailed: Web data cleanup is incomplete. Try clearing it again shortly.
+  operationSuperseded: Verification was cancelled by a data clear or network settings change.
+  noCookies: The page has not provided usable verification data. Complete verification before returning.

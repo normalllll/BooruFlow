@@ -61,6 +61,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
   late final Translations$settings$en settings = Translations$settings$en.internal(_root);
   late final Translations$discovery$en discovery = Translations$discovery$en.internal(_root);
   late final Translations$mediaError$en mediaError = Translations$mediaError$en.internal(_root);
+  late final Translations$webChallenge$en webChallenge = Translations$webChallenge$en.internal(_root);
 }
 
 // Path: generic
@@ -726,6 +727,96 @@ class Translations$mediaError$en {
       'The downloaded image could not be decoded. Retry will clear this image’s cache and download it again.';
 }
 
+// Path: webChallenge
+class Translations$webChallenge$en {
+  Translations$webChallenge$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'Web verification'
+  String get title => 'Web verification';
+
+  /// en: 'Open verification page'
+  String get open => 'Open verification page';
+
+  /// en: '$source · Close this window after verification'
+  String windowTitle({required Object source}) => '${source} · Close this window after verification';
+
+  /// en: 'Complete the page's verification manually, then go back or close the window. The app will save the verification data and reload the source.'
+  String get instructions =>
+      'Complete the page\'s verification manually, then go back or close the window. The app will save the verification data and reload the source.';
+
+  /// en: 'Finish and return'
+  String get finish => 'Finish and return';
+
+  /// en: 'Reading and verifying the web session…'
+  String get saving => 'Reading and verifying the web session…';
+
+  /// en: 'Web verification in progress…'
+  String get waiting => 'Web verification in progress…';
+
+  /// en: 'Clear verification data'
+  String get clear => 'Clear verification data';
+
+  /// en: 'Clear all web verification data'
+  String get clearAll => 'Clear all web verification data';
+
+  /// en: 'Remove cookies, browser identity and web cache, and stop pending verification.'
+  String get clearDescription => 'Remove cookies, browser identity and web cache, and stop pending verification.';
+
+  /// en: 'Web verification data cleared'
+  String get cleared => 'Web verification data cleared';
+
+  /// en: 'Verified and accessible'
+  String get verified => 'Verified and accessible';
+
+  /// en: 'Saved; awaiting verification'
+  String get saved => 'Saved; awaiting verification';
+
+  /// en: 'No saved verification data'
+  String get empty => 'No saved verification data';
+
+  /// en: 'Web verification did not complete. Please retry.'
+  String get failed => 'Web verification did not complete. Please retry.';
+
+  /// en: 'The page failed to load. Reopen verification or check network settings.'
+  String get pageLoadFailed => 'The page failed to load. Reopen verification or check network settings.';
+
+  /// en: 'The web component is unavailable on this platform. On Windows, install or update Microsoft Edge WebView2 Runtime.'
+  String get webViewUnavailable =>
+      'The web component is unavailable on this platform. On Windows, install or update Microsoft Edge WebView2 Runtime.';
+
+  /// en: 'The web component does not support the current proxy settings. Change them and retry.'
+  String get proxyUnsupported =>
+      'The web component does not support the current proxy settings. Change them and retry.';
+
+  /// en: 'Another web verification or cleanup is in progress.'
+  String get busy => 'Another web verification or cleanup is in progress.';
+
+  /// en: 'Web verification cancelled.'
+  String get cancelled => 'Web verification cancelled.';
+
+  /// en: 'Web verification timed out. Open the page again.'
+  String get timedOut => 'Web verification timed out. Open the page again.';
+
+  /// en: 'Verification data could not be saved or cleared. The previous session was retained.'
+  String get storageFailed => 'Verification data could not be saved or cleared. The previous session was retained.';
+
+  /// en: 'The web session could not be read. Open verification again.'
+  String get captureFailed => 'The web session could not be read. Open verification again.';
+
+  /// en: 'Web data cleanup is incomplete. Try clearing it again shortly.'
+  String get cleanupFailed => 'Web data cleanup is incomplete. Try clearing it again shortly.';
+
+  /// en: 'Verification was cancelled by a data clear or network settings change.'
+  String get operationSuperseded => 'Verification was cancelled by a data clear or network settings change.';
+
+  /// en: 'The page has not provided usable verification data. Complete verification before returning.'
+  String get noCookies => 'The page has not provided usable verification data. Complete verification before returning.';
+}
+
 // Path: downloads.messages
 class Translations$downloads$messages$en {
   Translations$downloads$messages$en.internal(this._root);
@@ -899,8 +990,85 @@ class Translations$settings$network$en {
 
   // Translations
 
+  /// en: 'Proxy'
+  String get proxyCompact => 'Proxy';
+
+  /// en: 'Test'
+  String get checkCompact => 'Test';
+
+  /// en: 'Details'
+  String get detailsCompact => 'Details';
+
+  /// en: 'Advanced'
+  String get advancedCompact => 'Advanced';
+
+  /// en: 'Not tested'
+  String get uncheckedCompact => 'Not tested';
+
+  /// en: 'Testing'
+  String get checkingCompact => 'Testing';
+
+  /// en: 'API'
+  String get apiShort => 'API';
+
+  /// en: 'Images'
+  String get imagesShort => 'Images';
+
+  /// en: 'Save'
+  String get saveCompact => 'Save';
+
+  /// en: 'Proxy protocol'
+  String get proxyProtocol => 'Proxy protocol';
+
+  /// en: 'IP or hostname'
+  String get proxyHost => 'IP or hostname';
+
+  /// en: 'Port'
+  String get proxyPort => 'Port';
+
+  /// en: 'Reachable'
+  String get proxyReachable => 'Reachable';
+
+  /// en: 'Unreachable'
+  String get proxyUnreachable => 'Unreachable';
+
+  /// en: 'Test proxy connectivity'
+  String get proxyProbe => 'Test proxy connectivity';
+
+  /// en: 'Tests the entered proxy without saving it. Each source is checked independently.'
+  String get proxyProbeHint => 'Tests the entered proxy without saving it. Each source is checked independently.';
+
+  /// en: 'Available'
+  String get sourceAvailable => 'Available';
+
+  /// en: 'Partially available'
+  String get sourcePartial => 'Partially available';
+
+  /// en: 'Unavailable'
+  String get sourceUnavailable => 'Unavailable';
+
+  /// en: 'Check all sources'
+  String get checkAllSources => 'Check all sources';
+
+  /// en: 'Images: available'
+  String get mediaAvailable => 'Images: available';
+
+  /// en: 'Images: failed or no test image'
+  String get mediaUnavailable => 'Images: failed or no test image';
+
+  /// en: 'DNS route details (separate from availability)'
+  String get dnsDetails => 'DNS route details (separate from availability)';
+
+  /// en: 'Green: API and image checks passed; yellow: partially passed; red: failed. Sources run concurrently with a 26-second limit.'
+  String get sourceProbeHelp =>
+      'Green: API and image checks passed; yellow: partially passed; red: failed. Sources run concurrently with a 26-second limit.';
+
   /// en: 'DNS service'
   String get dnsProvider => 'DNS service';
+
+  /// en: '$available available · $issues issues'
+  String sourceSummary({required Object available, required Object issues}) =>
+      '${available} available · ${issues} issues';
 
   /// en: 'Services status'
   String get servicesTitle => 'Services status';
@@ -909,9 +1077,9 @@ class Translations$settings$network$en {
   String get servicesHint =>
       'IP resolution and API availability are checked separately. API results do not guarantee every image can be downloaded.';
 
-  /// en: 'Only the selected DNS service is used. A failure is reported directly; there is no system DNS or provider fallback.'
+  /// en: 'The DNS provider is used for route refresh below. System DNS mode does not use cached IPs. SNI bypass uses cached IPs without automatic fallback.'
   String get noFallback =>
-      'Only the selected DNS service is used. A failure is reported directly; there is no system DNS or provider fallback.';
+      'The DNS provider is used for route refresh below. System DNS mode does not use cached IPs. SNI bypass uses cached IPs without automatic fallback.';
 
   /// en: 'DNS $done/$total · API $checked/$sources'
   String checkProgress({
@@ -970,6 +1138,40 @@ class Translations$settings$network$en {
   /// en: 'Proxy URL'
   String get proxyUrl => 'Proxy URL';
 
+  /// en: 'Custom network proxy'
+  String get proxyTitle => 'Custom network proxy';
+
+  /// en: 'The custom proxy takes priority and keeps normal SNI and certificate verification. SNI bypass is not combined with a proxy. The connection mode takes effect after disabling the custom proxy.'
+  String get proxyModeOverride =>
+      'The custom proxy takes priority and keeps normal SNI and certificate verification. SNI bypass is not combined with a proxy. The connection mode takes effect after disabling the custom proxy.';
+
+  /// en: 'Apply proxy settings'
+  String get proxyApply => 'Apply proxy settings';
+
+  /// en: 'Disable custom proxy'
+  String get proxyDisable => 'Disable custom proxy';
+
+  /// en: 'Applied: $endpoint (connection not confirmed)'
+  String proxyActive({required Object endpoint}) => 'Applied: ${endpoint} (connection not confirmed)';
+
+  /// en: 'No custom proxy · Uses the connection mode and system proxy settings'
+  String get proxyInactive => 'No custom proxy · Uses the connection mode and system proxy settings';
+
+  /// en: 'Changes are pending. Click Apply proxy settings.'
+  String get proxyPending => 'Changes are pending. Click Apply proxy settings.';
+
+  /// en: 'Enter a proxy address and click the button below. Start the proxy service first. Applies to source lists, images and new download requests.'
+  String get proxyHelp =>
+      'Enter a proxy address and click the button below. Start the proxy service first. Applies to source lists, images and new download requests.';
+
+  /// en: 'A custom proxy takes priority over cached IP routes. Use the source API checks below to confirm connectivity; successful DNS resolution does not test the proxy.'
+  String get proxyCheckHelp =>
+      'A custom proxy takes priority over cached IP routes. Use the source API checks below to confirm connectivity; successful DNS resolution does not test the proxy.';
+
+  /// en: 'Enter a valid IP or hostname and a port from 1–65535 in separate fields. Omit the protocol and path from the address.'
+  String get proxyInvalid =>
+      'Enter a valid IP or hostname and a port from 1–65535 in separate fields. Omit the protocol and path from the address.';
+
   /// en: 'Optional · for example http://127.0.0.1:7890'
   String get proxyHint => 'Optional · for example http://127.0.0.1:7890';
 
@@ -997,8 +1199,8 @@ class Translations$settings$network$en {
   /// en: 'Route refresh failed'
   String get routeRefreshFailed => 'Route refresh failed';
 
-  /// en: 'System DNS'
-  String get systemDns => 'System DNS';
+  /// en: 'Use system DNS'
+  String get systemDns => 'Use system DNS';
 
   /// en: 'SNI bypass'
   String get sniBypass => 'SNI bypass';
@@ -1315,12 +1517,40 @@ extension on Translations {
       'settings.account.statuses.configuredUnverified' => 'Configured, not verified',
       'settings.account.statuses.verified' => 'Verified',
       'settings.account.statuses.rejected' => 'Rejected',
+      'settings.network.proxyCompact' => 'Proxy',
+      'settings.network.checkCompact' => 'Test',
+      'settings.network.detailsCompact' => 'Details',
+      'settings.network.advancedCompact' => 'Advanced',
+      'settings.network.uncheckedCompact' => 'Not tested',
+      'settings.network.checkingCompact' => 'Testing',
+      'settings.network.apiShort' => 'API',
+      'settings.network.imagesShort' => 'Images',
+      'settings.network.saveCompact' => 'Save',
+      'settings.network.proxyProtocol' => 'Proxy protocol',
+      'settings.network.proxyHost' => 'IP or hostname',
+      'settings.network.proxyPort' => 'Port',
+      'settings.network.proxyReachable' => 'Reachable',
+      'settings.network.proxyUnreachable' => 'Unreachable',
+      'settings.network.proxyProbe' => 'Test proxy connectivity',
+      'settings.network.proxyProbeHint' =>
+        'Tests the entered proxy without saving it. Each source is checked independently.',
+      'settings.network.sourceAvailable' => 'Available',
+      'settings.network.sourcePartial' => 'Partially available',
+      'settings.network.sourceUnavailable' => 'Unavailable',
+      'settings.network.checkAllSources' => 'Check all sources',
+      'settings.network.mediaAvailable' => 'Images: available',
+      'settings.network.mediaUnavailable' => 'Images: failed or no test image',
+      'settings.network.dnsDetails' => 'DNS route details (separate from availability)',
+      'settings.network.sourceProbeHelp' =>
+        'Green: API and image checks passed; yellow: partially passed; red: failed. Sources run concurrently with a 26-second limit.',
       'settings.network.dnsProvider' => 'DNS service',
+      'settings.network.sourceSummary' =>
+        ({required Object available, required Object issues}) => '${available} available · ${issues} issues',
       'settings.network.servicesTitle' => 'Services status',
       'settings.network.servicesHint' =>
         'IP resolution and API availability are checked separately. API results do not guarantee every image can be downloaded.',
       'settings.network.noFallback' =>
-        'Only the selected DNS service is used. A failure is reported directly; there is no system DNS or provider fallback.',
+        'The DNS provider is used for route refresh below. System DNS mode does not use cached IPs. SNI bypass uses cached IPs without automatic fallback.',
       'settings.network.checkProgress' =>
         ({required Object done, required Object total, required Object checked, required Object sources}) =>
             'DNS ${done}/${total} · API ${checked}/${sources}',
@@ -1342,6 +1572,21 @@ extension on Translations {
       'settings.network.ipNotCached' => 'IP resolved · not yet saved',
       'settings.network.connectionMode' => 'Connection mode',
       'settings.network.proxyUrl' => 'Proxy URL',
+      'settings.network.proxyTitle' => 'Custom network proxy',
+      'settings.network.proxyModeOverride' =>
+        'The custom proxy takes priority and keeps normal SNI and certificate verification. SNI bypass is not combined with a proxy. The connection mode takes effect after disabling the custom proxy.',
+      'settings.network.proxyApply' => 'Apply proxy settings',
+      'settings.network.proxyDisable' => 'Disable custom proxy',
+      'settings.network.proxyActive' =>
+        ({required Object endpoint}) => 'Applied: ${endpoint} (connection not confirmed)',
+      'settings.network.proxyInactive' => 'No custom proxy · Uses the connection mode and system proxy settings',
+      'settings.network.proxyPending' => 'Changes are pending. Click Apply proxy settings.',
+      'settings.network.proxyHelp' =>
+        'Enter a proxy address and click the button below. Start the proxy service first. Applies to source lists, images and new download requests.',
+      'settings.network.proxyCheckHelp' =>
+        'A custom proxy takes priority over cached IP routes. Use the source API checks below to confirm connectivity; successful DNS resolution does not test the proxy.',
+      'settings.network.proxyInvalid' =>
+        'Enter a valid IP or hostname and a port from 1–65535 in separate fields. Omit the protocol and path from the address.',
       'settings.network.proxyHint' => 'Optional · for example http://127.0.0.1:7890',
       'settings.network.applyAndRouteCache' => 'Apply and route cache',
       'settings.network.apply' => 'Apply network',
@@ -1352,7 +1597,7 @@ extension on Translations {
       'settings.network.applied' => 'Network settings applied',
       'settings.network.invalidSettings' => 'Invalid network settings',
       'settings.network.routeRefreshFailed' => 'Route refresh failed',
-      'settings.network.systemDns' => 'System DNS',
+      'settings.network.systemDns' => 'Use system DNS',
       'settings.network.sniBypass' => 'SNI bypass',
       'settings.network.legacyIpUrl' => 'Legacy IP URL',
       'settings.languageDialog.title' => 'Language',
@@ -1430,6 +1675,38 @@ extension on Translations {
       'mediaError.copyDetails' => 'Copy details',
       'mediaError.decodeFailed' =>
         'The downloaded image could not be decoded. Retry will clear this image’s cache and download it again.',
+      'webChallenge.title' => 'Web verification',
+      'webChallenge.open' => 'Open verification page',
+      'webChallenge.windowTitle' => ({required Object source}) => '${source} · Close this window after verification',
+      'webChallenge.instructions' =>
+        'Complete the page\'s verification manually, then go back or close the window. The app will save the verification data and reload the source.',
+      'webChallenge.finish' => 'Finish and return',
+      'webChallenge.saving' => 'Reading and verifying the web session…',
+      'webChallenge.waiting' => 'Web verification in progress…',
+      'webChallenge.clear' => 'Clear verification data',
+      'webChallenge.clearAll' => 'Clear all web verification data',
+      'webChallenge.clearDescription' =>
+        'Remove cookies, browser identity and web cache, and stop pending verification.',
+      'webChallenge.cleared' => 'Web verification data cleared',
+      'webChallenge.verified' => 'Verified and accessible',
+      'webChallenge.saved' => 'Saved; awaiting verification',
+      'webChallenge.empty' => 'No saved verification data',
+      'webChallenge.failed' => 'Web verification did not complete. Please retry.',
+      'webChallenge.pageLoadFailed' => 'The page failed to load. Reopen verification or check network settings.',
+      'webChallenge.webViewUnavailable' =>
+        'The web component is unavailable on this platform. On Windows, install or update Microsoft Edge WebView2 Runtime.',
+      'webChallenge.proxyUnsupported' =>
+        'The web component does not support the current proxy settings. Change them and retry.',
+      'webChallenge.busy' => 'Another web verification or cleanup is in progress.',
+      'webChallenge.cancelled' => 'Web verification cancelled.',
+      'webChallenge.timedOut' => 'Web verification timed out. Open the page again.',
+      'webChallenge.storageFailed' =>
+        'Verification data could not be saved or cleared. The previous session was retained.',
+      'webChallenge.captureFailed' => 'The web session could not be read. Open verification again.',
+      'webChallenge.cleanupFailed' => 'Web data cleanup is incomplete. Try clearing it again shortly.',
+      'webChallenge.operationSuperseded' => 'Verification was cancelled by a data clear or network settings change.',
+      'webChallenge.noCookies' =>
+        'The page has not provided usable verification data. Complete verification before returning.',
       _ => null,
     };
   }

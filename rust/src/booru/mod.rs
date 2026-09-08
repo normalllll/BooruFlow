@@ -10,3 +10,4 @@ pub(crate) mod network;
 pub(crate) mod registry;
 pub(crate) mod source;
 pub(crate) mod user_agent;
+pub(crate) mod web_challenge;

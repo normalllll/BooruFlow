@@ -1,5 +1,6 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:booruflow/features/settings/network_settings_state.dart';
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:booruflow/features/settings/network_status_panel.dart';
@@ -7,221 +8,151 @@ import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import '../discovery/search_interaction_test.dart' show testSource;
 
-const _cached = RouteDiagnostic(
-  sourceIds: ['yande'],
-  logicalHost: 'yande.re',
-  status: 'cached',
-  candidates: ['198.251.89.183', '2605:6400:30:f1ee:f6a4:e578:483f:2a64'],
-  updatedAtIso8601: '2026-09-08T05:00:00Z',
-  elapsedMs: 720,
-);
-const _failed = RouteDiagnostic(
-  sourceIds: ['danbooru'],
-  logicalHost: 'danbooru.donmai.us',
-  status: 'failed',
-  candidates: [],
-  error: 'DNS request timed out (8s)',
-  elapsedMs: 8000,
-);
-
-RouteCacheState state(
-  List<RouteDiagnostic> reports, {
-  bool refreshing = false,
-}) => RouteCacheState(
+const snapshot = RouteCacheState(
   initialized: true,
-  refreshing: refreshing,
+  refreshing: false,
   routeRevision: '1',
   provider: RouteProvider.uncensoredDns,
-  routes: const [],
-  diagnostics: reports,
+  routes: [],
+  diagnostics: [
+    RouteDiagnostic(
+      sourceIds: ['yande'],
+      logicalHost: 'yande.re',
+      status: 'cached',
+      candidates: ['198.251.89.183'],
+      updatedAtIso8601: '2026-09-08T05:00:00Z',
+    ),
+    RouteDiagnostic(
+      sourceIds: ['danbooru'],
+      logicalHost: 'danbooru.donmai.us',
+      status: 'failed',
+      candidates: [],
+      error: 'DNS fixture failure',
+    ),
+  ],
 );
-
+SourceConnectionCheck result(String id, bool api, bool media) =>
+    SourceConnectionCheck(
+      sourceId: id,
+      apiAvailable: api,
+      mediaAvailable: media,
+    );
+Widget panel({
+  Future<SourceConnectionCheck> Function(String)? probe,
+  VoidCallback? refresh,
+  double scale = 1,
+}) => ProviderScope(
+  overrides: [
+    networkProbeBackendProvider.overrideWithValue(
+      NetworkProbeBackend(
+        sources: ['yande', 'danbooru', 'wallhaven'].map(testSource).toList(),
+        read: () async => snapshot,
+        refresh: () async {
+          refresh?.call();
+          return snapshot;
+        },
+        probe: probe ?? (id) async => result(id, true, true),
+        load: () => null,
+        save: (_) async {},
+      ),
+    ),
+  ],
+  child: MaterialApp(
+    home: MediaQuery(
+      data: MediaQueryData(textScaler: TextScaler.linear(scale)),
+      child: const Scaffold(
+        body: SingleChildScrollView(child: NetworkStatusPanel()),
+      ),
+    ),
+  ),
+);
+Icon dot(WidgetTester tester, String id) =>
+    tester.widget<Icon>(find.byKey(ValueKey('source-status-$id')));
 void main() {
   setUp(() => LocaleSettings.setLocaleSync(AppLocale.en));
-  tearDown(() => LocaleSettings.setLocaleSync(AppLocale.en));
-
-  for (final locale in AppLocale.values) {
-    testWidgets('network messages follow locale ${locale.name}', (
-      tester,
-    ) async {
-      LocaleSettings.setLocaleSync(locale);
-      final snapshot = state([_cached]);
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: NetworkStatusPanel(
-                sources: [testSource('yande')],
-                readState: () async => snapshot,
-                refreshRoutes: () async => snapshot,
-                checkSource: (_) async {},
-                onBusyChanged: (_) {},
-              ),
-            ),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text(t.settings.network.servicesTitle), findsOneWidget);
-      expect(find.textContaining(t.settings.network.dnsCached), findsOneWidget);
-      expect(find.text(t.settings.network.apiUnchecked), findsOneWidget);
-      if (locale != AppLocale.en) {
-        expect(
-          find.text(AppLocale.en.buildSync().settings.network.servicesTitle),
-          findsNothing,
-        );
-      }
-      await tester.pumpWidget(const SizedBox());
-    });
-  }
-
-  testWidgets(
-    'shows cached IPs, local timestamp, failures and every source without fetching',
-    (tester) async {
-      var refreshes = 0;
-      var checks = 0;
-      final snapshot = state([_cached, _failed]);
-      final sources = [
-        'yande',
-        'danbooru',
-        'aibooru',
-        'gelbooru',
-        'konachan_net',
-        'wallhaven',
-        'anime_pictures',
-      ];
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: NetworkStatusPanel(
-                sources: sources.map(testSource).toList(),
-                readState: () async => snapshot,
-                refreshRoutes: () async {
-                  refreshes++;
-                  return snapshot;
-                },
-                checkSource: (_) async {
-                  checks++;
-                },
-                onBusyChanged: (_) {},
-              ),
-            ),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      for (final source in sources) {
-        expect(find.text(source), findsOneWidget);
-      }
-      expect(find.textContaining('198.251.89.183'), findsOneWidget);
-      expect(
-        find.textContaining('IP cached · Updated at 2026-09-08'),
-        findsOneWidget,
-      );
-      expect(find.textContaining('Using cached IPs'), findsOneWidget);
-      expect(find.text('DNS request timed out (8s)'), findsOneWidget);
-      expect(refreshes, 0);
-      expect(checks, 0);
-      await tester.pumpWidget(const SizedBox());
-    },
-  );
-
-  testWidgets(
-    'refresh preserves the source list and shows progress and final API error',
-    (tester) async {
-      final done = Completer<RouteCacheState>();
-      final check = Completer<void>();
-      var snapshot = state([_cached, _failed]);
-      final busy = <bool>[];
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: NetworkStatusPanel(
-                sources: [testSource('yande'), testSource('danbooru')],
-                readState: () async => snapshot,
-                refreshRoutes: () => done.future,
-                checkSource: (id) async {
-                  if (id == 'yande') {
-                    await check.future;
-                  } else {
-                    throw Exception('HTTP 403');
-                  }
-                },
-                onBusyChanged: busy.add,
-              ),
-            ),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text(t.settings.network.refreshRoutes));
-      await tester.pump();
-      snapshot = state([
-        const RouteDiagnostic(
-          sourceIds: ['yande'],
-          logicalHost: 'yande.re',
-          status: 'resolving',
-          candidates: [],
-        ),
-        _failed,
-      ], refreshing: true);
-      await tester.pump(const Duration(milliseconds: 600));
-      expect(find.text('yande'), findsOneWidget);
-      expect(find.textContaining('Resolving'), findsOneWidget);
-      expect(find.byType(LinearProgressIndicator), findsOneWidget);
-      snapshot = state([_cached, _failed]);
-      done.complete(snapshot);
-      await tester.pump();
-      expect(find.text(t.settings.network.apiChecking), findsOneWidget);
-      check.complete();
-      await tester.pumpAndSettle();
-      expect(find.text(t.settings.network.apiAvailable), findsOneWidget);
-      expect(find.text(t.settings.network.apiFailed), findsOneWidget);
-      expect(find.textContaining('HTTP 403'), findsOneWidget);
-      expect(busy, [true, false]);
-      expect(find.byType(LinearProgressIndicator), findsNothing);
-      await tester.pumpWidget(const SizedBox());
-    },
-  );
-
   for (final width in [360.0, 1440.0]) {
     for (final scale in [1.0, 2.0]) {
-      testWidgets('network results fit width $width with text scale $scale', (
+      testWidgets('source list fits $width/$scale and opens selected details', (
         tester,
       ) async {
-        tester.view.physicalSize = Size(width, 900);
+        tester.view.physicalSize = Size(width, 1000);
         tester.view.devicePixelRatio = 1;
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.view.resetDevicePixelRatio);
-        final snapshot = state([_cached, _failed]);
-        await tester.pumpWidget(
-          MaterialApp(
-            home: MediaQuery(
-              data: MediaQueryData(
-                size: Size(width, 900),
-                textScaler: TextScaler.linear(scale),
-              ),
-              child: Scaffold(
-                body: SingleChildScrollView(
-                  child: NetworkStatusPanel(
-                    sources: [testSource('yande'), testSource('danbooru')],
-                    readState: () async => snapshot,
-                    refreshRoutes: () async => snapshot,
-                    checkSource: (_) async {},
-                    onBusyChanged: (_) {},
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
+        await tester.pumpWidget(panel(scale: scale));
         await tester.pumpAndSettle();
+        expect(find.byType(TabBar), findsNothing);
+        expect(find.byType(TabBarView), findsNothing);
+        for (final id in ['yande', 'danbooru', 'wallhaven']) {
+          expect(find.byKey(ValueKey('source-details-$id')), findsOneWidget);
+        }
+        expect(find.text('198.251.89.183'), findsNothing);
+        expect(find.text('DNS fixture failure'), findsNothing);
+        await tester.ensureVisible(find.text('danbooru'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('source-details-danbooru')));
+        await tester.pumpAndSettle();
+        expect(find.text('DNS fixture failure'), findsOneWidget);
         expect(tester.takeException(), isNull);
-        expect(find.textContaining('2605:6400'), findsOneWidget);
         await tester.pumpWidget(const SizedBox());
       });
     }
   }
+  testWidgets(
+    'all probes start without DNS and publish green/yellow while first hangs',
+    (tester) async {
+      final pending = Completer<SourceConnectionCheck>();
+      final calls = <String>[];
+      var refreshes = 0;
+      await tester.pumpWidget(
+        panel(
+          refresh: () => refreshes++,
+          probe: (id) {
+            calls.add(id);
+            return id == 'yande'
+                ? pending.future
+                : Future.value(result(id, true, id == 'danbooru'));
+          },
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(t.settings.network.checkCompact));
+      await tester.pump();
+      await tester.pump();
+      expect(calls, ['yande', 'danbooru', 'wallhaven']);
+      expect(refreshes, 0);
+      expect(dot(tester, 'danbooru').color, Colors.greenAccent.shade400);
+      expect(dot(tester, 'wallhaven').color, Colors.amber);
+      expect(dot(tester, 'yande').color, Colors.blue);
+      await tester.pump(const Duration(seconds: 27));
+      await tester.pump();
+      expect(dot(tester, 'yande').color, Colors.redAccent);
+      pending.complete(result('yande', true, true));
+      await tester.pump();
+      expect(dot(tester, 'yande').color, Colors.redAccent);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+  testWidgets('DNS refresh does not silently run source tests', (tester) async {
+    var calls = 0;
+    var refreshes = 0;
+    await tester.pumpWidget(
+      panel(
+        refresh: () => refreshes++,
+        probe: (id) async {
+          calls++;
+          return result(id, true, true);
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('source-details-yande')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(t.settings.network.refreshRoutes));
+    await tester.pumpAndSettle();
+    expect(refreshes, 1);
+    expect(calls, 0);
+    expect(dot(tester, 'yande').color, Colors.grey);
+    await tester.pumpWidget(const SizedBox());
+  });
 }

@@ -195,11 +195,10 @@ final class RustIoDownloadEngine implements DownloadEngine {
             jobId: job.id,
             error:
                 'Rust download failed.\n'
-                'url=${job.url}\n'
+                'source=${job.sourceId} post=${job.postId}\n'
                 'filename=${job.filename}\n'
                 'partialPath=${partialFile?.path ?? '<null>'}\n'
                 'downloadedPath=${downloadedFile?.path ?? '<null>'}\n'
-                'networkOptions=${job.networkOptions.toJson()}\n'
                 'validation=${job.validation.toJson()}\n'
                 'error=$error\n'
                 'stackTrace=$stackTrace',

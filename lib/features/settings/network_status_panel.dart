@@ -1,247 +1,345 @@
-import 'dart:async';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'network_settings_state.dart';
 import 'package:flutter/material.dart';
-import 'package:booruflow/features/booru/booru_error_presentation.dart';
+
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 
-class NetworkStatusPanel extends StatefulWidget {
-  const NetworkStatusPanel({
-    super.key,
-    required this.sources,
-    required this.readState,
-    required this.refreshRoutes,
-    required this.checkSource,
-    required this.onBusyChanged,
-    this.enabled = true,
-  });
-
-  final List<BooruSource> sources;
-  final Future<RouteCacheState> Function() readState;
-  final Future<RouteCacheState> Function() refreshRoutes;
-  final Future<void> Function(String) checkSource;
-  final ValueChanged<bool> onBusyChanged;
-  final bool enabled;
-
+class NetworkStatusPanel extends ConsumerStatefulWidget {
+  const NetworkStatusPanel({super.key});
   @override
-  State<NetworkStatusPanel> createState() => _NetworkStatusPanelState();
+  ConsumerState<NetworkStatusPanel> createState() => _NetworkStatusPanelState();
 }
 
-class _NetworkStatusPanelState extends State<NetworkStatusPanel>
-    with AutomaticKeepAliveClientMixin {
-  @override
-  bool get wantKeepAlive => true;
-  RouteCacheState? _state;
-  final _checks = <String, String>{};
-  final _errors = <String, String>{};
-  bool _busy = false;
-  bool _reading = false;
-  String? _error;
-  Timer? _poll;
-
+class _NetworkStatusPanelState extends ConsumerState<NetworkStatusPanel> {
+  late final NetworkStatusController _controller;
+  List<BooruSource> get _sources =>
+      ref.read(networkProbeBackendProvider).sources;
+  NetworkStatusState get _status => ref.read(networkStatusProvider);
+  RouteCacheState? get _state => _status.routes;
+  Map<String, String> get _checks => _status.checks;
+  Map<String, SourceConnectionCheck> get _details => _status.details;
+  Map<String, String> get _errors => _status.errors;
+  bool get _busy => _status.busy;
+  String? get _error => _status.error;
+  bool get _enabled => !ref.read(networkConfigProvider).busy;
   @override
   void initState() {
     super.initState();
-    unawaited(_read());
-    // This reads local diagnostics only; it never performs network requests.
-    _poll = Timer.periodic(const Duration(milliseconds: 500), (_) => _read());
+    _controller = ref.read(networkStatusProvider.notifier);
+    _controller.attach();
   }
 
   @override
   void dispose() {
-    _poll?.cancel();
+    _controller.detach();
     super.dispose();
   }
 
-  Future<void> _read() async {
-    if (_reading) return;
-    _reading = true;
-    try {
-      final state = await widget.readState();
-      if (mounted && state != _state) setState(() => _state = state);
-    } catch (error) {
-      if (mounted) {
-        setState(() => _error = describeBooruError(error));
-      }
-    } finally {
-      _reading = false;
-    }
-  }
-
-  Future<void> _refresh() async {
-    if (_busy) return;
-    setState(() {
-      _busy = true;
-      _error = null;
-      _checks.clear();
-      _errors.clear();
-    });
-    widget.onBusyChanged(true);
-    try {
-      final state = await widget.refreshRoutes();
-      if (!mounted) return;
-      setState(() => _state = state);
-      // Each source has a bounded API check, independent of the DNS result.
-      await Future.wait(
-        widget.sources.map((source) async {
-          if (!mounted) return;
-          setState(() => _checks[source.sourceId] = 'checking');
-          try {
-            await widget.checkSource(source.sourceId);
-            if (mounted) {
-              setState(() => _checks[source.sourceId] = 'available');
-            }
-          } catch (error) {
-            if (mounted) {
-              setState(() {
-                _checks[source.sourceId] = 'failed';
-                _errors[source.sourceId] = describeBooruError(error);
-              });
-            }
-          }
-        }),
-      );
-    } catch (error) {
-      if (mounted) {
-        setState(() => _error = describeBooruError(error));
-      }
-    } finally {
-      await _read();
-      if (mounted) {
-        setState(() => _busy = false);
-        widget.onBusyChanged(false);
-      }
-    }
-  }
-
+  Future<void> _checkAll() => _controller.checkSources(_sources);
+  Future<void> _checkSources(List<BooruSource> sources) =>
+      _controller.checkSources(sources);
+  Future<void> _refresh() => _controller.refreshRoutes();
+  String _label(String id) => switch (_checks[id]) {
+    'available' => t.settings.network.sourceAvailable,
+    'partial' => t.settings.network.sourcePartial,
+    'failed' => t.settings.network.sourceUnavailable,
+    'checking' => t.settings.network.checkingCompact,
+    _ => t.settings.network.uncheckedCompact,
+  };
+  Color _color(String id) => switch (_checks[id]) {
+    'available' => Colors.greenAccent.shade400,
+    'partial' => Colors.amber,
+    'failed' => Colors.redAccent,
+    'checking' => Colors.blue,
+    _ => Colors.grey,
+  };
   @override
   Widget build(BuildContext context) {
-    super.build(context);
+    ref.watch(networkStatusProvider);
+    ref.watch(networkConfigProvider);
     final n = t.settings.network;
-    final reports = _state?.diagnostics ?? const <RouteDiagnostic>[];
-    final finished = reports
-        .where(
-          (r) =>
-              r.status == 'resolved' ||
-              r.status == 'failed' ||
-              r.status == 'cached',
-        )
+    if (_sources.isEmpty) return const SizedBox();
+    final available = _checks.values.where((s) => s == 'available').length;
+    final issues = _checks.values
+        .where((s) => s == 'partial' || s == 'failed')
         .length;
-    final active = _busy || (_state?.refreshing ?? false);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final list = Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [for (final source in _sources) _sourceRow(source)],
+        );
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          n.servicesTitle,
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        Text(
+                          n.sourceSummary(available: available, issues: issues),
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                  AppButton(
+                    label: n.checkCompact,
+                    tooltip: n.checkAllSources,
+                    icon: Icons.refresh_rounded,
+                    kind: AppButtonKind.ghost,
+                    compact: true,
+                    loading: _busy,
+                    onPressed: _busy || !_enabled ? null : _checkAll,
+                  ),
+                ],
+              ),
+            ),
+            list,
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _sourceRow(BooruSource source) {
+    final n = t.settings.network;
+    final result = _details[source.sourceId];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns =
+            constraints.maxWidth >= 540 &&
+            MediaQuery.textScalerOf(context).scale(14) <= 20;
+        final metrics = Wrap(
+          spacing: 12,
+          runSpacing: 4,
+          children: [
+            Text(
+              _label(source.sourceId),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            _metric(n.apiShort, result?.apiAvailable),
+            _metric(
+              n.imagesShort,
+              result?.apiAvailable == true ? result?.mediaAvailable : null,
+            ),
+          ],
+        );
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            key: ValueKey('source-details-${source.sourceId}'),
+            onTap: () => _showDetails(source),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 56),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
+                child: Row(
+                  children: [
+                    Tooltip(
+                      message: _label(source.sourceId),
+                      child: Icon(
+                        Icons.circle,
+                        key: ValueKey('source-status-${source.sourceId}'),
+                        size: 8,
+                        color: _color(source.sourceId),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Tooltip(
+                            message: source.displayName,
+                            child: Text(
+                              source.displayName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ),
+                          if (!columns)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: metrics,
+                            ),
+                        ],
+                      ),
+                    ),
+                    if (columns) ...[
+                      SizedBox(
+                        width: 100,
+                        child: Text(
+                          _label(source.sourceId),
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                      SizedBox(
+                        width: 72,
+                        child: _metric(n.apiShort, result?.apiAvailable),
+                      ),
+                      SizedBox(
+                        width: 82,
+                        child: _metric(
+                          n.imagesShort,
+                          result?.apiAvailable == true
+                              ? result?.mediaAvailable
+                              : null,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(width: 8),
+                    const Icon(Icons.chevron_right_rounded, size: 18),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _metric(String label, bool? available) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(
+        available == null
+            ? Icons.remove_rounded
+            : available
+            ? Icons.check_circle_outline
+            : Icons.error_outline,
+        size: 16,
+        color: available == null
+            ? Colors.grey
+            : available
+            ? Colors.green
+            : Colors.redAccent,
+      ),
+      const SizedBox(width: 5),
+      Text(label, style: Theme.of(context).textTheme.bodySmall),
+    ],
+  );
+
+  void _showDetails(BooruSource source) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      constraints: const BoxConstraints(maxWidth: 640),
+      builder: (sheetContext) => SafeArea(
+        child: SizedBox(
+          height: MediaQuery.sizeOf(sheetContext).height * 0.65,
+          child: Consumer(
+            builder: (_, ref, _) {
+              ref.watch(networkStatusProvider);
+              ref.watch(networkConfigProvider);
+              return SingleChildScrollView(
+                child: _detailContent(
+                  source,
+                  () => Navigator.pop(sheetContext),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _detailContent(BooruSource source, VoidCallback close) {
+    final n = t.settings.network;
+    final result = _details[source.sourceId];
+    final reports =
+        _state?.diagnostics
+            .where((r) => r.sourceIds.contains(source.sourceId))
+            .toList() ??
+        const <RouteDiagnostic>[];
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(14, 4, 14, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 12,
-            runSpacing: 12,
+          Row(
             children: [
-              Text(
-                n.servicesTitle,
-                style: Theme.of(context).textTheme.titleMedium,
+              Expanded(
+                child: Text(
+                  source.displayName,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
               ),
-              AppButton(
-                label: n.refreshRoutes,
-                onPressed: active || !widget.enabled ? null : _refresh,
+              IconButton(
+                tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                onPressed: close,
+                icon: const Icon(Icons.close, size: 18),
+              ),
+            ],
+          ),
+          Text(
+            _label(source.sourceId),
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 16,
+            runSpacing: 6,
+            children: [
+              _metric(n.apiShort, result?.apiAvailable),
+              _metric(
+                n.imagesShort,
+                result?.apiAvailable == true ? result?.mediaAvailable : null,
               ),
             ],
           ),
           const SizedBox(height: 8),
-          Text(n.servicesHint),
-          if (_state?.provider case final provider?) ...[
-            const SizedBox(height: 8),
-            Text(
-              '${n.dnsProvider}: ${provider == RouteProvider.uncensoredDns ? 'UncensoredDNS' : 'doh.sb'}',
+          Align(
+            alignment: Alignment.centerLeft,
+            child: AppButton(
+              label: n.checkCompact,
+              icon: Icons.refresh_rounded,
+              compact: true,
+              kind: AppButtonKind.ghost,
+              loading: _checks[source.sourceId] == 'checking',
+              onPressed: _busy || !_enabled
+                  ? null
+                  : () => _checkSources([source]),
             ),
-          ],
-          const SizedBox(height: 8),
-          if (active) ...[
-            Text(
-              n.checkProgress(
-                done: finished,
-                total: reports.length,
-                checked: _checks.values.where((s) => s != 'checking').length,
-                sources: widget.sources.length,
-              ),
-            ),
-            const SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: reports.isEmpty
-                  ? 0
-                  : (finished +
-                            _checks.values
-                                .where((s) => s != 'checking')
-                                .length) /
-                        (reports.length + widget.sources.length),
-            ),
-          ] else
-            Text(
-              _state == null
-                  ? n.loadingStatus
-                  : n.checkSummary(
-                      available: _checks.values
-                          .where((s) => s == 'available')
-                          .length,
-                      total: widget.sources.length,
-                      failed: reports.where((r) => r.status == 'failed').length,
-                    ),
-            ),
-          if (_error case final error?)
+          ),
+          if (_errors[source.sourceId] case final error?) SelectableText(error),
+          if (_error != null) SelectableText(_error!),
+          for (final report in reports)
+            _host(context, report, _state?.refreshing ?? false),
+          if (reports.isEmpty)
             Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: SelectableText(
-                error,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(n.dnsPending),
             ),
-          for (final source in widget.sources) ...[
-            const Divider(height: 28),
-            Wrap(
-              spacing: 12,
-              runSpacing: 6,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Text(
-                  source.displayName,
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                Text(
-                  switch (_checks[source.sourceId]) {
-                    'checking' => n.apiChecking,
-                    'available' => n.apiAvailable,
-                    'failed' => n.apiFailed,
-                    _ => n.apiUnchecked,
-                  },
-                  style: TextStyle(
-                    color: _checks[source.sourceId] == 'failed'
-                        ? Theme.of(context).colorScheme.error
-                        : Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: AppButton(
+              label: n.refreshRoutes,
+              compact: true,
+              kind: AppButtonKind.ghost,
+              icon: Icons.refresh_rounded,
+              onPressed: _busy || !_enabled ? null : _refresh,
             ),
-            if (_errors[source.sourceId] case final error?)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: SelectableText(
-                  error,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-              ),
-            for (final report in reports.where(
-              (r) => r.sourceIds.contains(source.sourceId),
-            ))
-              _host(context, report, _state?.refreshing ?? false),
-            if (!reports.any((r) => r.sourceIds.contains(source.sourceId)))
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(n.dnsPending),
-              ),
-          ],
+          ),
         ],
       ),
     );

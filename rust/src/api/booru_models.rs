@@ -1,5 +1,14 @@
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct SourceConnectionCheck {
+    pub source_id: String,
+    pub api_available: bool,
+    pub media_available: bool,
+    pub api_error: Option<crate::booru::error::BooruError>,
+    pub media_error: Option<crate::booru::error::BooruError>,
+}
+
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ContentRating {
     General,

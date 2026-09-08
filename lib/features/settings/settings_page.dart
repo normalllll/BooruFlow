@@ -1,5 +1,5 @@
+import 'network_settings_page.dart';
 import 'dart:io';
-import 'package:booruflow/features/settings/network_status_panel.dart';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
@@ -58,11 +58,6 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  final _proxy = TextEditingController();
-  bool _networkBusy = false;
-  int _networkGeneration = 0;
-  bool _routesBusy = false;
-
   BooruService get service => BooruService.instance;
   late String _accountSource;
   final _visitedSources = <String>{};
@@ -70,14 +65,13 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
-    _proxy.text = SettingsService.proxyUrl ?? '';
+
     _accountSource = service.selectedSource.value;
     _visitedSources.add(_accountSource);
   }
 
   @override
   void dispose() {
-    _proxy.dispose();
     super.dispose();
   }
 
@@ -158,7 +152,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _sectionContent(SettingsSection section, StateSetter refresh) =>
       switch (section) {
         SettingsSection.sources => _sourceAccountPage(refresh),
-        SettingsSection.network => _networkPage(refresh),
+        SettingsSection.network => const NetworkSettingsPage(),
         SettingsSection.general => _generalPage(refresh),
         SettingsSection.downloads => _downloadsPage(refresh),
       };
@@ -175,106 +169,6 @@ class _SettingsPageState extends State<SettingsPage> {
     trailing: const Icon(Icons.chevron_right_rounded, size: 20),
     onTap: onTap,
   );
-
-  Widget _networkPage(StateSetter refresh) => GroupedSettingsList(
-    groups: [
-      [
-        _DropdownTile<NetworkFallbackMode>(
-          icon: CupertinoIcons.antenna_radiowaves_left_right,
-          title: t.settings.network.connectionMode,
-          value: SettingsService.networkFallbackMode,
-          values: const [
-            NetworkFallbackMode.off,
-            NetworkFallbackMode.persistedIpOverride,
-          ],
-          label: _networkMode,
-          onChanged: (value) {
-            if (_networkBusy || _routesBusy) return;
-            SettingsService.networkFallbackMode = value;
-            _applyNetwork(refresh);
-          },
-        ),
-        _DropdownTile<RouteProvider>(
-          icon: Icons.dns_outlined,
-          title: t.settings.network.dnsProvider,
-          value: SettingsService.dnsProvider,
-          values: RouteProvider.values,
-          label: (value) =>
-              value == RouteProvider.uncensoredDns ? 'UncensoredDNS' : 'doh.sb',
-          onChanged: (value) {
-            if (_networkBusy || _routesBusy) return;
-            SettingsService.dnsProvider = value;
-            _applyNetwork(refresh);
-          },
-        ),
-        ListTile(subtitle: Text(t.settings.network.noFallback)),
-      ],
-      [
-        _TextTile(
-          icon: CupertinoIcons.link,
-          title: t.settings.network.proxyUrl,
-          hint: t.settings.network.proxyHint,
-          controller: _proxy,
-        ),
-        ListTile(
-          leading: const Icon(CupertinoIcons.bolt),
-          title: Text(t.settings.network.applyAndRouteCache),
-          subtitle: Padding(
-            padding: const EdgeInsets.only(top: 10, bottom: 3),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    AppButton(
-                      label: t.settings.network.apply,
-                      kind: AppButtonKind.primary,
-                      loading: _networkBusy,
-                      onPressed: _networkBusy || _routesBusy
-                          ? null
-                          : () => _applyNetwork(refresh),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-      [
-        NetworkStatusPanel(
-          key: ValueKey(_networkGeneration),
-          sources: service.sources,
-          readState: service.engine.routeCacheState,
-          refreshRoutes: service.refreshNetworkRoutes,
-          checkSource: (id) => service.engine.checkSource(sourceId: id),
-          enabled: !_networkBusy,
-          onBusyChanged: (busy) {
-            if (mounted) refresh(() => _routesBusy = busy);
-          },
-        ),
-      ],
-    ],
-  );
-
-  Future<void> _applyNetwork(StateSetter refresh) async {
-    if (_networkBusy || _routesBusy) return;
-    refresh(() => _networkBusy = true);
-    try {
-      SettingsService.proxyUrl = _proxy.text;
-      await service.reconfigureNetwork();
-      _networkGeneration++;
-      if (mounted) AppToast.success(t.settings.network.applied);
-    } catch (error) {
-      if (mounted) {
-        AppToast.errorWithCause(t.settings.network.invalidSettings, error);
-      }
-    } finally {
-      if (mounted) refresh(() => _networkBusy = false);
-    }
-  }
 
   Widget _generalPage(StateSetter refresh) => GroupedSettingsList(
     groups: [
@@ -425,13 +319,15 @@ class _SettingsPageState extends State<SettingsPage> {
     final activeIndex = sources.indexWhere(
       (item) => item.sourceId == _accountSource,
     );
-    return Align(
-      alignment: Alignment.topCenter,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 760),
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(
-            MediaQuery.sizeOf(context).width < 600 ? 16 : 24,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final padding = MediaQuery.sizeOf(context).width < 600 ? 16.0 : 24.0;
+        final contentInset =
+            (constraints.maxWidth - 760).clamp(0.0, double.infinity) / 2;
+        return SingleChildScrollView(
+          padding: EdgeInsets.symmetric(
+            horizontal: contentInset + padding,
+            vertical: padding,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -530,8 +426,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
             ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -840,6 +736,7 @@ class _DropdownTile<T extends Object> extends StatelessWidget {
     required this.values,
     required this.label,
     required this.onChanged,
+    this.enabled = true,
   });
   final IconData icon;
   final String title;
@@ -847,18 +744,31 @@ class _DropdownTile<T extends Object> extends StatelessWidget {
   final List<T> values;
   final String Function(T) label;
   final ValueChanged<T> onChanged;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) => ListTile(
-    leading: Icon(icon),
-    title: AppSelect<T>(
-      label: title,
-      value: value,
-      items: [
-        for (final item in values)
-          AppSelectItem<T>(value: item, label: label(item)),
-      ],
-      onChanged: onChanged,
+    leading: Icon(
+      icon,
+      color: enabled ? null : Theme.of(context).disabledColor,
+    ),
+    title: ExcludeFocus(
+      excluding: !enabled,
+      child: IgnorePointer(
+        ignoring: !enabled,
+        child: Opacity(
+          opacity: enabled ? 1 : 0.38,
+          child: AppSelect<T>(
+            label: title,
+            value: value,
+            items: [
+              for (final item in values)
+                AppSelectItem<T>(value: item, label: label(item)),
+            ],
+            onChanged: onChanged,
+          ),
+        ),
+      ),
     ),
   );
 }

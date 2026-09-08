@@ -6,6 +6,7 @@ use crate::api::booru_models::{
     BooruEngineConfig, BooruPost, BooruSource, BooruTagSuggestion, MediaRequest, MediaVariantKind,
     PostPage, RouteCacheState, SearchRequest,
 };
+use crate::api::web_challenge::{WebChallengeCandidate, WebChallengeOperation, WebChallengeState};
 use crate::booru::adapter::{BooruAdapter, RequestContext};
 use crate::booru::adapters::anime_pictures::AnimePicturesAdapter;
 use crate::booru::adapters::danbooru::DanbooruAdapter;
@@ -24,6 +25,7 @@ use crate::booru::model::{PostId, SearchQuery};
 use crate::booru::network::NetworkRuntime;
 use crate::booru::registry::SourceRegistry;
 use crate::booru::source::{builtin_sources, ProtocolFamily};
+use crate::booru::web_challenge::{self, ChallengeCoordinator};
 use crate::frb_generated::StreamSink;
 use futures_util::StreamExt;
 use std::collections::BTreeSet;
@@ -34,14 +36,18 @@ pub struct BooruEngine {
     registry: SourceRegistry,
     sessions: Arc<SessionStore>,
     runtime: Arc<NetworkRuntime>,
+    challenges: Arc<ChallengeCoordinator>,
+    challenge_generation: u64,
     active_downloads: Mutex<BTreeSet<String>>,
 }
 
 impl BooruEngine {
     pub fn new(config: BooruEngineConfig) -> BooruResult<Self> {
         let definitions = builtin_sources();
-        let sessions = Arc::new(SessionStore::default());
+        let challenges = ChallengeCoordinator::shared(&config.app_support_directory)?;
+        let sessions = challenges.sessions.clone();
         let runtime = Arc::new(NetworkRuntime::new(config, &definitions, sessions.clone())?);
+        let challenge_generation = challenges.attach_engine()?;
         let adapters = definitions
             .into_iter()
             .map(|definition| -> Arc<dyn BooruAdapter> {
@@ -60,6 +66,8 @@ impl BooruEngine {
             registry: SourceRegistry::new(adapters)?,
             sessions,
             runtime,
+            challenges,
+            challenge_generation,
             active_downloads: Mutex::new(BTreeSet::new()),
         })
     }
@@ -69,6 +77,197 @@ impl BooruEngine {
             .all()
             .map(|adapter| adapter.definition().to_api())
             .collect()
+    }
+
+    pub fn web_challenge_state(&self, source_id: String) -> BooruResult<WebChallengeState> {
+        self.registry.get(&source_id)?;
+        self.challenges.info(&source_id)
+    }
+
+    pub fn begin_web_challenge(&self, source_id: String) -> BooruResult<WebChallengeOperation> {
+        let adapter = self.registry.get(&source_id)?;
+        let spec = web_challenge::rules::spec(adapter.definition())?;
+        let lease = self.challenges.begin(
+            &source_id,
+            self.challenge_generation,
+            std::time::Duration::from_secs(u64::from(spec.timeout_seconds)),
+        )?;
+        Ok(WebChallengeOperation {
+            operation_id: lease.id,
+            spec,
+        })
+    }
+
+    pub fn cancel_web_challenge(&self, operation_id: String) -> BooruResult<()> {
+        self.challenges.cancel(&operation_id)
+    }
+
+    pub async fn complete_web_challenge(
+        &self,
+        operation_id: String,
+        candidate: WebChallengeCandidate,
+    ) -> BooruResult<WebChallengeState> {
+        if let Some(result) = self.challenges.committed(&operation_id)? {
+            return Ok(result);
+        }
+        let lease = self
+            .challenges
+            .start_verifying(&operation_id, self.challenge_generation)?;
+        let result = self.verify_and_commit_challenge(&lease, candidate).await;
+        self.challenges.end_verifying(&operation_id);
+        result
+    }
+
+    async fn verify_and_commit_challenge(
+        &self,
+        lease: &web_challenge::OperationLease,
+        candidate: WebChallengeCandidate,
+    ) -> BooruResult<WebChallengeState> {
+        let material = web_challenge::material::ValidatedChallenge::new(&lease.source, candidate)?;
+        let isolated = Arc::new(self.sessions.detached_with_challenge(material.clone())?);
+        let context = RequestContext {
+            runtime: Arc::new(self.runtime.with_sessions(isolated)),
+        };
+        let adapter = self.registry.get(&lease.source)?;
+        let verification = adapter.search(
+            &context,
+            SearchQuery {
+                text: String::new(),
+                ratings: vec![crate::api::booru_models::ContentRating::General],
+                page_size: 1,
+                cursor: None,
+            },
+        );
+        let remaining = lease
+            .deadline
+            .saturating_duration_since(std::time::Instant::now())
+            .min(std::time::Duration::from_secs(60));
+        tokio::select! {
+            biased;
+            _ = lease.cancellation.cancelled() => return Err(web_challenge::error(&lease.source, BooruErrorCode::Cancelled, "operationSuperseded")),
+            result = tokio::time::timeout(remaining, verification) => {
+                result.map_err(|_| web_challenge::error(&lease.source, BooruErrorCode::Timeout, "timedOut"))??;
+            }
+        }
+        // A parsed public listing establishes site access; it is not an account login.
+        let result = self.challenges.commit(lease, material)?;
+        self.runtime.invalidate_source(&lease.source)?;
+        Ok(result)
+    }
+
+    pub async fn run_windows_web_challenge(
+        &self,
+        operation_id: String,
+        title: String,
+        finish_label: String,
+        cancel_label: String,
+    ) -> BooruResult<WebChallengeState> {
+        #[cfg(all(windows, feature = "web-challenge-window"))]
+        {
+            let lease = self
+                .challenges
+                .lease(&operation_id, self.challenge_generation)?;
+            let adapter = self.registry.get(&lease.source)?;
+            let spec = web_challenge::rules::spec(adapter.definition())?;
+            let config = self.runtime.config();
+            web_challenge::window::validate_proxy(&lease.source, config.proxy_url.as_deref())?;
+            // Pin known routes in WebView2 when Rust is using persisted routes.
+            // Both transports keep their native TLS implementation; the public
+            // API probe below remains the authority on successful replay.
+            let browser_args = if config.proxy_url.is_none()
+                && config.fallback_mode != crate::api::booru_models::NetworkFallbackMode::Off
+            {
+                let mut maps = Vec::new();
+                for host in &spec.navigation_hosts {
+                    if let Ok(addresses) = self
+                        .runtime
+                        .route_cache
+                        .ensure_candidates(adapter.definition(), host)
+                        .await
+                    {
+                        if let Some(address) = addresses.first() {
+                            maps.push(format!("MAP {host} {address}"));
+                        }
+                    }
+                }
+                (!maps.is_empty()).then(|| format!("--host-resolver-rules=\"{}\"", maps.join(", ")))
+            } else {
+                None
+            };
+            let lease = self
+                .challenges
+                .open_window(&operation_id, self.challenge_generation)?;
+            let captured = web_challenge::window::collect(
+                self.challenges.support.clone(),
+                spec,
+                lease,
+                config.proxy_url.clone(),
+                browser_args,
+                title,
+                finish_label,
+                cancel_label,
+            )
+            .await;
+            self.challenges.did_close_window(&operation_id);
+            self.complete_web_challenge(operation_id, captured?).await
+        }
+        #[cfg(not(all(windows, feature = "web-challenge-window")))]
+        {
+            let _ = (operation_id, title, finish_label, cancel_label);
+            Err(web_challenge::error(
+                "network",
+                BooruErrorCode::UnsupportedCapability,
+                "webViewUnavailable",
+            ))
+        }
+    }
+
+    /// Restore into a detached context and revalidate. Offline failures retain
+    /// the disk record for later retry without publishing an unverified session.
+    pub async fn restore_web_challenges(&self) -> BooruResult<Vec<WebChallengeState>> {
+        let mut restored = Vec::new();
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(15);
+        for adapter in self.registry.all() {
+            let remaining = deadline.saturating_duration_since(std::time::Instant::now());
+            if remaining.is_zero() {
+                break;
+            }
+            let source = adapter.definition().id;
+            if self.sessions.challenge(source)?.is_some() {
+                continue;
+            }
+            let candidate = match self.challenges.saved_candidate(source) {
+                Ok(Some(candidate)) => candidate,
+                _ => continue,
+            };
+            let lease = match self
+                .challenges
+                .begin(source, self.challenge_generation, remaining)
+            {
+                Ok(lease) => lease,
+                Err(_) => continue,
+            };
+            match self
+                .complete_web_challenge(lease.id.clone(), candidate)
+                .await
+            {
+                Ok(state) => restored.push(state),
+                Err(_) => {
+                    let _ = self.challenges.cancel(&lease.id);
+                }
+            }
+        }
+        Ok(restored)
+    }
+
+    pub async fn clear_web_challenge(&self, source_id: String) -> BooruResult<WebChallengeState> {
+        self.registry.get(&source_id)?;
+        self.challenges.clear(&source_id)?;
+        self.challenges.wait_for_window_closed(&source_id).await?;
+        #[cfg(all(windows, feature = "web-challenge-window"))]
+        web_challenge::window::cleanup_profiles(&self.challenges.support, &source_id)?;
+        self.runtime.invalidate_source(&source_id)?;
+        self.challenges.info(&source_id)
     }
 
     pub async fn search(&self, request: SearchRequest) -> BooruResult<PostPage> {
@@ -285,7 +484,8 @@ impl BooruEngine {
             post_id,
             variant: prepared.media.kind,
             url: prepared.media.url.clone(),
-            headers: prepared.headers,
+            // Authentication material stays in Rust and is resolved at send time.
+            headers: Vec::new(),
             route_key: format!("{source_id}:{route_revision}"),
             cache_key: format!(
                 "{source_id}:{}:{auth_revision}:{route_revision}",
@@ -308,7 +508,8 @@ impl BooruEngine {
         let adapter = self.registry.get(&source_id)?;
         let url =
             reqwest::Url::parse(&url).map_err(|_| BooruError::invalid_request(Some(&source_id)))?;
-        let headers = self.runtime.prepared_headers(adapter.definition(), &url)?;
+        let _ = self.runtime.prepared_headers(adapter.definition(), &url)?;
+        let headers = Vec::new();
         let auth_revision = self.sessions.revision(&source_id);
         let route_revision = self.runtime.route_revision();
         Ok(MediaRequest {
@@ -335,7 +536,9 @@ impl BooruEngine {
         let prepared = adapter
             .prepare_media(&self.context(), &PostId(post_id.clone()), variant)
             .await?;
-        prepared_download(&source_id, &post_id, variant, prepared)
+        let mut prepared = prepared_download(&source_id, &post_id, variant, prepared)?;
+        prepared.headers.clear();
+        Ok(prepared)
     }
 
     pub async fn stream_media(&self, request: MediaRequest, sink: StreamSink<MediaFetchEvent>) {
@@ -357,7 +560,8 @@ impl BooruEngine {
             post_id: request.post_id,
             variant: request.variant,
             url: request.url,
-            headers: request.headers,
+            // Never replay a serialized credential header from an older revision.
+            headers: Vec::new(),
             expected_bytes_decimal: None,
             allowed_media_kinds: vec![crate::api::booru_models::MediaKind::Image],
             checksum: None,
@@ -557,6 +761,114 @@ impl BooruEngine {
             )
         })??;
         Ok(())
+    }
+
+    /// Probe a draft proxy without replacing the engine or saved settings.
+    /// A missing proxy override probes the currently applied network settings.
+    pub async fn probe_source_connection(
+        &self,
+        source_id: String,
+        proxy_url: Option<String>,
+    ) -> BooruResult<crate::api::booru_models::SourceConnectionCheck> {
+        use crate::booru::network::{RequestSpec, ResponseKind};
+        let adapter = self.registry.get(&source_id)?;
+        let runtime = if let Some(proxy) = proxy_url {
+            let mut config = self.runtime.config().clone();
+            config.proxy_url = Some(proxy);
+            Arc::new(NetworkRuntime::new(
+                config,
+                &builtin_sources(),
+                self.sessions.clone(),
+            )?)
+        } else {
+            self.runtime.clone()
+        };
+        let context = RequestContext {
+            runtime: runtime.clone(),
+        };
+        let timeout_error = || {
+            BooruError::new(
+                BooruErrorCode::Timeout,
+                Some(&source_id),
+                "booru.error.timeout",
+            )
+        };
+        let mut report = crate::api::booru_models::SourceConnectionCheck {
+            source_id: source_id.clone(),
+            api_available: false,
+            media_available: false,
+            api_error: None,
+            media_error: None,
+        };
+        let page = match tokio::time::timeout(
+            std::time::Duration::from_secs(12),
+            adapter.search(
+                &context,
+                SearchQuery {
+                    text: String::new(),
+                    ratings: vec![crate::api::booru_models::ContentRating::General],
+                    page_size: 1,
+                    cursor: None,
+                },
+            ),
+        )
+        .await
+        .unwrap_or_else(|_| Err(timeout_error()))
+        {
+            Ok(page) => page,
+            Err(error) => {
+                report.api_error = Some(error);
+                return Ok(report);
+            }
+        };
+        report.api_available = true;
+        let Some(media) = page
+            .items
+            .iter()
+            .flat_map(|post| &post.media)
+            .find(|media| {
+                matches!(
+                    media.kind,
+                    MediaVariantKind::Thumbnail | MediaVariantKind::Preview
+                )
+            })
+        else {
+            return Ok(report);
+        };
+        let media_check = async {
+            let url = reqwest::Url::parse(&media.url)
+                .map_err(|_| BooruError::invalid_response(&source_id))?;
+            let mut response = runtime
+                .open_media(
+                    adapter.definition(),
+                    RequestSpec::get(url, ResponseKind::Media),
+                )
+                .await?;
+            let kind = response
+                .headers()
+                .get(reqwest::header::CONTENT_TYPE)
+                .and_then(|value| value.to_str().ok())
+                .unwrap_or("");
+            if !kind.starts_with("image/") {
+                return Err(BooruError::invalid_response(&source_id));
+            }
+            let chunk = response
+                .chunk()
+                .await
+                .map_err(|_| BooruError::invalid_response(&source_id))?;
+            if chunk.is_none_or(|bytes| bytes.is_empty()) {
+                return Err(BooruError::invalid_response(&source_id));
+            }
+            Ok(()) // Drop the response after the first chunk; never download a whole original for a probe.
+        };
+        match tokio::time::timeout(std::time::Duration::from_secs(12), media_check)
+            .await
+            .unwrap_or_else(|_| Err(timeout_error()))
+        {
+            Ok(()) => report.media_available = true,
+            Err(error) => report.media_error = Some(error),
+        }
+        Ok(report)
     }
 
     pub async fn initialize_route_cache(&self) -> BooruResult<RouteCacheState> {
@@ -816,6 +1128,53 @@ mod tests {
         .unwrap()
     }
 
+    #[cfg(all(windows, feature = "web-challenge-window"))]
+    #[tokio::test]
+    #[ignore = "manual Cloudflare completion in visible Windows browser"]
+    async fn live_challenge_capture_restore_clear() {
+        let directory = tempfile::tempdir().unwrap();
+        let config = || BooruEngineConfig {
+            app_support_directory: directory.path().to_string_lossy().into(),
+            proxy_url: None,
+            fallback_mode: NetworkFallbackMode::Off,
+            dns_provider: crate::api::booru_models::RouteProvider::UncensoredDns,
+            user_agent: "booruflow-test".into(),
+        };
+        let engine = BooruEngine::new(config()).unwrap();
+        let operation = engine.begin_web_challenge("konachan_com".into()).unwrap();
+        let state = engine
+            .run_windows_web_challenge(
+                operation.operation_id,
+                "Konachan.com — 完成验证后关闭窗口".into(),
+                "完成验证".into(),
+                "取消".into(),
+            )
+            .await
+            .unwrap();
+        assert!(state.verified && state.has_saved_data);
+        println!("PASS capture_verify_persist");
+        drop(engine);
+        let engine = BooruEngine::new(config()).unwrap();
+        let before = engine.web_challenge_state("konachan_com".into()).unwrap();
+        assert!(before.has_saved_data && !before.verified);
+        let restored = engine.restore_web_challenges().await.unwrap();
+        assert!(restored
+            .iter()
+            .any(|state| state.source_id == "konachan_com" && state.verified));
+        println!("PASS restart_revalidate");
+        let state = engine
+            .clear_web_challenge("konachan_com".into())
+            .await
+            .unwrap();
+        assert!(!state.has_saved_data && !state.verified);
+        let material = engine.sessions.challenge("konachan_com").unwrap();
+        assert!(material.is_none());
+        drop(engine);
+        let engine = BooruEngine::new(config()).unwrap();
+        assert!(engine.restore_web_challenges().await.unwrap().is_empty());
+        println!("PASS clear_and_restart");
+    }
+
     #[test]
     fn exposes_all_sources_in_priority_order() {
         let ids = engine()
@@ -828,6 +1187,7 @@ mod tests {
             [
                 "yande",
                 "konachan_net",
+                "konachan_com",
                 "danbooru",
                 "aibooru",
                 "gelbooru",

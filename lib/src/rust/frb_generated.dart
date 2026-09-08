@@ -7,6 +7,7 @@ import 'api/booru_auth.dart';
 import 'api/booru_download.dart';
 import 'api/booru_engine.dart';
 import 'api/booru_models.dart';
+import 'api/web_challenge.dart';
 import 'booru/error.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -68,7 +69,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => 1964240212;
+  int get rustContentHash => -974084026;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -96,6 +97,17 @@ abstract class RustLibApi extends BaseApi {
     required String text,
   });
 
+  Future<WebChallengeOperation>
+  crateApiBooruEngineBooruEngineBeginWebChallenge({
+    required BooruEngine that,
+    required String sourceId,
+  });
+
+  Future<void> crateApiBooruEngineBooruEngineCancelWebChallenge({
+    required BooruEngine that,
+    required String operationId,
+  });
+
   Future<void> crateApiBooruEngineBooruEngineCheckSource({
     required BooruEngine that,
     required String sourceId,
@@ -106,9 +118,20 @@ abstract class RustLibApi extends BaseApi {
     required String sourceId,
   });
 
+  Future<WebChallengeState> crateApiBooruEngineBooruEngineClearWebChallenge({
+    required BooruEngine that,
+    required String sourceId,
+  });
+
   Future<CommonTagsPage> crateApiBooruEngineBooruEngineCommonTags({
     required BooruEngine that,
     required CommonTagsRequest request,
+  });
+
+  Future<WebChallengeState> crateApiBooruEngineBooruEngineCompleteWebChallenge({
+    required BooruEngine that,
+    required String operationId,
+    required WebChallengeCandidate candidate,
   });
 
   Stream<DownloadEvent> crateApiBooruEngineBooruEngineDownloadToFileStream({
@@ -162,6 +185,13 @@ abstract class RustLibApi extends BaseApi {
     required bool allowDiskCache,
   });
 
+  Future<SourceConnectionCheck>
+  crateApiBooruEngineBooruEngineProbeSourceConnection({
+    required BooruEngine that,
+    required String sourceId,
+    String? proxyUrl,
+  });
+
   Future<RouteCacheState> crateApiBooruEngineBooruEngineRefreshRouteCache({
     required BooruEngine that,
   });
@@ -172,8 +202,22 @@ abstract class RustLibApi extends BaseApi {
     required String postId,
   });
 
+  Future<List<WebChallengeState>>
+  crateApiBooruEngineBooruEngineRestoreWebChallenges({
+    required BooruEngine that,
+  });
+
   Future<RouteCacheState> crateApiBooruEngineBooruEngineRouteCacheState({
     required BooruEngine that,
+  });
+
+  Future<WebChallengeState>
+  crateApiBooruEngineBooruEngineRunWindowsWebChallenge({
+    required BooruEngine that,
+    required String operationId,
+    required String title,
+    required String finishLabel,
+    required String cancelLabel,
   });
 
   Future<PostPage> crateApiBooruEngineBooruEngineSearch({
@@ -200,6 +244,11 @@ abstract class RustLibApi extends BaseApi {
   });
 
   Future<AuthState> crateApiBooruEngineBooruEngineVerifyAuth({
+    required BooruEngine that,
+    required String sourceId,
+  });
+
+  Future<WebChallengeState> crateApiBooruEngineBooruEngineWebChallengeState({
     required BooruEngine that,
     required String sourceId,
   });
@@ -367,7 +416,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<void> crateApiBooruEngineBooruEngineCheckSource({
+  Future<WebChallengeOperation>
+  crateApiBooruEngineBooruEngineBeginWebChallenge({
     required BooruEngine that,
     required String sourceId,
   }) {
@@ -384,6 +434,83 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             generalizedFrbRustBinding,
             serializer,
             funcId: 4,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_web_challenge_operation,
+          decodeErrorData: sse_decode_booru_error,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineBeginWebChallengeConstMeta,
+        argValues: [that, sourceId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruEngineBooruEngineBeginWebChallengeConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_begin_web_challenge",
+        argNames: ["that", "sourceId"],
+      );
+
+  @override
+  Future<void> crateApiBooruEngineBooruEngineCancelWebChallenge({
+    required BooruEngine that,
+    required String operationId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_String(operationId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 5,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_booru_error,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineCancelWebChallengeConstMeta,
+        argValues: [that, operationId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta
+  get kCrateApiBooruEngineBooruEngineCancelWebChallengeConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_cancel_web_challenge",
+        argNames: ["that", "operationId"],
+      );
+
+  @override
+  Future<void> crateApiBooruEngineBooruEngineCheckSource({
+    required BooruEngine that,
+    required String sourceId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_String(sourceId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 6,
             port: port_,
           );
         },
@@ -421,7 +548,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 5,
+            funcId: 7,
             port: port_,
           );
         },
@@ -443,6 +570,44 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<WebChallengeState> crateApiBooruEngineBooruEngineClearWebChallenge({
+    required BooruEngine that,
+    required String sourceId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_String(sourceId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 8,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_web_challenge_state,
+          decodeErrorData: sse_decode_booru_error,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineClearWebChallengeConstMeta,
+        argValues: [that, sourceId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruEngineBooruEngineClearWebChallengeConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_clear_web_challenge",
+        argNames: ["that", "sourceId"],
+      );
+
+  @override
   Future<CommonTagsPage> crateApiBooruEngineBooruEngineCommonTags({
     required BooruEngine that,
     required CommonTagsRequest request,
@@ -459,7 +624,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 6,
+            funcId: 9,
             port: port_,
           );
         },
@@ -478,6 +643,47 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(
         debugName: "BooruEngine_common_tags",
         argNames: ["that", "request"],
+      );
+
+  @override
+  Future<WebChallengeState> crateApiBooruEngineBooruEngineCompleteWebChallenge({
+    required BooruEngine that,
+    required String operationId,
+    required WebChallengeCandidate candidate,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_String(operationId, serializer);
+          sse_encode_box_autoadd_web_challenge_candidate(candidate, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 10,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_web_challenge_state,
+          decodeErrorData: sse_decode_booru_error,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineCompleteWebChallengeConstMeta,
+        argValues: [that, operationId, candidate],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta
+  get kCrateApiBooruEngineBooruEngineCompleteWebChallengeConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_complete_web_challenge",
+        argNames: ["that", "operationId", "candidate"],
       );
 
   @override
@@ -500,7 +706,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
-              funcId: 7,
+              funcId: 11,
               port: port_,
             );
           },
@@ -542,7 +748,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 8,
+            funcId: 12,
             port: port_,
           );
         },
@@ -582,7 +788,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 9,
+            funcId: 13,
             port: port_,
           );
         },
@@ -618,7 +824,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 10,
+            funcId: 14,
             port: port_,
           );
         },
@@ -655,7 +861,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 11,
+            funcId: 15,
             port: port_,
           );
         },
@@ -688,7 +894,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 12,
+            funcId: 16,
             port: port_,
           );
         },
@@ -728,7 +934,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 13,
+            funcId: 17,
             port: port_,
           );
         },
@@ -770,7 +976,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 14,
+            funcId: 18,
             port: port_,
           );
         },
@@ -816,7 +1022,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 15,
+            funcId: 19,
             port: port_,
           );
         },
@@ -845,6 +1051,49 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<SourceConnectionCheck>
+  crateApiBooruEngineBooruEngineProbeSourceConnection({
+    required BooruEngine that,
+    required String sourceId,
+    String? proxyUrl,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_String(sourceId, serializer);
+          sse_encode_opt_String(proxyUrl, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 20,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_source_connection_check,
+          decodeErrorData: sse_decode_booru_error,
+        ),
+        constMeta:
+            kCrateApiBooruEngineBooruEngineProbeSourceConnectionConstMeta,
+        argValues: [that, sourceId, proxyUrl],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta
+  get kCrateApiBooruEngineBooruEngineProbeSourceConnectionConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_probe_source_connection",
+        argNames: ["that", "sourceId", "proxyUrl"],
+      );
+
+  @override
   Future<RouteCacheState> crateApiBooruEngineBooruEngineRefreshRouteCache({
     required BooruEngine that,
   }) {
@@ -859,7 +1108,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 16,
+            funcId: 21,
             port: port_,
           );
         },
@@ -899,7 +1148,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 17,
+            funcId: 22,
             port: port_,
           );
         },
@@ -921,6 +1170,44 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<List<WebChallengeState>>
+  crateApiBooruEngineBooruEngineRestoreWebChallenges({
+    required BooruEngine that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 23,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_web_challenge_state,
+          decodeErrorData: sse_decode_booru_error,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineRestoreWebChallengesConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta
+  get kCrateApiBooruEngineBooruEngineRestoreWebChallengesConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_restore_web_challenges",
+        argNames: ["that"],
+      );
+
+  @override
   Future<RouteCacheState> crateApiBooruEngineBooruEngineRouteCacheState({
     required BooruEngine that,
   }) {
@@ -935,7 +1222,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 18,
+            funcId: 24,
             port: port_,
           );
         },
@@ -957,6 +1244,59 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<WebChallengeState>
+  crateApiBooruEngineBooruEngineRunWindowsWebChallenge({
+    required BooruEngine that,
+    required String operationId,
+    required String title,
+    required String finishLabel,
+    required String cancelLabel,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_String(operationId, serializer);
+          sse_encode_String(title, serializer);
+          sse_encode_String(finishLabel, serializer);
+          sse_encode_String(cancelLabel, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 25,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_web_challenge_state,
+          decodeErrorData: sse_decode_booru_error,
+        ),
+        constMeta:
+            kCrateApiBooruEngineBooruEngineRunWindowsWebChallengeConstMeta,
+        argValues: [that, operationId, title, finishLabel, cancelLabel],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta
+  get kCrateApiBooruEngineBooruEngineRunWindowsWebChallengeConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_run_windows_web_challenge",
+        argNames: [
+          "that",
+          "operationId",
+          "title",
+          "finishLabel",
+          "cancelLabel",
+        ],
+      );
+
+  @override
   Future<PostPage> crateApiBooruEngineBooruEngineSearch({
     required BooruEngine that,
     required SearchRequest request,
@@ -973,7 +1313,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 19,
+            funcId: 26,
             port: port_,
           );
         },
@@ -1013,7 +1353,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 20,
+            funcId: 27,
             port: port_,
           );
         },
@@ -1055,7 +1395,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 21,
+            funcId: 28,
             port: port_,
           );
         },
@@ -1096,7 +1436,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
-              funcId: 22,
+              funcId: 29,
               port: port_,
             );
           },
@@ -1136,7 +1476,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 23,
+            funcId: 30,
             port: port_,
           );
         },
@@ -1158,6 +1498,44 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<WebChallengeState> crateApiBooruEngineBooruEngineWebChallengeState({
+    required BooruEngine that,
+    required String sourceId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_String(sourceId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 31,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_web_challenge_state,
+          decodeErrorData: sse_decode_booru_error,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineWebChallengeStateConstMeta,
+        argValues: [that, sourceId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruEngineBooruEngineWebChallengeStateConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_web_challenge_state",
+        argNames: ["that", "sourceId"],
+      );
+
+  @override
   Future<AuthKind> crateApiBooruModelsAuthKindDefault() {
     return handler.executeNormal(
       NormalTask(
@@ -1166,7 +1544,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 24,
+            funcId: 32,
             port: port_,
           );
         },
@@ -1193,7 +1571,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 25,
+            funcId: 33,
             port: port_,
           );
         },
@@ -1220,7 +1598,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 26,
+            funcId: 34,
             port: port_,
           );
         },
@@ -1250,7 +1628,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 27,
+            funcId: 35,
             port: port_,
           );
         },
@@ -1280,7 +1658,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 28,
+            funcId: 36,
             port: port_,
           );
         },
@@ -1313,7 +1691,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 29,
+            funcId: 37,
             port: port_,
           );
         },
@@ -1340,7 +1718,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 30,
+            funcId: 38,
             port: port_,
           );
         },
@@ -1370,7 +1748,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 31,
+            funcId: 39,
             port: port_,
           );
         },
@@ -1400,7 +1778,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 32,
+            funcId: 40,
             port: port_,
           );
         },
@@ -1432,7 +1810,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 33,
+            funcId: 41,
             port: port_,
           );
         },
@@ -1461,7 +1839,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 34,
+            funcId: 42,
             port: port_,
           );
         },
@@ -1491,7 +1869,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 35,
+            funcId: 43,
             port: port_,
           );
         },
@@ -1837,6 +2215,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  WebChallengeCandidate dco_decode_box_autoadd_web_challenge_candidate(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_web_challenge_candidate(raw);
+  }
+
+  @protected
   CapabilityAvailability dco_decode_capability_availability(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return CapabilityAvailability.values[raw as int];
@@ -2079,6 +2465,28 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<WebChallengeSnapshot> dco_decode_list_web_challenge_snapshot(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>)
+        .map(dco_decode_web_challenge_snapshot)
+        .toList();
+  }
+
+  @protected
+  List<WebChallengeState> dco_decode_list_web_challenge_state(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_web_challenge_state).toList();
+  }
+
+  @protected
+  List<WebChallengeTarget> dco_decode_list_web_challenge_target(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_web_challenge_target).toList();
+  }
+
+  @protected
   List<WebCookie> dco_decode_list_web_cookie(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_web_cookie).toList();
@@ -2169,6 +2577,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   String? dco_decode_opt_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_String(raw);
+  }
+
+  @protected
+  BooruError? dco_decode_opt_box_autoadd_booru_error(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_booru_error(raw);
   }
 
   @protected
@@ -2367,6 +2781,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SourceConnectionCheck dco_decode_source_connection_check(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return SourceConnectionCheck(
+      sourceId: dco_decode_String(arr[0]),
+      apiAvailable: dco_decode_bool(arr[1]),
+      mediaAvailable: dco_decode_bool(arr[2]),
+      apiError: dco_decode_opt_box_autoadd_booru_error(arr[3]),
+      mediaError: dco_decode_opt_box_autoadd_booru_error(arr[4]),
+    );
+  }
+
+  @protected
   SourceCredentials dco_decode_source_credentials(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -2413,6 +2842,86 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   BigInt dco_decode_usize(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dcoDecodeU64(raw);
+  }
+
+  @protected
+  WebChallengeCandidate dco_decode_web_challenge_candidate(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return WebChallengeCandidate(
+      cookies: dco_decode_list_web_cookie(arr[0]),
+      snapshots: dco_decode_list_web_challenge_snapshot(arr[1]),
+      userAgent: dco_decode_String(arr[2]),
+    );
+  }
+
+  @protected
+  WebChallengeOperation dco_decode_web_challenge_operation(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return WebChallengeOperation(
+      operationId: dco_decode_String(arr[0]),
+      spec: dco_decode_web_challenge_spec(arr[1]),
+    );
+  }
+
+  @protected
+  WebChallengeSnapshot dco_decode_web_challenge_snapshot(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return WebChallengeSnapshot(
+      targetId: dco_decode_String(arr[0]),
+      cookieHeader: dco_decode_String(arr[1]),
+    );
+  }
+
+  @protected
+  WebChallengeSpec dco_decode_web_challenge_spec(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return WebChallengeSpec(
+      sourceId: dco_decode_String(arr[0]),
+      displayName: dco_decode_String(arr[1]),
+      entryUrl: dco_decode_String(arr[2]),
+      navigationHosts: dco_decode_list_String(arr[3]),
+      captureTargets: dco_decode_list_web_challenge_target(arr[4]),
+      timeoutSeconds: dco_decode_u_32(arr[5]),
+    );
+  }
+
+  @protected
+  WebChallengeState dco_decode_web_challenge_state(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return WebChallengeState(
+      sourceId: dco_decode_String(arr[0]),
+      hasSavedData: dco_decode_bool(arr[1]),
+      verified: dco_decode_bool(arr[2]),
+      verifiedAtIso8601: dco_decode_opt_String(arr[3]),
+      revision: dco_decode_u_32(arr[4]),
+    );
+  }
+
+  @protected
+  WebChallengeTarget dco_decode_web_challenge_target(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return WebChallengeTarget(
+      id: dco_decode_String(arr[0]),
+      url: dco_decode_String(arr[1]),
+    );
   }
 
   @protected
@@ -2809,6 +3318,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  WebChallengeCandidate sse_decode_box_autoadd_web_challenge_candidate(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_web_challenge_candidate(deserializer));
+  }
+
+  @protected
   CapabilityAvailability sse_decode_capability_availability(
     SseDeserializer deserializer,
   ) {
@@ -3165,6 +3682,48 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<WebChallengeSnapshot> sse_decode_list_web_challenge_snapshot(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <WebChallengeSnapshot>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_web_challenge_snapshot(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<WebChallengeState> sse_decode_list_web_challenge_state(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <WebChallengeState>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_web_challenge_state(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<WebChallengeTarget> sse_decode_list_web_challenge_target(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <WebChallengeTarget>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_web_challenge_target(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   List<WebCookie> sse_decode_list_web_cookie(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -3285,6 +3844,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_String(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  BooruError? sse_decode_opt_box_autoadd_booru_error(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_booru_error(deserializer));
     } else {
       return null;
     }
@@ -3562,6 +4134,25 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SourceConnectionCheck sse_decode_source_connection_check(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_sourceId = sse_decode_String(deserializer);
+    var var_apiAvailable = sse_decode_bool(deserializer);
+    var var_mediaAvailable = sse_decode_bool(deserializer);
+    var var_apiError = sse_decode_opt_box_autoadd_booru_error(deserializer);
+    var var_mediaError = sse_decode_opt_box_autoadd_booru_error(deserializer);
+    return SourceConnectionCheck(
+      sourceId: var_sourceId,
+      apiAvailable: var_apiAvailable,
+      mediaAvailable: var_mediaAvailable,
+      apiError: var_apiError,
+      mediaError: var_mediaError,
+    );
+  }
+
+  @protected
   SourceCredentials sse_decode_source_credentials(
     SseDeserializer deserializer,
   ) {
@@ -3610,6 +4201,92 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   BigInt sse_decode_usize(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getBigUint64();
+  }
+
+  @protected
+  WebChallengeCandidate sse_decode_web_challenge_candidate(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_cookies = sse_decode_list_web_cookie(deserializer);
+    var var_snapshots = sse_decode_list_web_challenge_snapshot(deserializer);
+    var var_userAgent = sse_decode_String(deserializer);
+    return WebChallengeCandidate(
+      cookies: var_cookies,
+      snapshots: var_snapshots,
+      userAgent: var_userAgent,
+    );
+  }
+
+  @protected
+  WebChallengeOperation sse_decode_web_challenge_operation(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_operationId = sse_decode_String(deserializer);
+    var var_spec = sse_decode_web_challenge_spec(deserializer);
+    return WebChallengeOperation(operationId: var_operationId, spec: var_spec);
+  }
+
+  @protected
+  WebChallengeSnapshot sse_decode_web_challenge_snapshot(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_targetId = sse_decode_String(deserializer);
+    var var_cookieHeader = sse_decode_String(deserializer);
+    return WebChallengeSnapshot(
+      targetId: var_targetId,
+      cookieHeader: var_cookieHeader,
+    );
+  }
+
+  @protected
+  WebChallengeSpec sse_decode_web_challenge_spec(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_sourceId = sse_decode_String(deserializer);
+    var var_displayName = sse_decode_String(deserializer);
+    var var_entryUrl = sse_decode_String(deserializer);
+    var var_navigationHosts = sse_decode_list_String(deserializer);
+    var var_captureTargets = sse_decode_list_web_challenge_target(deserializer);
+    var var_timeoutSeconds = sse_decode_u_32(deserializer);
+    return WebChallengeSpec(
+      sourceId: var_sourceId,
+      displayName: var_displayName,
+      entryUrl: var_entryUrl,
+      navigationHosts: var_navigationHosts,
+      captureTargets: var_captureTargets,
+      timeoutSeconds: var_timeoutSeconds,
+    );
+  }
+
+  @protected
+  WebChallengeState sse_decode_web_challenge_state(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_sourceId = sse_decode_String(deserializer);
+    var var_hasSavedData = sse_decode_bool(deserializer);
+    var var_verified = sse_decode_bool(deserializer);
+    var var_verifiedAtIso8601 = sse_decode_opt_String(deserializer);
+    var var_revision = sse_decode_u_32(deserializer);
+    return WebChallengeState(
+      sourceId: var_sourceId,
+      hasSavedData: var_hasSavedData,
+      verified: var_verified,
+      verifiedAtIso8601: var_verifiedAtIso8601,
+      revision: var_revision,
+    );
+  }
+
+  @protected
+  WebChallengeTarget sse_decode_web_challenge_target(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_String(deserializer);
+    var var_url = sse_decode_String(deserializer);
+    return WebChallengeTarget(id: var_id, url: var_url);
   }
 
   @protected
@@ -3990,6 +4667,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_web_challenge_candidate(
+    WebChallengeCandidate self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_web_challenge_candidate(self, serializer);
+  }
+
+  @protected
   void sse_encode_capability_availability(
     CapabilityAvailability self,
     SseSerializer serializer,
@@ -4302,6 +4988,42 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_web_challenge_snapshot(
+    List<WebChallengeSnapshot> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_web_challenge_snapshot(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_web_challenge_state(
+    List<WebChallengeState> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_web_challenge_state(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_web_challenge_target(
+    List<WebChallengeTarget> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_web_challenge_target(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_web_cookie(
     List<WebCookie> self,
     SseSerializer serializer,
@@ -4400,6 +5122,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_String(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_booru_error(
+    BooruError? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_booru_error(self, serializer);
     }
   }
 
@@ -4623,6 +5358,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_source_connection_check(
+    SourceConnectionCheck self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.sourceId, serializer);
+    sse_encode_bool(self.apiAvailable, serializer);
+    sse_encode_bool(self.mediaAvailable, serializer);
+    sse_encode_opt_box_autoadd_booru_error(self.apiError, serializer);
+    sse_encode_opt_box_autoadd_booru_error(self.mediaError, serializer);
+  }
+
+  @protected
   void sse_encode_source_credentials(
     SourceCredentials self,
     SseSerializer serializer,
@@ -4666,6 +5414,74 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_usize(BigInt self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putBigUint64(self);
+  }
+
+  @protected
+  void sse_encode_web_challenge_candidate(
+    WebChallengeCandidate self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_web_cookie(self.cookies, serializer);
+    sse_encode_list_web_challenge_snapshot(self.snapshots, serializer);
+    sse_encode_String(self.userAgent, serializer);
+  }
+
+  @protected
+  void sse_encode_web_challenge_operation(
+    WebChallengeOperation self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.operationId, serializer);
+    sse_encode_web_challenge_spec(self.spec, serializer);
+  }
+
+  @protected
+  void sse_encode_web_challenge_snapshot(
+    WebChallengeSnapshot self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.targetId, serializer);
+    sse_encode_String(self.cookieHeader, serializer);
+  }
+
+  @protected
+  void sse_encode_web_challenge_spec(
+    WebChallengeSpec self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.sourceId, serializer);
+    sse_encode_String(self.displayName, serializer);
+    sse_encode_String(self.entryUrl, serializer);
+    sse_encode_list_String(self.navigationHosts, serializer);
+    sse_encode_list_web_challenge_target(self.captureTargets, serializer);
+    sse_encode_u_32(self.timeoutSeconds, serializer);
+  }
+
+  @protected
+  void sse_encode_web_challenge_state(
+    WebChallengeState self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.sourceId, serializer);
+    sse_encode_bool(self.hasSavedData, serializer);
+    sse_encode_bool(self.verified, serializer);
+    sse_encode_opt_String(self.verifiedAtIso8601, serializer);
+    sse_encode_u_32(self.revision, serializer);
+  }
+
+  @protected
+  void sse_encode_web_challenge_target(
+    WebChallengeTarget self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.id, serializer);
+    sse_encode_String(self.url, serializer);
   }
 
   @protected
@@ -4718,6 +5534,18 @@ class BooruEngineImpl extends RustOpaque implements BooruEngine {
     text: text,
   );
 
+  Future<WebChallengeOperation> beginWebChallenge({required String sourceId}) =>
+      RustLib.instance.api.crateApiBooruEngineBooruEngineBeginWebChallenge(
+        that: this,
+        sourceId: sourceId,
+      );
+
+  Future<void> cancelWebChallenge({required String operationId}) =>
+      RustLib.instance.api.crateApiBooruEngineBooruEngineCancelWebChallenge(
+        that: this,
+        operationId: operationId,
+      );
+
   /// Check an actual API response using the active network configuration.
   Future<void> checkSource({required String sourceId}) =>
       RustLib.instance.api.crateApiBooruEngineBooruEngineCheckSource(
@@ -4728,11 +5556,26 @@ class BooruEngineImpl extends RustOpaque implements BooruEngine {
   Future<void> clearAuth({required String sourceId}) => RustLib.instance.api
       .crateApiBooruEngineBooruEngineClearAuth(that: this, sourceId: sourceId);
 
+  Future<WebChallengeState> clearWebChallenge({required String sourceId}) =>
+      RustLib.instance.api.crateApiBooruEngineBooruEngineClearWebChallenge(
+        that: this,
+        sourceId: sourceId,
+      );
+
   Future<CommonTagsPage> commonTags({required CommonTagsRequest request}) =>
       RustLib.instance.api.crateApiBooruEngineBooruEngineCommonTags(
         that: this,
         request: request,
       );
+
+  Future<WebChallengeState> completeWebChallenge({
+    required String operationId,
+    required WebChallengeCandidate candidate,
+  }) => RustLib.instance.api.crateApiBooruEngineBooruEngineCompleteWebChallenge(
+    that: this,
+    operationId: operationId,
+    candidate: candidate,
+  );
 
   Stream<DownloadEvent> downloadToFileStream({
     required DownloadRequest request,
@@ -4796,6 +5639,18 @@ class BooruEngineImpl extends RustOpaque implements BooruEngine {
     allowDiskCache: allowDiskCache,
   );
 
+  /// Probe a draft proxy without replacing the engine or saved settings.
+  /// A missing proxy override probes the currently applied network settings.
+  Future<SourceConnectionCheck> probeSourceConnection({
+    required String sourceId,
+    String? proxyUrl,
+  }) =>
+      RustLib.instance.api.crateApiBooruEngineBooruEngineProbeSourceConnection(
+        that: this,
+        sourceId: sourceId,
+        proxyUrl: proxyUrl,
+      );
+
   Future<RouteCacheState> refreshRouteCache() => RustLib.instance.api
       .crateApiBooruEngineBooruEngineRefreshRouteCache(that: this);
 
@@ -4808,8 +5663,27 @@ class BooruEngineImpl extends RustOpaque implements BooruEngine {
     postId: postId,
   );
 
+  /// Restore into a detached context and revalidate. Offline failures retain
+  /// the disk record for later retry without publishing an unverified session.
+  Future<List<WebChallengeState>> restoreWebChallenges() => RustLib.instance.api
+      .crateApiBooruEngineBooruEngineRestoreWebChallenges(that: this);
+
   Future<RouteCacheState> routeCacheState() => RustLib.instance.api
       .crateApiBooruEngineBooruEngineRouteCacheState(that: this);
+
+  Future<WebChallengeState> runWindowsWebChallenge({
+    required String operationId,
+    required String title,
+    required String finishLabel,
+    required String cancelLabel,
+  }) =>
+      RustLib.instance.api.crateApiBooruEngineBooruEngineRunWindowsWebChallenge(
+        that: this,
+        operationId: operationId,
+        title: title,
+        finishLabel: finishLabel,
+        cancelLabel: cancelLabel,
+      );
 
   Future<PostPage> search({required SearchRequest request}) => RustLib
       .instance
@@ -4846,4 +5720,10 @@ class BooruEngineImpl extends RustOpaque implements BooruEngine {
       .instance
       .api
       .crateApiBooruEngineBooruEngineVerifyAuth(that: this, sourceId: sourceId);
+
+  Future<WebChallengeState> webChallengeState({required String sourceId}) =>
+      RustLib.instance.api.crateApiBooruEngineBooruEngineWebChallengeState(
+        that: this,
+        sourceId: sourceId,
+      );
 }

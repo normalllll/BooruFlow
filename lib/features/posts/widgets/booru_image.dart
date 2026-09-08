@@ -5,6 +5,7 @@ import 'package:booruflow/intl/translations.g.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/features/booru/booru_service.dart';
+import 'package:booruflow/features/booru/web_challenge_button.dart';
 import 'package:booruflow/features/posts/widgets/rust_extended_network_image_provider.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
@@ -189,6 +190,11 @@ class _BooruImageState extends State<BooruImage> {
     child: Wrap(
       alignment: WrapAlignment.center,
       children: [
+        if (challengeError(
+              error is MediaImageException ? error.cause : error,
+            )?.sourceId
+            case final source?)
+          WebChallengeButton(sourceId: source, compact: true),
         AppIconButton(
           icon: const Icon(Icons.refresh_outlined),
           tooltip: t.generic.retry,
@@ -230,6 +236,14 @@ class _BooruImageState extends State<BooruImage> {
           ),
         ),
         actions: [
+          if (challengeError(
+                error is MediaImageException ? error.cause : error,
+              )?.sourceId
+              case final source?)
+            WebChallengeButton(
+              sourceId: source,
+              onResolved: () => Navigator.pop(context),
+            ),
           TextButton(
             onPressed: () => Clipboard.setData(ClipboardData(text: details)),
             child: Text(t.mediaError.copyDetails),

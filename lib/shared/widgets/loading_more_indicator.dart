@@ -5,6 +5,7 @@ import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
+import 'package:booruflow/features/booru/web_challenge_button.dart';
 
 class LoadingMoreIndicator extends StatelessWidget {
   final IndicatorStatus status;
@@ -246,6 +247,11 @@ class _ErrorContentState extends State<_ErrorContent> {
                   onPressed: _remaining > 0 ? null : widget.onRetry,
                   icon: Icons.refresh,
                 ),
+                if (challengeError(widget.error)?.sourceId
+                    case final source?) ...[
+                  const SizedBox(height: 10),
+                  WebChallengeButton(sourceId: source),
+                ],
               ],
             ),
           ),

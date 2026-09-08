@@ -7,6 +7,7 @@ import 'api/booru_auth.dart';
 import 'api/booru_download.dart';
 import 'api/booru_engine.dart';
 import 'api/booru_models.dart';
+import 'api/web_challenge.dart';
 import 'booru/error.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -151,6 +152,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int dco_decode_box_autoadd_u_32(dynamic raw);
 
   @protected
+  WebChallengeCandidate dco_decode_box_autoadd_web_challenge_candidate(
+    dynamic raw,
+  );
+
+  @protected
   CapabilityAvailability dco_decode_capability_availability(dynamic raw);
 
   @protected
@@ -238,6 +244,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<RouteDiagnostic> dco_decode_list_route_diagnostic(dynamic raw);
 
   @protected
+  List<WebChallengeSnapshot> dco_decode_list_web_challenge_snapshot(
+    dynamic raw,
+  );
+
+  @protected
+  List<WebChallengeState> dco_decode_list_web_challenge_state(dynamic raw);
+
+  @protected
+  List<WebChallengeTarget> dco_decode_list_web_challenge_target(dynamic raw);
+
+  @protected
   List<WebCookie> dco_decode_list_web_cookie(dynamic raw);
 
   @protected
@@ -263,6 +280,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   String? dco_decode_opt_String(dynamic raw);
+
+  @protected
+  BooruError? dco_decode_opt_box_autoadd_booru_error(dynamic raw);
 
   @protected
   Checksum? dco_decode_opt_box_autoadd_checksum(dynamic raw);
@@ -322,6 +342,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SourceCapabilities dco_decode_source_capabilities(dynamic raw);
 
   @protected
+  SourceConnectionCheck dco_decode_source_connection_check(dynamic raw);
+
+  @protected
   SourceCredentials dco_decode_source_credentials(dynamic raw);
 
   @protected
@@ -341,6 +364,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   BigInt dco_decode_usize(dynamic raw);
+
+  @protected
+  WebChallengeCandidate dco_decode_web_challenge_candidate(dynamic raw);
+
+  @protected
+  WebChallengeOperation dco_decode_web_challenge_operation(dynamic raw);
+
+  @protected
+  WebChallengeSnapshot dco_decode_web_challenge_snapshot(dynamic raw);
+
+  @protected
+  WebChallengeSpec dco_decode_web_challenge_spec(dynamic raw);
+
+  @protected
+  WebChallengeState dco_decode_web_challenge_state(dynamic raw);
+
+  @protected
+  WebChallengeTarget dco_decode_web_challenge_target(dynamic raw);
 
   @protected
   WebCookie dco_decode_web_cookie(dynamic raw);
@@ -492,6 +533,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int sse_decode_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
+  WebChallengeCandidate sse_decode_box_autoadd_web_challenge_candidate(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   CapabilityAvailability sse_decode_capability_availability(
     SseDeserializer deserializer,
   );
@@ -597,6 +643,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<WebChallengeSnapshot> sse_decode_list_web_challenge_snapshot(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<WebChallengeState> sse_decode_list_web_challenge_state(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<WebChallengeTarget> sse_decode_list_web_challenge_target(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<WebCookie> sse_decode_list_web_cookie(SseDeserializer deserializer);
 
   @protected
@@ -624,6 +685,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   String? sse_decode_opt_String(SseDeserializer deserializer);
+
+  @protected
+  BooruError? sse_decode_opt_box_autoadd_booru_error(
+    SseDeserializer deserializer,
+  );
 
   @protected
   Checksum? sse_decode_opt_box_autoadd_checksum(SseDeserializer deserializer);
@@ -695,6 +761,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SourceConnectionCheck sse_decode_source_connection_check(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SourceCredentials sse_decode_source_credentials(SseDeserializer deserializer);
 
   @protected
@@ -714,6 +785,34 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   BigInt sse_decode_usize(SseDeserializer deserializer);
+
+  @protected
+  WebChallengeCandidate sse_decode_web_challenge_candidate(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  WebChallengeOperation sse_decode_web_challenge_operation(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  WebChallengeSnapshot sse_decode_web_challenge_snapshot(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  WebChallengeSpec sse_decode_web_challenge_spec(SseDeserializer deserializer);
+
+  @protected
+  WebChallengeState sse_decode_web_challenge_state(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  WebChallengeTarget sse_decode_web_challenge_target(
+    SseDeserializer deserializer,
+  );
 
   @protected
   WebCookie sse_decode_web_cookie(SseDeserializer deserializer);
@@ -896,6 +995,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer);
 
   @protected
+  void sse_encode_box_autoadd_web_challenge_candidate(
+    WebChallengeCandidate self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_capability_availability(
     CapabilityAvailability self,
     SseSerializer serializer,
@@ -1037,6 +1142,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_web_challenge_snapshot(
+    List<WebChallengeSnapshot> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_web_challenge_state(
+    List<WebChallengeState> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_web_challenge_target(
+    List<WebChallengeTarget> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_web_cookie(
     List<WebCookie> self,
     SseSerializer serializer,
@@ -1074,6 +1197,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_opt_String(String? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_booru_error(
+    BooruError? self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_opt_box_autoadd_checksum(
@@ -1169,6 +1298,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_source_connection_check(
+    SourceConnectionCheck self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_source_credentials(
     SourceCredentials self,
     SseSerializer serializer,
@@ -1191,6 +1326,42 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_usize(BigInt self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_web_challenge_candidate(
+    WebChallengeCandidate self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_web_challenge_operation(
+    WebChallengeOperation self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_web_challenge_snapshot(
+    WebChallengeSnapshot self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_web_challenge_spec(
+    WebChallengeSpec self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_web_challenge_state(
+    WebChallengeState self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_web_challenge_target(
+    WebChallengeTarget self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_web_cookie(WebCookie self, SseSerializer serializer);

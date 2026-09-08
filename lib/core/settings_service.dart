@@ -59,6 +59,7 @@ class SettingsService {
   static const _dnsProviderKey = 'booruDnsProvider';
   static const _proxyUrlKey = 'booruProxyUrl';
   static const _ratingsKey = 'booruRatings';
+  static const _networkChecksKey = 'booruNetworkChecks';
 
   static const _settingKeys = {
     _languageKey,
@@ -72,6 +73,7 @@ class SettingsService {
     _dnsProviderKey,
     _proxyUrlKey,
     _ratingsKey,
+    _networkChecksKey,
   };
 
   static final Map<String, dynamic> _map = {};
@@ -160,6 +162,13 @@ class SettingsService {
 
   static set proxyUrl(String? value) => _write(_proxyUrlKey, value?.trim());
 
+  static String? get savedNetworkChecks => _map[_networkChecksKey] as String?;
+
+  static Future<void> saveNetworkChecks(String value) async {
+    await _activeStore.write(_networkChecksKey, value);
+    _map[_networkChecksKey] = value;
+  }
+
   /// Empty means no additional rating restriction.
   static const configurableRatings = [
     ContentRating.general,
@@ -232,6 +241,7 @@ class SettingsService {
         value is int && value >= 0 && value < RouteProvider.values.length,
       _downloadPathKey ||
       _defaultSourceIdKey ||
+      _networkChecksKey ||
       _proxyUrlKey => value is String,
       _ratingsKey => value is List && value.every((item) => item is int),
       _ => false,

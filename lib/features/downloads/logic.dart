@@ -65,11 +65,9 @@ final class BooruDownloads {
         variantIndex: MediaVariantKind.original.index,
         url: uri,
         filename: filename,
-        networkOptions: DownloadNetworkOptions(
-          headers: {
-            for (final header in prepared.headers) header.name: header.value,
-          },
-        ),
+        // Rust resolves current cookies and browser identity when the job runs.
+        // Download history must not become a second credential store.
+        networkOptions: const DownloadNetworkOptions(),
         validation: DownloadValidationOptions(
           expectedBytes: expectedBytes != null && expectedBytes > 0
               ? expectedBytes

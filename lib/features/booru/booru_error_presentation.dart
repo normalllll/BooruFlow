@@ -1,5 +1,6 @@
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
+import 'web_challenge_failure.dart';
 
 String describeBooruError(Object? error) {
   final booruError = switch (error) {
@@ -9,7 +10,11 @@ String describeBooruError(Object? error) {
   };
   if (booruError == null) return error?.toString() ?? t.generic.loadFailed;
 
-  final primary = booruError.userMessageKey == 'booru.error.routeUnavailable'
+  final primary = booruError.userMessageKey.startsWith('webChallenge.')
+      ? webChallengeMessage(
+          booruError.userMessageKey.substring('webChallenge.'.length),
+        )
+      : booruError.userMessageKey == 'booru.error.routeUnavailable'
       ? t.booruError.routeUnavailable
       : switch (booruError.code) {
           BooruErrorCode.invalidRequest => t.booruError.invalidRequest,

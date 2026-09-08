@@ -34,6 +34,7 @@ pub struct RequestSpec {
     pub response_kind: ResponseKind,
     pub follow_redirects: bool,
     pub allow_protected_headers: bool,
+    pub expected_auth_revision: Option<u32>,
 }
 
 impl RequestSpec {
@@ -45,6 +46,7 @@ impl RequestSpec {
             response_kind,
             follow_redirects: true,
             allow_protected_headers: false,
+            expected_auth_revision: None,
         }
     }
 }
@@ -58,9 +60,9 @@ pub struct NetworkRuntime {
     config: BooruEngineConfig,
     sessions: Arc<SessionStore>,
     clients: Mutex<HashMap<String, Client>>,
-    limiters: HashMap<&'static str, RateLimiter>,
-    cooldowns: Mutex<HashMap<&'static str, std::time::Instant>>,
-    pub route_cache: RouteCache,
+    limiters: HashMap<&'static str, Arc<RateLimiter>>,
+    cooldowns: Arc<Mutex<HashMap<&'static str, std::time::Instant>>>,
+    pub route_cache: Arc<RouteCache>,
 }
 
 impl NetworkRuntime {
@@ -110,22 +112,42 @@ impl NetworkRuntime {
             .map(|source| {
                 (
                     source.id,
-                    RateLimiter::new(source.requests_per_minute, source.max_concurrency),
+                    Arc::new(RateLimiter::new(
+                        source.requests_per_minute,
+                        source.max_concurrency,
+                    )),
                 )
             })
             .collect();
         Ok(Self {
-            route_cache: RouteCache::with_provider(
+            route_cache: Arc::new(RouteCache::with_provider(
                 &config.app_support_directory,
                 sources,
                 config.dns_provider,
-            ),
+            )),
             config,
             sessions,
             clients: Mutex::new(HashMap::new()),
             limiters,
-            cooldowns: Mutex::new(HashMap::new()),
+            cooldowns: Arc::new(Mutex::new(HashMap::new())),
         })
+    }
+
+    /// Candidate verification keeps the active transport configuration, routes,
+    /// cooldowns and rate limits while using an isolated credential snapshot.
+    pub fn with_sessions(&self, sessions: Arc<SessionStore>) -> Self {
+        Self {
+            config: self.config.clone(),
+            sessions,
+            clients: Mutex::new(HashMap::new()),
+            limiters: self.limiters.clone(),
+            cooldowns: self.cooldowns.clone(),
+            route_cache: self.route_cache.clone(),
+        }
+    }
+
+    pub fn config(&self) -> &BooruEngineConfig {
+        &self.config
     }
 
     pub async fn execute(
@@ -151,6 +173,9 @@ impl NetworkRuntime {
             )
         })?;
 
+        let auth_revision = spec
+            .expected_auth_revision
+            .unwrap_or_else(|| self.sessions.revision(source.id));
         let mut redirects = 0_u32;
         let mut url = spec.url.clone();
         'request: loop {
@@ -198,6 +223,7 @@ impl NetworkRuntime {
                 MAX_ATTEMPTS
             };
             for attempt in 1..=attempt_count {
+                self.require_auth_revision(source.id, auth_revision)?;
                 self.check_cooldown(source.id)?;
                 if route_ip.is_some() {
                     let index = usize::try_from(attempt - 1).unwrap_or_default();
@@ -354,6 +380,9 @@ impl NetworkRuntime {
         for (key, value) in &spec.query {
             spec.url.query_pairs_mut().append_pair(key, value);
         }
+        let auth_revision = spec
+            .expected_auth_revision
+            .unwrap_or_else(|| self.sessions.revision(source.id));
         let mut redirects = 0_u32;
         let mut url = spec.url.clone();
         'request: loop {
@@ -401,6 +430,7 @@ impl NetworkRuntime {
                 MAX_ATTEMPTS
             };
             for attempt in 1..=attempt_count {
+                self.require_auth_revision(source.id, auth_revision)?;
                 if route_ip.is_some() {
                     let index = usize::try_from(attempt - 1).unwrap_or_default();
                     request_url
@@ -542,6 +572,17 @@ impl NetworkRuntime {
 
     pub fn auth_state(&self, source_id: &str) -> BooruResult<AuthState> {
         self.sessions.state(source_id)
+    }
+
+    fn require_auth_revision(&self, source_id: &str, revision: u32) -> BooruResult<()> {
+        if self.sessions.revision(source_id) != revision {
+            return Err(BooruError::new(
+                BooruErrorCode::Cancelled,
+                Some(source_id),
+                "booru.error.cancelled",
+            ));
+        }
+        Ok(())
     }
 
     pub fn mark_auth_verified(&self, source_id: &str) -> BooruResult<AuthState> {
@@ -836,6 +877,122 @@ mod tests {
     fn retry_after_is_bounded() {
         assert_eq!(retry_delay(1, Some(500)), Duration::from_secs(30));
         assert_eq!(retry_delay(2, None), Duration::from_millis(500));
+    }
+
+    #[tokio::test]
+    async fn explicit_proxy_preserves_sni_when_bypass_is_selected() {
+        use std::io::Cursor;
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+        // Inspect a real ClientHello inside a CONNECT tunnel. No remote network
+        // or test certificate is needed to observe the requested TLS hostname.
+        for source in builtin_sources() {
+            let host = Url::parse(source.api_base)
+                .unwrap()
+                .host_str()
+                .unwrap()
+                .to_owned();
+            let expected_host = host.clone();
+            let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+            let address = listener.local_addr().unwrap();
+            let proxy = tokio::spawn(async move {
+                let (mut stream, _) = listener.accept().await.unwrap();
+                let mut header = Vec::new();
+                while !header.ends_with(b"\r\n\r\n") {
+                    header.push(stream.read_u8().await.unwrap());
+                    assert!(header.len() < 8192);
+                }
+                assert!(String::from_utf8_lossy(&header)
+                    .starts_with(&format!("CONNECT {expected_host}:443 ")));
+                stream
+                    .write_all(b"HTTP/1.1 200 Connection Established\r\n\r\n")
+                    .await
+                    .unwrap();
+                let mut acceptor = rustls::server::Acceptor::default();
+                let mut buffer = [0_u8; 8192];
+                loop {
+                    let count = stream.read(&mut buffer).await.unwrap();
+                    assert_ne!(count, 0);
+                    acceptor
+                        .read_tls(&mut Cursor::new(&buffer[..count]))
+                        .unwrap();
+                    if let Some(accepted) = acceptor.accept().unwrap() {
+                        return accepted.client_hello().server_name().map(str::to_owned);
+                    }
+                }
+            });
+            let directory = tempfile::tempdir().unwrap();
+            let runtime = NetworkRuntime::new(
+                BooruEngineConfig {
+                    app_support_directory: directory.path().to_string_lossy().into(),
+                    proxy_url: Some(format!("http://{address}")),
+                    fallback_mode: NetworkFallbackMode::PersistedIpOverride,
+                    dns_provider: crate::api::booru_models::RouteProvider::UncensoredDns,
+                    user_agent: "proxy-sni-test".into(),
+                },
+                &builtin_sources(),
+                Arc::new(SessionStore::default()),
+            )
+            .unwrap();
+            let request = runtime.client(&source).unwrap().get(source.api_base).send();
+            let sni = tokio::time::timeout(Duration::from_secs(5), async {
+                let _ = request.await; // The fixture closes after ClientHello.
+                proxy.await.unwrap()
+            })
+            .await
+            .expect("TLS probe timed out");
+            assert_eq!(sni.as_deref(), Some(host.as_str()), "source={}", source.id);
+        }
+    }
+
+    #[tokio::test]
+    async fn explicit_proxy_receives_https_tunnel_in_both_connection_modes() {
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+        for mode in [
+            NetworkFallbackMode::Off,
+            NetworkFallbackMode::PersistedIpOverride,
+        ] {
+            let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+            let address = listener.local_addr().unwrap();
+            let proxy = tokio::spawn(async move {
+                let (mut stream, _) = listener.accept().await.unwrap();
+                let mut bytes = [0; 4096];
+                let size = stream.read(&mut bytes).await.unwrap();
+                assert!(String::from_utf8_lossy(&bytes[..size])
+                    .starts_with("CONNECT yande.re:443 HTTP/1.1\r\n"));
+                stream
+                    .write_all(b"HTTP/1.1 502 Bad Gateway\r\nContent-Length: 0\r\n\r\n")
+                    .await
+                    .unwrap();
+            });
+            let sources = builtin_sources();
+            let directory = tempfile::tempdir().unwrap();
+            let runtime = NetworkRuntime::new(
+                BooruEngineConfig {
+                    app_support_directory: directory.path().to_string_lossy().into(),
+                    proxy_url: Some(format!("http://{address}")),
+                    fallback_mode: mode,
+                    dns_provider: crate::api::booru_models::RouteProvider::UncensoredDns,
+                    user_agent: "proxy-test".into(),
+                },
+                &sources,
+                Arc::new(SessionStore::default()),
+            )
+            .unwrap();
+            assert!(!runtime.route_mode_active());
+            let request = runtime
+                .client(&sources[0])
+                .unwrap()
+                .get("https://yande.re/post.json")
+                .send();
+            let result = tokio::time::timeout(Duration::from_secs(5), async {
+                let result = request.await;
+                proxy.await.unwrap();
+                result
+            })
+            .await
+            .expect("request did not reach the configured local proxy");
+            assert!(result.is_err()); // A rejected tunnel must not fall back to direct access.
+        }
     }
 
     #[test]

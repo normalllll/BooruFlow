@@ -31,6 +31,12 @@ void main(List<String> args) async {
     await FlutterRustBridgeNativeAssetsBuilder(
       cratePath: 'rust',
       extraCargoEnvironmentVariables: environment,
+      extraCargoBuildArgs: [
+        if (code.targetOS == OS.windows) ...[
+          '--features',
+          'web-challenge-window',
+        ],
+      ],
     ).run(input: input, output: output);
   });
 }

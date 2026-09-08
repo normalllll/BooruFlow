@@ -71,6 +71,8 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
   late final Translations$discovery$zh_CN discovery = Translations$discovery$zh_CN.internal(_root);
   @override
   late final Translations$mediaError$zh_CN mediaError = Translations$mediaError$zh_CN.internal(_root);
+  @override
+  late final Translations$webChallenge$zh_CN webChallenge = Translations$webChallenge$zh_CN.internal(_root);
 }
 
 // Path: generic
@@ -562,6 +564,67 @@ class Translations$mediaError$zh_CN extends Translations$mediaError$en {
   String get decodeFailed => '下载的图片无法解码。重试会清除这张图片的缓存并重新下载。';
 }
 
+// Path: webChallenge
+class Translations$webChallenge$zh_CN extends Translations$webChallenge$en {
+  Translations$webChallenge$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+  final TranslationsZhCn _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get title => '网页验证';
+  @override
+  String get open => '打开网页验证';
+  @override
+  String windowTitle({required Object source}) => '${source} · 完成验证后关闭窗口';
+  @override
+  String get instructions => '请手动完成网页中的人机验证，完成后返回或关闭窗口。应用会保存验证数据并重新加载图源。';
+  @override
+  String get finish => '完成验证并返回';
+  @override
+  String get saving => '正在读取并验证网页会话…';
+  @override
+  String get waiting => '正在进行网页验证…';
+  @override
+  String get clear => '清空验证数据';
+  @override
+  String get clearAll => '清空全部网页验证数据';
+  @override
+  String get clearDescription => '清除 Cookie、浏览器标识及网页缓存，并停止正在进行的验证。';
+  @override
+  String get cleared => '网页验证数据已清空';
+  @override
+  String get verified => '已验证，可访问';
+  @override
+  String get saved => '已保存，等待重新验证';
+  @override
+  String get empty => '没有已保存的验证数据';
+  @override
+  String get failed => '网页验证未完成，请重试。';
+  @override
+  String get pageLoadFailed => '网页加载失败，可重新打开验证窗口或检查网络设置。';
+  @override
+  String get webViewUnavailable => '当前平台的网页组件不可用。Windows 请安装或更新 Microsoft Edge WebView2 Runtime。';
+  @override
+  String get proxyUnsupported => '网页组件暂不支持当前代理设置，请更换代理配置后重试。';
+  @override
+  String get busy => '另一个网页验证或清理操作正在进行。';
+  @override
+  String get cancelled => '已取消网页验证。';
+  @override
+  String get timedOut => '网页验证超时，请重新打开网页。';
+  @override
+  String get storageFailed => '无法保存或清空验证数据，原来的会话仍被保留。';
+  @override
+  String get captureFailed => '无法读取网页会话，请重新打开网页验证。';
+  @override
+  String get cleanupFailed => '网页数据尚未清理完成，请稍后再次清空。';
+  @override
+  String get operationSuperseded => '验证已被清空操作或网络设置变更取消。';
+  @override
+  String get noCookies => '网页尚未提供可用的验证数据，请完成人机验证后再返回。';
+}
+
 // Path: downloads.messages
 class Translations$downloads$messages$zh_CN extends Translations$downloads$messages$en {
   Translations$downloads$messages$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
@@ -691,13 +754,63 @@ class Translations$settings$network$zh_CN extends Translations$settings$network$
 
   // Translations
   @override
+  String get proxyCompact => '代理';
+  @override
+  String get checkCompact => '检测';
+  @override
+  String get detailsCompact => '详情';
+  @override
+  String get advancedCompact => '高级';
+  @override
+  String get uncheckedCompact => '未检测';
+  @override
+  String get checkingCompact => '检测中';
+  @override
+  String get apiShort => 'API';
+  @override
+  String get imagesShort => '图片';
+  @override
+  String get saveCompact => '保存';
+  @override
+  String get proxyProtocol => '代理协议';
+  @override
+  String get proxyHost => 'IP 或主机名';
+  @override
+  String get proxyPort => '端口';
+  @override
+  String get proxyReachable => '可连接';
+  @override
+  String get proxyUnreachable => '无法连接';
+  @override
+  String get proxyProbe => '检测代理可用性';
+  @override
+  String get proxyProbeHint => '探测仅使用当前填写的代理，不会保存设置。每个图源独立检测并显示结果。';
+  @override
+  String get sourceAvailable => '可用';
+  @override
+  String get sourcePartial => '部分可用';
+  @override
+  String get sourceUnavailable => '不可用';
+  @override
+  String get checkAllSources => '检测所有图源';
+  @override
+  String get mediaAvailable => '图片：可用';
+  @override
+  String get mediaUnavailable => '图片：未通过检测或无测试图片';
+  @override
+  String get dnsDetails => 'DNS 路由详情（不参与可用性判定）';
+  @override
+  String get sourceProbeHelp => '绿色：API 和图片均可用；黄色：部分通过；红色：检测失败。各图源并行检测，最多约 26 秒。';
+  @override
   String get dnsProvider => 'DNS 服务';
+  @override
+  String sourceSummary({required Object available, required Object issues}) => '${available} 个可用 · ${issues} 个异常';
   @override
   String get servicesTitle => '全部图源状态';
   @override
   String get servicesHint => 'IP 解析与 API 可用性分别检测；API 可用不代表所有图片均可下载。';
   @override
-  String get noFallback => '仅使用所选 DNS，失败直接报错；不会回退到系统 DNS 或自动切换服务。';
+  String get noFallback => 'DNS 提供商用于下方的路由刷新。系统 DNS 模式不使用缓存 IP；绕过 SNI 模式使用缓存 IP，失败时不自动切换。';
   @override
   String checkProgress({
     required Object done,
@@ -739,6 +852,26 @@ class Translations$settings$network$zh_CN extends Translations$settings$network$
   @override
   String get proxyUrl => '代理 URL';
   @override
+  String get proxyTitle => '自定义网络代理';
+  @override
+  String get proxyModeOverride => '当前使用自定义代理，保留正常 SNI 和证书校验，不叠加“绕过 SNI”。连接模式在停用自定义代理后生效。';
+  @override
+  String get proxyApply => '应用代理设置';
+  @override
+  String get proxyDisable => '停用自定义代理';
+  @override
+  String proxyActive({required Object endpoint}) => '已应用：${endpoint}（尚不代表连接成功）';
+  @override
+  String get proxyInactive => '未使用自定义代理 · 按连接模式和系统代理设置连接';
+  @override
+  String get proxyPending => '修改尚未应用，请点击“应用代理设置”。';
+  @override
+  String get proxyHelp => '输入代理地址后点击下方按钮。代理服务需要事先启动；应用后用于图源列表、图片和新的下载请求。';
+  @override
+  String get proxyCheckHelp => '自定义代理优先于缓存 IP 路由。应用后请用下方的图源 API 检测确认连接；DNS 解析成功不代表代理可用。';
+  @override
+  String get proxyInvalid => '请分别填写有效的 IP 或主机名和端口（1–65535），地址栏不需要填写协议或路径。';
+  @override
   String get proxyHint => '选填 · 例如 http://127.0.0.1:7890';
   @override
   String get applyAndRouteCache => '应用与路由缓存';
@@ -757,7 +890,7 @@ class Translations$settings$network$zh_CN extends Translations$settings$network$
   @override
   String get routeRefreshFailed => '路由刷新失败';
   @override
-  String get systemDns => '系统 DNS';
+  String get systemDns => '使用系统 DNS';
   @override
   String get sniBypass => '绕过 SNI';
   @override
@@ -1062,10 +1195,36 @@ extension on TranslationsZhCn {
       'settings.account.statuses.configuredUnverified' => '已配置，尚未验证',
       'settings.account.statuses.verified' => '已验证',
       'settings.account.statuses.rejected' => '已被拒绝',
+      'settings.network.proxyCompact' => '代理',
+      'settings.network.checkCompact' => '检测',
+      'settings.network.detailsCompact' => '详情',
+      'settings.network.advancedCompact' => '高级',
+      'settings.network.uncheckedCompact' => '未检测',
+      'settings.network.checkingCompact' => '检测中',
+      'settings.network.apiShort' => 'API',
+      'settings.network.imagesShort' => '图片',
+      'settings.network.saveCompact' => '保存',
+      'settings.network.proxyProtocol' => '代理协议',
+      'settings.network.proxyHost' => 'IP 或主机名',
+      'settings.network.proxyPort' => '端口',
+      'settings.network.proxyReachable' => '可连接',
+      'settings.network.proxyUnreachable' => '无法连接',
+      'settings.network.proxyProbe' => '检测代理可用性',
+      'settings.network.proxyProbeHint' => '探测仅使用当前填写的代理，不会保存设置。每个图源独立检测并显示结果。',
+      'settings.network.sourceAvailable' => '可用',
+      'settings.network.sourcePartial' => '部分可用',
+      'settings.network.sourceUnavailable' => '不可用',
+      'settings.network.checkAllSources' => '检测所有图源',
+      'settings.network.mediaAvailable' => '图片：可用',
+      'settings.network.mediaUnavailable' => '图片：未通过检测或无测试图片',
+      'settings.network.dnsDetails' => 'DNS 路由详情（不参与可用性判定）',
+      'settings.network.sourceProbeHelp' => '绿色：API 和图片均可用；黄色：部分通过；红色：检测失败。各图源并行检测，最多约 26 秒。',
       'settings.network.dnsProvider' => 'DNS 服务',
+      'settings.network.sourceSummary' =>
+        ({required Object available, required Object issues}) => '${available} 个可用 · ${issues} 个异常',
       'settings.network.servicesTitle' => '全部图源状态',
       'settings.network.servicesHint' => 'IP 解析与 API 可用性分别检测；API 可用不代表所有图片均可下载。',
-      'settings.network.noFallback' => '仅使用所选 DNS，失败直接报错；不会回退到系统 DNS 或自动切换服务。',
+      'settings.network.noFallback' => 'DNS 提供商用于下方的路由刷新。系统 DNS 模式不使用缓存 IP；绕过 SNI 模式使用缓存 IP，失败时不自动切换。',
       'settings.network.checkProgress' =>
         ({required Object done, required Object total, required Object checked, required Object sources}) =>
             'DNS 已完成 ${done}/${total} · API 已检测 ${checked}/${sources}',
@@ -1087,6 +1246,16 @@ extension on TranslationsZhCn {
       'settings.network.ipNotCached' => 'IP 已解析 · 尚未写入缓存',
       'settings.network.connectionMode' => '连接模式',
       'settings.network.proxyUrl' => '代理 URL',
+      'settings.network.proxyTitle' => '自定义网络代理',
+      'settings.network.proxyModeOverride' => '当前使用自定义代理，保留正常 SNI 和证书校验，不叠加“绕过 SNI”。连接模式在停用自定义代理后生效。',
+      'settings.network.proxyApply' => '应用代理设置',
+      'settings.network.proxyDisable' => '停用自定义代理',
+      'settings.network.proxyActive' => ({required Object endpoint}) => '已应用：${endpoint}（尚不代表连接成功）',
+      'settings.network.proxyInactive' => '未使用自定义代理 · 按连接模式和系统代理设置连接',
+      'settings.network.proxyPending' => '修改尚未应用，请点击“应用代理设置”。',
+      'settings.network.proxyHelp' => '输入代理地址后点击下方按钮。代理服务需要事先启动；应用后用于图源列表、图片和新的下载请求。',
+      'settings.network.proxyCheckHelp' => '自定义代理优先于缓存 IP 路由。应用后请用下方的图源 API 检测确认连接；DNS 解析成功不代表代理可用。',
+      'settings.network.proxyInvalid' => '请分别填写有效的 IP 或主机名和端口（1–65535），地址栏不需要填写协议或路径。',
       'settings.network.proxyHint' => '选填 · 例如 http://127.0.0.1:7890',
       'settings.network.applyAndRouteCache' => '应用与路由缓存',
       'settings.network.apply' => '应用网络设置',
@@ -1097,7 +1266,7 @@ extension on TranslationsZhCn {
       'settings.network.applied' => '网络设置已应用',
       'settings.network.invalidSettings' => '网络设置无效',
       'settings.network.routeRefreshFailed' => '路由刷新失败',
-      'settings.network.systemDns' => '系统 DNS',
+      'settings.network.systemDns' => '使用系统 DNS',
       'settings.network.sniBypass' => '绕过 SNI',
       'settings.network.legacyIpUrl' => '旧版 IP URL',
       'settings.languageDialog.title' => '语言',
@@ -1172,6 +1341,32 @@ extension on TranslationsZhCn {
       'mediaError.details' => '错误详情',
       'mediaError.copyDetails' => '复制详情',
       'mediaError.decodeFailed' => '下载的图片无法解码。重试会清除这张图片的缓存并重新下载。',
+      'webChallenge.title' => '网页验证',
+      'webChallenge.open' => '打开网页验证',
+      'webChallenge.windowTitle' => ({required Object source}) => '${source} · 完成验证后关闭窗口',
+      'webChallenge.instructions' => '请手动完成网页中的人机验证，完成后返回或关闭窗口。应用会保存验证数据并重新加载图源。',
+      'webChallenge.finish' => '完成验证并返回',
+      'webChallenge.saving' => '正在读取并验证网页会话…',
+      'webChallenge.waiting' => '正在进行网页验证…',
+      'webChallenge.clear' => '清空验证数据',
+      'webChallenge.clearAll' => '清空全部网页验证数据',
+      'webChallenge.clearDescription' => '清除 Cookie、浏览器标识及网页缓存，并停止正在进行的验证。',
+      'webChallenge.cleared' => '网页验证数据已清空',
+      'webChallenge.verified' => '已验证，可访问',
+      'webChallenge.saved' => '已保存，等待重新验证',
+      'webChallenge.empty' => '没有已保存的验证数据',
+      'webChallenge.failed' => '网页验证未完成，请重试。',
+      'webChallenge.pageLoadFailed' => '网页加载失败，可重新打开验证窗口或检查网络设置。',
+      'webChallenge.webViewUnavailable' => '当前平台的网页组件不可用。Windows 请安装或更新 Microsoft Edge WebView2 Runtime。',
+      'webChallenge.proxyUnsupported' => '网页组件暂不支持当前代理设置，请更换代理配置后重试。',
+      'webChallenge.busy' => '另一个网页验证或清理操作正在进行。',
+      'webChallenge.cancelled' => '已取消网页验证。',
+      'webChallenge.timedOut' => '网页验证超时，请重新打开网页。',
+      'webChallenge.storageFailed' => '无法保存或清空验证数据，原来的会话仍被保留。',
+      'webChallenge.captureFailed' => '无法读取网页会话，请重新打开网页验证。',
+      'webChallenge.cleanupFailed' => '网页数据尚未清理完成，请稍后再次清空。',
+      'webChallenge.operationSuperseded' => '验证已被清空操作或网络设置变更取消。',
+      'webChallenge.noCookies' => '网页尚未提供可用的验证数据，请完成人机验证后再返回。',
       _ => null,
     };
   }

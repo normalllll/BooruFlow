@@ -105,6 +105,22 @@ pub fn builtin_sources() -> Vec<SourceDefinition> {
             max_concurrency: 4,
             enabled_by_default: true,
             is_ai_source: false,
+            capabilities: capabilities(moebooru_ratings.clone(), AuthKind::None, true, true, false),
+        },
+        SourceDefinition {
+            id: "konachan_com",
+            display_name: "Konachan.com",
+            family: ProtocolFamily::Moebooru,
+            api_base: "https://konachan.com",
+            web_base: "https://konachan.com",
+            referer: "https://konachan.com/",
+            allowed_hosts: &["konachan.com", "www.konachan.com"],
+            allowed_host_suffixes: &["konachan.com"],
+            max_page_size: 100,
+            requests_per_minute: 60,
+            max_concurrency: 4,
+            enabled_by_default: true,
+            is_ai_source: false,
             capabilities: capabilities(moebooru_ratings, AuthKind::None, true, true, false),
         },
         SourceDefinition {
@@ -234,13 +250,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn registry_has_seven_unique_sources() {
+    fn registry_has_eight_unique_sources() {
         let sources = builtin_sources();
         let mut ids = sources.iter().map(|source| source.id).collect::<Vec<_>>();
         ids.sort_unstable();
         ids.dedup();
-        assert_eq!(sources.len(), 7);
-        assert_eq!(ids.len(), 7);
+        assert_eq!(sources.len(), 8);
+        assert_eq!(ids.len(), 8);
     }
 
     #[test]

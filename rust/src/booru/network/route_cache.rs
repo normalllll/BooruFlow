@@ -448,7 +448,7 @@ mod tests {
                 .flat_map(|r| r.source_ids.iter())
                 .collect::<BTreeSet<_>>()
                 .len(),
-            7
+            8
         );
         let gel = sources.iter().find(|s| s.id == "gelbooru").unwrap();
         assert!(cache

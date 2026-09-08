@@ -189,10 +189,35 @@ settings:
       rejected: 已被拒絕
 
   network:
+    proxyCompact: "代理"
+    checkCompact: "檢測"
+    detailsCompact: "詳情"
+    advancedCompact: "進階"
+    uncheckedCompact: "未檢測"
+    checkingCompact: "檢測中"
+    apiShort: "API"
+    imagesShort: "圖片"
+    saveCompact: "儲存"
+    proxyProtocol: "代理協定"
+    proxyHost: "IP 或主機名稱"
+    proxyPort: "連接埠"
+    proxyReachable: 可連線
+    proxyUnreachable: 無法連線
+    proxyProbe: "檢測代理可用性"
+    proxyProbeHint: "探測僅使用目前填寫的代理，不會儲存設定。每個圖源獨立檢測並顯示結果。"
+    sourceAvailable: "可用"
+    sourcePartial: "部分可用"
+    sourceUnavailable: "不可用"
+    checkAllSources: "檢測所有圖源"
+    mediaAvailable: "圖片：可用"
+    mediaUnavailable: "圖片：未通過檢測或無測試圖片"
+    dnsDetails: "DNS 路由詳情（不參與可用性判定）"
+    sourceProbeHelp: "綠色：API 和圖片均可用；黃色：部分通過；紅色：檢測失敗。各圖源並行檢測，最多約 26 秒。"
     dnsProvider: "DNS 服務"
+    sourceSummary: "$available 個可用 · $issues 個異常"
     servicesTitle: "全部圖源狀態"
     servicesHint: "IP 解析與 API 可用性分別檢測；API 可用不代表所有圖片均可下載。"
-    noFallback: "僅使用所選 DNS，失敗直接報錯；不會改用系統 DNS 或自動切換服務。"
+    noFallback: "DNS 提供商用於下方的路由重新整理。系統 DNS 模式不使用快取 IP；繞過 SNI 模式使用快取 IP，失敗時不自動切換。"
     checkProgress: "DNS 已完成 $done/$total · API 已檢測 $checked/$sources"
     checkSummary: "API 可用 $available/$total · DNS 失敗 $failed 項"
     loadingStatus: "正在讀取快取狀態…"
@@ -210,6 +235,16 @@ settings:
     ipNotCached: "IP 已解析 · 尚未寫入快取"
     connectionMode: 連線模式
     proxyUrl: Proxy URL
+    proxyTitle: 自訂網路代理
+    proxyModeOverride: 目前使用自訂代理，保留正常 SNI 和憑證驗證，不疊加「繞過 SNI」。連線模式在停用自訂代理後生效。
+    proxyApply: 套用代理設定
+    proxyDisable: 停用自訂代理
+    proxyActive: "已套用：$endpoint（尚不代表連線成功）"
+    proxyInactive: 未使用自訂代理 · 依連線模式和系統代理設定連線
+    proxyPending: 修改尚未套用，請點擊「套用代理設定」。
+    proxyHelp: 輸入代理位址後點擊下方按鈕。代理服務需事先啟動；套用後用於圖源列表、圖片和新的下載請求。
+    proxyCheckHelp: 自訂代理優先於快取 IP 路由。套用後請用下方的圖源 API 檢測確認連線；DNS 解析成功不代表代理可用。
+    proxyInvalid: 請分別填寫有效的 IP 或主機名稱和連接埠（1–65535），位址欄不需要填寫協定或路徑。
     proxyHint: 選填 · 例如 http://127.0.0.1:7890
     applyAndRouteCache: 套用與路由快取
     apply: 套用網路設定
@@ -219,7 +254,7 @@ settings:
     applied: 網路設定已套用
     invalidSettings: 網路設定無效
     routeRefreshFailed: 路由重新整理失敗
-    systemDns: 系統 DNS
+    systemDns: 使用系統 DNS
     sniBypass: 略過 SNI
     legacyIpUrl: 舊版 IP URL
 
@@ -313,3 +348,31 @@ mediaError:
   details: 錯誤詳情
   copyDetails: 複製詳情
   decodeFailed: 下載的圖片無法解碼。重試會清除這張圖片的快取並重新下載。
+
+webChallenge:
+  title: 網頁驗證
+  open: 開啟網頁驗證
+  windowTitle: "$source · 完成驗證後關閉視窗"
+  instructions: 請手動完成網頁中的人機驗證，完成後返回或關閉視窗。應用程式會儲存驗證資料並重新載入圖源。
+  finish: 完成驗證並返回
+  saving: 正在讀取並驗證網頁工作階段…
+  waiting: 正在進行網頁驗證…
+  clear: 清空驗證資料
+  clearAll: 清空所有網頁驗證資料
+  clearDescription: 清除 Cookie、瀏覽器識別資訊及網頁快取，並停止正在進行的驗證。
+  cleared: 網頁驗證資料已清空
+  verified: 已驗證，可以存取
+  saved: 已儲存，等待重新驗證
+  empty: 沒有已儲存的驗證資料
+  failed: 網頁驗證未完成，請重試。
+  pageLoadFailed: 網頁載入失敗，請重新開啟驗證視窗或檢查網路設定。
+  webViewUnavailable: 此平台的網頁元件無法使用。Windows 請安裝或更新 Microsoft Edge WebView2 Runtime。
+  proxyUnsupported: 網頁元件尚不支援目前的代理設定，請變更代理設定後重試。
+  busy: 另一個網頁驗證或清理操作正在進行。
+  cancelled: 已取消網頁驗證。
+  timedOut: 網頁驗證逾時，請重新開啟網頁。
+  storageFailed: 無法儲存或清空驗證資料，原本的工作階段仍被保留。
+  captureFailed: 無法讀取網頁工作階段，請重新開啟網頁驗證。
+  cleanupFailed: 網頁資料尚未清理完成，請稍後再次清空。
+  operationSuperseded: 驗證已因清空資料或變更網路設定而取消。
+  noCookies: 網頁尚未提供可用的驗證資料，請完成人機驗證後再返回。

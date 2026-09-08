@@ -71,6 +71,8 @@ class TranslationsJa extends Translations with BaseTranslations<AppLocale, Trans
   late final _Translations$discovery$ja discovery = _Translations$discovery$ja._(_root);
   @override
   late final _Translations$mediaError$ja mediaError = _Translations$mediaError$ja._(_root);
+  @override
+  late final _Translations$webChallenge$ja webChallenge = _Translations$webChallenge$ja._(_root);
 }
 
 // Path: generic
@@ -566,6 +568,68 @@ class _Translations$mediaError$ja extends Translations$mediaError$en {
   String get decodeFailed => 'ダウンロードした画像をデコードできませんでした。再試行すると、この画像のキャッシュを削除して再ダウンロードします。';
 }
 
+// Path: webChallenge
+class _Translations$webChallenge$ja extends Translations$webChallenge$en {
+  _Translations$webChallenge$ja._(TranslationsJa root) : this._root = root, super.internal(root);
+
+  final TranslationsJa _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get title => 'ウェブ認証';
+  @override
+  String get open => '認証ページを開く';
+  @override
+  String windowTitle({required Object source}) => '${source} · 認証後にウィンドウを閉じてください';
+  @override
+  String get instructions => 'ページの人間確認を手動で完了してから、戻るかウィンドウを閉じてください。認証データを保存し、画像ソースを再読み込みします。';
+  @override
+  String get finish => '完了して戻る';
+  @override
+  String get saving => 'ウェブセッションを読み取り、確認しています…';
+  @override
+  String get waiting => 'ウェブ認証を実行中…';
+  @override
+  String get clear => '認証データを消去';
+  @override
+  String get clearAll => 'すべてのウェブ認証データを消去';
+  @override
+  String get clearDescription => 'Cookie、ブラウザー識別情報、ウェブキャッシュを消去し、進行中の認証を停止します。';
+  @override
+  String get cleared => 'ウェブ認証データを消去しました';
+  @override
+  String get verified => '確認済み・アクセス可能';
+  @override
+  String get saved => '保存済み・再確認待ち';
+  @override
+  String get empty => '保存された認証データはありません';
+  @override
+  String get failed => 'ウェブ認証が完了しませんでした。再試行してください。';
+  @override
+  String get pageLoadFailed => 'ページを読み込めませんでした。認証ページを開き直すか、ネットワーク設定を確認してください。';
+  @override
+  String get webViewUnavailable =>
+      'この環境ではウェブコンポーネントを使用できません。Windows では Microsoft Edge WebView2 Runtime をインストールまたは更新してください。';
+  @override
+  String get proxyUnsupported => '現在のプロキシ設定には対応していません。設定を変更して再試行してください。';
+  @override
+  String get busy => '別のウェブ認証またはデータ消去を実行中です。';
+  @override
+  String get cancelled => 'ウェブ認証をキャンセルしました。';
+  @override
+  String get timedOut => 'ウェブ認証がタイムアウトしました。ページを開き直してください。';
+  @override
+  String get storageFailed => '認証データを保存または消去できませんでした。以前のセッションは保持されています。';
+  @override
+  String get captureFailed => 'ウェブセッションを読み取れませんでした。認証ページを開き直してください。';
+  @override
+  String get cleanupFailed => 'ウェブデータの消去が完了していません。しばらくしてから再試行してください。';
+  @override
+  String get operationSuperseded => 'データの消去またはネットワーク設定の変更により、認証をキャンセルしました。';
+  @override
+  String get noCookies => '使用可能な認証データがありません。人間確認を完了してから戻ってください。';
+}
+
 // Path: downloads.messages
 class _Translations$downloads$messages$ja extends Translations$downloads$messages$en {
   _Translations$downloads$messages$ja._(TranslationsJa root) : this._root = root, super.internal(root);
@@ -694,13 +758,64 @@ class _Translations$settings$network$ja extends Translations$settings$network$en
 
   // Translations
   @override
+  String get proxyCompact => 'プロキシ';
+  @override
+  String get checkCompact => 'テスト';
+  @override
+  String get detailsCompact => '詳細';
+  @override
+  String get advancedCompact => '詳細設定';
+  @override
+  String get uncheckedCompact => '未確認';
+  @override
+  String get checkingCompact => '確認中';
+  @override
+  String get apiShort => 'API';
+  @override
+  String get imagesShort => '画像';
+  @override
+  String get saveCompact => '保存';
+  @override
+  String get proxyProtocol => 'プロキシ方式';
+  @override
+  String get proxyHost => 'IP またはホスト名';
+  @override
+  String get proxyPort => 'ポート';
+  @override
+  String get proxyReachable => '接続可能';
+  @override
+  String get proxyUnreachable => '接続できません';
+  @override
+  String get proxyProbe => 'プロキシ接続をテスト';
+  @override
+  String get proxyProbeHint => '入力中のプロキシを保存せずにテストします。各サイトの結果を個別に表示します。';
+  @override
+  String get sourceAvailable => '利用可能';
+  @override
+  String get sourcePartial => '一部利用可能';
+  @override
+  String get sourceUnavailable => '利用不可';
+  @override
+  String get checkAllSources => 'すべてのサイトをテスト';
+  @override
+  String get mediaAvailable => '画像：利用可能';
+  @override
+  String get mediaUnavailable => '画像：失敗またはテスト画像なし';
+  @override
+  String get dnsDetails => 'DNS ルート詳細（可用性とは別）';
+  @override
+  String get sourceProbeHelp => '緑：API と画像が成功、黄：一部成功、赤：失敗。各サイトを並列にテストし、約26秒でタイムアウトします。';
+  @override
   String get dnsProvider => 'DNS サービス';
+  @override
+  String sourceSummary({required Object available, required Object issues}) => '利用可能 ${available} · 問題あり ${issues}';
   @override
   String get servicesTitle => '全画像サイトの状態';
   @override
   String get servicesHint => 'IP 解決と API の接続を個別に確認します。API が利用可能でも、すべての画像を取得できるとは限りません。';
   @override
-  String get noFallback => '選択した DNS のみを使用します。失敗時はエラーを表示し、システム DNS や別のサービスには切り替えません。';
+  String get noFallback =>
+      'DNS プロバイダーは下のルート更新に使用します。システム DNS モードはキャッシュ IP を使用しません。SNI 回避はキャッシュ IP を使用し、失敗時に自動で切り替えません。';
   @override
   String checkProgress({
     required Object done,
@@ -741,6 +856,26 @@ class _Translations$settings$network$ja extends Translations$settings$network$en
   String get connectionMode => '接続モード';
   @override
   String get proxyUrl => 'プロキシ URL';
+  @override
+  String get proxyTitle => 'カスタムネットワークプロキシ';
+  @override
+  String get proxyModeOverride => 'カスタムプロキシを優先し、通常の SNI と証明書検証を維持します。SNI 回避は併用しません。接続モードはカスタムプロキシを無効にした後に適用されます。';
+  @override
+  String get proxyApply => 'プロキシ設定を適用';
+  @override
+  String get proxyDisable => 'カスタムプロキシを無効化';
+  @override
+  String proxyActive({required Object endpoint}) => '適用済み：${endpoint}（接続は未確認）';
+  @override
+  String get proxyInactive => 'カスタムプロキシなし · 接続モードとシステムのプロキシ設定を使用';
+  @override
+  String get proxyPending => '変更は未適用です。「プロキシ設定を適用」を押してください。';
+  @override
+  String get proxyHelp => 'アドレスを入力して下のボタンを押してください。プロキシサービスの起動が必要です。画像一覧、画像、新しいダウンロード要求に適用されます。';
+  @override
+  String get proxyCheckHelp => 'カスタムプロキシはキャッシュ IP ルートより優先されます。適用後は下の API チェックで接続を確認してください。DNS の成功はプロキシの動作確認にはなりません。';
+  @override
+  String get proxyInvalid => '有効な IP またはホスト名とポート（1–65535）を別々に入力してください。アドレスに方式やパスを含めないでください。';
   @override
   String get proxyHint => '任意 · 例 http://127.0.0.1:7890';
   @override
@@ -1058,10 +1193,37 @@ extension on TranslationsJa {
       'settings.account.statuses.configuredUnverified' => '設定済み・未検証',
       'settings.account.statuses.verified' => '検証済み',
       'settings.account.statuses.rejected' => '拒否されました',
+      'settings.network.proxyCompact' => 'プロキシ',
+      'settings.network.checkCompact' => 'テスト',
+      'settings.network.detailsCompact' => '詳細',
+      'settings.network.advancedCompact' => '詳細設定',
+      'settings.network.uncheckedCompact' => '未確認',
+      'settings.network.checkingCompact' => '確認中',
+      'settings.network.apiShort' => 'API',
+      'settings.network.imagesShort' => '画像',
+      'settings.network.saveCompact' => '保存',
+      'settings.network.proxyProtocol' => 'プロキシ方式',
+      'settings.network.proxyHost' => 'IP またはホスト名',
+      'settings.network.proxyPort' => 'ポート',
+      'settings.network.proxyReachable' => '接続可能',
+      'settings.network.proxyUnreachable' => '接続できません',
+      'settings.network.proxyProbe' => 'プロキシ接続をテスト',
+      'settings.network.proxyProbeHint' => '入力中のプロキシを保存せずにテストします。各サイトの結果を個別に表示します。',
+      'settings.network.sourceAvailable' => '利用可能',
+      'settings.network.sourcePartial' => '一部利用可能',
+      'settings.network.sourceUnavailable' => '利用不可',
+      'settings.network.checkAllSources' => 'すべてのサイトをテスト',
+      'settings.network.mediaAvailable' => '画像：利用可能',
+      'settings.network.mediaUnavailable' => '画像：失敗またはテスト画像なし',
+      'settings.network.dnsDetails' => 'DNS ルート詳細（可用性とは別）',
+      'settings.network.sourceProbeHelp' => '緑：API と画像が成功、黄：一部成功、赤：失敗。各サイトを並列にテストし、約26秒でタイムアウトします。',
       'settings.network.dnsProvider' => 'DNS サービス',
+      'settings.network.sourceSummary' =>
+        ({required Object available, required Object issues}) => '利用可能 ${available} · 問題あり ${issues}',
       'settings.network.servicesTitle' => '全画像サイトの状態',
       'settings.network.servicesHint' => 'IP 解決と API の接続を個別に確認します。API が利用可能でも、すべての画像を取得できるとは限りません。',
-      'settings.network.noFallback' => '選択した DNS のみを使用します。失敗時はエラーを表示し、システム DNS や別のサービスには切り替えません。',
+      'settings.network.noFallback' =>
+        'DNS プロバイダーは下のルート更新に使用します。システム DNS モードはキャッシュ IP を使用しません。SNI 回避はキャッシュ IP を使用し、失敗時に自動で切り替えません。',
       'settings.network.checkProgress' =>
         ({required Object done, required Object total, required Object checked, required Object sources}) =>
             'DNS ${done}/${total} · API ${checked}/${sources}',
@@ -1083,6 +1245,18 @@ extension on TranslationsJa {
       'settings.network.ipNotCached' => 'IP 解決済み · まだ保存されていません',
       'settings.network.connectionMode' => '接続モード',
       'settings.network.proxyUrl' => 'プロキシ URL',
+      'settings.network.proxyTitle' => 'カスタムネットワークプロキシ',
+      'settings.network.proxyModeOverride' =>
+        'カスタムプロキシを優先し、通常の SNI と証明書検証を維持します。SNI 回避は併用しません。接続モードはカスタムプロキシを無効にした後に適用されます。',
+      'settings.network.proxyApply' => 'プロキシ設定を適用',
+      'settings.network.proxyDisable' => 'カスタムプロキシを無効化',
+      'settings.network.proxyActive' => ({required Object endpoint}) => '適用済み：${endpoint}（接続は未確認）',
+      'settings.network.proxyInactive' => 'カスタムプロキシなし · 接続モードとシステムのプロキシ設定を使用',
+      'settings.network.proxyPending' => '変更は未適用です。「プロキシ設定を適用」を押してください。',
+      'settings.network.proxyHelp' => 'アドレスを入力して下のボタンを押してください。プロキシサービスの起動が必要です。画像一覧、画像、新しいダウンロード要求に適用されます。',
+      'settings.network.proxyCheckHelp' =>
+        'カスタムプロキシはキャッシュ IP ルートより優先されます。適用後は下の API チェックで接続を確認してください。DNS の成功はプロキシの動作確認にはなりません。',
+      'settings.network.proxyInvalid' => '有効な IP またはホスト名とポート（1–65535）を別々に入力してください。アドレスに方式やパスを含めないでください。',
       'settings.network.proxyHint' => '任意 · 例 http://127.0.0.1:7890',
       'settings.network.applyAndRouteCache' => '適用とルートキャッシュ',
       'settings.network.apply' => 'ネットワーク設定を適用',
@@ -1168,6 +1342,33 @@ extension on TranslationsJa {
       'mediaError.details' => 'エラーの詳細',
       'mediaError.copyDetails' => '詳細をコピー',
       'mediaError.decodeFailed' => 'ダウンロードした画像をデコードできませんでした。再試行すると、この画像のキャッシュを削除して再ダウンロードします。',
+      'webChallenge.title' => 'ウェブ認証',
+      'webChallenge.open' => '認証ページを開く',
+      'webChallenge.windowTitle' => ({required Object source}) => '${source} · 認証後にウィンドウを閉じてください',
+      'webChallenge.instructions' => 'ページの人間確認を手動で完了してから、戻るかウィンドウを閉じてください。認証データを保存し、画像ソースを再読み込みします。',
+      'webChallenge.finish' => '完了して戻る',
+      'webChallenge.saving' => 'ウェブセッションを読み取り、確認しています…',
+      'webChallenge.waiting' => 'ウェブ認証を実行中…',
+      'webChallenge.clear' => '認証データを消去',
+      'webChallenge.clearAll' => 'すべてのウェブ認証データを消去',
+      'webChallenge.clearDescription' => 'Cookie、ブラウザー識別情報、ウェブキャッシュを消去し、進行中の認証を停止します。',
+      'webChallenge.cleared' => 'ウェブ認証データを消去しました',
+      'webChallenge.verified' => '確認済み・アクセス可能',
+      'webChallenge.saved' => '保存済み・再確認待ち',
+      'webChallenge.empty' => '保存された認証データはありません',
+      'webChallenge.failed' => 'ウェブ認証が完了しませんでした。再試行してください。',
+      'webChallenge.pageLoadFailed' => 'ページを読み込めませんでした。認証ページを開き直すか、ネットワーク設定を確認してください。',
+      'webChallenge.webViewUnavailable' =>
+        'この環境ではウェブコンポーネントを使用できません。Windows では Microsoft Edge WebView2 Runtime をインストールまたは更新してください。',
+      'webChallenge.proxyUnsupported' => '現在のプロキシ設定には対応していません。設定を変更して再試行してください。',
+      'webChallenge.busy' => '別のウェブ認証またはデータ消去を実行中です。',
+      'webChallenge.cancelled' => 'ウェブ認証をキャンセルしました。',
+      'webChallenge.timedOut' => 'ウェブ認証がタイムアウトしました。ページを開き直してください。',
+      'webChallenge.storageFailed' => '認証データを保存または消去できませんでした。以前のセッションは保持されています。',
+      'webChallenge.captureFailed' => 'ウェブセッションを読み取れませんでした。認証ページを開き直してください。',
+      'webChallenge.cleanupFailed' => 'ウェブデータの消去が完了していません。しばらくしてから再試行してください。',
+      'webChallenge.operationSuperseded' => 'データの消去またはネットワーク設定の変更により、認証をキャンセルしました。',
+      'webChallenge.noCookies' => '使用可能な認証データがありません。人間確認を完了してから戻ってください。',
       _ => null,
     };
   }

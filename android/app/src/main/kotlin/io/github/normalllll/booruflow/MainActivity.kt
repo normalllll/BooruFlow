@@ -10,6 +10,7 @@ class MainActivity : FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
 
         DownloadBridge.attach(this, flutterEngine.dartExecutor.binaryMessenger)
+        WebChallengeBridge.attach(flutterEngine.dartExecutor.binaryMessenger)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

@@ -71,6 +71,8 @@ class TranslationsZhTw extends Translations with BaseTranslations<AppLocale, Tra
   late final Translations$discovery$zh_TW discovery = Translations$discovery$zh_TW.internal(_root);
   @override
   late final Translations$mediaError$zh_TW mediaError = Translations$mediaError$zh_TW.internal(_root);
+  @override
+  late final Translations$webChallenge$zh_TW webChallenge = Translations$webChallenge$zh_TW.internal(_root);
 }
 
 // Path: generic
@@ -562,6 +564,67 @@ class Translations$mediaError$zh_TW extends Translations$mediaError$en {
   String get decodeFailed => '下載的圖片無法解碼。重試會清除這張圖片的快取並重新下載。';
 }
 
+// Path: webChallenge
+class Translations$webChallenge$zh_TW extends Translations$webChallenge$en {
+  Translations$webChallenge$zh_TW.internal(TranslationsZhTw root) : this._root = root, super.internal(root);
+
+  final TranslationsZhTw _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get title => '網頁驗證';
+  @override
+  String get open => '開啟網頁驗證';
+  @override
+  String windowTitle({required Object source}) => '${source} · 完成驗證後關閉視窗';
+  @override
+  String get instructions => '請手動完成網頁中的人機驗證，完成後返回或關閉視窗。應用程式會儲存驗證資料並重新載入圖源。';
+  @override
+  String get finish => '完成驗證並返回';
+  @override
+  String get saving => '正在讀取並驗證網頁工作階段…';
+  @override
+  String get waiting => '正在進行網頁驗證…';
+  @override
+  String get clear => '清空驗證資料';
+  @override
+  String get clearAll => '清空所有網頁驗證資料';
+  @override
+  String get clearDescription => '清除 Cookie、瀏覽器識別資訊及網頁快取，並停止正在進行的驗證。';
+  @override
+  String get cleared => '網頁驗證資料已清空';
+  @override
+  String get verified => '已驗證，可以存取';
+  @override
+  String get saved => '已儲存，等待重新驗證';
+  @override
+  String get empty => '沒有已儲存的驗證資料';
+  @override
+  String get failed => '網頁驗證未完成，請重試。';
+  @override
+  String get pageLoadFailed => '網頁載入失敗，請重新開啟驗證視窗或檢查網路設定。';
+  @override
+  String get webViewUnavailable => '此平台的網頁元件無法使用。Windows 請安裝或更新 Microsoft Edge WebView2 Runtime。';
+  @override
+  String get proxyUnsupported => '網頁元件尚不支援目前的代理設定，請變更代理設定後重試。';
+  @override
+  String get busy => '另一個網頁驗證或清理操作正在進行。';
+  @override
+  String get cancelled => '已取消網頁驗證。';
+  @override
+  String get timedOut => '網頁驗證逾時，請重新開啟網頁。';
+  @override
+  String get storageFailed => '無法儲存或清空驗證資料，原本的工作階段仍被保留。';
+  @override
+  String get captureFailed => '無法讀取網頁工作階段，請重新開啟網頁驗證。';
+  @override
+  String get cleanupFailed => '網頁資料尚未清理完成，請稍後再次清空。';
+  @override
+  String get operationSuperseded => '驗證已因清空資料或變更網路設定而取消。';
+  @override
+  String get noCookies => '網頁尚未提供可用的驗證資料，請完成人機驗證後再返回。';
+}
+
 // Path: downloads.messages
 class Translations$downloads$messages$zh_TW extends Translations$downloads$messages$en {
   Translations$downloads$messages$zh_TW.internal(TranslationsZhTw root) : this._root = root, super.internal(root);
@@ -691,13 +754,63 @@ class Translations$settings$network$zh_TW extends Translations$settings$network$
 
   // Translations
   @override
+  String get proxyCompact => '代理';
+  @override
+  String get checkCompact => '檢測';
+  @override
+  String get detailsCompact => '詳情';
+  @override
+  String get advancedCompact => '進階';
+  @override
+  String get uncheckedCompact => '未檢測';
+  @override
+  String get checkingCompact => '檢測中';
+  @override
+  String get apiShort => 'API';
+  @override
+  String get imagesShort => '圖片';
+  @override
+  String get saveCompact => '儲存';
+  @override
+  String get proxyProtocol => '代理協定';
+  @override
+  String get proxyHost => 'IP 或主機名稱';
+  @override
+  String get proxyPort => '連接埠';
+  @override
+  String get proxyReachable => '可連線';
+  @override
+  String get proxyUnreachable => '無法連線';
+  @override
+  String get proxyProbe => '檢測代理可用性';
+  @override
+  String get proxyProbeHint => '探測僅使用目前填寫的代理，不會儲存設定。每個圖源獨立檢測並顯示結果。';
+  @override
+  String get sourceAvailable => '可用';
+  @override
+  String get sourcePartial => '部分可用';
+  @override
+  String get sourceUnavailable => '不可用';
+  @override
+  String get checkAllSources => '檢測所有圖源';
+  @override
+  String get mediaAvailable => '圖片：可用';
+  @override
+  String get mediaUnavailable => '圖片：未通過檢測或無測試圖片';
+  @override
+  String get dnsDetails => 'DNS 路由詳情（不參與可用性判定）';
+  @override
+  String get sourceProbeHelp => '綠色：API 和圖片均可用；黃色：部分通過；紅色：檢測失敗。各圖源並行檢測，最多約 26 秒。';
+  @override
   String get dnsProvider => 'DNS 服務';
+  @override
+  String sourceSummary({required Object available, required Object issues}) => '${available} 個可用 · ${issues} 個異常';
   @override
   String get servicesTitle => '全部圖源狀態';
   @override
   String get servicesHint => 'IP 解析與 API 可用性分別檢測；API 可用不代表所有圖片均可下載。';
   @override
-  String get noFallback => '僅使用所選 DNS，失敗直接報錯；不會改用系統 DNS 或自動切換服務。';
+  String get noFallback => 'DNS 提供商用於下方的路由重新整理。系統 DNS 模式不使用快取 IP；繞過 SNI 模式使用快取 IP，失敗時不自動切換。';
   @override
   String checkProgress({
     required Object done,
@@ -739,6 +852,26 @@ class Translations$settings$network$zh_TW extends Translations$settings$network$
   @override
   String get proxyUrl => 'Proxy URL';
   @override
+  String get proxyTitle => '自訂網路代理';
+  @override
+  String get proxyModeOverride => '目前使用自訂代理，保留正常 SNI 和憑證驗證，不疊加「繞過 SNI」。連線模式在停用自訂代理後生效。';
+  @override
+  String get proxyApply => '套用代理設定';
+  @override
+  String get proxyDisable => '停用自訂代理';
+  @override
+  String proxyActive({required Object endpoint}) => '已套用：${endpoint}（尚不代表連線成功）';
+  @override
+  String get proxyInactive => '未使用自訂代理 · 依連線模式和系統代理設定連線';
+  @override
+  String get proxyPending => '修改尚未套用，請點擊「套用代理設定」。';
+  @override
+  String get proxyHelp => '輸入代理位址後點擊下方按鈕。代理服務需事先啟動；套用後用於圖源列表、圖片和新的下載請求。';
+  @override
+  String get proxyCheckHelp => '自訂代理優先於快取 IP 路由。套用後請用下方的圖源 API 檢測確認連線；DNS 解析成功不代表代理可用。';
+  @override
+  String get proxyInvalid => '請分別填寫有效的 IP 或主機名稱和連接埠（1–65535），位址欄不需要填寫協定或路徑。';
+  @override
   String get proxyHint => '選填 · 例如 http://127.0.0.1:7890';
   @override
   String get applyAndRouteCache => '套用與路由快取';
@@ -757,7 +890,7 @@ class Translations$settings$network$zh_TW extends Translations$settings$network$
   @override
   String get routeRefreshFailed => '路由重新整理失敗';
   @override
-  String get systemDns => '系統 DNS';
+  String get systemDns => '使用系統 DNS';
   @override
   String get sniBypass => '略過 SNI';
   @override
@@ -1062,10 +1195,36 @@ extension on TranslationsZhTw {
       'settings.account.statuses.configuredUnverified' => '已設定，尚未驗證',
       'settings.account.statuses.verified' => '已驗證',
       'settings.account.statuses.rejected' => '已被拒絕',
+      'settings.network.proxyCompact' => '代理',
+      'settings.network.checkCompact' => '檢測',
+      'settings.network.detailsCompact' => '詳情',
+      'settings.network.advancedCompact' => '進階',
+      'settings.network.uncheckedCompact' => '未檢測',
+      'settings.network.checkingCompact' => '檢測中',
+      'settings.network.apiShort' => 'API',
+      'settings.network.imagesShort' => '圖片',
+      'settings.network.saveCompact' => '儲存',
+      'settings.network.proxyProtocol' => '代理協定',
+      'settings.network.proxyHost' => 'IP 或主機名稱',
+      'settings.network.proxyPort' => '連接埠',
+      'settings.network.proxyReachable' => '可連線',
+      'settings.network.proxyUnreachable' => '無法連線',
+      'settings.network.proxyProbe' => '檢測代理可用性',
+      'settings.network.proxyProbeHint' => '探測僅使用目前填寫的代理，不會儲存設定。每個圖源獨立檢測並顯示結果。',
+      'settings.network.sourceAvailable' => '可用',
+      'settings.network.sourcePartial' => '部分可用',
+      'settings.network.sourceUnavailable' => '不可用',
+      'settings.network.checkAllSources' => '檢測所有圖源',
+      'settings.network.mediaAvailable' => '圖片：可用',
+      'settings.network.mediaUnavailable' => '圖片：未通過檢測或無測試圖片',
+      'settings.network.dnsDetails' => 'DNS 路由詳情（不參與可用性判定）',
+      'settings.network.sourceProbeHelp' => '綠色：API 和圖片均可用；黃色：部分通過；紅色：檢測失敗。各圖源並行檢測，最多約 26 秒。',
       'settings.network.dnsProvider' => 'DNS 服務',
+      'settings.network.sourceSummary' =>
+        ({required Object available, required Object issues}) => '${available} 個可用 · ${issues} 個異常',
       'settings.network.servicesTitle' => '全部圖源狀態',
       'settings.network.servicesHint' => 'IP 解析與 API 可用性分別檢測；API 可用不代表所有圖片均可下載。',
-      'settings.network.noFallback' => '僅使用所選 DNS，失敗直接報錯；不會改用系統 DNS 或自動切換服務。',
+      'settings.network.noFallback' => 'DNS 提供商用於下方的路由重新整理。系統 DNS 模式不使用快取 IP；繞過 SNI 模式使用快取 IP，失敗時不自動切換。',
       'settings.network.checkProgress' =>
         ({required Object done, required Object total, required Object checked, required Object sources}) =>
             'DNS 已完成 ${done}/${total} · API 已檢測 ${checked}/${sources}',
@@ -1087,6 +1246,16 @@ extension on TranslationsZhTw {
       'settings.network.ipNotCached' => 'IP 已解析 · 尚未寫入快取',
       'settings.network.connectionMode' => '連線模式',
       'settings.network.proxyUrl' => 'Proxy URL',
+      'settings.network.proxyTitle' => '自訂網路代理',
+      'settings.network.proxyModeOverride' => '目前使用自訂代理，保留正常 SNI 和憑證驗證，不疊加「繞過 SNI」。連線模式在停用自訂代理後生效。',
+      'settings.network.proxyApply' => '套用代理設定',
+      'settings.network.proxyDisable' => '停用自訂代理',
+      'settings.network.proxyActive' => ({required Object endpoint}) => '已套用：${endpoint}（尚不代表連線成功）',
+      'settings.network.proxyInactive' => '未使用自訂代理 · 依連線模式和系統代理設定連線',
+      'settings.network.proxyPending' => '修改尚未套用，請點擊「套用代理設定」。',
+      'settings.network.proxyHelp' => '輸入代理位址後點擊下方按鈕。代理服務需事先啟動；套用後用於圖源列表、圖片和新的下載請求。',
+      'settings.network.proxyCheckHelp' => '自訂代理優先於快取 IP 路由。套用後請用下方的圖源 API 檢測確認連線；DNS 解析成功不代表代理可用。',
+      'settings.network.proxyInvalid' => '請分別填寫有效的 IP 或主機名稱和連接埠（1–65535），位址欄不需要填寫協定或路徑。',
       'settings.network.proxyHint' => '選填 · 例如 http://127.0.0.1:7890',
       'settings.network.applyAndRouteCache' => '套用與路由快取',
       'settings.network.apply' => '套用網路設定',
@@ -1097,7 +1266,7 @@ extension on TranslationsZhTw {
       'settings.network.applied' => '網路設定已套用',
       'settings.network.invalidSettings' => '網路設定無效',
       'settings.network.routeRefreshFailed' => '路由重新整理失敗',
-      'settings.network.systemDns' => '系統 DNS',
+      'settings.network.systemDns' => '使用系統 DNS',
       'settings.network.sniBypass' => '略過 SNI',
       'settings.network.legacyIpUrl' => '舊版 IP URL',
       'settings.languageDialog.title' => '語言',
@@ -1172,6 +1341,32 @@ extension on TranslationsZhTw {
       'mediaError.details' => '錯誤詳情',
       'mediaError.copyDetails' => '複製詳情',
       'mediaError.decodeFailed' => '下載的圖片無法解碼。重試會清除這張圖片的快取並重新下載。',
+      'webChallenge.title' => '網頁驗證',
+      'webChallenge.open' => '開啟網頁驗證',
+      'webChallenge.windowTitle' => ({required Object source}) => '${source} · 完成驗證後關閉視窗',
+      'webChallenge.instructions' => '請手動完成網頁中的人機驗證，完成後返回或關閉視窗。應用程式會儲存驗證資料並重新載入圖源。',
+      'webChallenge.finish' => '完成驗證並返回',
+      'webChallenge.saving' => '正在讀取並驗證網頁工作階段…',
+      'webChallenge.waiting' => '正在進行網頁驗證…',
+      'webChallenge.clear' => '清空驗證資料',
+      'webChallenge.clearAll' => '清空所有網頁驗證資料',
+      'webChallenge.clearDescription' => '清除 Cookie、瀏覽器識別資訊及網頁快取，並停止正在進行的驗證。',
+      'webChallenge.cleared' => '網頁驗證資料已清空',
+      'webChallenge.verified' => '已驗證，可以存取',
+      'webChallenge.saved' => '已儲存，等待重新驗證',
+      'webChallenge.empty' => '沒有已儲存的驗證資料',
+      'webChallenge.failed' => '網頁驗證未完成，請重試。',
+      'webChallenge.pageLoadFailed' => '網頁載入失敗，請重新開啟驗證視窗或檢查網路設定。',
+      'webChallenge.webViewUnavailable' => '此平台的網頁元件無法使用。Windows 請安裝或更新 Microsoft Edge WebView2 Runtime。',
+      'webChallenge.proxyUnsupported' => '網頁元件尚不支援目前的代理設定，請變更代理設定後重試。',
+      'webChallenge.busy' => '另一個網頁驗證或清理操作正在進行。',
+      'webChallenge.cancelled' => '已取消網頁驗證。',
+      'webChallenge.timedOut' => '網頁驗證逾時，請重新開啟網頁。',
+      'webChallenge.storageFailed' => '無法儲存或清空驗證資料，原本的工作階段仍被保留。',
+      'webChallenge.captureFailed' => '無法讀取網頁工作階段，請重新開啟網頁驗證。',
+      'webChallenge.cleanupFailed' => '網頁資料尚未清理完成，請稍後再次清空。',
+      'webChallenge.operationSuperseded' => '驗證已因清空資料或變更網路設定而取消。',
+      'webChallenge.noCookies' => '網頁尚未提供可用的驗證資料，請完成人機驗證後再返回。',
       _ => null,
     };
   }

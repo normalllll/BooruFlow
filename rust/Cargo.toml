@@ -5,7 +5,10 @@ edition = "2021"
 
 [lib]
 name = "core"
-crate-type = ["cdylib", "staticlib"]
+crate-type = ["cdylib", "staticlib", "rlib"]
+
+[features]
+web-challenge-window = ["dep:wry", "dep:tao", "dep:muda", "dep:windows", "dep:webview2-com"]
 
 [dependencies]
 flutter_rust_bridge = "=2.13.0"
@@ -17,6 +20,8 @@ serde_json = "1"
 thiserror = "2"
 time = { version = "0.3", features = ["formatting", "parsing"] }
 url = "2.5"
+tempfile = "3"
+getrandom = "0.4"
 
 tokio = { version = "1", features = ["test-util", "full"] }
 tokio-util = "0.7"
@@ -40,6 +45,13 @@ features = ["derive"]
 
 [target.'cfg(target_os = "android")'.dependencies]
 webpki-root-certs = "1"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+wry = { version = "=0.57.0", optional = true }
+tao = { version = "=0.37.0", optional = true }
+muda = { version = "=0.19.3", optional = true }
+windows = { version = "=0.62.2", optional = true, features = ["Win32_Foundation", "Win32_System_Com", "Win32_UI_WindowsAndMessaging"] }
+webview2-com = { version = "=0.39.1", optional = true }
 
 [dev-dependencies]
 tempfile = "3"
