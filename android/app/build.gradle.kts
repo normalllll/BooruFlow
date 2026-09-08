@@ -22,7 +22,7 @@ android {
         versionName = flutter.versionName
     }
 
-    packagingOptions {
+    packaging {
         dex {
             useLegacyPackaging = true
         }

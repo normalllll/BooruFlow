@@ -4,59 +4,76 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: Publish a release (must select a version tag)
+        type: boolean
+        default: false
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
 
 permissions:
-  contents: write
-
-env:
-  FLUTTER_VERSION: '3.44.7'
-  RUST_VERSION: '1.96.0'
+  contents: read
 
 jobs:
+
+  validate:
+    name: Validate release version
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Validate version and publication target
+        id: version
+        env:
+          PUBLISH_RELEASE: ${{ inputs.publish_release || false }}
+        run: |
+          VERSION=$(sed -n 's/^version: *//p' pubspec.yaml | tr -d '\r')
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+\+[0-9]+$ ]]; then
+            echo "Expected pubspec version in major.minor.patch+build format"
+            exit 1
+          fi
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            test "$GITHUB_REF_NAME" = "v$VERSION" || {
+              echo "Tag must match pubspec version: v$VERSION"
+              exit 1
+            }
+          elif [[ "$PUBLISH_RELEASE" == true ]]; then
+            echo "To publish, select a version tag instead of a branch"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
   build-and-release-android:
-    name: Build & Release APK
-    runs-on: ubuntu-latest
+    name: Build APK
+    runs-on: ubuntu-24.04
+    needs: validate
     environment: apk-release
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
 
-      - name: Install Rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Set up SDKs and caches
+        uses: ./.github/actions/setup
         with:
-          toolchain: ${{ env.RUST_VERSION }}
-          cache: true
-          cache-workspaces: rust -> rust/target
-          cache-key: rust-${{ runner.os }}-${{ runner.arch }}-${{ env.RUST_VERSION }}-${{ hashFiles('rust/Cargo.toml', 'rust/Cargo.lock') }}
-
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
-          pub-cache: true
-          cache-key: flutter-${{ runner.os }}-${{ runner.arch }}-${{ env.FLUTTER_VERSION }}
-          pub-cache-key: pub-${{ runner.os }}-${{ runner.arch }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('pubspec.yaml', 'pubspec.lock') }}
+          platform: android
+          rust-targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android
 
       - name: Set up Java
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
-          cache: gradle
-          cache-dependency-path: |
-            android/*.gradle
-            android/*.gradle.kts
-            android/**/*.gradle
-            android/**/*.gradle.kts
-            android/gradle.properties
-            android/gradle/wrapper/gradle-wrapper.properties
-            android/gradle/*.versions.toml
 
-      - name: Get Flutter Dependencies
-        run: flutter pub get
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          cache-read-only: false
 
       - name: Restore Keystore
         env:
@@ -81,7 +98,7 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
-          keytool -list -v \
+          keytool -list \
             -keystore android/app/booruflow-key.jks \
             -storepass "$KEYSTORE_PASSWORD" \
             -alias "$KEY_ALIAS"
@@ -98,44 +115,33 @@ jobs:
             --android-project-arg=KEY_ALIAS="$KEY_ALIAS" \
             --android-project-arg=KEY_PASSWORD="$KEY_PASSWORD"
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v3
+      - name: Upload android artifacts
+        uses: actions/upload-artifact@v4
         with:
-          files: |
+          name: release-android
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+          path: |
             build/app/outputs/apk/release/app-arm64-v8a-release.apk
             build/app/outputs/apk/release/app-armeabi-v7a-release.apk
             build/app/outputs/apk/release/app-universal-release.apk
             build/app/outputs/apk/release/app-x86_64-release.apk
-          token: ${{ secrets.GITHUB_TOKEN }}
 
   build-and-release-windows-x64:
-    name: Build & Release Windows x64
-    runs-on: windows-latest
+    name: Build Windows x64
+    runs-on: windows-2025
+    needs: validate
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
 
-      - name: Install Rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Set up SDKs and caches
+        uses: ./.github/actions/setup
         with:
-          toolchain: ${{ env.RUST_VERSION }}
-          cache: true
-          cache-workspaces: rust -> rust/target
-          cache-key: rust-${{ runner.os }}-${{ runner.arch }}-${{ env.RUST_VERSION }}-${{ hashFiles('rust/Cargo.toml', 'rust/Cargo.lock') }}
-
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
-          pub-cache: true
-          cache-key: flutter-${{ runner.os }}-${{ runner.arch }}-${{ env.FLUTTER_VERSION }}
-          pub-cache-key: pub-${{ runner.os }}-${{ runner.arch }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('pubspec.yaml', 'pubspec.lock') }}
-
-      - name: Get Flutter Dependencies
-        run: flutter pub get
+          platform: windows
+          rust-targets: x86_64-pc-windows-msvc
 
       - name: Build Windows
         run: flutter build windows --release
@@ -145,22 +151,26 @@ jobs:
           cd build\windows\x64\runner\Release
           7z a -tzip windows-x64.zip .\*
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v3
+      - name: Upload windows artifacts
+        uses: actions/upload-artifact@v4
         with:
-          files: |
+          name: release-windows
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+          path: |
             build/windows/x64/runner/Release/windows-x64.zip
-          token: ${{ secrets.GITHUB_TOKEN }}
 
   build-and-release-linux-amd64:
-    name: Build & Release Linux amd64
-    runs-on: ubuntu-latest
+    name: Build Linux amd64
+    runs-on: ubuntu-24.04
+    needs: validate
 
     env:
       APP_NAME: booruflow
       APP_BINARY: booruflow
       APP_DISPLAY_NAME: BooruFlow
-      APP_URL: https://github.com/normalllll/BooruFlow
+      APP_URL: https://github.com/${{ github.repository }}
       APP_LICENSE: GPL-3.0-only
       APP_ARCH: amd64
       RPM_ARCH: x86_64
@@ -188,28 +198,13 @@ jobs:
             ruby-dev \
             build-essential
 
-          sudo gem install --no-document fpm
+          sudo gem install --no-document fpm --version 1.17.0
 
-      - name: Install Rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Set up SDKs and caches
+        uses: ./.github/actions/setup
         with:
-          toolchain: ${{ env.RUST_VERSION }}
-          cache: true
-          cache-workspaces: rust -> rust/target
-          cache-key: rust-${{ runner.os }}-${{ runner.arch }}-${{ env.RUST_VERSION }}-${{ hashFiles('rust/Cargo.toml', 'rust/Cargo.lock') }}
-
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
-          pub-cache: true
-          cache-key: flutter-${{ runner.os }}-${{ runner.arch }}-${{ env.FLUTTER_VERSION }}
-          pub-cache-key: pub-${{ runner.os }}-${{ runner.arch }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('pubspec.yaml', 'pubspec.lock') }}
-
-      - name: Get Flutter Dependencies
-        run: flutter pub get
+          platform: linux
+          rust-targets: x86_64-unknown-linux-gnu
 
       - name: Build Linux
         run: flutter build linux --release
@@ -279,11 +274,11 @@ jobs:
 
       - name: Package Linux Tarball
         run: |
-          tar -C "$BUNDLE_DIR" -czvf "build/linux-amd64.tar.gz" .
+          tar -C "$BUNDLE_DIR" -czvf "build/linux-x64.tar.gz" .
 
       - name: Package Linux Deb
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
+          VERSION="${{ needs.validate.outputs.version }}"
 
           mkdir -p "$DEB_DIR/DEBIAN"
           cp -r "$PACKAGE_ROOT/"* "$DEB_DIR/"
@@ -305,13 +300,14 @@ jobs:
 
       - name: Package Linux RPM
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
+          VERSION="${{ needs.validate.outputs.version }}"
 
           fpm \
             -s dir \
             -t rpm \
             -n "$APP_NAME" \
-            -v "$VERSION" \
+            -v "${VERSION%%+*}" \
+            --iteration "${VERSION##*+}" \
             --architecture "$RPM_ARCH" \
             --description "$APP_DISPLAY_NAME desktop application built with Flutter." \
             --url "$APP_URL" \
@@ -323,104 +319,132 @@ jobs:
             -p "build/linux_amd64.rpm" \
             usr
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v3
+      - name: Upload linux artifacts
+        uses: actions/upload-artifact@v4
         with:
-          files: |
+          name: release-linux
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+          path: |
             build/linux_amd64.deb
             build/linux_amd64.rpm
-            build/linux-amd64.tar.gz
-          token: ${{ secrets.GITHUB_TOKEN }}
+            build/linux-x64.tar.gz
 
   build-and-release-ios:
-    name: Build & Release iOS
+    name: Build iOS
     runs-on: macos-26
+    needs: validate
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
 
-      - name: Install Rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Set up SDKs and caches
+        uses: ./.github/actions/setup
         with:
-          toolchain: ${{ env.RUST_VERSION }}
-          cache: true
-          cache-workspaces: rust -> rust/target
-          cache-key: rust-${{ runner.os }}-${{ runner.arch }}-${{ env.RUST_VERSION }}-${{ hashFiles('rust/Cargo.toml', 'rust/Cargo.lock') }}
-
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
-          pub-cache: true
-          cache-key: flutter-${{ runner.os }}-${{ runner.arch }}-${{ env.FLUTTER_VERSION }}
-          pub-cache-key: pub-${{ runner.os }}-${{ runner.arch }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('pubspec.yaml', 'pubspec.lock') }}
-
-      - name: Get Flutter Dependencies
-        run: flutter pub get
+          platform: ios
+          rust-targets: aarch64-apple-ios
 
       - name: Build iOS
         run: |
-          flutter build ios --release --no-codesign -v
+          flutter build ios --release --no-codesign
           cd build/ios/iphoneos
-          mkdir Payload
-          mv ./Runner.app ./Payload
-          zip -r -m ./ios-nosigned.ipa ./Payload
+          mkdir -p Payload
+          ditto Runner.app Payload/Runner.app
+          ditto -c -k --keepParent Payload ios-nosigned.ipa
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v3
+      - name: Upload ios artifacts
+        uses: actions/upload-artifact@v4
         with:
-          files: |
+          name: release-ios
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+          path: |
             build/ios/iphoneos/ios-nosigned.ipa
-          token: ${{ secrets.GITHUB_TOKEN }}
 
   build-and-release-macos:
-    name: Build & Release macOS arm64 & x86_64
+    name: Build macOS arm64 & x86_64
     runs-on: macos-26
+    needs: validate
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
 
-      - name: Install Rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Set up SDKs and caches
+        uses: ./.github/actions/setup
         with:
-          toolchain: ${{ env.RUST_VERSION }}
-          cache: true
-          cache-workspaces: rust -> rust/target
-          cache-key: rust-${{ runner.os }}-${{ runner.arch }}-${{ env.RUST_VERSION }}-${{ hashFiles('rust/Cargo.toml', 'rust/Cargo.lock') }}
+          platform: macos
+          rust-targets: aarch64-apple-darwin,x86_64-apple-darwin
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+      - name: Build and package universal macOS app
+        run: |
+          flutter config --no-enable-macos-arm64-only
+          flutter build macos --release
+          APP=build/macos/Build/Products/Release/BooruFlow.app
+          lipo -verify_arch arm64 x86_64 "$APP/Contents/MacOS/BooruFlow"
+          # Native Assets embeds Rust in a framework with an extensionless binary.
+          # Check every Mach-O library, including Flutter, plugins and Rust.
+          while IFS= read -r -d '' library; do
+            if file -b "$library" | grep -q 'Mach-O'; then
+              lipo -verify_arch arm64 x86_64 "$library"
+            fi
+          done < <(find "$APP/Contents/Frameworks" -type f -print0)
+          ditto -c -k --sequesterRsrc --keepParent "$APP" macos-universal-nosigned.zip
+          # Keep filenames understood by previously released clients.
+          cp macos-universal-nosigned.zip macos-arm64-nosigned.zip
+          cp macos-universal-nosigned.zip macos-x86_64-nosigned.zip
+
+      - name: Upload macos artifacts
+        uses: actions/upload-artifact@v4
         with:
-          channel: stable
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
-          pub-cache: true
-          cache-key: flutter-${{ runner.os }}-${{ runner.arch }}-${{ env.FLUTTER_VERSION }}
-          pub-cache-key: pub-${{ runner.os }}-${{ runner.arch }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('pubspec.yaml', 'pubspec.lock') }}
+          name: release-macos
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+          path: |
+            macos-arm64-nosigned.zip
+            macos-x86_64-nosigned.zip
+            macos-universal-nosigned.zip
 
-      - name: Get Flutter Dependencies
-        run: flutter pub get
-
-      - name: Build macOS arm64
+  publish:
+    name: Publish complete release
+    needs:
+      - validate
+      - build-and-release-android
+      - build-and-release-windows-x64
+      - build-and-release-linux-amd64
+      - build-and-release-ios
+      - build-and-release-macos
+    if: startsWith(github.ref, 'refs/tags/') && (github.event_name == 'push' || inputs.publish_release)
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Download all release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          merge-multiple: true
+          path: release
+      - name: Verify complete release assets
         run: |
-          export FLUTTER_BUILD_ARCH=arm64
-          flutter build macos --release
-          ditto -c -k --sequesterRsrc --keepParent build/macos/Build/Products/Release/BooruFlow.app macos-arm64-nosigned.zip
-
-      - name: Build macOS x86_64
-        run: |
-          export FLUTTER_BUILD_ARCH=x86_64
-          flutter build macos --release
-          ditto -c -k --sequesterRsrc --keepParent build/macos/Build/Products/Release/BooruFlow.app macos-x86_64-nosigned.zip
-
+          for asset in \
+            app-arm64-v8a-release.apk app-armeabi-v7a-release.apk \
+            app-universal-release.apk app-x86_64-release.apk \
+            windows-x64.zip linux-x64.tar.gz linux_amd64.deb linux_amd64.rpm \
+            ios-nosigned.ipa macos-universal-nosigned.zip \
+            macos-arm64-nosigned.zip macos-x86_64-nosigned.zip; do
+            test -s "release/$asset" || {
+              echo "Missing or empty release asset: $asset"
+              exit 1
+            }
+          done
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
-          files: |
-            macos-arm64-nosigned.zip
-            macos-x86_64-nosigned.zip
+          fail_on_unmatched_files: true
+          files: release/*
           token: ${{ secrets.GITHUB_TOKEN }}

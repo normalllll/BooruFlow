@@ -33,8 +33,12 @@ features = ["rustls", "json", "stream", "http2", "socks", "system-proxy"]
 version = "1"
 features = ["derive"]
 
+[target.'cfg(target_os = "android")'.dependencies]
+webpki-root-certs = "1"
+
 [dev-dependencies]
 tempfile = "3"
+webpki-root-certs = "1"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }
