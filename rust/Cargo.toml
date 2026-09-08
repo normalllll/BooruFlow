@@ -27,7 +27,12 @@ sha2 = "0.10.9"
 [dependencies.reqwest]
 version = "0.13.4"
 default-features = false
-features = ["rustls", "json", "stream", "http2", "socks", "system-proxy"]
+features = ["rustls-no-provider", "json", "stream", "http2", "socks", "system-proxy"]
+
+[dependencies.rustls]
+version = "0.23"
+default-features = false
+features = ["ring", "std", "tls12"]
 
 [dependencies.serde]
 version = "1"

@@ -1,6 +1,9 @@
 use reqwest::ClientBuilder;
 
 pub(super) fn client_builder() -> ClientBuilder {
+    // reqwest's rustls-no-provider requires registration before Client::build.
+    // Registration is process-wide; repeated/concurrent builders are harmless.
+    let _ = rustls::crypto::ring::default_provider().install_default();
     let builder = reqwest::Client::builder();
     #[cfg(target_os = "android")]
     let builder = with_bundled_roots(builder);
@@ -29,10 +32,18 @@ fn with_bundled_roots(builder: ClientBuilder) -> ClientBuilder {
 mod tests {
     use super::*;
 
+    #[test]
+    fn ring_provider_builds_clients_repeatedly_without_app_initialization() {
+        for _ in 0..2 {
+            client_builder().no_proxy().build().unwrap();
+        }
+        assert!(rustls::crypto::CryptoProvider::get_default().is_some());
+    }
+
     #[tokio::test]
     #[ignore = "requires public HTTPS endpoints; run without a TLS-intercepting proxy"]
     async fn bundled_roots_validate_public_certificates_and_reject_invalid_ones() {
-        let client = with_bundled_roots(reqwest::Client::builder())
+        let client = with_bundled_roots(client_builder())
             .no_proxy()
             .timeout(std::time::Duration::from_secs(20))
             .build()
@@ -62,12 +73,11 @@ mod tests {
                 details.contains("invalid peer certificate"),
                 "{url}: {details}"
             );
-            let bypass_client =
-                with_sni_bypass(with_bundled_roots(reqwest::Client::builder()), true)
-                    .no_proxy()
-                    .timeout(std::time::Duration::from_secs(20))
-                    .build()
-                    .unwrap();
+            let bypass_client = with_sni_bypass(with_bundled_roots(client_builder()), true)
+                .no_proxy()
+                .timeout(std::time::Duration::from_secs(20))
+                .build()
+                .unwrap();
             // Without SNI the server may return a fallback virtual host. Any
             // HTTP response proves TLS accepted its otherwise invalid cert.
             bypass_client.get(url).send().await.unwrap();

@@ -348,7 +348,7 @@ jobs:
 
       - name: Build iOS
         run: |
-          flutter build ios --release --no-codesign
+          flutter build ios --release --no-codesign -v
           cd build/ios/iphoneos
           mkdir -p Payload
           ditto Runner.app Payload/Runner.app
@@ -382,7 +382,7 @@ jobs:
       - name: Build and package universal macOS app
         run: |
           flutter config --no-enable-macos-arm64-only
-          flutter build macos --release
+          flutter build macos --release -v
           APP=build/macos/Build/Products/Release/BooruFlow.app
           lipo -verify_arch arm64 x86_64 "$APP/Contents/MacOS/BooruFlow"
           # Native Assets embeds Rust in a framework with an extensionless binary.

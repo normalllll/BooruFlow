@@ -396,6 +396,9 @@ mod tests {
     #[tokio::test]
     #[ignore = "requires the public Danbooru and AIBooru APIs; JSON only"]
     async fn live_projected_posts_include_media_and_uploader() {
+        rustls::crypto::ring::default_provider()
+            .install_default()
+            .ok();
         let client = reqwest::Client::builder()
             .user_agent("BooruFlow/0.10.0")
             .timeout(std::time::Duration::from_secs(30))
