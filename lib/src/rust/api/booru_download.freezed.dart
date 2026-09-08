@@ -176,7 +176,7 @@ return done(_that.path);case _:
 
 class DownloadEventDto_Progress extends DownloadEventDto {
   const DownloadEventDto_Progress({required this.receivedBytesDecimal, this.totalBytesDecimal, required this.progress}): super._();
-  
+
 
  final  String receivedBytesDecimal;
  final  String? totalBytesDecimal;
@@ -246,7 +246,7 @@ as double,
 
 class DownloadEventDto_Done extends DownloadEventDto {
   const DownloadEventDto_Done({required this.path}): super._();
-  
+
 
  final  String path;
 
@@ -472,7 +472,7 @@ return chunk(_that.bytes,_that.receivedBytesDecimal,_that.totalBytesDecimal);cas
 
 class MediaFetchEventDto_Failed extends MediaFetchEventDto {
   const MediaFetchEventDto_Failed({required this.error}): super._();
-  
+
 
  final  BooruErrorDto error;
 
@@ -538,7 +538,7 @@ as BooruErrorDto,
 
 class MediaFetchEventDto_Chunk extends MediaFetchEventDto {
   const MediaFetchEventDto_Chunk({required this.bytes, required this.receivedBytesDecimal, this.totalBytesDecimal}): super._();
-  
+
 
  final  Uint8List bytes;
  final  String receivedBytesDecimal;

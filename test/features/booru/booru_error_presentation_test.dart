@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:booruflow/intl/translations.g.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loading_more_list/loading_more_list.dart';
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
@@ -29,6 +30,24 @@ void main() {
     expect(message, contains('id=booru-test-id'));
     expect(message, isNot(contains("Instance of 'BooruErrorDto'")));
   });
+
+  test(
+    'missing routes explain local routing instead of source availability',
+    () {
+      const routeError = BooruErrorDto(
+        code: BooruErrorCode.network,
+        sourceId: 'gelbooru',
+        userMessageKey: 'booru.error.routeUnavailable',
+        diagnosticId: 'route-test',
+        action: RecoveryAction.refreshRoute,
+      );
+      final message = describeBooruError(routeError);
+      expect(message, startsWith(t.booruError.routeUnavailable));
+      expect(message, isNot(contains(t.booruError.sourceUnavailable)));
+      expect(message, contains('action=refreshRoute'));
+      expect(message, isNot(contains('HTTP=')));
+    },
+  );
 
   test('wrapped bridge errors remain readable when Flutter prints them', () {
     final wrapped = makeBooruErrorReadable(error);

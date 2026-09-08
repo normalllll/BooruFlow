@@ -537,6 +537,32 @@ impl BooruEngine {
         result
     }
 
+    /// Check an actual API response using the active network configuration.
+    pub async fn check_source(&self, source_id: String) -> BooruResult<()> {
+        let adapter = self.registry.get(&source_id)?;
+        tokio::time::timeout(
+            std::time::Duration::from_secs(20),
+            adapter.search(
+                &self.context(),
+                SearchQuery {
+                    text: "rating:safe".into(),
+                    ratings: vec![crate::api::booru_models::ContentRating::General],
+                    page_size: 1,
+                    cursor: None,
+                },
+            ),
+        )
+        .await
+        .map_err(|_| {
+            BooruErrorDto::new(
+                BooruErrorCode::Timeout,
+                Some(&source_id),
+                "booru.error.timeout",
+            )
+        })??;
+        Ok(())
+    }
+
     pub async fn initialize_route_cache(&self) -> BooruResult<RouteCacheStateDto> {
         let state = self.runtime.route_cache.initialize().await?;
         self.runtime.invalidate_all_clients()?;
@@ -788,7 +814,7 @@ mod tests {
             app_support_directory: directory.to_string_lossy().to_string(),
             proxy_url: None,
             fallback_mode: NetworkFallbackMode::Off,
-            fallback_to_system_dns: true,
+            dns_provider: crate::api::booru_models::RouteProvider::UncensoredDns,
             user_agent: "booruflow-test".to_owned(),
         })
         .unwrap()
@@ -923,6 +949,38 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore = "checks actual APIs with selected DNS and bypass; no media downloads"]
+    async fn live_network_settings_checks_all_sources() {
+        let directory = tempfile::tempdir().unwrap();
+        let engine = BooruEngine::new(BooruEngineConfigDto {
+            app_support_directory: directory.path().to_string_lossy().into_owned(),
+            proxy_url: None,
+            fallback_mode: NetworkFallbackMode::PersistedIpOverride,
+            dns_provider: crate::api::booru_models::RouteProvider::UncensoredDns,
+            user_agent: "BooruFlow/0.10.0".into(),
+        })
+        .unwrap();
+        engine.refresh_route_cache().await.unwrap();
+        let results =
+            futures_util::future::join_all(engine.list_sources().into_iter().map(|source| {
+                let engine = &engine;
+                async move {
+                    (
+                        source.source_id.clone(),
+                        engine.check_source(source.source_id).await,
+                    )
+                }
+            }))
+            .await;
+        for (source, result) in &results {
+            println!("{source}: {result:?}");
+        }
+        assert!(results
+            .iter()
+            .any(|(source, result)| source == "yande" && result.is_ok()));
+    }
+
+    #[tokio::test]
     #[ignore = "live anonymous network test; writes media under rust/test-downloads"]
     async fn live_anonymous_downloads_five_from_every_source() {
         let manifest = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -943,12 +1001,12 @@ mod tests {
             } else {
                 NetworkFallbackMode::Off
             },
-            fallback_to_system_dns: true,
+            dns_provider: crate::api::booru_models::RouteProvider::UncensoredDns,
             user_agent: "BooruFlow/1.0".to_owned(),
         })
         .unwrap();
         if bypass {
-            engine.initialize_route_cache().await.unwrap();
+            engine.refresh_route_cache().await.unwrap();
         }
         let mut failures = Vec::new();
         let source_filter = std::env::var("BOORUFLOW_LIVE_SOURCE").ok();

@@ -130,13 +130,15 @@ class Translations$booruError$zh_TW extends Translations$booruError$en {
   @override
   String get rateLimited => '請求受到圖源限流，請稍後重試。';
   @override
-  String get challengeRequired => '圖源要求完成瀏覽器驗證或更換網路線路。';
+  String get challengeRequired => '圖源要求瀏覽器驗證。可嘗試在瀏覽器中開啟圖源完成驗證，或選擇其他圖源。';
+  @override
+  String get routeUnavailable => '目前網域沒有可用路由。請在網路設定中重新整理路由；不會改用系統 DNS。';
   @override
   String get sourceUnavailable => '目前圖源暫時無法使用。';
   @override
-  String get network => '網路請求失敗，請檢查代理或切換節點。';
+  String get network => '網路請求失敗。請檢查網路連線並重試。如果問題持續，可嘗試使用代理伺服器。';
   @override
-  String get timeout => '請求逾時，請檢查代理或切換節點。';
+  String get timeout => '請求逾時。請檢查網路連線，或稍後重試。';
   @override
   String get invalidResponse => '圖源回傳了無法解析的回應。';
   @override
@@ -689,9 +691,51 @@ class Translations$settings$network$zh_TW extends Translations$settings$network$
 
   // Translations
   @override
-  String get connectionMode => '連線模式';
+  String get dnsProvider => 'DNS 服務';
   @override
-  String get fallbackToSystemDns => '失敗時改用系統 DNS';
+  String get servicesTitle => '全部圖源狀態';
+  @override
+  String get servicesHint => 'IP 解析與 API 可用性分別檢測；API 可用不代表所有圖片均可下載。';
+  @override
+  String get noFallback => '僅使用所選 DNS，失敗直接報錯；不會改用系統 DNS 或自動切換服務。';
+  @override
+  String checkProgress({
+    required Object done,
+    required Object total,
+    required Object checked,
+    required Object sources,
+  }) => 'DNS 已完成 ${done}/${total} · API 已檢測 ${checked}/${sources}';
+  @override
+  String checkSummary({required Object available, required Object total, required Object failed}) =>
+      'API 可用 ${available}/${total} · DNS 失敗 ${failed} 項';
+  @override
+  String get loadingStatus => '正在讀取快取狀態…';
+  @override
+  String get apiChecking => 'API：檢測中…';
+  @override
+  String get apiAvailable => 'API：可用';
+  @override
+  String get apiFailed => 'API：無法使用';
+  @override
+  String get apiUnchecked => 'API：尚未檢測';
+  @override
+  String get dnsPending => '尚未解析 · 點選重新整理路由取得 IP';
+  @override
+  String get dnsResolving => '正在解析…';
+  @override
+  String get dnsResolved => '解析成功';
+  @override
+  String get dnsCached => '使用已快取 IP · 尚未重新檢測';
+  @override
+  String get dnsFailed => '解析失敗 · 目前無可用路由';
+  @override
+  String get dnsQueued => '等待解析…';
+  @override
+  String ipCachedAt({required Object time}) => 'IP 已快取 · 更新於 ${time}';
+  @override
+  String get ipNotCached => 'IP 已解析 · 尚未寫入快取';
+  @override
+  String get connectionMode => '連線模式';
   @override
   String get proxyUrl => 'Proxy URL';
   @override
@@ -878,10 +922,11 @@ extension on TranslationsZhTw {
       'booruError.authenticationRejected' => '圖源拒絕了帳號憑證。',
       'booruError.permissionDenied' => '圖源拒絕存取此資源。',
       'booruError.rateLimited' => '請求受到圖源限流，請稍後重試。',
-      'booruError.challengeRequired' => '圖源要求完成瀏覽器驗證或更換網路線路。',
+      'booruError.challengeRequired' => '圖源要求瀏覽器驗證。可嘗試在瀏覽器中開啟圖源完成驗證，或選擇其他圖源。',
+      'booruError.routeUnavailable' => '目前網域沒有可用路由。請在網路設定中重新整理路由；不會改用系統 DNS。',
       'booruError.sourceUnavailable' => '目前圖源暫時無法使用。',
-      'booruError.network' => '網路請求失敗，請檢查代理或切換節點。',
-      'booruError.timeout' => '請求逾時，請檢查代理或切換節點。',
+      'booruError.network' => '網路請求失敗。請檢查網路連線並重試。如果問題持續，可嘗試使用代理伺服器。',
+      'booruError.timeout' => '請求逾時。請檢查網路連線，或稍後重試。',
       'booruError.invalidResponse' => '圖源回傳了無法解析的回應。',
       'booruError.unsafeRedirect' => '圖源回傳了不安全的重新導向。',
       'booruError.mediaValidationFailed' => '圖片回應驗證或解碼失敗。',
@@ -1017,8 +1062,30 @@ extension on TranslationsZhTw {
       'settings.account.statuses.configuredUnverified' => '已設定，尚未驗證',
       'settings.account.statuses.verified' => '已驗證',
       'settings.account.statuses.rejected' => '已被拒絕',
+      'settings.network.dnsProvider' => 'DNS 服務',
+      'settings.network.servicesTitle' => '全部圖源狀態',
+      'settings.network.servicesHint' => 'IP 解析與 API 可用性分別檢測；API 可用不代表所有圖片均可下載。',
+      'settings.network.noFallback' => '僅使用所選 DNS，失敗直接報錯；不會改用系統 DNS 或自動切換服務。',
+      'settings.network.checkProgress' =>
+        ({required Object done, required Object total, required Object checked, required Object sources}) =>
+            'DNS 已完成 ${done}/${total} · API 已檢測 ${checked}/${sources}',
+      'settings.network.checkSummary' =>
+        ({required Object available, required Object total, required Object failed}) =>
+            'API 可用 ${available}/${total} · DNS 失敗 ${failed} 項',
+      'settings.network.loadingStatus' => '正在讀取快取狀態…',
+      'settings.network.apiChecking' => 'API：檢測中…',
+      'settings.network.apiAvailable' => 'API：可用',
+      'settings.network.apiFailed' => 'API：無法使用',
+      'settings.network.apiUnchecked' => 'API：尚未檢測',
+      'settings.network.dnsPending' => '尚未解析 · 點選重新整理路由取得 IP',
+      'settings.network.dnsResolving' => '正在解析…',
+      'settings.network.dnsResolved' => '解析成功',
+      'settings.network.dnsCached' => '使用已快取 IP · 尚未重新檢測',
+      'settings.network.dnsFailed' => '解析失敗 · 目前無可用路由',
+      'settings.network.dnsQueued' => '等待解析…',
+      'settings.network.ipCachedAt' => ({required Object time}) => 'IP 已快取 · 更新於 ${time}',
+      'settings.network.ipNotCached' => 'IP 已解析 · 尚未寫入快取',
       'settings.network.connectionMode' => '連線模式',
-      'settings.network.fallbackToSystemDns' => '失敗時改用系統 DNS',
       'settings.network.proxyUrl' => 'Proxy URL',
       'settings.network.proxyHint' => '選填 · 例如 http://127.0.0.1:7890',
       'settings.network.applyAndRouteCache' => '套用與路由快取',

@@ -21,10 +21,11 @@ booruError:
   authenticationRejected: 图源拒绝了账号凭据。
   permissionDenied: 图源拒绝访问此资源。
   rateLimited: 请求受到图源限流，请稍后重试。
-  challengeRequired: 图源要求完成浏览器验证或更换网络线路。
+  challengeRequired: "图源要求浏览器验证。可尝试在浏览器中打开图源完成验证，或选择其他图源。"
+  routeUnavailable: "当前域名没有可用路由。请在网络设置中刷新路由；不会回退到系统 DNS。"
   sourceUnavailable: 当前图源暂时不可用。
-  network: 网络请求失败，请检查代理或切换节点。
-  timeout: 请求超时，请检查代理或切换节点。
+  network: "网络请求失败。请检查网络连接并重试。如果问题持续，可尝试使用代理服务器。"
+  timeout: "请求超时。请检查网络连接，或稍后重试。"
   invalidResponse: 图源返回了无法解析的响应。
   unsafeRedirect: 图源返回了不安全的重定向。
   mediaValidationFailed: 图片响应校验或解码失败。
@@ -188,8 +189,26 @@ settings:
       rejected: 已被拒绝
 
   network:
+    dnsProvider: "DNS 服务"
+    servicesTitle: "全部图源状态"
+    servicesHint: "IP 解析与 API 可用性分别检测；API 可用不代表所有图片均可下载。"
+    noFallback: "仅使用所选 DNS，失败直接报错；不会回退到系统 DNS 或自动切换服务。"
+    checkProgress: "DNS 已完成 $done/$total · API 已检测 $checked/$sources"
+    checkSummary: "API 可用 $available/$total · DNS 失败 $failed 项"
+    loadingStatus: "正在读取缓存状态…"
+    apiChecking: "API：检测中…"
+    apiAvailable: "API：可用"
+    apiFailed: "API：不可用"
+    apiUnchecked: "API：尚未检测"
+    dnsPending: "尚未解析 · 点击刷新路由获取 IP"
+    dnsResolving: "正在解析…"
+    dnsResolved: "解析成功"
+    dnsCached: "使用已缓存 IP · 尚未重新检测"
+    dnsFailed: "解析失败 · 当前无可用路由"
+    dnsQueued: "等待解析…"
+    ipCachedAt: "IP 已缓存 · 更新于 $time"
+    ipNotCached: "IP 已解析 · 尚未写入缓存"
     connectionMode: 连接模式
-    fallbackToSystemDns: 失败时回退到系统 DNS
     proxyUrl: 代理 URL
     proxyHint: 选填 · 例如 http://127.0.0.1:7890
     applyAndRouteCache: 应用与路由缓存

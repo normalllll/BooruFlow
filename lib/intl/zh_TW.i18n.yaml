@@ -21,10 +21,11 @@ booruError:
   authenticationRejected: 圖源拒絕了帳號憑證。
   permissionDenied: 圖源拒絕存取此資源。
   rateLimited: 請求受到圖源限流，請稍後重試。
-  challengeRequired: 圖源要求完成瀏覽器驗證或更換網路線路。
+  challengeRequired: "圖源要求瀏覽器驗證。可嘗試在瀏覽器中開啟圖源完成驗證，或選擇其他圖源。"
+  routeUnavailable: "目前網域沒有可用路由。請在網路設定中重新整理路由；不會改用系統 DNS。"
   sourceUnavailable: 目前圖源暫時無法使用。
-  network: 網路請求失敗，請檢查代理或切換節點。
-  timeout: 請求逾時，請檢查代理或切換節點。
+  network: "網路請求失敗。請檢查網路連線並重試。如果問題持續，可嘗試使用代理伺服器。"
+  timeout: "請求逾時。請檢查網路連線，或稍後重試。"
   invalidResponse: 圖源回傳了無法解析的回應。
   unsafeRedirect: 圖源回傳了不安全的重新導向。
   mediaValidationFailed: 圖片回應驗證或解碼失敗。
@@ -188,8 +189,26 @@ settings:
       rejected: 已被拒絕
 
   network:
+    dnsProvider: "DNS 服務"
+    servicesTitle: "全部圖源狀態"
+    servicesHint: "IP 解析與 API 可用性分別檢測；API 可用不代表所有圖片均可下載。"
+    noFallback: "僅使用所選 DNS，失敗直接報錯；不會改用系統 DNS 或自動切換服務。"
+    checkProgress: "DNS 已完成 $done/$total · API 已檢測 $checked/$sources"
+    checkSummary: "API 可用 $available/$total · DNS 失敗 $failed 項"
+    loadingStatus: "正在讀取快取狀態…"
+    apiChecking: "API：檢測中…"
+    apiAvailable: "API：可用"
+    apiFailed: "API：無法使用"
+    apiUnchecked: "API：尚未檢測"
+    dnsPending: "尚未解析 · 點選重新整理路由取得 IP"
+    dnsResolving: "正在解析…"
+    dnsResolved: "解析成功"
+    dnsCached: "使用已快取 IP · 尚未重新檢測"
+    dnsFailed: "解析失敗 · 目前無可用路由"
+    dnsQueued: "等待解析…"
+    ipCachedAt: "IP 已快取 · 更新於 $time"
+    ipNotCached: "IP 已解析 · 尚未寫入快取"
     connectionMode: 連線模式
-    fallbackToSystemDns: 失敗時改用系統 DNS
     proxyUrl: Proxy URL
     proxyHint: 選填 · 例如 http://127.0.0.1:7890
     applyAndRouteCache: 套用與路由快取

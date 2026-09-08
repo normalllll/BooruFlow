@@ -6,7 +6,7 @@
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `hash`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `hash`
 
 Future<String> postKey({required String sourceId, required String postId}) =>
     RustLib.instance.api.crateApiBooruModelsPostKey(
@@ -29,14 +29,14 @@ class BooruEngineConfigDto {
   final String appSupportDirectory;
   final String? proxyUrl;
   final NetworkFallbackMode fallbackMode;
-  final bool fallbackToSystemDns;
+  final RouteProvider dnsProvider;
   final String userAgent;
 
   const BooruEngineConfigDto({
     required this.appSupportDirectory,
     this.proxyUrl,
     required this.fallbackMode,
-    required this.fallbackToSystemDns,
+    required this.dnsProvider,
     required this.userAgent,
   });
 
@@ -45,7 +45,7 @@ class BooruEngineConfigDto {
       appSupportDirectory.hashCode ^
       proxyUrl.hashCode ^
       fallbackMode.hashCode ^
-      fallbackToSystemDns.hashCode ^
+      dnsProvider.hashCode ^
       userAgent.hashCode;
 
   @override
@@ -56,7 +56,7 @@ class BooruEngineConfigDto {
           appSupportDirectory == other.appSupportDirectory &&
           proxyUrl == other.proxyUrl &&
           fallbackMode == other.fallbackMode &&
-          fallbackToSystemDns == other.fallbackToSystemDns &&
+          dnsProvider == other.dnsProvider &&
           userAgent == other.userAgent;
 }
 
@@ -642,6 +642,7 @@ class RouteCacheStateDto {
   final String? fetchedAtIso8601;
   final RouteProvider? provider;
   final List<PersistedHostRouteDto> routes;
+  final List<RouteDiagnosticDto> diagnostics;
 
   const RouteCacheStateDto({
     required this.initialized,
@@ -650,6 +651,7 @@ class RouteCacheStateDto {
     this.fetchedAtIso8601,
     this.provider,
     required this.routes,
+    required this.diagnostics,
   });
 
   @override
@@ -659,7 +661,8 @@ class RouteCacheStateDto {
       routeRevision.hashCode ^
       fetchedAtIso8601.hashCode ^
       provider.hashCode ^
-      routes.hashCode;
+      routes.hashCode ^
+      diagnostics.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -671,10 +674,54 @@ class RouteCacheStateDto {
           routeRevision == other.routeRevision &&
           fetchedAtIso8601 == other.fetchedAtIso8601 &&
           provider == other.provider &&
-          routes == other.routes;
+          routes == other.routes &&
+          diagnostics == other.diagnostics;
 }
 
-enum RouteProvider { cloudflareDnsJson }
+class RouteDiagnosticDto {
+  final List<String> sourceIds;
+  final String logicalHost;
+  final String status;
+  final List<String> candidates;
+  final String? error;
+  final int? elapsedMs;
+  final String? updatedAtIso8601;
+
+  const RouteDiagnosticDto({
+    required this.sourceIds,
+    required this.logicalHost,
+    required this.status,
+    required this.candidates,
+    this.error,
+    this.elapsedMs,
+    this.updatedAtIso8601,
+  });
+
+  @override
+  int get hashCode =>
+      sourceIds.hashCode ^
+      logicalHost.hashCode ^
+      status.hashCode ^
+      candidates.hashCode ^
+      error.hashCode ^
+      elapsedMs.hashCode ^
+      updatedAtIso8601.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RouteDiagnosticDto &&
+          runtimeType == other.runtimeType &&
+          sourceIds == other.sourceIds &&
+          logicalHost == other.logicalHost &&
+          status == other.status &&
+          candidates == other.candidates &&
+          error == other.error &&
+          elapsedMs == other.elapsedMs &&
+          updatedAtIso8601 == other.updatedAtIso8601;
+}
+
+enum RouteProvider { uncensoredDns, dohSb }
 
 class SearchRequestDto {
   final String sourceId;

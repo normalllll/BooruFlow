@@ -63,6 +63,16 @@ final class BooruService {
     revision.value++;
   }
 
+  Future<RouteCacheStateDto> refreshNetworkRoutes() async {
+    final state = await _engine.refreshRouteCache();
+    await _credentials.put(
+      'networkRevision',
+      DateTime.now().microsecondsSinceEpoch.toString(),
+    );
+    revision.value++;
+    return state;
+  }
+
   void selectSource(String sourceId) {
     if (!_sources.any((source) => source.sourceId == sourceId)) return;
     selectedSource.value = sourceId;
@@ -74,7 +84,7 @@ final class BooruService {
         appSupportDirectory: _supportDirectory,
         proxyUrl: SettingsService.proxyUrl,
         fallbackMode: SettingsService.networkFallbackMode,
-        fallbackToSystemDns: SettingsService.fallbackToSystemDns,
+        dnsProvider: SettingsService.dnsProvider,
         userAgent: 'BooruFlow/$_version',
       ),
     );
@@ -83,14 +93,8 @@ final class BooruService {
       selectSource(_sources.first.sourceId);
     }
     await _restoreCredentials();
-    if (SettingsService.networkFallbackMode != NetworkFallbackMode.off &&
-        SettingsService.proxyUrl == null) {
-      try {
-        await _engine.initializeRouteCache();
-      } catch (_) {
-        if (!SettingsService.fallbackToSystemDns) rethrow;
-      }
-    }
+    // Load persisted routes only. DNS refresh is an explicit, visible action.
+    await _engine.initializeRouteCache();
   }
 
   Future<AuthStateDto> authState(String sourceId) =>

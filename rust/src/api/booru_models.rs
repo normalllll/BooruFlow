@@ -116,7 +116,8 @@ impl MediaType {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum RouteProvider {
-    CloudflareDnsJson,
+    UncensoredDns,
+    DohSb,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -316,7 +317,7 @@ pub struct BooruEngineConfigDto {
     pub app_support_directory: String,
     pub proxy_url: Option<String>,
     pub fallback_mode: NetworkFallbackMode,
-    pub fallback_to_system_dns: bool,
+    pub dns_provider: RouteProvider,
     pub user_agent: String,
 }
 
@@ -335,8 +336,20 @@ pub struct RouteCacheStateDto {
     pub fetched_at_iso8601: Option<String>,
     pub provider: Option<RouteProvider>,
     pub routes: Vec<PersistedHostRouteDto>,
+    pub diagnostics: Vec<RouteDiagnosticDto>,
 }
 
 pub fn post_key(source_id: &str, post_id: &str) -> String {
     format!("{source_id}:{post_id}")
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RouteDiagnosticDto {
+    pub source_ids: Vec<String>,
+    pub logical_host: String,
+    pub status: String,
+    pub candidates: Vec<String>,
+    pub error: Option<String>,
+    pub elapsed_ms: Option<u32>,
+    pub updated_at_iso8601: Option<String>,
 }

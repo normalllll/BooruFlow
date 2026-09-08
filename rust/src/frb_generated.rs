@@ -40,7 +40,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 2030714903;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1266568679;
 
 // Section: executor
 
@@ -206,6 +206,66 @@ fn wire__crate__api__booru_engine__BooruEngine_autocomplete_impl(
                             &*api_that_guard,
                             api_source_id,
                             api_text,
+                        )
+                        .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__booru_engine__BooruEngine_check_source_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "BooruEngine_check_source",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<BooruEngine>,
+            >>::sse_decode(&mut deserializer);
+            let api_source_id = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, crate::booru::error::BooruErrorDto>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::booru_engine::BooruEngine::check_source(
+                            &*api_that_guard,
+                            api_source_id,
                         )
                         .await?;
                         std::result::Result::Ok(output_ok)
@@ -1916,13 +1976,14 @@ impl SseDecode for crate::api::booru_models::BooruEngineConfigDto {
         let mut var_proxyUrl = <Option<String>>::sse_decode(deserializer);
         let mut var_fallbackMode =
             <crate::api::booru_models::NetworkFallbackMode>::sse_decode(deserializer);
-        let mut var_fallbackToSystemDns = <bool>::sse_decode(deserializer);
+        let mut var_dnsProvider =
+            <crate::api::booru_models::RouteProvider>::sse_decode(deserializer);
         let mut var_userAgent = <String>::sse_decode(deserializer);
         return crate::api::booru_models::BooruEngineConfigDto {
             app_support_directory: var_appSupportDirectory,
             proxy_url: var_proxyUrl,
             fallback_mode: var_fallbackMode,
-            fallback_to_system_dns: var_fallbackToSystemDns,
+            dns_provider: var_dnsProvider,
             user_agent: var_userAgent,
         };
     }
@@ -2455,6 +2516,20 @@ impl SseDecode for Vec<u8> {
     }
 }
 
+impl SseDecode for Vec<crate::api::booru_models::RouteDiagnosticDto> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::booru_models::RouteDiagnosticDto>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<crate::api::booru_models::TagSuggestionDto> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -2853,6 +2928,8 @@ impl SseDecode for crate::api::booru_models::RouteCacheStateDto {
             <Option<crate::api::booru_models::RouteProvider>>::sse_decode(deserializer);
         let mut var_routes =
             <Vec<crate::api::booru_models::PersistedHostRouteDto>>::sse_decode(deserializer);
+        let mut var_diagnostics =
+            <Vec<crate::api::booru_models::RouteDiagnosticDto>>::sse_decode(deserializer);
         return crate::api::booru_models::RouteCacheStateDto {
             initialized: var_initialized,
             refreshing: var_refreshing,
@@ -2860,6 +2937,29 @@ impl SseDecode for crate::api::booru_models::RouteCacheStateDto {
             fetched_at_iso8601: var_fetchedAtIso8601,
             provider: var_provider,
             routes: var_routes,
+            diagnostics: var_diagnostics,
+        };
+    }
+}
+
+impl SseDecode for crate::api::booru_models::RouteDiagnosticDto {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_sourceIds = <Vec<String>>::sse_decode(deserializer);
+        let mut var_logicalHost = <String>::sse_decode(deserializer);
+        let mut var_status = <String>::sse_decode(deserializer);
+        let mut var_candidates = <Vec<String>>::sse_decode(deserializer);
+        let mut var_error = <Option<String>>::sse_decode(deserializer);
+        let mut var_elapsedMs = <Option<u32>>::sse_decode(deserializer);
+        let mut var_updatedAtIso8601 = <Option<String>>::sse_decode(deserializer);
+        return crate::api::booru_models::RouteDiagnosticDto {
+            source_ids: var_sourceIds,
+            logical_host: var_logicalHost,
+            status: var_status,
+            candidates: var_candidates,
+            error: var_error,
+            elapsed_ms: var_elapsedMs,
+            updated_at_iso8601: var_updatedAtIso8601,
         };
     }
 }
@@ -2869,7 +2969,8 @@ impl SseDecode for crate::api::booru_models::RouteProvider {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut inner = <i32>::sse_decode(deserializer);
         return match inner {
-            0 => crate::api::booru_models::RouteProvider::CloudflareDnsJson,
+            0 => crate::api::booru_models::RouteProvider::UncensoredDns,
+            1 => crate::api::booru_models::RouteProvider::DohSb,
             _ => unreachable!("Invalid variant for RouteProvider: {}", inner),
         };
     }
@@ -3049,173 +3150,179 @@ fn pde_ffi_dispatcher_primary_impl(
             rust_vec_len,
             data_len,
         ),
-        4 => wire__crate__api__booru_engine__BooruEngine_clear_auth_impl(
+        4 => wire__crate__api__booru_engine__BooruEngine_check_source_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        5 => wire__crate__api__booru_engine__BooruEngine_common_tags_impl(
+        5 => wire__crate__api__booru_engine__BooruEngine_clear_auth_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        6 => wire__crate__api__booru_engine__BooruEngine_download_to_file_stream_impl(
+        6 => wire__crate__api__booru_engine__BooruEngine_common_tags_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        7 => {
+        7 => wire__crate__api__booru_engine__BooruEngine_download_to_file_stream_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        8 => {
             wire__crate__api__booru_engine__BooruEngine_feed_impl(port, ptr, rust_vec_len, data_len)
         }
-        8 => wire__crate__api__booru_engine__BooruEngine_get_post_impl(
+        9 => wire__crate__api__booru_engine__BooruEngine_get_post_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        9 => wire__crate__api__booru_engine__BooruEngine_initialize_route_cache_impl(
+        10 => wire__crate__api__booru_engine__BooruEngine_initialize_route_cache_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        10 => wire__crate__api__booru_engine__BooruEngine_list_sources_impl(
+        11 => wire__crate__api__booru_engine__BooruEngine_list_sources_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        11 => {
+        12 => {
             wire__crate__api__booru_engine__BooruEngine_new_impl(port, ptr, rust_vec_len, data_len)
         }
-        12 => wire__crate__api__booru_engine__BooruEngine_prepare_download_impl(
+        13 => wire__crate__api__booru_engine__BooruEngine_prepare_download_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        13 => wire__crate__api__booru_engine__BooruEngine_prepare_media_impl(
+        14 => wire__crate__api__booru_engine__BooruEngine_prepare_media_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        14 => wire__crate__api__booru_engine__BooruEngine_prepare_media_url_impl(
+        15 => wire__crate__api__booru_engine__BooruEngine_prepare_media_url_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        15 => wire__crate__api__booru_engine__BooruEngine_refresh_route_cache_impl(
+        16 => wire__crate__api__booru_engine__BooruEngine_refresh_route_cache_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        16 => wire__crate__api__booru_engine__BooruEngine_related_posts_impl(
+        17 => wire__crate__api__booru_engine__BooruEngine_related_posts_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        17 => wire__crate__api__booru_engine__BooruEngine_route_cache_state_impl(
+        18 => wire__crate__api__booru_engine__BooruEngine_route_cache_state_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        18 => wire__crate__api__booru_engine__BooruEngine_search_impl(
+        19 => wire__crate__api__booru_engine__BooruEngine_search_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        19 => wire__crate__api__booru_engine__BooruEngine_set_credentials_impl(
+        20 => wire__crate__api__booru_engine__BooruEngine_set_credentials_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        20 => wire__crate__api__booru_engine__BooruEngine_set_web_session_impl(
+        21 => wire__crate__api__booru_engine__BooruEngine_set_web_session_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        21 => wire__crate__api__booru_engine__BooruEngine_stream_media_impl(
+        22 => wire__crate__api__booru_engine__BooruEngine_stream_media_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        22 => wire__crate__api__booru_engine__BooruEngine_verify_auth_impl(
+        23 => wire__crate__api__booru_engine__BooruEngine_verify_auth_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        23 => wire__crate__api__booru_models__auth_kind_default_impl(
+        24 => wire__crate__api__booru_models__auth_kind_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        24 => wire__crate__api__booru_auth__auth_status_default_impl(
+        25 => wire__crate__api__booru_auth__auth_status_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        25 => wire__crate__api__booru_models__checksum_algorithm_default_impl(
+        26 => wire__crate__api__booru_models__checksum_algorithm_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        26 => wire__crate__api__booru_models__content_rating_default_impl(
+        27 => wire__crate__api__booru_models__content_rating_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        27 => wire__crate__api__booru_models__media_type_from_mime_impl(
+        28 => wire__crate__api__booru_models__media_type_from_mime_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        28 => {
+        29 => {
             wire__crate__api__booru_models__media_type_kind_impl(port, ptr, rust_vec_len, data_len)
         }
-        29 => wire__crate__api__booru_models__media_variant_kind_default_impl(
+        30 => wire__crate__api__booru_models__media_variant_kind_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        30 => wire__crate__api__booru_models__network_fallback_mode_default_impl(
+        31 => wire__crate__api__booru_models__network_fallback_mode_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        31 => wire__crate__api__booru_models__post_flags_dto_default_impl(
+        32 => wire__crate__api__booru_models__post_flags_dto_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        32 => wire__crate__api__booru_models__post_key_impl(port, ptr, rust_vec_len, data_len),
-        33 => wire__crate__api__booru_auth__source_credentials_dto_default_impl(
+        33 => wire__crate__api__booru_models__post_key_impl(port, ptr, rust_vec_len, data_len),
+        34 => wire__crate__api__booru_auth__source_credentials_dto_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        34 => wire__crate__api__booru_models__tag_category_default_impl(
+        35 => wire__crate__api__booru_models__tag_category_default_impl(
             port,
             ptr,
             rust_vec_len,
@@ -3399,7 +3506,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::booru_models::BooruEngineConf
             self.app_support_directory.into_into_dart().into_dart(),
             self.proxy_url.into_into_dart().into_dart(),
             self.fallback_mode.into_into_dart().into_dart(),
-            self.fallback_to_system_dns.into_into_dart().into_dart(),
+            self.dns_provider.into_into_dart().into_dart(),
             self.user_agent.into_into_dart().into_dart(),
         ]
         .into_dart()
@@ -4230,6 +4337,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::booru_models::RouteCacheState
             self.fetched_at_iso8601.into_into_dart().into_dart(),
             self.provider.into_into_dart().into_dart(),
             self.routes.into_into_dart().into_dart(),
+            self.diagnostics.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -4246,10 +4354,37 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::booru_models::RouteCacheState
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::booru_models::RouteDiagnosticDto {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.source_ids.into_into_dart().into_dart(),
+            self.logical_host.into_into_dart().into_dart(),
+            self.status.into_into_dart().into_dart(),
+            self.candidates.into_into_dart().into_dart(),
+            self.error.into_into_dart().into_dart(),
+            self.elapsed_ms.into_into_dart().into_dart(),
+            self.updated_at_iso8601.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::booru_models::RouteDiagnosticDto
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::booru_models::RouteDiagnosticDto>
+    for crate::api::booru_models::RouteDiagnosticDto
+{
+    fn into_into_dart(self) -> crate::api::booru_models::RouteDiagnosticDto {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::booru_models::RouteProvider {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         match self {
-            Self::CloudflareDnsJson => 0.into_dart(),
+            Self::UncensoredDns => 0.into_dart(),
+            Self::DohSb => 1.into_dart(),
             _ => unreachable!(),
         }
     }
@@ -4570,7 +4705,7 @@ impl SseEncode for crate::api::booru_models::BooruEngineConfigDto {
         <String>::sse_encode(self.app_support_directory, serializer);
         <Option<String>>::sse_encode(self.proxy_url, serializer);
         <crate::api::booru_models::NetworkFallbackMode>::sse_encode(self.fallback_mode, serializer);
-        <bool>::sse_encode(self.fallback_to_system_dns, serializer);
+        <crate::api::booru_models::RouteProvider>::sse_encode(self.dns_provider, serializer);
         <String>::sse_encode(self.user_agent, serializer);
     }
 }
@@ -4996,6 +5131,16 @@ impl SseEncode for Vec<u8> {
     }
 }
 
+impl SseEncode for Vec<crate::api::booru_models::RouteDiagnosticDto> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::booru_models::RouteDiagnosticDto>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<crate::api::booru_models::TagSuggestionDto> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -5338,6 +5483,23 @@ impl SseEncode for crate::api::booru_models::RouteCacheStateDto {
         <Option<String>>::sse_encode(self.fetched_at_iso8601, serializer);
         <Option<crate::api::booru_models::RouteProvider>>::sse_encode(self.provider, serializer);
         <Vec<crate::api::booru_models::PersistedHostRouteDto>>::sse_encode(self.routes, serializer);
+        <Vec<crate::api::booru_models::RouteDiagnosticDto>>::sse_encode(
+            self.diagnostics,
+            serializer,
+        );
+    }
+}
+
+impl SseEncode for crate::api::booru_models::RouteDiagnosticDto {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<String>>::sse_encode(self.source_ids, serializer);
+        <String>::sse_encode(self.logical_host, serializer);
+        <String>::sse_encode(self.status, serializer);
+        <Vec<String>>::sse_encode(self.candidates, serializer);
+        <Option<String>>::sse_encode(self.error, serializer);
+        <Option<u32>>::sse_encode(self.elapsed_ms, serializer);
+        <Option<String>>::sse_encode(self.updated_at_iso8601, serializer);
     }
 }
 
@@ -5346,7 +5508,8 @@ impl SseEncode for crate::api::booru_models::RouteProvider {
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <i32>::sse_encode(
             match self {
-                crate::api::booru_models::RouteProvider::CloudflareDnsJson => 0,
+                crate::api::booru_models::RouteProvider::UncensoredDns => 0,
+                crate::api::booru_models::RouteProvider::DohSb => 1,
                 _ => {
                     unimplemented!("");
                 }

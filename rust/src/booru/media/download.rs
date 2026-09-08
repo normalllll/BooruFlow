@@ -222,7 +222,7 @@ async fn open_prepared_inner(
 ) -> BooruResult<reqwest::Response> {
     let url = reqwest::Url::parse(&prepared.url)
         .map_err(|_| BooruErrorDto::invalid_request(Some(source.id)))?;
-    let mut spec = RequestSpec::get(url, ResponseKind::Media);
+    let mut spec = RequestSpec::get(url.clone(), ResponseKind::Media);
     spec.headers = prepared
         .headers
         .iter()
@@ -243,8 +243,7 @@ async fn open_prepared_inner(
         .get(LOCATION)
         .and_then(|value| value.to_str().ok())
         .ok_or_else(|| unsafe_redirect(source.id))?;
-    let target = response
-        .url()
+    let target = url
         .join(location)
         .map_err(|_| unsafe_redirect(source.id))?;
     let temporary_cookie = response

@@ -21,10 +21,11 @@ booruError:
   authenticationRejected: The source rejected the account credentials.
   permissionDenied: The source denied access to this resource.
   rateLimited: The source is rate limiting requests. Try again later.
-  challengeRequired: The source requires a browser challenge or a different route.
+  challengeRequired: "The source requires browser verification. Try opening it in a browser to complete verification, or choose another source."
+  routeUnavailable: "No route is available for this domain. Refresh routes in Network settings; system DNS fallback is disabled."
   sourceUnavailable: The source is currently unavailable.
-  network: The network request failed. Check the proxy or switch nodes.
-  timeout: The request timed out. Check the proxy or switch nodes.
+  network: "The network request failed. Check your internet connection and try again. If the issue persists, you can try using a proxy server."
+  timeout: "The request timed out. Check your internet connection or try again later."
   invalidResponse: The source returned an invalid response.
   unsafeRedirect: The source returned an unsafe redirect.
   mediaValidationFailed: The image response could not be validated or decoded.
@@ -188,8 +189,26 @@ settings:
       rejected: Rejected
 
   network:
+    dnsProvider: "DNS service"
+    servicesTitle: "Services status"
+    servicesHint: "IP resolution and API availability are checked separately. API results do not guarantee every image can be downloaded."
+    noFallback: "Only the selected DNS service is used. A failure is reported directly; there is no system DNS or provider fallback."
+    checkProgress: "DNS $done/$total · API $checked/$sources"
+    checkSummary: "API available: $available/$total · DNS failures: $failed"
+    loadingStatus: "Reading saved status…"
+    apiChecking: "API: checking…"
+    apiAvailable: "API: available"
+    apiFailed: "API: unavailable"
+    apiUnchecked: "API: not checked"
+    dnsPending: "Not resolved · refresh routes to obtain IPs"
+    dnsResolving: "Resolving…"
+    dnsResolved: "Resolved"
+    dnsCached: "Using cached IPs · Not rechecked"
+    dnsFailed: "Resolution failed · no active route"
+    dnsQueued: "Waiting to resolve…"
+    ipCachedAt: "IP cached · Updated at $time"
+    ipNotCached: "IP resolved · not yet saved"
     connectionMode: Connection mode
-    fallbackToSystemDns: Fall back to system DNS
     proxyUrl: Proxy URL
     proxyHint: Optional · for example http://127.0.0.1:7890
     applyAndRouteCache: Apply and route cache

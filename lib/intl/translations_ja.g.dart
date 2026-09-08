@@ -130,13 +130,15 @@ class _Translations$booruError$ja extends Translations$booruError$en {
   @override
   String get rateLimited => '画像ソースのレート制限中です。しばらくしてから再試行してください。';
   @override
-  String get challengeRequired => 'ブラウザ認証を完了するか、別のネットワーク経路を使用してください。';
+  String get challengeRequired => '画像ソースでブラウザによる確認が必要です。ブラウザで開いて確認を完了するか、別の画像ソースを選択してください。';
+  @override
+  String get routeUnavailable => 'このドメインのルートがありません。ネットワーク設定で更新してください。システム DNS には切り替えません。';
   @override
   String get sourceUnavailable => '画像ソースは現在利用できません。';
   @override
-  String get network => 'ネットワークリクエストに失敗しました。プロキシまたはノードを変更してください。';
+  String get network => 'ネットワークリクエストに失敗しました。インターネット接続を確認して再試行してください。問題が続く場合は、プロキシサーバーの利用を試すこともできます。';
   @override
-  String get timeout => 'リクエストがタイムアウトしました。プロキシまたはノードを変更してください。';
+  String get timeout => 'リクエストがタイムアウトしました。インターネット接続を確認するか、しばらくしてから再試行してください。';
   @override
   String get invalidResponse => '画像ソースから無効なレスポンスが返されました。';
   @override
@@ -692,9 +694,51 @@ class _Translations$settings$network$ja extends Translations$settings$network$en
 
   // Translations
   @override
-  String get connectionMode => '接続モード';
+  String get dnsProvider => 'DNS サービス';
   @override
-  String get fallbackToSystemDns => 'システム DNS にフォールバック';
+  String get servicesTitle => '全画像サイトの状態';
+  @override
+  String get servicesHint => 'IP 解決と API の接続を個別に確認します。API が利用可能でも、すべての画像を取得できるとは限りません。';
+  @override
+  String get noFallback => '選択した DNS のみを使用します。失敗時はエラーを表示し、システム DNS や別のサービスには切り替えません。';
+  @override
+  String checkProgress({
+    required Object done,
+    required Object total,
+    required Object checked,
+    required Object sources,
+  }) => 'DNS ${done}/${total} · API ${checked}/${sources}';
+  @override
+  String checkSummary({required Object available, required Object total, required Object failed}) =>
+      'API 利用可能 ${available}/${total} · DNS 失敗 ${failed} 件';
+  @override
+  String get loadingStatus => 'キャッシュの状態を読み込み中…';
+  @override
+  String get apiChecking => 'API：確認中…';
+  @override
+  String get apiAvailable => 'API：利用可能';
+  @override
+  String get apiFailed => 'API：利用不可';
+  @override
+  String get apiUnchecked => 'API：未確認';
+  @override
+  String get dnsPending => '未解決 · ルートを更新して IP を取得';
+  @override
+  String get dnsResolving => '名前解決中…';
+  @override
+  String get dnsResolved => '名前解決成功';
+  @override
+  String get dnsCached => 'キャッシュ済み IP を使用 · 再確認していません';
+  @override
+  String get dnsFailed => '名前解決失敗 · 利用可能なルートなし';
+  @override
+  String get dnsQueued => '名前解決を待機中…';
+  @override
+  String ipCachedAt({required Object time}) => 'IP をキャッシュ済み · 更新日時 ${time}';
+  @override
+  String get ipNotCached => 'IP 解決済み · まだ保存されていません';
+  @override
+  String get connectionMode => '接続モード';
   @override
   String get proxyUrl => 'プロキシ URL';
   @override
@@ -873,10 +917,11 @@ extension on TranslationsJa {
       'booruError.authenticationRejected' => '画像ソースがアカウント認証情報を拒否しました。',
       'booruError.permissionDenied' => '画像ソースがこのリソースへのアクセスを拒否しました。',
       'booruError.rateLimited' => '画像ソースのレート制限中です。しばらくしてから再試行してください。',
-      'booruError.challengeRequired' => 'ブラウザ認証を完了するか、別のネットワーク経路を使用してください。',
+      'booruError.challengeRequired' => '画像ソースでブラウザによる確認が必要です。ブラウザで開いて確認を完了するか、別の画像ソースを選択してください。',
+      'booruError.routeUnavailable' => 'このドメインのルートがありません。ネットワーク設定で更新してください。システム DNS には切り替えません。',
       'booruError.sourceUnavailable' => '画像ソースは現在利用できません。',
-      'booruError.network' => 'ネットワークリクエストに失敗しました。プロキシまたはノードを変更してください。',
-      'booruError.timeout' => 'リクエストがタイムアウトしました。プロキシまたはノードを変更してください。',
+      'booruError.network' => 'ネットワークリクエストに失敗しました。インターネット接続を確認して再試行してください。問題が続く場合は、プロキシサーバーの利用を試すこともできます。',
+      'booruError.timeout' => 'リクエストがタイムアウトしました。インターネット接続を確認するか、しばらくしてから再試行してください。',
       'booruError.invalidResponse' => '画像ソースから無効なレスポンスが返されました。',
       'booruError.unsafeRedirect' => '画像ソースから安全でないリダイレクトが返されました。',
       'booruError.mediaValidationFailed' => '画像レスポンスを検証またはデコードできませんでした。',
@@ -1013,8 +1058,30 @@ extension on TranslationsJa {
       'settings.account.statuses.configuredUnverified' => '設定済み・未検証',
       'settings.account.statuses.verified' => '検証済み',
       'settings.account.statuses.rejected' => '拒否されました',
+      'settings.network.dnsProvider' => 'DNS サービス',
+      'settings.network.servicesTitle' => '全画像サイトの状態',
+      'settings.network.servicesHint' => 'IP 解決と API の接続を個別に確認します。API が利用可能でも、すべての画像を取得できるとは限りません。',
+      'settings.network.noFallback' => '選択した DNS のみを使用します。失敗時はエラーを表示し、システム DNS や別のサービスには切り替えません。',
+      'settings.network.checkProgress' =>
+        ({required Object done, required Object total, required Object checked, required Object sources}) =>
+            'DNS ${done}/${total} · API ${checked}/${sources}',
+      'settings.network.checkSummary' =>
+        ({required Object available, required Object total, required Object failed}) =>
+            'API 利用可能 ${available}/${total} · DNS 失敗 ${failed} 件',
+      'settings.network.loadingStatus' => 'キャッシュの状態を読み込み中…',
+      'settings.network.apiChecking' => 'API：確認中…',
+      'settings.network.apiAvailable' => 'API：利用可能',
+      'settings.network.apiFailed' => 'API：利用不可',
+      'settings.network.apiUnchecked' => 'API：未確認',
+      'settings.network.dnsPending' => '未解決 · ルートを更新して IP を取得',
+      'settings.network.dnsResolving' => '名前解決中…',
+      'settings.network.dnsResolved' => '名前解決成功',
+      'settings.network.dnsCached' => 'キャッシュ済み IP を使用 · 再確認していません',
+      'settings.network.dnsFailed' => '名前解決失敗 · 利用可能なルートなし',
+      'settings.network.dnsQueued' => '名前解決を待機中…',
+      'settings.network.ipCachedAt' => ({required Object time}) => 'IP をキャッシュ済み · 更新日時 ${time}',
+      'settings.network.ipNotCached' => 'IP 解決済み · まだ保存されていません',
       'settings.network.connectionMode' => '接続モード',
-      'settings.network.fallbackToSystemDns' => 'システム DNS にフォールバック',
       'settings.network.proxyUrl' => 'プロキシ URL',
       'settings.network.proxyHint' => '任意 · 例 http://127.0.0.1:7890',
       'settings.network.applyAndRouteCache' => '適用とルートキャッシュ',

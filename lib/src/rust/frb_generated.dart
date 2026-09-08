@@ -68,7 +68,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => 2030714903;
+  int get rustContentHash => -1266568679;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -94,6 +94,11 @@ abstract class RustLibApi extends BaseApi {
     required BooruEngine that,
     required String sourceId,
     required String text,
+  });
+
+  Future<void> crateApiBooruEngineBooruEngineCheckSource({
+    required BooruEngine that,
+    required String sourceId,
   });
 
   Future<void> crateApiBooruEngineBooruEngineClearAuth({
@@ -363,7 +368,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<void> crateApiBooruEngineBooruEngineClearAuth({
+  Future<void> crateApiBooruEngineBooruEngineCheckSource({
     required BooruEngine that,
     required String sourceId,
   }) {
@@ -380,6 +385,44 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             generalizedFrbRustBinding,
             serializer,
             funcId: 4,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_booru_error_dto,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineCheckSourceConstMeta,
+        argValues: [that, sourceId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruEngineBooruEngineCheckSourceConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_check_source",
+        argNames: ["that", "sourceId"],
+      );
+
+  @override
+  Future<void> crateApiBooruEngineBooruEngineClearAuth({
+    required BooruEngine that,
+    required String sourceId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_String(sourceId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 5,
             port: port_,
           );
         },
@@ -417,7 +460,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 5,
+            funcId: 6,
             port: port_,
           );
         },
@@ -458,7 +501,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
-              funcId: 6,
+              funcId: 7,
               port: port_,
             );
           },
@@ -500,7 +543,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 7,
+            funcId: 8,
             port: port_,
           );
         },
@@ -540,7 +583,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 8,
+            funcId: 9,
             port: port_,
           );
         },
@@ -577,7 +620,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 9,
+            funcId: 10,
             port: port_,
           );
         },
@@ -614,7 +657,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 10,
+            funcId: 11,
             port: port_,
           );
         },
@@ -647,7 +690,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 11,
+            funcId: 12,
             port: port_,
           );
         },
@@ -687,7 +730,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 12,
+            funcId: 13,
             port: port_,
           );
         },
@@ -729,7 +772,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 13,
+            funcId: 14,
             port: port_,
           );
         },
@@ -775,7 +818,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 14,
+            funcId: 15,
             port: port_,
           );
         },
@@ -818,7 +861,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 15,
+            funcId: 16,
             port: port_,
           );
         },
@@ -858,7 +901,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 16,
+            funcId: 17,
             port: port_,
           );
         },
@@ -894,7 +937,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 17,
+            funcId: 18,
             port: port_,
           );
         },
@@ -932,7 +975,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 18,
+            funcId: 19,
             port: port_,
           );
         },
@@ -975,7 +1018,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 19,
+            funcId: 20,
             port: port_,
           );
         },
@@ -1017,7 +1060,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 20,
+            funcId: 21,
             port: port_,
           );
         },
@@ -1058,7 +1101,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
-              funcId: 21,
+              funcId: 22,
               port: port_,
             );
           },
@@ -1098,7 +1141,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 22,
+            funcId: 23,
             port: port_,
           );
         },
@@ -1128,7 +1171,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 23,
+            funcId: 24,
             port: port_,
           );
         },
@@ -1155,7 +1198,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 24,
+            funcId: 25,
             port: port_,
           );
         },
@@ -1182,7 +1225,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 25,
+            funcId: 26,
             port: port_,
           );
         },
@@ -1212,7 +1255,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 26,
+            funcId: 27,
             port: port_,
           );
         },
@@ -1242,7 +1285,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 27,
+            funcId: 28,
             port: port_,
           );
         },
@@ -1275,7 +1318,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 28,
+            funcId: 29,
             port: port_,
           );
         },
@@ -1302,7 +1345,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 29,
+            funcId: 30,
             port: port_,
           );
         },
@@ -1332,7 +1375,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 30,
+            funcId: 31,
             port: port_,
           );
         },
@@ -1362,7 +1405,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 31,
+            funcId: 32,
             port: port_,
           );
         },
@@ -1394,7 +1437,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 32,
+            funcId: 33,
             port: port_,
           );
         },
@@ -1423,7 +1466,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 33,
+            funcId: 34,
             port: port_,
           );
         },
@@ -1453,7 +1496,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 34,
+            funcId: 35,
             port: port_,
           );
         },
@@ -1609,7 +1652,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       appSupportDirectory: dco_decode_String(arr[0]),
       proxyUrl: dco_decode_opt_String(arr[1]),
       fallbackMode: dco_decode_network_fallback_mode(arr[2]),
-      fallbackToSystemDns: dco_decode_bool(arr[3]),
+      dnsProvider: dco_decode_route_provider(arr[3]),
       userAgent: dco_decode_String(arr[4]),
     );
   }
@@ -2024,6 +2067,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<RouteDiagnosticDto> dco_decode_list_route_diagnostic_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_route_diagnostic_dto).toList();
+  }
+
+  @protected
   List<TagSuggestionDto> dco_decode_list_tag_suggestion_dto(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_tag_suggestion_dto).toList();
@@ -2246,8 +2295,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   RouteCacheStateDto dco_decode_route_cache_state_dto(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 6)
-      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
     return RouteCacheStateDto(
       initialized: dco_decode_bool(arr[0]),
       refreshing: dco_decode_bool(arr[1]),
@@ -2255,6 +2304,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       fetchedAtIso8601: dco_decode_opt_String(arr[3]),
       provider: dco_decode_opt_box_autoadd_route_provider(arr[4]),
       routes: dco_decode_list_persisted_host_route_dto(arr[5]),
+      diagnostics: dco_decode_list_route_diagnostic_dto(arr[6]),
+    );
+  }
+
+  @protected
+  RouteDiagnosticDto dco_decode_route_diagnostic_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+    return RouteDiagnosticDto(
+      sourceIds: dco_decode_list_String(arr[0]),
+      logicalHost: dco_decode_String(arr[1]),
+      status: dco_decode_String(arr[2]),
+      candidates: dco_decode_list_String(arr[3]),
+      error: dco_decode_opt_String(arr[4]),
+      elapsedMs: dco_decode_opt_box_autoadd_u_32(arr[5]),
+      updatedAtIso8601: dco_decode_opt_String(arr[6]),
     );
   }
 
@@ -2525,13 +2592,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_appSupportDirectory = sse_decode_String(deserializer);
     var var_proxyUrl = sse_decode_opt_String(deserializer);
     var var_fallbackMode = sse_decode_network_fallback_mode(deserializer);
-    var var_fallbackToSystemDns = sse_decode_bool(deserializer);
+    var var_dnsProvider = sse_decode_route_provider(deserializer);
     var var_userAgent = sse_decode_String(deserializer);
     return BooruEngineConfigDto(
       appSupportDirectory: var_appSupportDirectory,
       proxyUrl: var_proxyUrl,
       fallbackMode: var_fallbackMode,
-      fallbackToSystemDns: var_fallbackToSystemDns,
+      dnsProvider: var_dnsProvider,
       userAgent: var_userAgent,
     );
   }
@@ -3086,6 +3153,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<RouteDiagnosticDto> sse_decode_list_route_diagnostic_dto(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <RouteDiagnosticDto>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_route_diagnostic_dto(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   List<TagSuggestionDto> sse_decode_list_tag_suggestion_dto(
     SseDeserializer deserializer,
   ) {
@@ -3420,6 +3501,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_fetchedAtIso8601 = sse_decode_opt_String(deserializer);
     var var_provider = sse_decode_opt_box_autoadd_route_provider(deserializer);
     var var_routes = sse_decode_list_persisted_host_route_dto(deserializer);
+    var var_diagnostics = sse_decode_list_route_diagnostic_dto(deserializer);
     return RouteCacheStateDto(
       initialized: var_initialized,
       refreshing: var_refreshing,
@@ -3427,6 +3509,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       fetchedAtIso8601: var_fetchedAtIso8601,
       provider: var_provider,
       routes: var_routes,
+      diagnostics: var_diagnostics,
+    );
+  }
+
+  @protected
+  RouteDiagnosticDto sse_decode_route_diagnostic_dto(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_sourceIds = sse_decode_list_String(deserializer);
+    var var_logicalHost = sse_decode_String(deserializer);
+    var var_status = sse_decode_String(deserializer);
+    var var_candidates = sse_decode_list_String(deserializer);
+    var var_error = sse_decode_opt_String(deserializer);
+    var var_elapsedMs = sse_decode_opt_box_autoadd_u_32(deserializer);
+    var var_updatedAtIso8601 = sse_decode_opt_String(deserializer);
+    return RouteDiagnosticDto(
+      sourceIds: var_sourceIds,
+      logicalHost: var_logicalHost,
+      status: var_status,
+      candidates: var_candidates,
+      error: var_error,
+      elapsedMs: var_elapsedMs,
+      updatedAtIso8601: var_updatedAtIso8601,
     );
   }
 
@@ -3722,7 +3828,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.appSupportDirectory, serializer);
     sse_encode_opt_String(self.proxyUrl, serializer);
     sse_encode_network_fallback_mode(self.fallbackMode, serializer);
-    sse_encode_bool(self.fallbackToSystemDns, serializer);
+    sse_encode_route_provider(self.dnsProvider, serializer);
     sse_encode_String(self.userAgent, serializer);
   }
 
@@ -4221,6 +4327,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_route_diagnostic_dto(
+    List<RouteDiagnosticDto> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_route_diagnostic_dto(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_tag_suggestion_dto(
     List<TagSuggestionDto> self,
     SseSerializer serializer,
@@ -4507,6 +4625,22 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_opt_String(self.fetchedAtIso8601, serializer);
     sse_encode_opt_box_autoadd_route_provider(self.provider, serializer);
     sse_encode_list_persisted_host_route_dto(self.routes, serializer);
+    sse_encode_list_route_diagnostic_dto(self.diagnostics, serializer);
+  }
+
+  @protected
+  void sse_encode_route_diagnostic_dto(
+    RouteDiagnosticDto self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_String(self.sourceIds, serializer);
+    sse_encode_String(self.logicalHost, serializer);
+    sse_encode_String(self.status, serializer);
+    sse_encode_list_String(self.candidates, serializer);
+    sse_encode_opt_String(self.error, serializer);
+    sse_encode_opt_box_autoadd_u_32(self.elapsedMs, serializer);
+    sse_encode_opt_String(self.updatedAtIso8601, serializer);
   }
 
   @protected
@@ -4653,6 +4787,13 @@ class BooruEngineImpl extends RustOpaque implements BooruEngine {
     sourceId: sourceId,
     text: text,
   );
+
+  /// Check an actual API response using the active network configuration.
+  Future<void> checkSource({required String sourceId}) =>
+      RustLib.instance.api.crateApiBooruEngineBooruEngineCheckSource(
+        that: this,
+        sourceId: sourceId,
+      );
 
   Future<void> clearAuth({required String sourceId}) => RustLib.instance.api
       .crateApiBooruEngineBooruEngineClearAuth(that: this, sourceId: sourceId);

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:booruflow/features/settings/network_status_panel.dart';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
@@ -59,7 +60,8 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   final _proxy = TextEditingController();
   bool _networkBusy = false;
-  Future<RouteCacheStateDto>? _routes;
+  int _networkGeneration = 0;
+  bool _routesBusy = false;
 
   BooruService get service => BooruService.instance;
   late String _accountSource;
@@ -71,9 +73,6 @@ class _SettingsPageState extends State<SettingsPage> {
     _proxy.text = SettingsService.proxyUrl ?? '';
     _accountSource = service.selectedSource.value;
     _visitedSources.add(_accountSource);
-    if (widget.section == SettingsSection.network) {
-      _routes = service.engine.routeCacheState();
-    }
   }
 
   @override
@@ -184,25 +183,31 @@ class _SettingsPageState extends State<SettingsPage> {
           icon: CupertinoIcons.antenna_radiowaves_left_right,
           title: t.settings.network.connectionMode,
           value: SettingsService.networkFallbackMode,
-          values: NetworkFallbackMode.values,
+          values: const [
+            NetworkFallbackMode.off,
+            NetworkFallbackMode.persistedIpOverride,
+          ],
           label: _networkMode,
           onChanged: (value) {
+            if (_networkBusy || _routesBusy) return;
             SettingsService.networkFallbackMode = value;
-            refresh(() {});
+            _applyNetwork(refresh);
           },
         ),
-        ListTile(
-          leading: const Icon(CupertinoIcons.arrow_2_circlepath),
-          title: Text(t.settings.network.fallbackToSystemDns),
-          trailing: AppSwitch(
-            value: SettingsService.fallbackToSystemDns,
-            semanticLabel: t.settings.network.fallbackToSystemDns,
-            onChanged: (value) {
-              SettingsService.fallbackToSystemDns = value;
-              refresh(() {});
-            },
-          ),
+        _DropdownTile<RouteProvider>(
+          icon: Icons.dns_outlined,
+          title: t.settings.network.dnsProvider,
+          value: SettingsService.dnsProvider,
+          values: RouteProvider.values,
+          label: (value) =>
+              value == RouteProvider.uncensoredDns ? 'UncensoredDNS' : 'doh.sb',
+          onChanged: (value) {
+            if (_networkBusy || _routesBusy) return;
+            SettingsService.dnsProvider = value;
+            _applyNetwork(refresh);
+          },
         ),
+        ListTile(subtitle: Text(t.settings.network.noFallback)),
       ],
       [
         _TextTile(
@@ -227,68 +232,44 @@ class _SettingsPageState extends State<SettingsPage> {
                       label: t.settings.network.apply,
                       kind: AppButtonKind.primary,
                       loading: _networkBusy,
-                      onPressed: _networkBusy
+                      onPressed: _networkBusy || _routesBusy
                           ? null
                           : () => _applyNetwork(refresh),
                     ),
-                    AppButton(
-                      label: t.settings.network.refreshRoutes,
-                      onPressed: _networkBusy
-                          ? null
-                          : () => _refreshRoutes(refresh),
-                    ),
                   ],
-                ),
-                const SizedBox(height: 9),
-                FutureBuilder<RouteCacheStateDto>(
-                  future: _routes,
-                  builder: (_, snapshot) {
-                    final state = snapshot.data;
-                    return Text(
-                      state == null
-                          ? t.settings.network.routeCacheUnavailable
-                          : t.settings.network.routeCacheStatus(
-                              hosts: state.routes.length,
-                              revision: state.routeRevision,
-                            ),
-                    );
-                  },
                 ),
               ],
             ),
           ),
         ),
       ],
+      [
+        NetworkStatusPanel(
+          key: ValueKey(_networkGeneration),
+          sources: service.sources,
+          readState: service.engine.routeCacheState,
+          refreshRoutes: service.refreshNetworkRoutes,
+          checkSource: (id) => service.engine.checkSource(sourceId: id),
+          enabled: !_networkBusy,
+          onBusyChanged: (busy) {
+            if (mounted) refresh(() => _routesBusy = busy);
+          },
+        ),
+      ],
     ],
   );
 
   Future<void> _applyNetwork(StateSetter refresh) async {
-    if (_networkBusy) return;
+    if (_networkBusy || _routesBusy) return;
     refresh(() => _networkBusy = true);
     try {
       SettingsService.proxyUrl = _proxy.text;
       await service.reconfigureNetwork();
-      _routes = service.engine.routeCacheState();
+      _networkGeneration++;
       if (mounted) AppToast.success(t.settings.network.applied);
     } catch (error) {
       if (mounted) {
         AppToast.errorWithCause(t.settings.network.invalidSettings, error);
-      }
-    } finally {
-      if (mounted) refresh(() => _networkBusy = false);
-    }
-  }
-
-  Future<void> _refreshRoutes(StateSetter refresh) async {
-    refresh(() {
-      _networkBusy = true;
-      _routes = service.engine.refreshRouteCache();
-    });
-    try {
-      await _routes;
-    } catch (error) {
-      if (mounted) {
-        AppToast.errorWithCause(t.settings.network.routeRefreshFailed, error);
       }
     } finally {
       if (mounted) refresh(() => _networkBusy = false);

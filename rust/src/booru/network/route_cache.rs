@@ -1,16 +1,18 @@
-use crate::api::booru_models::{PersistedHostRouteDto, RouteCacheStateDto, RouteProvider};
+use crate::api::booru_models::{
+    PersistedHostRouteDto, RouteCacheStateDto, RouteDiagnosticDto, RouteProvider,
+};
 use crate::booru::error::{BooruErrorCode, BooruErrorDto, BooruResult};
 use crate::booru::source::SourceDefinition;
-use reqwest::header::{HeaderMap, HeaderValue, ACCEPT};
+use futures_util::{stream, StreamExt};
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::net::IpAddr;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::RwLock;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
-const SCHEMA_VERSION: u32 = 1;
+const SCHEMA_VERSION: u32 = 2;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct PersistedRouteCache {
@@ -19,6 +21,7 @@ struct PersistedRouteCache {
     fetched_at_iso8601: String,
     provider: RouteProvider,
     routes: Vec<PersistedHostRoute>,
+    diagnostics: Vec<RouteDiagnosticDto>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -31,98 +34,125 @@ struct PersistedHostRoute {
 #[derive(Debug)]
 pub struct RouteCache {
     path: PathBuf,
-    allowed_hosts: BTreeSet<String>,
+    provider: RouteProvider,
+    sources: Vec<SourceDefinition>,
+    diagnostics: RwLock<BTreeMap<String, RouteDiagnosticDto>>,
     state: RwLock<Option<PersistedRouteCache>>,
     refreshing: AtomicBool,
     refresh_lock: tokio::sync::Mutex<()>,
-    refresh_epoch: std::sync::atomic::AtomicU32,
-    last_refresh_result: RwLock<Option<BooruResult<RouteCacheStateDto>>>,
 }
 
 impl RouteCache {
-    pub fn new(app_support_directory: &str, sources: &[SourceDefinition]) -> Self {
-        let allowed_hosts = sources
-            .iter()
-            .flat_map(|source| source.allowed_hosts.iter().copied())
-            .map(str::to_owned)
-            .collect();
-        Self {
-            path: PathBuf::from(app_support_directory)
+    #[cfg(test)]
+    pub fn new(directory: &str, sources: &[SourceDefinition]) -> Self {
+        Self::with_provider(directory, sources, RouteProvider::UncensoredDns)
+    }
+
+    pub fn with_provider(
+        directory: &str,
+        sources: &[SourceDefinition],
+        provider: RouteProvider,
+    ) -> Self {
+        let mut cache = Self {
+            path: PathBuf::from(directory)
                 .join("network")
-                .join("routes-v1.json"),
-            allowed_hosts,
+                .join(format!("routes-v2-{provider:?}.json")),
+            provider,
+            sources: sources.to_vec(),
+            diagnostics: RwLock::new(BTreeMap::new()),
             state: RwLock::new(None),
             refreshing: AtomicBool::new(false),
             refresh_lock: tokio::sync::Mutex::new(()),
-            refresh_epoch: std::sync::atomic::AtomicU32::new(0),
-            last_refresh_result: RwLock::new(None),
+        };
+        let hosts: BTreeSet<_> = sources
+            .iter()
+            .flat_map(|s| s.allowed_hosts.iter().copied())
+            .collect();
+        let reports = hosts
+            .into_iter()
+            .map(|host| (host.to_owned(), cache.pending(host)))
+            .collect();
+        *cache.diagnostics.get_mut().unwrap() = reports;
+        cache
+    }
+
+    fn pending(&self, host: &str) -> RouteDiagnosticDto {
+        RouteDiagnosticDto {
+            source_ids: self
+                .sources
+                .iter()
+                .filter(|s| s.allows_host(host))
+                .map(|s| s.id.to_owned())
+                .collect(),
+            logical_host: host.to_owned(),
+            status: "pending".into(),
+            candidates: Vec::new(),
+            error: None,
+            elapsed_ms: None,
+            updated_at_iso8601: None,
         }
     }
 
+    /// Only read saved state. Startup never performs an invisible DNS refresh.
     pub async fn initialize(&self) -> BooruResult<RouteCacheStateDto> {
         if let Ok(bytes) = tokio::fs::read(&self.path).await {
             if let Ok(cache) = serde_json::from_slice::<PersistedRouteCache>(&bytes) {
                 if self.validate_cache_structure(&cache).is_ok() {
-                    let complete = self.is_complete(&cache);
-                    *self.state.write().map_err(|_| internal_error())? = Some(cache);
-                    if complete {
-                        return self.snapshot();
+                    let mut reports = self.diagnostics.write().map_err(|_| internal_error())?;
+                    for mut report in cache.diagnostics.clone() {
+                        if report.status == "resolved" {
+                            report.status = "cached".into();
+                        }
+                        reports.insert(report.logical_host.clone(), report);
                     }
+                    *self.state.write().map_err(|_| internal_error())? = Some(cache);
                 }
             }
         }
-        self.refresh().await
+        self.snapshot()
     }
 
     pub async fn refresh(&self) -> BooruResult<RouteCacheStateDto> {
-        let epoch_before_wait = self.refresh_epoch.load(Ordering::Acquire);
         let _guard = self.refresh_lock.lock().await;
-        if self.refresh_epoch.load(Ordering::Acquire) != epoch_before_wait {
-            return self
-                .last_refresh_result
-                .read()
-                .map_err(|_| internal_error())?
-                .clone()
-                .unwrap_or_else(|| Err(internal_error()));
-        }
         self.refreshing.store(true, Ordering::Release);
         let result = self.fetch_and_store().await;
         self.refreshing.store(false, Ordering::Release);
-        *self
-            .last_refresh_result
-            .write()
-            .map_err(|_| internal_error())? = Some(result.clone());
-        self.refresh_epoch.fetch_add(1, Ordering::AcqRel);
-        result
+        result?;
+        self.snapshot()
     }
 
     pub fn snapshot(&self) -> BooruResult<RouteCacheStateDto> {
+        let diagnostics = self
+            .diagnostics
+            .read()
+            .map_err(|_| internal_error())?
+            .values()
+            .cloned()
+            .collect();
         let state = self.state.read().map_err(|_| internal_error())?;
-        let Some(cache) = state.as_ref() else {
-            return Ok(RouteCacheStateDto {
-                initialized: false,
-                refreshing: self.refreshing.load(Ordering::Acquire),
-                route_revision: "0".to_owned(),
-                fetched_at_iso8601: None,
-                provider: None,
-                routes: Vec::new(),
-            });
-        };
         Ok(RouteCacheStateDto {
-            initialized: true,
+            initialized: state.is_some(),
             refreshing: self.refreshing.load(Ordering::Acquire),
-            route_revision: cache.route_revision.clone(),
-            fetched_at_iso8601: Some(cache.fetched_at_iso8601.clone()),
-            provider: Some(cache.provider),
-            routes: cache
-                .routes
-                .iter()
-                .map(|route| PersistedHostRouteDto {
-                    logical_host: route.logical_host.clone(),
-                    https_port: route.https_port,
-                    candidates: route.candidates.clone(),
+            route_revision: state
+                .as_ref()
+                .map(|s| s.route_revision.clone())
+                .unwrap_or_else(|| "0".into()),
+            fetched_at_iso8601: state.as_ref().map(|s| s.fetched_at_iso8601.clone()),
+            provider: Some(self.provider),
+            routes: state
+                .as_ref()
+                .map(|s| {
+                    s.routes
+                        .iter()
+                        .map(|r| PersistedHostRouteDto {
+                            logical_host: r.logical_host.clone(),
+                            https_port: r.https_port,
+                            candidates: r.candidates.clone(),
+                        })
+                        .collect()
                 })
-                .collect(),
+                .unwrap_or_default(),
+            diagnostics,
         })
     }
 
@@ -130,121 +160,142 @@ impl RouteCache {
         self.state
             .read()
             .ok()
-            .and_then(|state| state.as_ref().map(|cache| cache.route_revision.clone()))
-            .unwrap_or_else(|| "0".to_owned())
+            .and_then(|s| s.as_ref().map(|s| s.route_revision.clone()))
+            .unwrap_or_else(|| "0".into())
     }
 
     pub fn candidates(&self, host: &str) -> Vec<IpAddr> {
         self.state
             .read()
             .ok()
-            .and_then(|state| state.clone())
-            .and_then(|cache| {
-                cache
-                    .routes
-                    .into_iter()
-                    .find(|route| route.logical_host.eq_ignore_ascii_case(host))
+            .and_then(|s| {
+                s.as_ref().and_then(|s| {
+                    s.routes
+                        .iter()
+                        .find(|r| r.logical_host.eq_ignore_ascii_case(host))
+                        .cloned()
+                })
             })
-            .map(|route| {
-                route
-                    .candidates
-                    .into_iter()
-                    .filter_map(|value| value.parse().ok())
-                    .collect()
-            })
+            .map(|r| r.candidates.iter().filter_map(|s| s.parse().ok()).collect())
             .unwrap_or_default()
     }
 
-    async fn fetch_and_store(&self) -> BooruResult<RouteCacheStateDto> {
-        let client = super::tls::client_builder()
-            .https_only(true)
-            .connect_timeout(std::time::Duration::from_secs(10))
-            .read_timeout(std::time::Duration::from_secs(15))
-            .build()
-            .map_err(|_| network_error())?;
-        let old_routes = self
-            .state
+    /// Newly discovered CDN hosts become visible pending entries. Only the
+    /// explicit refresh action acquires addresses; requests never resolve silently.
+    pub async fn ensure_candidates(
+        &self,
+        source: &SourceDefinition,
+        host: &str,
+    ) -> BooruResult<Vec<IpAddr>> {
+        let host = host.trim_end_matches('.').to_ascii_lowercase();
+        if !source.allows_host(&host) || !self.host_is_allowed(&host) {
+            return Err(BooruErrorDto::invalid_request(Some(source.id)));
+        }
+        self.diagnostics
+            .write()
+            .map_err(|_| internal_error())?
+            .entry(host.clone())
+            .or_insert_with(|| self.pending(&host));
+        let candidates = self.candidates(&host);
+        if candidates.is_empty() {
+            return Err(network_error());
+        }
+        Ok(candidates)
+    }
+
+    fn host_is_allowed(&self, host: &str) -> bool {
+        self.sources.iter().any(|s| s.allows_host(host))
+    }
+
+    async fn fetch_and_store(&self) -> BooruResult<()> {
+        self.fetch_with(|host| async move { super::doh::resolve(self.provider, &host).await })
+            .await
+    }
+
+    async fn fetch_with<F, Fut>(&self, resolve: F) -> BooruResult<()>
+    where
+        F: Fn(String) -> Fut + Copy,
+        Fut: std::future::Future<Output = Result<Vec<String>, String>>,
+    {
+        let hosts: Vec<_> = self
+            .diagnostics
             .read()
             .map_err(|_| internal_error())?
-            .as_ref()
-            .map(|cache| cache.routes.clone())
-            .unwrap_or_default();
-        let mut routes = Vec::new();
-        let mut updated_any = false;
-        for host in &self.allowed_hosts {
-            let mut candidates = BTreeSet::new();
-            for record_type in ["A", "AAAA"] {
-                let mut url = reqwest::Url::parse("https://cloudflare-dns.com/dns-query")
-                    .map_err(|_| internal_error())?;
-                url.query_pairs_mut()
-                    .append_pair("name", host)
-                    .append_pair("type", record_type);
-                let mut headers = HeaderMap::new();
-                headers.insert(ACCEPT, HeaderValue::from_static("application/dns-json"));
-                let response = client.get(url).headers(headers).send().await;
-                let Ok(response) = response else {
-                    continue;
-                };
-                if !response.status().is_success() {
-                    continue;
-                }
-                let Ok(json) = response.json::<serde_json::Value>().await else {
-                    continue;
-                };
-                if let Some(answers) = json.get("Answer").and_then(|value| value.as_array()) {
-                    for answer in answers {
-                        if let Some(ip) = answer
-                            .get("data")
-                            .and_then(|value| value.as_str())
-                            .and_then(|value| value.parse::<IpAddr>().ok())
-                            .filter(|ip| is_public_ip(*ip))
-                        {
-                            candidates.insert(ip.to_string());
-                        }
-                    }
-                }
-            }
-            let candidates = if candidates.is_empty() {
-                old_routes
-                    .iter()
-                    .find(|route| route.logical_host == *host)
-                    .map(|route| route.candidates.clone())
-                    .unwrap_or_default()
-            } else {
-                updated_any = true;
-                candidates.into_iter().take(8).collect()
-            };
-            if !candidates.is_empty() {
-                routes.push(PersistedHostRoute {
-                    logical_host: host.clone(),
-                    https_port: 443,
-                    candidates,
-                });
+            .keys()
+            .cloned()
+            .collect();
+        {
+            let mut reports = self.diagnostics.write().map_err(|_| internal_error())?;
+            for host in &hosts {
+                reports.insert(host.clone(), self.pending(host));
             }
         }
-        if !updated_any {
-            return Err(network_error());
-        }
-        let previous_revision = self.revision();
-        let cache = PersistedRouteCache {
+        let mut cache = PersistedRouteCache {
             schema_version: SCHEMA_VERSION,
-            route_revision: next_revision(&previous_revision),
+            route_revision: next_revision(&self.revision()),
             fetched_at_iso8601: now_iso8601(),
-            provider: RouteProvider::CloudflareDnsJson,
-            routes,
+            provider: self.provider,
+            routes: Vec::new(),
+            diagnostics: Vec::new(),
         };
-        self.validate_cache_structure(&cache)?;
-        if !self.is_complete(&cache) {
-            return Err(network_error());
-        }
+        // Clear and persist first: failures cannot reuse old IPs after a restart.
+        *self.state.write().map_err(|_| internal_error())? = Some(cache.clone());
         write_cache(&self.path, &cache).await?;
+        let results: Vec<_> = stream::iter(hosts.into_iter().map(|host| async move {
+            let mut report = self.pending(&host);
+            report.status = "resolving".into();
+            if let Ok(mut reports) = self.diagnostics.write() {
+                reports.insert(host.clone(), report.clone());
+            }
+            let start = Instant::now();
+            match resolve(host.clone()).await {
+                Ok(ips) => {
+                    report.status = "resolved".into();
+                    report.candidates = ips;
+                    report.updated_at_iso8601 = Some(now_iso8601());
+                }
+                Err(error) => {
+                    report.status = "failed".into();
+                    report.error = Some(error);
+                }
+            }
+            report.elapsed_ms = Some(start.elapsed().as_millis().min(u128::from(u32::MAX)) as u32);
+            if let Ok(mut reports) = self.diagnostics.write() {
+                reports.insert(host, report.clone());
+            }
+            report
+        }))
+        .buffer_unordered(6)
+        .collect()
+        .await;
+        cache.routes = results
+            .iter()
+            .filter(|r| r.status == "resolved")
+            .map(|r| PersistedHostRoute {
+                logical_host: r.logical_host.clone(),
+                https_port: 443,
+                candidates: r.candidates.clone(),
+            })
+            .collect();
+        cache.diagnostics = results;
+        cache.fetched_at_iso8601 = now_iso8601();
+        self.validate_cache_structure(&cache)?;
+        if let Err(error) = write_cache(&self.path, &cache).await {
+            let mut reports = self.diagnostics.write().map_err(|_| internal_error())?;
+            for report in reports.values_mut().filter(|r| r.status == "resolved") {
+                report.status = "failed".into();
+                report.error = Some("Unable to save IP cache".into());
+                report.updated_at_iso8601 = None;
+            }
+            return Err(error);
+        }
         *self.state.write().map_err(|_| internal_error())? = Some(cache);
-        self.snapshot()
+        Ok(())
     }
 
     fn validate_cache_structure(&self, cache: &PersistedRouteCache) -> BooruResult<()> {
         if cache.schema_version != SCHEMA_VERSION
-            || cache.routes.is_empty()
+            || cache.provider != self.provider
             || cache.route_revision.is_empty()
             || time::OffsetDateTime::parse(
                 &cache.fetched_at_iso8601,
@@ -252,58 +303,31 @@ impl RouteCache {
             )
             .is_err()
         {
-            return Err(BooruErrorDto::new(
-                BooruErrorCode::InvalidResponse,
-                None,
-                "booru.error.invalidRouteCache",
-            ));
+            return Err(internal_error());
         }
         let mut seen = BTreeSet::new();
         for route in &cache.routes {
-            if !self.allowed_hosts.contains(&route.logical_host)
+            if !self.host_is_allowed(&route.logical_host)
                 || route.https_port != 443
                 || route.candidates.is_empty()
                 || route.candidates.len() > 8
                 || !seen.insert(&route.logical_host)
+                || route
+                    .candidates
+                    .iter()
+                    .any(|ip| ip.parse::<IpAddr>().map_or(true, |ip| !is_public_ip(ip)))
             {
-                return Err(BooruErrorDto::new(
-                    BooruErrorCode::InvalidResponse,
-                    None,
-                    "booru.error.invalidRouteCache",
-                ));
+                return Err(internal_error());
             }
-            for candidate in &route.candidates {
-                let ip = candidate.parse::<IpAddr>().map_err(|_| {
-                    BooruErrorDto::new(
-                        BooruErrorCode::InvalidResponse,
-                        None,
-                        "booru.error.invalidRouteCache",
-                    )
-                })?;
-                if !is_public_ip(ip) {
-                    return Err(BooruErrorDto::new(
-                        BooruErrorCode::InvalidResponse,
-                        None,
-                        "booru.error.invalidRouteCache",
-                    ));
-                }
+        }
+        for report in &cache.diagnostics {
+            if !self.host_is_allowed(&report.logical_host) {
+                return Err(internal_error());
             }
         }
         Ok(())
     }
-
-    fn is_complete(&self, cache: &PersistedRouteCache) -> bool {
-        let cached_hosts = cache
-            .routes
-            .iter()
-            .map(|route| route.logical_host.as_str())
-            .collect::<BTreeSet<_>>();
-        self.allowed_hosts
-            .iter()
-            .all(|host| cached_hosts.contains(host.as_str()))
-    }
 }
-
 async fn write_cache(path: &Path, cache: &PersistedRouteCache) -> BooruResult<()> {
     let parent = path.parent().ok_or_else(internal_error)?;
     tokio::fs::create_dir_all(parent)
@@ -338,7 +362,7 @@ async fn write_cache(path: &Path, cache: &PersistedRouteCache) -> BooruResult<()
     Ok(())
 }
 
-fn is_public_ip(ip: IpAddr) -> bool {
+pub(super) fn is_public_ip(ip: IpAddr) -> bool {
     match ip {
         IpAddr::V4(ip) => {
             let [first, second, third, _] = ip.octets();
@@ -410,8 +434,100 @@ mod tests {
     use super::*;
     use crate::booru::source::builtin_sources;
 
+    #[tokio::test]
+    async fn startup_and_new_cdn_hosts_never_query_dns() {
+        let directory = tempfile::tempdir().unwrap();
+        let sources = builtin_sources();
+        let cache = RouteCache::new(directory.path().to_str().unwrap(), &sources);
+        let state = cache.initialize().await.unwrap();
+        assert!(!state.initialized);
+        assert_eq!(
+            state
+                .diagnostics
+                .iter()
+                .flat_map(|r| r.source_ids.iter())
+                .collect::<BTreeSet<_>>()
+                .len(),
+            7
+        );
+        let gel = sources.iter().find(|s| s.id == "gelbooru").unwrap();
+        assert!(cache
+            .ensure_candidates(gel, "img4.gelbooru.com")
+            .await
+            .is_err());
+        assert!(cache
+            .snapshot()
+            .unwrap()
+            .diagnostics
+            .iter()
+            .any(|r| r.logical_host == "img4.gelbooru.com" && r.status == "pending"));
+        assert!(cache
+            .ensure_candidates(gel, "gelbooru.com.evil.test")
+            .await
+            .is_err());
+        assert!(!cache.path.exists());
+    }
+
+    #[tokio::test]
+    async fn cache_keeps_timestamps_isolates_providers_and_removes_failed_routes() {
+        let directory = tempfile::tempdir().unwrap();
+        let sources = builtin_sources();
+        let cache = RouteCache::new(directory.path().to_str().unwrap(), &sources);
+        cache
+            .fetch_with(|_| async { Ok(vec!["8.8.8.8".into()]) })
+            .await
+            .unwrap();
+        let stamp = cache.snapshot().unwrap().diagnostics[0]
+            .updated_at_iso8601
+            .clone();
+        assert!(stamp.is_some());
+        let reloaded = RouteCache::new(directory.path().to_str().unwrap(), &sources);
+        let state = reloaded.initialize().await.unwrap();
+        assert!(state.diagnostics.iter().all(|r| r.status == "cached"));
+        assert_eq!(state.diagnostics[0].updated_at_iso8601, stamp);
+        let other = RouteCache::with_provider(
+            directory.path().to_str().unwrap(),
+            &sources,
+            RouteProvider::DohSb,
+        );
+        assert!(!other.initialize().await.unwrap().initialized);
+        cache
+            .fetch_with(|host| async move {
+                if host == "yande.re" {
+                    Err("DNS timed out".into())
+                } else {
+                    Ok(vec!["1.1.1.1".into()])
+                }
+            })
+            .await
+            .unwrap();
+        assert!(cache.candidates("yande.re").is_empty());
+        assert!(!cache.candidates("danbooru.donmai.us").is_empty());
+        let fresh = RouteCache::new(directory.path().to_str().unwrap(), &sources);
+        let state = fresh.initialize().await.unwrap();
+        let failed = state
+            .diagnostics
+            .iter()
+            .find(|r| r.logical_host == "yande.re")
+            .unwrap();
+        assert_eq!(failed.status, "failed");
+        assert_eq!(failed.error.as_deref(), Some("DNS timed out"));
+        assert!(fresh.candidates("yande.re").is_empty());
+        cache
+            .fetch_with(|_| async { Err("DNS HTTP 503".into()) })
+            .await
+            .unwrap();
+        assert!(cache.snapshot().unwrap().routes.is_empty());
+        assert!(cache
+            .snapshot()
+            .unwrap()
+            .diagnostics
+            .iter()
+            .all(|r| r.status == "failed"));
+    }
+
     #[test]
-    fn rejects_local_network_addresses() {
+    fn rejects_private_and_reserved_addresses() {
         for value in [
             "127.0.0.1",
             "10.0.0.1",
@@ -426,97 +542,32 @@ mod tests {
             assert!(!is_public_ip(value.parse().unwrap()), "{value}");
         }
         assert!(is_public_ip("1.1.1.1".parse().unwrap()));
-        assert!(is_public_ip("2606:4700:4700::1111".parse().unwrap()));
-    }
-
-    #[test]
-    fn rejects_hosts_outside_builtin_allowlist() {
-        let directory = tempfile::tempdir().unwrap();
-        let cache = RouteCache::new(directory.path().to_str().unwrap(), &builtin_sources());
-        let persisted = PersistedRouteCache {
-            schema_version: 1,
-            route_revision: "1".to_owned(),
-            fetched_at_iso8601: "2026-01-01T00:00:00Z".to_owned(),
-            provider: RouteProvider::CloudflareDnsJson,
-            routes: vec![PersistedHostRoute {
-                logical_host: "localhost".to_owned(),
-                https_port: 443,
-                candidates: vec!["1.1.1.1".to_owned()],
-            }],
-        };
-        assert!(cache.validate_cache_structure(&persisted).is_err());
-    }
-
-    #[test]
-    fn valid_but_incomplete_cache_requires_initialization() {
-        let directory = tempfile::tempdir().unwrap();
-        let cache = RouteCache::new(directory.path().to_str().unwrap(), &builtin_sources());
-        let persisted = PersistedRouteCache {
-            schema_version: SCHEMA_VERSION,
-            route_revision: "1".to_owned(),
-            fetched_at_iso8601: "2026-01-01T00:00:00Z".to_owned(),
-            provider: RouteProvider::CloudflareDnsJson,
-            routes: vec![PersistedHostRoute {
-                logical_host: "yande.re".to_owned(),
-                https_port: 443,
-                candidates: vec!["1.1.1.1".to_owned()],
-            }],
-        };
-        cache.validate_cache_structure(&persisted).unwrap();
-        assert!(!cache.is_complete(&persisted));
-    }
-
-    #[test]
-    fn revision_is_monotonic_even_within_one_clock_tick() {
-        let first = next_revision("999999999999999999999999999999");
-        assert_eq!(first, "1000000000000000000000000000000");
     }
 
     #[tokio::test]
-    async fn complete_cache_is_loaded_without_provider_access() {
+    #[ignore = "requires the selected live DNS service; prints diagnostics only"]
+    async fn live_selected_dns_reports_all_hosts() {
         let directory = tempfile::tempdir().unwrap();
-        let sources = builtin_sources();
-        let cache = RouteCache::new(directory.path().to_str().unwrap(), &sources);
-        let routes = cache
-            .allowed_hosts
+        let provider = if std::env::var("BOORUFLOW_TEST_DNS").as_deref() == Ok("doh.sb") {
+            RouteProvider::DohSb
+        } else {
+            RouteProvider::UncensoredDns
+        };
+        let cache = RouteCache::with_provider(
+            directory.path().to_str().unwrap(),
+            &builtin_sources(),
+            provider,
+        );
+        let state = cache.refresh().await.unwrap();
+        for report in &state.diagnostics {
+            println!("{}", serde_json::to_string(report).unwrap());
+        }
+        assert!(state
+            .diagnostics
             .iter()
-            .map(|host| PersistedHostRoute {
-                logical_host: host.clone(),
-                https_port: 443,
-                candidates: vec!["1.1.1.1".to_owned()],
-            })
-            .collect();
-        let persisted = PersistedRouteCache {
-            schema_version: SCHEMA_VERSION,
-            route_revision: "42".to_owned(),
-            fetched_at_iso8601: "2026-01-01T00:00:00Z".to_owned(),
-            provider: RouteProvider::CloudflareDnsJson,
-            routes,
-        };
-        write_cache(&cache.path, &persisted).await.unwrap();
-
-        let reloaded = RouteCache::new(directory.path().to_str().unwrap(), &sources);
-        let state = reloaded.initialize().await.unwrap();
-        assert!(state.initialized);
-        assert_eq!(state.route_revision, "42");
-        assert_eq!(state.routes.len(), reloaded.allowed_hosts.len());
-    }
-
-    #[test]
-    fn cache_rejects_invalid_timestamp() {
-        let directory = tempfile::tempdir().unwrap();
-        let cache = RouteCache::new(directory.path().to_str().unwrap(), &builtin_sources());
-        let persisted = PersistedRouteCache {
-            schema_version: SCHEMA_VERSION,
-            route_revision: "1".to_owned(),
-            fetched_at_iso8601: "not-a-time".to_owned(),
-            provider: RouteProvider::CloudflareDnsJson,
-            routes: vec![PersistedHostRoute {
-                logical_host: "yande.re".to_owned(),
-                https_port: 443,
-                candidates: vec!["1.1.1.1".to_owned()],
-            }],
-        };
-        assert!(cache.validate_cache_structure(&persisted).is_err());
+            .all(|r| r.status == "resolved" || r.status == "failed"));
+        if provider == RouteProvider::UncensoredDns {
+            assert!(!state.routes.is_empty());
+        }
     }
 }

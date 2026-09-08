@@ -236,6 +236,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
+  List<RouteDiagnosticDto> dco_decode_list_route_diagnostic_dto(dynamic raw);
+
+  @protected
   List<TagSuggestionDto> dco_decode_list_tag_suggestion_dto(dynamic raw);
 
   @protected
@@ -309,6 +312,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   RouteCacheStateDto dco_decode_route_cache_state_dto(dynamic raw);
+
+  @protected
+  RouteDiagnosticDto dco_decode_route_diagnostic_dto(dynamic raw);
 
   @protected
   RouteProvider dco_decode_route_provider(dynamic raw);
@@ -598,6 +604,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
   @protected
+  List<RouteDiagnosticDto> sse_decode_list_route_diagnostic_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<TagSuggestionDto> sse_decode_list_tag_suggestion_dto(
     SseDeserializer deserializer,
   );
@@ -693,6 +704,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   RouteCacheStateDto sse_decode_route_cache_state_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  RouteDiagnosticDto sse_decode_route_diagnostic_dto(
     SseDeserializer deserializer,
   );
 
@@ -1052,6 +1068,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_route_diagnostic_dto(
+    List<RouteDiagnosticDto> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_tag_suggestion_dto(
     List<TagSuggestionDto> self,
     SseSerializer serializer,
@@ -1174,6 +1196,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_route_cache_state_dto(
     RouteCacheStateDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_route_diagnostic_dto(
+    RouteDiagnosticDto self,
     SseSerializer serializer,
   );
 

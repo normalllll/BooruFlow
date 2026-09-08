@@ -140,17 +140,23 @@ class Translations$booruError$en {
   /// en: 'The source is rate limiting requests. Try again later.'
   String get rateLimited => 'The source is rate limiting requests. Try again later.';
 
-  /// en: 'The source requires a browser challenge or a different route.'
-  String get challengeRequired => 'The source requires a browser challenge or a different route.';
+  /// en: 'The source requires browser verification. Try opening it in a browser to complete verification, or choose another source.'
+  String get challengeRequired =>
+      'The source requires browser verification. Try opening it in a browser to complete verification, or choose another source.';
+
+  /// en: 'No route is available for this domain. Refresh routes in Network settings; system DNS fallback is disabled.'
+  String get routeUnavailable =>
+      'No route is available for this domain. Refresh routes in Network settings; system DNS fallback is disabled.';
 
   /// en: 'The source is currently unavailable.'
   String get sourceUnavailable => 'The source is currently unavailable.';
 
-  /// en: 'The network request failed. Check the proxy or switch nodes.'
-  String get network => 'The network request failed. Check the proxy or switch nodes.';
+  /// en: 'The network request failed. Check your internet connection and try again. If the issue persists, you can try using a proxy server.'
+  String get network =>
+      'The network request failed. Check your internet connection and try again. If the issue persists, you can try using a proxy server.';
 
-  /// en: 'The request timed out. Check the proxy or switch nodes.'
-  String get timeout => 'The request timed out. Check the proxy or switch nodes.';
+  /// en: 'The request timed out. Check your internet connection or try again later.'
+  String get timeout => 'The request timed out. Check your internet connection or try again later.';
 
   /// en: 'The source returned an invalid response.'
   String get invalidResponse => 'The source returned an invalid response.';
@@ -893,11 +899,73 @@ class Translations$settings$network$en {
 
   // Translations
 
+  /// en: 'DNS service'
+  String get dnsProvider => 'DNS service';
+
+  /// en: 'Services status'
+  String get servicesTitle => 'Services status';
+
+  /// en: 'IP resolution and API availability are checked separately. API results do not guarantee every image can be downloaded.'
+  String get servicesHint =>
+      'IP resolution and API availability are checked separately. API results do not guarantee every image can be downloaded.';
+
+  /// en: 'Only the selected DNS service is used. A failure is reported directly; there is no system DNS or provider fallback.'
+  String get noFallback =>
+      'Only the selected DNS service is used. A failure is reported directly; there is no system DNS or provider fallback.';
+
+  /// en: 'DNS $done/$total · API $checked/$sources'
+  String checkProgress({
+    required Object done,
+    required Object total,
+    required Object checked,
+    required Object sources,
+  }) => 'DNS ${done}/${total} · API ${checked}/${sources}';
+
+  /// en: 'API available: $available/$total · DNS failures: $failed'
+  String checkSummary({required Object available, required Object total, required Object failed}) =>
+      'API available: ${available}/${total} · DNS failures: ${failed}';
+
+  /// en: 'Reading saved status…'
+  String get loadingStatus => 'Reading saved status…';
+
+  /// en: 'API: checking…'
+  String get apiChecking => 'API: checking…';
+
+  /// en: 'API: available'
+  String get apiAvailable => 'API: available';
+
+  /// en: 'API: unavailable'
+  String get apiFailed => 'API: unavailable';
+
+  /// en: 'API: not checked'
+  String get apiUnchecked => 'API: not checked';
+
+  /// en: 'Not resolved · refresh routes to obtain IPs'
+  String get dnsPending => 'Not resolved · refresh routes to obtain IPs';
+
+  /// en: 'Resolving…'
+  String get dnsResolving => 'Resolving…';
+
+  /// en: 'Resolved'
+  String get dnsResolved => 'Resolved';
+
+  /// en: 'Using cached IPs · Not rechecked'
+  String get dnsCached => 'Using cached IPs · Not rechecked';
+
+  /// en: 'Resolution failed · no active route'
+  String get dnsFailed => 'Resolution failed · no active route';
+
+  /// en: 'Waiting to resolve…'
+  String get dnsQueued => 'Waiting to resolve…';
+
+  /// en: 'IP cached · Updated at $time'
+  String ipCachedAt({required Object time}) => 'IP cached · Updated at ${time}';
+
+  /// en: 'IP resolved · not yet saved'
+  String get ipNotCached => 'IP resolved · not yet saved';
+
   /// en: 'Connection mode'
   String get connectionMode => 'Connection mode';
-
-  /// en: 'Fall back to system DNS'
-  String get fallbackToSystemDns => 'Fall back to system DNS';
 
   /// en: 'Proxy URL'
   String get proxyUrl => 'Proxy URL';
@@ -1099,10 +1167,14 @@ extension on Translations {
       'booruError.authenticationRejected' => 'The source rejected the account credentials.',
       'booruError.permissionDenied' => 'The source denied access to this resource.',
       'booruError.rateLimited' => 'The source is rate limiting requests. Try again later.',
-      'booruError.challengeRequired' => 'The source requires a browser challenge or a different route.',
+      'booruError.challengeRequired' =>
+        'The source requires browser verification. Try opening it in a browser to complete verification, or choose another source.',
+      'booruError.routeUnavailable' =>
+        'No route is available for this domain. Refresh routes in Network settings; system DNS fallback is disabled.',
       'booruError.sourceUnavailable' => 'The source is currently unavailable.',
-      'booruError.network' => 'The network request failed. Check the proxy or switch nodes.',
-      'booruError.timeout' => 'The request timed out. Check the proxy or switch nodes.',
+      'booruError.network' =>
+        'The network request failed. Check your internet connection and try again. If the issue persists, you can try using a proxy server.',
+      'booruError.timeout' => 'The request timed out. Check your internet connection or try again later.',
       'booruError.invalidResponse' => 'The source returned an invalid response.',
       'booruError.unsafeRedirect' => 'The source returned an unsafe redirect.',
       'booruError.mediaValidationFailed' => 'The image response could not be validated or decoded.',
@@ -1243,8 +1315,32 @@ extension on Translations {
       'settings.account.statuses.configuredUnverified' => 'Configured, not verified',
       'settings.account.statuses.verified' => 'Verified',
       'settings.account.statuses.rejected' => 'Rejected',
+      'settings.network.dnsProvider' => 'DNS service',
+      'settings.network.servicesTitle' => 'Services status',
+      'settings.network.servicesHint' =>
+        'IP resolution and API availability are checked separately. API results do not guarantee every image can be downloaded.',
+      'settings.network.noFallback' =>
+        'Only the selected DNS service is used. A failure is reported directly; there is no system DNS or provider fallback.',
+      'settings.network.checkProgress' =>
+        ({required Object done, required Object total, required Object checked, required Object sources}) =>
+            'DNS ${done}/${total} · API ${checked}/${sources}',
+      'settings.network.checkSummary' =>
+        ({required Object available, required Object total, required Object failed}) =>
+            'API available: ${available}/${total} · DNS failures: ${failed}',
+      'settings.network.loadingStatus' => 'Reading saved status…',
+      'settings.network.apiChecking' => 'API: checking…',
+      'settings.network.apiAvailable' => 'API: available',
+      'settings.network.apiFailed' => 'API: unavailable',
+      'settings.network.apiUnchecked' => 'API: not checked',
+      'settings.network.dnsPending' => 'Not resolved · refresh routes to obtain IPs',
+      'settings.network.dnsResolving' => 'Resolving…',
+      'settings.network.dnsResolved' => 'Resolved',
+      'settings.network.dnsCached' => 'Using cached IPs · Not rechecked',
+      'settings.network.dnsFailed' => 'Resolution failed · no active route',
+      'settings.network.dnsQueued' => 'Waiting to resolve…',
+      'settings.network.ipCachedAt' => ({required Object time}) => 'IP cached · Updated at ${time}',
+      'settings.network.ipNotCached' => 'IP resolved · not yet saved',
       'settings.network.connectionMode' => 'Connection mode',
-      'settings.network.fallbackToSystemDns' => 'Fall back to system DNS',
       'settings.network.proxyUrl' => 'Proxy URL',
       'settings.network.proxyHint' => 'Optional · for example http://127.0.0.1:7890',
       'settings.network.applyAndRouteCache' => 'Apply and route cache',

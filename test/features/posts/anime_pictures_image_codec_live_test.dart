@@ -25,7 +25,7 @@ void main() {
         config: BooruEngineConfigDto(
           appSupportDirectory: support.path,
           fallbackMode: NetworkFallbackMode.persistedIpOverride,
-          fallbackToSystemDns: true,
+          dnsProvider: RouteProvider.uncensoredDns,
           userAgent: 'BooruFlow/flutter-codec-test',
         ),
       );

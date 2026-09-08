@@ -24,6 +24,9 @@ abstract class BooruEngine implements RustOpaqueInterface {
     required String text,
   });
 
+  /// Check an actual API response using the active network configuration.
+  Future<void> checkSource({required String sourceId});
+
   Future<void> clearAuth({required String sourceId});
 
   Future<CommonTagsPageDto> commonTags({required CommonTagsRequestDto request});

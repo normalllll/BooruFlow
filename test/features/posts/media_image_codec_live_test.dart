@@ -22,7 +22,7 @@ void main() {
         config: BooruEngineConfigDto(
           appSupportDirectory: support.path,
           fallbackMode: NetworkFallbackMode.off,
-          fallbackToSystemDns: true,
+          dnsProvider: RouteProvider.uncensoredDns,
           userAgent: 'BooruFlow/codec-regression',
         ),
       );

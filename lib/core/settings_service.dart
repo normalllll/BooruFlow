@@ -56,7 +56,7 @@ class SettingsService {
   static const _maxSegmentsPerTaskKey = 'maxSegmentsPerTask';
   static const _defaultSourceIdKey = 'defaultSourceId';
   static const _networkFallbackModeKey = 'booruNetworkFallbackMode';
-  static const _fallbackToSystemDnsKey = 'booruFallbackToSystemDns';
+  static const _dnsProviderKey = 'booruDnsProvider';
   static const _proxyUrlKey = 'booruProxyUrl';
   static const _ratingsKey = 'booruRatings';
 
@@ -69,7 +69,7 @@ class SettingsService {
     _maxSegmentsPerTaskKey,
     _defaultSourceIdKey,
     _networkFallbackModeKey,
-    _fallbackToSystemDnsKey,
+    _dnsProviderKey,
     _proxyUrlKey,
     _ratingsKey,
   };
@@ -130,22 +130,28 @@ class SettingsService {
 
   static NetworkFallbackMode get networkFallbackMode {
     final index = _map[_networkFallbackModeKey] as int?;
+    // The former IP URL mode now shares the single bypass implementation.
+    if (index == NetworkFallbackMode.legacyIpUrl.index) {
+      return NetworkFallbackMode.persistedIpOverride;
+    }
     return index != null &&
             index >= 0 &&
             index < NetworkFallbackMode.values.length
         ? NetworkFallbackMode.values[index]
-        : NetworkFallbackMode.persistedIpOverride;
+        : NetworkFallbackMode.off;
   }
 
   static set networkFallbackMode(NetworkFallbackMode value) {
     _write(_networkFallbackModeKey, value.index);
   }
 
-  static bool get fallbackToSystemDns =>
-      _map[_fallbackToSystemDnsKey] as bool? ?? true;
+  static RouteProvider get dnsProvider =>
+      _map[_dnsProviderKey] == RouteProvider.dohSb.index
+      ? RouteProvider.dohSb
+      : RouteProvider.uncensoredDns;
 
-  static set fallbackToSystemDns(bool value) =>
-      _write(_fallbackToSystemDnsKey, value);
+  static set dnsProvider(RouteProvider value) =>
+      _write(_dnsProviderKey, value.index);
 
   static String? get proxyUrl {
     final value = (_map[_proxyUrlKey] as String?)?.trim();
@@ -222,7 +228,8 @@ class SettingsService {
       _maxConcurrentDownloadsKey ||
       _maxSegmentsPerTaskKey => value is int,
       _networkFallbackModeKey => value is int,
-      _fallbackToSystemDnsKey => value is bool,
+      _dnsProviderKey =>
+        value is int && value >= 0 && value < RouteProvider.values.length,
       _downloadPathKey ||
       _defaultSourceIdKey ||
       _proxyUrlKey => value is String,

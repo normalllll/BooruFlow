@@ -21,10 +21,11 @@ booruError:
   authenticationRejected: 画像ソースがアカウント認証情報を拒否しました。
   permissionDenied: 画像ソースがこのリソースへのアクセスを拒否しました。
   rateLimited: 画像ソースのレート制限中です。しばらくしてから再試行してください。
-  challengeRequired: ブラウザ認証を完了するか、別のネットワーク経路を使用してください。
+  challengeRequired: "画像ソースでブラウザによる確認が必要です。ブラウザで開いて確認を完了するか、別の画像ソースを選択してください。"
+  routeUnavailable: "このドメインのルートがありません。ネットワーク設定で更新してください。システム DNS には切り替えません。"
   sourceUnavailable: 画像ソースは現在利用できません。
-  network: ネットワークリクエストに失敗しました。プロキシまたはノードを変更してください。
-  timeout: リクエストがタイムアウトしました。プロキシまたはノードを変更してください。
+  network: "ネットワークリクエストに失敗しました。インターネット接続を確認して再試行してください。問題が続く場合は、プロキシサーバーの利用を試すこともできます。"
+  timeout: "リクエストがタイムアウトしました。インターネット接続を確認するか、しばらくしてから再試行してください。"
   invalidResponse: 画像ソースから無効なレスポンスが返されました。
   unsafeRedirect: 画像ソースから安全でないリダイレクトが返されました。
   mediaValidationFailed: 画像レスポンスを検証またはデコードできませんでした。
@@ -188,8 +189,26 @@ settings:
       rejected: 拒否されました
 
   network:
+    dnsProvider: "DNS サービス"
+    servicesTitle: "全画像サイトの状態"
+    servicesHint: "IP 解決と API の接続を個別に確認します。API が利用可能でも、すべての画像を取得できるとは限りません。"
+    noFallback: "選択した DNS のみを使用します。失敗時はエラーを表示し、システム DNS や別のサービスには切り替えません。"
+    checkProgress: "DNS $done/$total · API $checked/$sources"
+    checkSummary: "API 利用可能 $available/$total · DNS 失敗 $failed 件"
+    loadingStatus: "キャッシュの状態を読み込み中…"
+    apiChecking: "API：確認中…"
+    apiAvailable: "API：利用可能"
+    apiFailed: "API：利用不可"
+    apiUnchecked: "API：未確認"
+    dnsPending: "未解決 · ルートを更新して IP を取得"
+    dnsResolving: "名前解決中…"
+    dnsResolved: "名前解決成功"
+    dnsCached: "キャッシュ済み IP を使用 · 再確認していません"
+    dnsFailed: "名前解決失敗 · 利用可能なルートなし"
+    dnsQueued: "名前解決を待機中…"
+    ipCachedAt: "IP をキャッシュ済み · 更新日時 $time"
+    ipNotCached: "IP 解決済み · まだ保存されていません"
     connectionMode: 接続モード
-    fallbackToSystemDns: システム DNS にフォールバック
     proxyUrl: プロキシ URL
     proxyHint: 任意 · 例 http://127.0.0.1:7890
     applyAndRouteCache: 適用とルートキャッシュ

@@ -1,7 +1,7 @@
 use crate::api::booru_auth::AuthStateDto;
 use crate::api::booru_models::{BooruEngineConfigDto, HttpHeaderDto, NetworkFallbackMode};
 use crate::booru::auth::SessionStore;
-use crate::booru::error::{BooruErrorCode, BooruErrorDto, BooruResult};
+use crate::booru::error::{BooruErrorCode, BooruErrorDto, BooruResult, RecoveryAction};
 use crate::booru::network::challenge::looks_like_challenge;
 use crate::booru::network::rate_limit::RateLimiter;
 use crate::booru::network::route_cache::RouteCache;
@@ -13,7 +13,6 @@ use reqwest::header::{
 };
 use reqwest::{Client, StatusCode, Url};
 use std::collections::HashMap;
-use std::net::SocketAddr;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -116,7 +115,11 @@ impl NetworkRuntime {
             })
             .collect();
         Ok(Self {
-            route_cache: RouteCache::new(&config.app_support_directory, sources),
+            route_cache: RouteCache::with_provider(
+                &config.app_support_directory,
+                sources,
+                config.dns_provider,
+            ),
             config,
             sessions,
             clients: Mutex::new(HashMap::new()),
@@ -149,7 +152,6 @@ impl NetworkRuntime {
         })?;
 
         let mut redirects = 0_u32;
-        let mut force_system_dns = false;
         let mut url = spec.url.clone();
         'request: loop {
             let authenticated_url = self.authenticated_url(source, &url)?;
@@ -161,22 +163,26 @@ impl NetworkRuntime {
                 spec.allow_protected_headers,
             )?;
             let mut request_url = authenticated_url.clone();
-            let route_mode_active = self.route_mode_active() && !force_system_dns;
-            let route_candidates = self.route_cache.candidates(&logical_host);
-            if route_mode_active && route_candidates.is_empty() {
-                if self.config.fallback_to_system_dns {
-                    force_system_dns = true;
-                    continue;
+            let route_mode_active = self.route_mode_active();
+            let route_candidates = if route_mode_active {
+                match self
+                    .route_cache
+                    .ensure_candidates(source, &logical_host)
+                    .await
+                {
+                    Ok(candidates) => candidates,
+                    Err(_) => return Err(missing_route(source.id)),
                 }
+            } else {
+                Vec::new()
+            };
+            if route_mode_active && route_candidates.is_empty() {
                 return Err(missing_route(source.id));
             }
-            let legacy_ip = (route_mode_active
-                && self.config.fallback_mode == NetworkFallbackMode::LegacyIpUrl)
-                .then(|| route_candidates.first().copied())
-                .flatten();
-            if let Some(ip) = legacy_ip {
+            let route_ip = route_candidates.first().copied();
+            if let Some(ip) = route_ip {
                 request_url
-                    .set_host(Some(&ip.to_string()))
+                    .set_ip_host(ip)
                     .map_err(|_| BooruErrorDto::invalid_request(Some(source.id)))?;
                 headers.insert(
                     HOST,
@@ -184,8 +190,8 @@ impl NetworkRuntime {
                         .map_err(|_| BooruErrorDto::invalid_request(Some(source.id)))?,
                 );
             }
-            let client = self.client(source, force_system_dns)?;
-            let attempt_count = if legacy_ip.is_some() {
+            let client = self.client(source)?;
+            let attempt_count = if route_ip.is_some() {
                 u32::try_from(route_candidates.len().min(MAX_ATTEMPTS as usize))
                     .unwrap_or(MAX_ATTEMPTS)
             } else {
@@ -193,15 +199,10 @@ impl NetworkRuntime {
             };
             for attempt in 1..=attempt_count {
                 self.check_cooldown(source.id)?;
-                if legacy_ip.is_some() {
+                if route_ip.is_some() {
                     let index = usize::try_from(attempt - 1).unwrap_or_default();
                     request_url
-                        .set_host(
-                            route_candidates
-                                .get(index)
-                                .map(ToString::to_string)
-                                .as_deref(),
-                        )
+                        .set_ip_host(route_candidates[index])
                         .map_err(|_| BooruErrorDto::invalid_request(Some(source.id)))?;
                 }
                 match client
@@ -212,7 +213,7 @@ impl NetworkRuntime {
                 {
                     Ok(response) => {
                         let status = response.status();
-                        let response_url = response.url().clone();
+                        let response_url = authenticated_url.clone();
                         let response_headers = response.headers().clone();
                         if status.is_redirection() {
                             if !spec.follow_redirects {
@@ -245,7 +246,6 @@ impl NetworkRuntime {
                             })?;
                             validate_url(source, &url)?;
                             strip_redirect_sensitive_headers(&mut spec);
-                            force_system_dns = false;
                             continue 'request;
                         }
                         let retry_after = retry_after_seconds(&response_headers);
@@ -311,10 +311,6 @@ impl NetworkRuntime {
                     Err(error) => return Err(classify_reqwest_error(source.id, &error)),
                 }
             }
-            if route_mode_active && self.config.fallback_to_system_dns {
-                force_system_dns = true;
-                continue;
-            }
             return Err(BooruErrorDto::new(
                 BooruErrorCode::Network,
                 Some(source.id),
@@ -359,7 +355,6 @@ impl NetworkRuntime {
             spec.url.query_pairs_mut().append_pair(key, value);
         }
         let mut redirects = 0_u32;
-        let mut force_system_dns = false;
         let mut url = spec.url.clone();
         'request: loop {
             let authenticated_url = self.authenticated_url(source, &url)?;
@@ -371,22 +366,26 @@ impl NetworkRuntime {
                 spec.allow_protected_headers,
             )?;
             let mut request_url = authenticated_url.clone();
-            let route_mode_active = self.route_mode_active() && !force_system_dns;
-            let route_candidates = self.route_cache.candidates(&logical_host);
-            if route_mode_active && route_candidates.is_empty() {
-                if self.config.fallback_to_system_dns {
-                    force_system_dns = true;
-                    continue;
+            let route_mode_active = self.route_mode_active();
+            let route_candidates = if route_mode_active {
+                match self
+                    .route_cache
+                    .ensure_candidates(source, &logical_host)
+                    .await
+                {
+                    Ok(candidates) => candidates,
+                    Err(_) => return Err(missing_route(source.id)),
                 }
+            } else {
+                Vec::new()
+            };
+            if route_mode_active && route_candidates.is_empty() {
                 return Err(missing_route(source.id));
             }
-            let legacy_ip = (route_mode_active
-                && self.config.fallback_mode == NetworkFallbackMode::LegacyIpUrl)
-                .then(|| route_candidates.first().copied())
-                .flatten();
-            if let Some(ip) = legacy_ip {
+            let route_ip = route_candidates.first().copied();
+            if let Some(ip) = route_ip {
                 request_url
-                    .set_host(Some(&ip.to_string()))
+                    .set_ip_host(ip)
                     .map_err(|_| BooruErrorDto::invalid_request(Some(source.id)))?;
                 headers.insert(
                     HOST,
@@ -394,23 +393,18 @@ impl NetworkRuntime {
                         .map_err(|_| BooruErrorDto::invalid_request(Some(source.id)))?,
                 );
             }
-            let client = self.client(source, force_system_dns)?;
-            let attempt_count = if legacy_ip.is_some() {
+            let client = self.client(source)?;
+            let attempt_count = if route_ip.is_some() {
                 u32::try_from(route_candidates.len().min(MAX_ATTEMPTS as usize))
                     .unwrap_or(MAX_ATTEMPTS)
             } else {
                 MAX_ATTEMPTS
             };
             for attempt in 1..=attempt_count {
-                if legacy_ip.is_some() {
+                if route_ip.is_some() {
                     let index = usize::try_from(attempt - 1).unwrap_or_default();
                     request_url
-                        .set_host(
-                            route_candidates
-                                .get(index)
-                                .map(ToString::to_string)
-                                .as_deref(),
-                        )
+                        .set_ip_host(route_candidates[index])
                         .map_err(|_| BooruErrorDto::invalid_request(Some(source.id)))?;
                 }
                 self.check_cooldown(source.id)?;
@@ -468,7 +462,7 @@ impl NetworkRuntime {
                                 "booru.error.invalidRedirect",
                             )
                         })?;
-                    url = response.url().join(location).map_err(|_| {
+                    url = authenticated_url.join(location).map_err(|_| {
                         BooruErrorDto::new(
                             BooruErrorCode::UnsafeRedirect,
                             Some(source.id),
@@ -477,7 +471,6 @@ impl NetworkRuntime {
                     })?;
                     validate_url(source, &url)?;
                     strip_redirect_sensitive_headers(&mut spec);
-                    force_system_dns = false;
                     continue 'request;
                 }
                 if !status.is_success() {
@@ -516,10 +509,6 @@ impl NetworkRuntime {
                     .with_http_status(u32::from(status.as_u16())));
                 }
                 return Ok(response);
-            }
-            if route_mode_active && self.config.fallback_to_system_dns {
-                force_system_dns = true;
-                continue;
             }
             return Err(BooruErrorDto::new(
                 BooruErrorCode::Network,
@@ -645,16 +634,15 @@ impl NetworkRuntime {
         Ok(url)
     }
 
-    fn client(&self, source: &SourceDefinition, force_system_dns: bool) -> BooruResult<Client> {
+    fn client(&self, source: &SourceDefinition) -> BooruResult<Client> {
         let route_revision = self.route_cache.revision();
         let key = format!(
-            "{}:{}:{}:{:?}:{}:{}",
+            "{}:{}:{}:{:?}:{}",
             source.id,
             self.sessions.revision(source.id),
             self.config.proxy_url.as_deref().unwrap_or_default(),
             self.config.fallback_mode,
-            route_revision,
-            force_system_dns
+            route_revision
         );
         if let Some(client) = self
             .clients
@@ -670,35 +658,18 @@ impl NetworkRuntime {
             .redirect(reqwest::redirect::Policy::none())
             .connect_timeout(Duration::from_secs(30))
             .read_timeout(Duration::from_secs(120));
-        if uses_insecure_tls(
-            self.config.fallback_mode,
-            force_system_dns,
-            self.config.proxy_url.is_some(),
-        ) {
-            builder = builder.danger_accept_invalid_certs(true);
-        }
+        // A proxy already supplies the network route. Its HTTPS tunnel still
+        // needs the origin hostname and normal certificate verification.
+        // SNI bypass is only for our direct, cached-IP transport.
+        builder = super::tls::with_sni_bypass(builder, self.route_mode_active());
         if let Some(proxy) = self.config.proxy_url.as_deref() {
             builder = builder.proxy(
                 reqwest::Proxy::all(proxy)
                     .map_err(|_| BooruErrorDto::invalid_request(Some(source.id)))?,
             );
-        } else if !force_system_dns
-            && self.config.fallback_mode == NetworkFallbackMode::PersistedIpOverride
-        {
-            for host in source.allowed_hosts {
-                let addrs = self
-                    .route_cache
-                    .candidates(host)
-                    .into_iter()
-                    .map(|ip| SocketAddr::new(ip, 443))
-                    .collect::<Vec<_>>();
-                if !addrs.is_empty() {
-                    builder = builder.resolve_to_addrs(host, &addrs);
-                }
-            }
-        } else if !force_system_dns && self.config.fallback_mode == NetworkFallbackMode::LegacyIpUrl
-        {
-            builder = builder.tls_sni(false);
+        } else if self.route_mode_active() {
+            // IP URL requests must connect directly, without OS proxy discovery.
+            builder = builder.no_proxy().http1_only();
         }
         let client = builder.build().map_err(|_| internal_error(source.id))?;
         self.clients
@@ -846,19 +817,13 @@ fn internal_error(source_id: &str) -> BooruErrorDto {
 }
 
 fn missing_route(source_id: &str) -> BooruErrorDto {
-    BooruErrorDto::new(
-        BooruErrorCode::SourceUnavailable,
+    let mut error = BooruErrorDto::new(
+        BooruErrorCode::Network,
         Some(source_id),
         "booru.error.routeUnavailable",
-    )
-}
-
-fn uses_insecure_tls(
-    fallback_mode: NetworkFallbackMode,
-    force_system_dns: bool,
-    proxy_enabled: bool,
-) -> bool {
-    !force_system_dns && !proxy_enabled && fallback_mode != NetworkFallbackMode::Off
+    );
+    error.action = Some(RecoveryAction::RefreshRoute);
+    error
 }
 
 #[cfg(test)]
@@ -897,7 +862,7 @@ mod tests {
                 app_support_directory: directory.path().to_string_lossy().to_string(),
                 proxy_url: None,
                 fallback_mode: NetworkFallbackMode::Off,
-                fallback_to_system_dns: true,
+                dns_provider: crate::api::booru_models::RouteProvider::UncensoredDns,
                 user_agent: "test".into(),
             },
             &sources,
@@ -954,7 +919,7 @@ mod tests {
                 app_support_directory: directory.path().to_string_lossy().to_string(),
                 proxy_url: None,
                 fallback_mode: NetworkFallbackMode::Off,
-                fallback_to_system_dns: true,
+                dns_provider: crate::api::booru_models::RouteProvider::UncensoredDns,
                 user_agent: "test".to_owned(),
             },
             &sources,
@@ -979,7 +944,7 @@ mod tests {
                 app_support_directory: directory.path().to_string_lossy().to_string(),
                 proxy_url: None,
                 fallback_mode: NetworkFallbackMode::Off,
-                fallback_to_system_dns: true,
+                dns_provider: crate::api::booru_models::RouteProvider::UncensoredDns,
                 user_agent: "custom-client/2".to_owned(),
             },
             &sources,
@@ -1043,7 +1008,7 @@ mod tests {
                 app_support_directory: directory.path().to_string_lossy().to_string(),
                 proxy_url: None,
                 fallback_mode: NetworkFallbackMode::PersistedIpOverride,
-                fallback_to_system_dns: false,
+                dns_provider: crate::api::booru_models::RouteProvider::UncensoredDns,
                 user_agent: "test".to_owned(),
             },
             &sources,
@@ -1060,7 +1025,76 @@ mod tests {
             )
             .await
             .unwrap_err();
-        assert_eq!(error.code, BooruErrorCode::SourceUnavailable);
+        assert_eq!(error.code, BooruErrorCode::Network);
+        assert_eq!(error.user_message_key, "booru.error.routeUnavailable");
+        assert_eq!(error.action, Some(RecoveryAction::RefreshRoute));
+        assert_eq!(error.http_status, None);
+        let media_error = runtime
+            .open_media_inner(
+                source,
+                RequestSpec::get(
+                    Url::parse("https://files.yande.re/image.jpg").unwrap(),
+                    ResponseKind::Media,
+                ),
+            )
+            .await
+            .unwrap_err();
+        assert_eq!(media_error.user_message_key, "booru.error.routeUnavailable");
+        assert_eq!(media_error.action, Some(RecoveryAction::RefreshRoute));
+    }
+
+    #[tokio::test]
+    #[ignore = "requires the live DNS provider and Gelbooru CDN; response headers only"]
+    async fn live_gelbooru_thumbnail_uses_discovered_route() {
+        let sources = builtin_sources();
+        let source = sources
+            .iter()
+            .find(|source| source.id == "gelbooru")
+            .unwrap();
+        let directory = tempfile::tempdir().unwrap();
+        let runtime = NetworkRuntime::new(
+            BooruEngineConfigDto {
+                app_support_directory: directory.path().to_string_lossy().to_string(),
+                proxy_url: None,
+                fallback_mode: NetworkFallbackMode::PersistedIpOverride,
+                dns_provider: crate::api::booru_models::RouteProvider::UncensoredDns,
+                user_agent: "BooruFlow/1.0".to_owned(),
+            },
+            &sources,
+            Arc::new(SessionStore::default()),
+        )
+        .unwrap();
+        let spec = RequestSpec::get(Url::parse("https://img4.gelbooru.com/thumbnails/e6/42/thumbnail_e64202838dc026354edccfaeedf186cb.jpg").unwrap(), ResponseKind::Media);
+        let host = validate_url(source, &spec.url).unwrap();
+        let _ = runtime.route_cache.ensure_candidates(source, &host).await;
+        runtime.route_cache.refresh().await.unwrap();
+        let candidates = runtime
+            .route_cache
+            .ensure_candidates(source, &host)
+            .await
+            .unwrap();
+        assert!(!candidates.is_empty());
+        let response = runtime.open_media_inner(source, spec).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert!(response
+            .url()
+            .host_str()
+            .unwrap()
+            .parse::<std::net::IpAddr>()
+            .is_ok());
+        assert!(
+            candidates.contains(&response.remote_addr().unwrap().ip()),
+            "connected to {:?}, expected one of {:?}",
+            response.remote_addr(),
+            candidates
+        );
+        assert!(response
+            .headers()
+            .get(reqwest::header::CONTENT_TYPE)
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .starts_with("image/"));
     }
 
     #[test]
@@ -1077,29 +1111,5 @@ mod tests {
             classify_status("wallhaven", StatusCode::FORBIDDEN, None, true).code,
             BooruErrorCode::PermissionDenied
         );
-    }
-
-    #[test]
-    fn insecure_tls_is_limited_to_active_direct_ip_fallback() {
-        assert!(uses_insecure_tls(
-            NetworkFallbackMode::PersistedIpOverride,
-            false,
-            false
-        ));
-        assert!(uses_insecure_tls(
-            NetworkFallbackMode::LegacyIpUrl,
-            false,
-            false
-        ));
-        assert!(!uses_insecure_tls(
-            NetworkFallbackMode::PersistedIpOverride,
-            true,
-            false
-        ));
-        assert!(!uses_insecure_tls(
-            NetworkFallbackMode::PersistedIpOverride,
-            false,
-            true
-        ));
     }
 }
