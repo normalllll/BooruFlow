@@ -156,7 +156,7 @@ impl RouteCache {
     }
 
     async fn fetch_and_store(&self) -> BooruResult<RouteCacheStateDto> {
-        let client = reqwest::Client::builder()
+        let client = super::tls::client_builder()
             .https_only(true)
             .connect_timeout(std::time::Duration::from_secs(10))
             .read_timeout(std::time::Duration::from_secs(15))

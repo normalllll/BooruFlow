@@ -665,7 +665,7 @@ impl NetworkRuntime {
         {
             return Ok(client);
         }
-        let mut builder = Client::builder()
+        let mut builder = super::tls::client_builder()
             .https_only(true)
             .redirect(reqwest::redirect::Policy::none())
             .connect_timeout(Duration::from_secs(30))
