@@ -8,8 +8,8 @@ import 'dart:typed_data';
 
 import 'package:booruflow/core/downloads/download_engine.dart';
 import 'package:booruflow/core/downloads/download_file_system.dart';
-import 'package:booruflow/core/downloads/download_manager_contract.dart';
 import 'package:booruflow/core/downloads/download_manager_configuration.dart';
+import 'package:booruflow/core/downloads/download_manager_contract.dart';
 import 'package:booruflow/core/downloads/download_models.dart';
 import 'package:booruflow/core/downloads/download_permission_guard.dart';
 import 'package:booruflow/core/downloads/download_store.dart';

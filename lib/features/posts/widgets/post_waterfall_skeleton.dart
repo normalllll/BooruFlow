@@ -1,10 +1,10 @@
 import 'dart:math' as math;
 
+import 'package:booruflow/features/posts/widgets/post_preview_footer.dart';
+import 'package:booruflow/shared/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_more_list/loading_more_list.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:booruflow/shared/app_theme.dart';
-import 'package:booruflow/features/posts/widgets/post_preview_footer.dart';
 
 const _ratios = <double>[
   1.32,
@@ -71,17 +71,18 @@ class PostWaterfallSkeleton extends StatelessWidget {
         return SliverPadding(
           padding: const EdgeInsets.all(padding),
           sliver: SliverWaterfallFlow(
-            gridDelegate: configuredColumns == null
-                ? const SliverWaterfallFlowDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: maxCrossAxisExtent,
-                    crossAxisSpacing: spacing,
-                    mainAxisSpacing: spacing,
-                  )
-                : SliverWaterfallFlowDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: columnCount,
-                    crossAxisSpacing: spacing,
-                    mainAxisSpacing: spacing,
-                  ),
+            gridDelegate: switch (configuredColumns) {
+              null => const SliverWaterfallFlowDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: maxCrossAxisExtent,
+                crossAxisSpacing: spacing,
+                mainAxisSpacing: spacing,
+              ),
+              _ => SliverWaterfallFlowDelegateWithFixedCrossAxisCount(
+                crossAxisCount: columnCount,
+                crossAxisSpacing: spacing,
+                mainAxisSpacing: spacing,
+              ),
+            },
             delegate: SliverChildBuilderDelegate(
               (context, index) => _PostSkeletonCard(
                 aspectRatio: _ratios[index % _ratios.length],

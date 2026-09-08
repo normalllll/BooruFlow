@@ -1,17 +1,17 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:booruflow/core/app_runtime.dart';
 import 'package:booruflow/core/downloads/download_manager.dart';
 import 'package:booruflow/core/downloads/download_models.dart';
-import 'package:booruflow/core/app_runtime.dart';
-import 'package:booruflow/features/downloads/widgets/download_task_widgets.dart';
-import 'package:booruflow/features/downloads/logic.dart';
 import 'package:booruflow/features/downloads/booru_download_item.dart';
+import 'package:booruflow/features/downloads/logic.dart';
+import 'package:booruflow/features/downloads/widgets/download_task_widgets.dart';
+import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_toast.dart';
-import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
+import 'package:flutter/material.dart';
 
 class DownloadFloatingWindow extends StatefulWidget {
   const DownloadFloatingWindow({
@@ -630,9 +630,10 @@ class _DownloadPanelFallback extends StatelessWidget {
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onPanUpdate: onDragDelta == null
-          ? null
-          : (details) => onDragDelta!(details.delta),
+      onPanUpdate: switch (onDragDelta) {
+        null => null,
+        _ => (details) => onDragDelta!(details.delta),
+      },
       onTap: onClose,
       child: Material(
         color: colorScheme.primaryContainer,
@@ -766,11 +767,11 @@ class _DownloadBadge {
     final active = summary.queued + summary.running + summary.savePending;
     final failures = summary.failed + summary.saveFailed;
     return _DownloadBadge(
-      label: failures > 0
-          ? '$failures'
-          : active > 0
-          ? '$active'
-          : '${summary.total}',
+      label: switch ((failures, active)) {
+        (> 0, _) => '$failures',
+        (_, > 0) => '$active',
+        _ => '${summary.total}',
+      },
       hasFailures: failures > 0,
     );
   }

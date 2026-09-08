@@ -1,13 +1,15 @@
 import 'dart:async';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'proxy_settings_state.dart';
-import 'proxy_connection.dart';
-export 'proxy_connection.dart' show proxyEndpoint, probeProxyConnectivity;
-import 'package:flutter/material.dart';
 
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/widgets/form_controls.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'proxy_connection.dart';
+import 'proxy_settings_state.dart';
+
+export 'proxy_connection.dart' show proxyEndpoint, probeProxyConnectivity;
 
 class ProxySettingsPanel extends ConsumerStatefulWidget {
   const ProxySettingsPanel({
@@ -189,26 +191,21 @@ class _ProxySettingsPanelState extends ConsumerState<ProxySettingsPanel> {
                     Icon(
                       Icons.circle,
                       size: 8,
-                      color: _probing
-                          ? Colors.blue
-                          : _reachable == null
-                          ? Theme.of(context).colorScheme.outline
-                          : _reachable!
-                          ? Colors.greenAccent.shade400
-                          : Colors.redAccent,
+                      color: switch ((_probing, _reachable)) {
+                        (true, _) => Colors.blue,
+                        (false, null) => Theme.of(context).colorScheme.outline,
+                        (false, true) => Colors.greenAccent.shade400,
+                        (false, false) => Colors.redAccent,
+                      },
                     ),
                     const SizedBox(width: 6),
                     Flexible(
-                      child: Text(
-                        _probing
-                            ? n.checkingCompact
-                            : _reachable == null
-                            ? n.uncheckedCompact
-                            : _reachable!
-                            ? n.proxyReachable
-                            : n.proxyUnreachable,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
+                      child: Text(switch ((_probing, _reachable)) {
+                        (true, _) => n.checkingCompact,
+                        (false, null) => n.uncheckedCompact,
+                        (false, true) => n.proxyReachable,
+                        (false, false) => n.proxyUnreachable,
+                      }, style: Theme.of(context).textTheme.bodySmall),
                     ),
                   ],
                 ),

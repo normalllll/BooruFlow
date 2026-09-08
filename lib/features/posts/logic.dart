@@ -1,7 +1,8 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:booruflow/features/booru/booru_service.dart';
 import 'package:booruflow/features/posts/models/post.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
 part 'logic.g.dart';
 
 final postAttributionDetailProvider = FutureProvider.autoDispose

@@ -67,7 +67,10 @@ final class Post {
   String get md5 => originalMedia.checksum?.value ?? '';
   int get createdAt {
     final value = DateTime.tryParse(data.createdAtIso8601 ?? '');
-    return value == null ? 0 : value.millisecondsSinceEpoch ~/ 1000;
+    return switch (value) {
+      null => 0,
+      _ => value.millisecondsSinceEpoch ~/ 1000,
+    };
   }
 
   int get resourceId {

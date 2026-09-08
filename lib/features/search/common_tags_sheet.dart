@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:booruflow/shared/widgets/tag_label.dart';
 import 'package:booruflow/features/search/tag_suggestion_repository.dart';
 import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/widgets/tag_label.dart';
+import 'package:flutter/material.dart';
 
 /// The common tags and this paginated list share the same source tag cache.
 class CommonTagsSheet extends StatefulWidget {

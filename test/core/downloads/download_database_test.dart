@@ -1,10 +1,11 @@
 import 'dart:io';
-import 'package:drift/native.dart';
-import 'package:flutter_test/flutter_test.dart';
+
 import 'package:booruflow/core/downloads/download_database.dart'
     hide DownloadJob;
 import 'package:booruflow/core/downloads/download_models.dart';
 import 'package:booruflow/core/downloads/download_store.dart';
+import 'package:drift/native.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test(

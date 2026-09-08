@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
+import 'package:booruflow/app/window/native_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:booruflow/app/window/native_window.dart';
 
 const channel = MethodChannel('desktop_window');
 const codec = StandardMethodCodec();

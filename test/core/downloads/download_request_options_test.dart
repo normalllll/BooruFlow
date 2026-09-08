@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:flutter_test/flutter_test.dart';
 import 'package:booruflow/core/downloads/download_file_system.dart';
 import 'package:booruflow/core/downloads/download_models.dart';
 import 'package:booruflow/core/downloads/download_validator.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('generic filenames retain the resource and variant identifiers', () {

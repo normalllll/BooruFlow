@@ -1,15 +1,15 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:booruflow/core/downloads/download_manager.dart';
 import 'package:booruflow/core/downloads/download_models.dart';
-import 'package:booruflow/features/downloads/widgets/download_task_widgets.dart';
-import 'package:booruflow/features/downloads/logic.dart';
 import 'package:booruflow/features/downloads/booru_download_item.dart';
+import 'package:booruflow/features/downloads/logic.dart';
+import 'package:booruflow/features/downloads/widgets/download_task_widgets.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_navigation.dart';
 import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/shared/widgets/auto_scaffold.dart';
+import 'package:flutter/material.dart';
 
 class DownloadsPage extends StatelessWidget {
   const DownloadsPage({super.key});

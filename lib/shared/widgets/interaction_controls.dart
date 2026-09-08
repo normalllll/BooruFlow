@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:booruflow/shared/app_theme.dart';
 import 'package:booruflow/shared/widgets/rounded_surface.dart';
+import 'package:flutter/material.dart';
 
 enum AppButtonKind { primary, secondary, danger, ghost }
 
@@ -65,9 +65,10 @@ class AppButton extends StatelessWidget {
             return tokens.surfaceMuted;
           }
           if (states.contains(WidgetState.hovered)) {
-            return kind == AppButtonKind.primary
-                ? colors.primary.withValues(alpha: 0.86)
-                : tokens.surfaceTint;
+            return switch (kind) {
+              AppButtonKind.primary => colors.primary.withValues(alpha: 0.86),
+              _ => tokens.surfaceTint,
+            };
           }
           return background;
         }),
@@ -112,7 +113,10 @@ class AppButton extends StatelessWidget {
         ],
       ),
     );
-    return tooltip == null ? button : Tooltip(message: tooltip!, child: button);
+    return switch (tooltip) {
+      null => button,
+      final message => Tooltip(message: message, child: button),
+    };
   }
 }
 
@@ -150,11 +154,11 @@ class AppIconButton extends StatelessWidget {
     final tokens = AppThemeTokens.of(context);
     final foreground =
         color ??
-        (danger
-            ? colors.error
-            : selected
-            ? colors.onPrimaryContainer
-            : colors.onSurfaceVariant);
+        switch ((danger, selected)) {
+          (true, _) => colors.error,
+          (false, true) => colors.onPrimaryContainer,
+          (false, false) => colors.onSurfaceVariant,
+        };
     return IconButton(
       tooltip: tooltip,
       onPressed: onPressed,

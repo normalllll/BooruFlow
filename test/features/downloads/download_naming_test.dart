@@ -1,5 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:booruflow/features/downloads/download_naming.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('filename is readable and always contains the post id', () {

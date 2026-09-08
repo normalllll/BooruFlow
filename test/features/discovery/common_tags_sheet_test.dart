@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:booruflow/features/search/common_tags_sheet.dart';
 import 'package:booruflow/features/search/tag_suggestion_repository.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 TagSuggestion tag(String value) => TagSuggestion(
   value: value,
@@ -49,7 +49,10 @@ void main() {
     expect(repository.pages, [2]);
     await tester.tap(find.byType(TextButton));
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(find.text('#last_tag', findRichText: true), 200);
+    await tester.scrollUntilVisible(
+      find.text('#last_tag', findRichText: true),
+      200,
+    );
     expect(repository.pages, [2, 2]);
     expect(find.byType(TextButton), findsNothing);
     // Each tag has a single label, including its canonical value.

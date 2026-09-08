@@ -10,33 +10,31 @@ String describeBooruError(Object? error) {
   };
   if (booruError == null) return error?.toString() ?? t.generic.loadFailed;
 
-  final primary = booruError.userMessageKey.startsWith('webChallenge.')
-      ? webChallengeMessage(
-          booruError.userMessageKey.substring('webChallenge.'.length),
-        )
-      : booruError.userMessageKey == 'booru.error.routeUnavailable'
-      ? t.booruError.routeUnavailable
-      : switch (booruError.code) {
-          BooruErrorCode.invalidRequest => t.booruError.invalidRequest,
-          BooruErrorCode.unsupportedCapability =>
-            t.booruError.unsupportedCapability,
-          BooruErrorCode.authenticationRequired =>
-            t.booruError.authenticationRequired,
-          BooruErrorCode.authenticationRejected =>
-            t.booruError.authenticationRejected,
-          BooruErrorCode.permissionDenied => t.booruError.permissionDenied,
-          BooruErrorCode.rateLimited => t.booruError.rateLimited,
-          BooruErrorCode.challengeRequired => t.booruError.challengeRequired,
-          BooruErrorCode.sourceUnavailable => t.booruError.sourceUnavailable,
-          BooruErrorCode.network => t.booruError.network,
-          BooruErrorCode.timeout => t.booruError.timeout,
-          BooruErrorCode.invalidResponse => t.booruError.invalidResponse,
-          BooruErrorCode.unsafeRedirect => t.booruError.unsafeRedirect,
-          BooruErrorCode.mediaValidationFailed =>
-            t.booruError.mediaValidationFailed,
-          BooruErrorCode.cancelled => t.booruError.cancelled,
-          BooruErrorCode.internal => t.booruError.internal,
-        };
+  final primary = switch (booruError.code) {
+    _ when booruError.userMessageKey.startsWith('webChallenge.') =>
+      webChallengeMessage(
+        booruError.userMessageKey.substring('webChallenge.'.length),
+      ),
+    _ when booruError.userMessageKey == 'booru.error.routeUnavailable' =>
+      t.booruError.routeUnavailable,
+    BooruErrorCode.invalidRequest => t.booruError.invalidRequest,
+    BooruErrorCode.unsupportedCapability => t.booruError.unsupportedCapability,
+    BooruErrorCode.authenticationRequired =>
+      t.booruError.authenticationRequired,
+    BooruErrorCode.authenticationRejected =>
+      t.booruError.authenticationRejected,
+    BooruErrorCode.permissionDenied => t.booruError.permissionDenied,
+    BooruErrorCode.rateLimited => t.booruError.rateLimited,
+    BooruErrorCode.challengeRequired => t.booruError.challengeRequired,
+    BooruErrorCode.sourceUnavailable => t.booruError.sourceUnavailable,
+    BooruErrorCode.network => t.booruError.network,
+    BooruErrorCode.timeout => t.booruError.timeout,
+    BooruErrorCode.invalidResponse => t.booruError.invalidResponse,
+    BooruErrorCode.unsafeRedirect => t.booruError.unsafeRedirect,
+    BooruErrorCode.mediaValidationFailed => t.booruError.mediaValidationFailed,
+    BooruErrorCode.cancelled => t.booruError.cancelled,
+    BooruErrorCode.internal => t.booruError.internal,
+  };
   final context = <String>[
     if (booruError.sourceId case final source?) 'source=$source',
     'code=${booruError.code.name}',

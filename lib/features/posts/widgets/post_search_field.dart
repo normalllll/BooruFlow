@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:booruflow/shared/widgets/form_controls.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
+import 'package:flutter/material.dart';
 
 class PostSearchField extends StatelessWidget {
   const PostSearchField({

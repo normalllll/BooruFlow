@@ -1,11 +1,12 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:loading_more_list/loading_more_list.dart';
+
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
+import 'package:booruflow/features/booru/web_challenge_button.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
-import 'package:booruflow/features/booru/web_challenge_button.dart';
+import 'package:flutter/material.dart';
+import 'package:loading_more_list/loading_more_list.dart';
 
 class LoadingMoreIndicator extends StatelessWidget {
   final IndicatorStatus status;
@@ -196,9 +197,13 @@ class _ErrorContentState extends State<_ErrorContent> {
       BooruError value => value,
       _ => null,
     };
-    final seconds = error?.code == BooruErrorCode.rateLimited
-        ? (error?.retryAfterSeconds ?? 60).clamp(0, 86400)
-        : 0;
+    final seconds = switch (error?.code) {
+      BooruErrorCode.rateLimited => (error?.retryAfterSeconds ?? 60).clamp(
+        0,
+        86400,
+      ),
+      _ => 0,
+    };
     _remaining = seconds;
     if (seconds > 0) {
       _timer = Timer.periodic(const Duration(seconds: 1), (timer) {

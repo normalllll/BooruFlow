@@ -1,18 +1,19 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:booruflow/core/settings_service.dart';
 import 'package:booruflow/features/booru/booru_service.dart';
-import 'package:booruflow/features/discovery/logic.dart';
 import 'package:booruflow/features/discovery/discovery_page.dart';
+import 'package:booruflow/features/discovery/logic.dart';
 import 'package:booruflow/features/discovery/widgets/home_header.dart';
-import 'package:booruflow/features/discovery/widgets/source_picker.dart';
 import 'package:booruflow/features/discovery/widgets/post_collection_view.dart';
+import 'package:booruflow/features/discovery/widgets/source_picker.dart';
 import 'package:booruflow/features/home/home_page.dart';
 import 'package:booruflow/intl/translations.g.dart';
-import 'package:booruflow/src/rust/api/booru_models.dart';
-import 'package:booruflow/src/rust/booru/error.dart';
 import 'package:booruflow/shared/widgets/form_controls.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
+import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:booruflow/src/rust/booru/error.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
 import 'search_interaction_test.dart' show testSource;
 
 class _Store implements SettingsServiceStore {

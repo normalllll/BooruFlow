@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:booruflow/core/settings_service.dart';
-import 'package:booruflow/features/booru/booru_service.dart';
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
+import 'package:booruflow/features/booru/booru_service.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class NetworkProbeBackend {
   const NetworkProbeBackend({
@@ -185,12 +186,14 @@ class NetworkStatusController extends Notifier<NetworkStatusState> {
           }
           if (!ref.mounted) return;
           final id = source.sourceId;
-          final status =
-              result?.apiAvailable == true && result?.mediaAvailable == true
-              ? 'available'
-              : result?.apiAvailable == true || result?.mediaAvailable == true
-              ? 'partial'
-              : 'failed';
+          final status = switch ((
+            result?.apiAvailable,
+            result?.mediaAvailable,
+          )) {
+            (true, true) => 'available',
+            (true, _) || (_, true) => 'partial',
+            _ => 'failed',
+          };
           final details = {...state.details}..remove(id);
           if (result != null) details[id] = result;
           final errors = {...state.errors}..remove(id);

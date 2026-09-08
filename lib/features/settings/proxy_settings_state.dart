@@ -1,6 +1,8 @@
 import 'dart:async';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:booruflow/core/settings_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'proxy_connection.dart';
 
 class ProxySettingsState {
@@ -29,9 +31,10 @@ class ProxySettingsState {
   final bool? reachable;
   String? get endpoint {
     final endpoint = proxyEndpoint(protocol, host, port);
-    return endpoint == null
-        ? null
-        : Uri.parse(endpoint).replace(userInfo: userInfo).toString();
+    return switch (endpoint) {
+      null => null,
+      _ => Uri.parse(endpoint).replace(userInfo: userInfo).toString(),
+    };
   }
 
   ProxySettingsState copyWith({

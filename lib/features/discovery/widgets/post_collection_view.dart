@@ -1,16 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:loading_more_list/loading_more_list.dart';
 import 'package:booruflow/features/discovery/logic.dart';
 import 'package:booruflow/features/downloads/logic.dart';
 import 'package:booruflow/features/posts/widgets/post_preview_card.dart';
 import 'package:booruflow/features/posts/widgets/post_waterfall_skeleton.dart';
+import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_navigation.dart';
 import 'package:booruflow/shared/widgets/data_refresh_view.dart';
-import 'package:booruflow/shared/widgets/loading_more_indicator.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
-import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/widgets/loading_more_indicator.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:loading_more_list/loading_more_list.dart';
 
 class PostCollectionView extends StatefulWidget {
   const PostCollectionView({
@@ -108,17 +108,19 @@ class _PostCollectionViewState extends State<PostCollectionView> {
                 SliverPadding(
                   padding: const EdgeInsets.all(12),
                   sliver: SliverWaterfallFlow(
-                    gridDelegate: columns == null
-                        ? const SliverWaterfallFlowDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: 240,
-                            crossAxisSpacing: 8,
-                            mainAxisSpacing: 8,
-                          )
-                        : SliverWaterfallFlowDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: columns,
-                            crossAxisSpacing: 8,
-                            mainAxisSpacing: 8,
-                          ),
+                    gridDelegate: switch (columns) {
+                      null =>
+                        const SliverWaterfallFlowDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 240,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                        ),
+                      _ => SliverWaterfallFlowDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: columns,
+                        crossAxisSpacing: 8,
+                        mainAxisSpacing: 8,
+                      ),
+                    },
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final post = state.items[index];
                       return PostPreviewCard(
@@ -188,21 +190,18 @@ class _PostCollectionViewState extends State<PostCollectionView> {
     final empty = state.items.isEmpty;
     if (empty && !state.loading) {
       final filtered = state.key.ratings.isNotEmpty;
-      return _emptyState(
-        filtered
-            ? t.discovery.noFilteredPosts
-            : state.key.request is TagSearchCollectionRequest
-            ? t.discovery.noSearchResults
-            : t.discovery.noFeedPosts,
-        reset: filtered,
-      );
+      return _emptyState(switch ((filtered, state.key.request)) {
+        (true, _) => t.discovery.noFilteredPosts,
+        (false, TagSearchCollectionRequest()) => t.discovery.noSearchResults,
+        (false, FeedCollectionRequest()) => t.discovery.noFeedPosts,
+      }, reset: filtered);
     }
     final indicator = LoadingMoreIndicator(
-      status: state.loading
-          ? IndicatorStatus.loadingMoreBusying
-          : empty
-          ? IndicatorStatus.empty
-          : IndicatorStatus.noMoreLoad,
+      status: switch ((state.loading, empty)) {
+        (true, _) => IndicatorStatus.loadingMoreBusying,
+        (false, true) => IndicatorStatus.empty,
+        (false, false) => IndicatorStatus.noMoreLoad,
+      },
       isSliver: empty,
       errorRefresh: () => state.load(refresh: true),
     );

@@ -37,11 +37,12 @@ class DownloadValidationOptions {
       allowedContentTypes: List<String>.from(
         (json['allowedContentTypes'] as List?) ?? const [],
       ),
-      checksum: rawChecksum == null
-          ? null
-          : DownloadChecksum.fromJson(
-              (rawChecksum as Map).cast<String, Object?>(),
-            ),
+      checksum: switch (rawChecksum) {
+        null => null,
+        _ => DownloadChecksum.fromJson(
+          (rawChecksum as Map).cast<String, Object?>(),
+        ),
+      },
     );
   }
 
@@ -100,12 +101,13 @@ class DownloadValidationOptions {
     return DownloadValidationOptions(
       expectedBytes: bytes,
       allowedContentTypes: normalizedContentTypes,
-      checksum: normalizedChecksum == null
-          ? null
-          : DownloadChecksum(
-              algorithm: normalizedChecksum.algorithm,
-              value: normalizedChecksum.value.trim().toLowerCase(),
-            ),
+      checksum: switch (normalizedChecksum) {
+        null => null,
+        _ => DownloadChecksum(
+          algorithm: normalizedChecksum.algorithm,
+          value: normalizedChecksum.value.trim().toLowerCase(),
+        ),
+      },
     );
   }
 
@@ -191,7 +193,10 @@ class DownloadNetworkOptions {
     final normalizedConnectHost = _nonEmptyString(connectHost);
     final normalizedHostHeader =
         _nonEmptyString(hostHeader) ??
-        (normalizedConnectHost == null ? null : _originalAuthority(uri));
+        (switch (normalizedConnectHost) {
+          null => null,
+          _ => _originalAuthority(uri),
+        });
     if (disableTlsSni && normalizedConnectHost == null) {
       throw ArgumentError(
         'disableTlsSni requires connectHost so the connection target is explicit.',

@@ -1,8 +1,9 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
+
 import 'package:booruflow/features/booru/booru_service.dart';
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:flutter/foundation.dart';
 
 sealed class PostCollectionRequest {
   const PostCollectionRequest();

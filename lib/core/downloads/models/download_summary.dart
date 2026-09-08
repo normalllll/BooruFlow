@@ -87,11 +87,11 @@ class DownloadSummary {
       savePending: savePending,
       saveFailed: saveFailed,
       saved: saved,
-      overallProgress: progressCount > 0
-          ? progressTotal / progressCount
-          : completedForProgress > 0
-          ? 1
-          : 0,
+      overallProgress: switch ((progressCount, completedForProgress)) {
+        (> 0, _) => progressTotal / progressCount,
+        (_, > 0) => 1,
+        _ => 0,
+      },
     );
   }
 

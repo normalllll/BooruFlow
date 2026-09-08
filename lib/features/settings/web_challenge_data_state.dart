@@ -1,6 +1,6 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:booruflow/features/booru/booru_service.dart';
 import 'package:booruflow/src/rust/api/web_challenge.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final webDataRevisionProvider = NotifierProvider<WebDataRevision, int>(
   WebDataRevision.new,

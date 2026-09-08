@@ -125,13 +125,18 @@ class DriftDownloadStore implements DownloadStore {
     double? progress,
   }) async {
     final companion = DownloadStatesCompanion(
-      receivedBytes: receivedBytes == null
-          ? const Value.absent()
-          : Value(receivedBytes),
-      totalBytes: totalBytes == null ? const Value.absent() : Value(totalBytes),
-      progress: progress == null
-          ? const Value.absent()
-          : Value(progress.clamp(0, 1)),
+      receivedBytes: switch (receivedBytes) {
+        null => const Value.absent(),
+        _ => Value(receivedBytes),
+      },
+      totalBytes: switch (totalBytes) {
+        null => const Value.absent(),
+        _ => Value(totalBytes),
+      },
+      progress: switch (progress) {
+        null => const Value.absent(),
+        _ => Value(progress.clamp(0, 1)),
+      },
       updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
     );
     await (_db.update(
@@ -169,10 +174,14 @@ class DriftDownloadStore implements DownloadStore {
     )..where((table) => table.jobId.equals(jobId))).write(
       DownloadStatesCompanion(
         saveState: Value(state.name),
-        localPath: localPath == null ? const Value.absent() : Value(localPath),
-        galleryAssetId: galleryAssetId == null
-            ? const Value.absent()
-            : Value(galleryAssetId),
+        localPath: switch (localPath) {
+          null => const Value.absent(),
+          _ => Value(localPath),
+        },
+        galleryAssetId: switch (galleryAssetId) {
+          null => const Value.absent(),
+          _ => Value(galleryAssetId),
+        },
         error: Value(error),
         updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
       ),
@@ -222,12 +231,14 @@ class DriftDownloadStore implements DownloadStore {
         receivedBytes: Value(snapshot.receivedBytes),
         totalBytes: Value(snapshot.totalBytes),
         progress: Value(snapshot.progress.clamp(0, 1)),
-        localPath: snapshot.localPath == null
-            ? const Value.absent()
-            : Value(snapshot.localPath),
-        galleryAssetId: snapshot.galleryAssetId == null
-            ? const Value.absent()
-            : Value(snapshot.galleryAssetId),
+        localPath: switch (snapshot.localPath) {
+          null => const Value.absent(),
+          _ => Value(snapshot.localPath),
+        },
+        galleryAssetId: switch (snapshot.galleryAssetId) {
+          null => const Value.absent(),
+          _ => Value(snapshot.galleryAssetId),
+        },
         error: Value(snapshot.error),
         updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
       ),

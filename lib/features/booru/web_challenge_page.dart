@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
+import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/src/rust/api/web_challenge.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:booruflow/intl/translations.g.dart';
-import 'package:booruflow/src/rust/api/web_challenge.dart';
+
 import 'web_challenge_failure.dart';
 
 const _nativeCookies = MethodChannel('booruflow/web_challenge');
@@ -123,7 +125,10 @@ class _WebChallengePageState extends State<WebChallengePage> {
           final raw = await _controller.runJavaScriptReturningResult(
             'navigator.userAgent',
           );
-          userAgent = raw is String ? raw : '';
+          userAgent = switch (raw) {
+            String() => raw,
+            _ => '',
+          };
           if (userAgent.startsWith('"')) {
             userAgent = jsonDecode(userAgent) as String;
           }

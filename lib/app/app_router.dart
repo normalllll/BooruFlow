@@ -1,22 +1,23 @@
-import 'package:flutter/material.dart';
 import 'dart:convert';
-import 'package:booruflow/features/booru/booru_service.dart';
-import 'package:go_router/go_router.dart';
+
 import 'package:booruflow/app/navigator_stack_observer.dart';
 import 'package:booruflow/features/about/about_page.dart';
+import 'package:booruflow/features/booru/booru_service.dart';
 import 'package:booruflow/features/downloads/widgets/download_floating_window.dart';
+import 'package:booruflow/features/home/home_page.dart';
 import 'package:booruflow/features/image_viewer/image_zoom_page.dart';
+import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/features/posts/post_detail_page.dart';
 import 'package:booruflow/features/posts/post_list_page.dart';
-import 'package:booruflow/features/home/home_page.dart';
 import 'package:booruflow/features/search/post_search_page.dart';
 import 'package:booruflow/features/search/user_tags_page.dart';
 import 'package:booruflow/features/settings/settings_page.dart';
 import 'package:booruflow/features/shell/app_shell.dart';
 import 'package:booruflow/intl/translations.g.dart';
-import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/shared/app_navigation.dart';
 import 'package:booruflow/shared/widgets/auto_scaffold.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class AppRouter {
   const AppRouter._();
@@ -146,12 +147,10 @@ class AppRouter {
               final section = SettingsSection.fromPath(
                 state.pathParameters['section'],
               );
-              return _contentPage(
-                state,
-                section == null
-                    ? const _MissingRouteDataPage()
-                    : SettingsPage(section: section),
-              );
+              return _contentPage(state, switch (section) {
+                null => const _MissingRouteDataPage(),
+                _ => SettingsPage(section: section),
+              });
             },
           ),
           GoRoute(
@@ -199,12 +198,10 @@ class AppRouter {
             name: AppRoute.postDetail.name,
             pageBuilder: (context, state) {
               final post = state.extra;
-              return _contentPage(
-                state,
-                post is Post
-                    ? PostDetailPage(post: post)
-                    : const _MissingRouteDataPage(),
-              );
+              return _contentPage(state, switch (post) {
+                Post() => PostDetailPage(post: post),
+                _ => const _MissingRouteDataPage(),
+              });
             },
           ),
           GoRoute(
@@ -212,18 +209,16 @@ class AppRouter {
             name: AppRoute.imageViewer.name,
             pageBuilder: (context, state) {
               final args = state.extra;
-              return _contentPage(
-                state,
-                args is ImageViewerRouteArgs
-                    ? ImageZoomPage(
-                        url: args.url,
-                        width: args.width,
-                        height: args.height,
-                        sourceId: args.sourceId,
-                        postId: args.postId,
-                      )
-                    : const _MissingRouteDataPage(),
-              );
+              return _contentPage(state, switch (args) {
+                ImageViewerRouteArgs() => ImageZoomPage(
+                  url: args.url,
+                  width: args.width,
+                  height: args.height,
+                  sourceId: args.sourceId,
+                  postId: args.postId,
+                ),
+                _ => const _MissingRouteDataPage(),
+              });
             },
           ),
         ],

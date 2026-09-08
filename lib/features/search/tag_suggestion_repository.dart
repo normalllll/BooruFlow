@@ -1,10 +1,11 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
-import 'package:hive_ce/hive.dart';
+
 import 'package:booruflow/features/booru/booru_service.dart';
 import 'package:booruflow/features/tags/tag_translations_service.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
+import 'package:flutter/foundation.dart';
+import 'package:hive_ce/hive.dart';
 
 enum SuggestionOrigin { sourceApi, sourceCache, lexicon, userAlias, history }
 

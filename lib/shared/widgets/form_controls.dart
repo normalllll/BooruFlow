@@ -1,7 +1,8 @@
 import 'dart:math' as math;
-import 'package:flutter/material.dart';
+
 import 'package:booruflow/shared/app_theme.dart';
 import 'package:booruflow/shared/widgets/rounded_surface.dart';
+import 'package:flutter/material.dart';
 
 double appFieldHeight(BuildContext context) => math.max(
   36,
@@ -81,7 +82,11 @@ class _AppSelectState<T> extends State<AppSelect<T>> {
           )..layout();
           labelWidth = math.max(
             labelWidth,
-            painter.width + (item.icon == null ? 0 : 26),
+            painter.width +
+                (switch (item.icon) {
+                  null => 0,
+                  _ => 26,
+                }),
           );
           painter.dispose();
         }
@@ -126,11 +131,13 @@ class _AppSelectState<T> extends State<AppSelect<T>> {
                       const EdgeInsets.symmetric(horizontal: 10),
                     ),
                     backgroundColor: WidgetStateProperty.resolveWith(
-                      (states) => item.value == widget.value
-                          ? colors.primaryContainer
-                          : states.contains(WidgetState.hovered)
-                          ? tokens.surfaceTint
-                          : Colors.transparent,
+                      (states) => switch (item.value) {
+                        _ when item.value == widget.value =>
+                          colors.primaryContainer,
+                        _ when states.contains(WidgetState.hovered) =>
+                          tokens.surfaceTint,
+                        _ => Colors.transparent,
+                      },
                     ),
                     foregroundColor: WidgetStatePropertyAll(
                       item.value == widget.value
@@ -146,9 +153,10 @@ class _AppSelectState<T> extends State<AppSelect<T>> {
                   trailingIcon: item.value == widget.value
                       ? const Icon(Icons.check_rounded, size: 18)
                       : const SizedBox(width: 18),
-                  leadingIcon: item.icon == null
-                      ? null
-                      : Icon(item.icon, size: 18),
+                  leadingIcon: switch (item.icon) {
+                    null => null,
+                    _ => Icon(item.icon, size: 18),
+                  },
                   child:
                       item.content ??
                       Text(
@@ -314,7 +322,10 @@ class AppTextField extends StatelessWidget {
         obscureText: obscureText,
         minLines: minLines,
         maxLines: maxLines,
-        textAlignVertical: height == null ? null : TextAlignVertical.center,
+        textAlignVertical: switch (height) {
+          null => null,
+          _ => TextAlignVertical.center,
+        },
         onChanged: onChanged,
         onSubmitted: onSubmitted,
         onEditingComplete: onEditingComplete,
@@ -333,19 +344,27 @@ class AppTextField extends StatelessWidget {
           isDense: false,
           contentPadding: EdgeInsets.symmetric(
             horizontal: 12,
-            vertical: height == null ? 12 : 4,
+            vertical: switch (height) {
+              null => 12,
+              _ => 4,
+            },
           ),
           errorText: errorText,
-          prefixIcon: leading == null ? null : Icon(leading, size: 18),
-          suffixIcon: trailing == null
-              ? null
-              : Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: trailing,
-                ),
-          suffixIconConstraints: trailing == null
-              ? null
-              : BoxConstraints(minHeight: height ?? 36),
+          prefixIcon: switch (leading) {
+            null => null,
+            _ => Icon(leading, size: 18),
+          },
+          suffixIcon: switch (trailing) {
+            null => null,
+            _ => Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: trailing,
+            ),
+          },
+          suffixIconConstraints: switch (trailing) {
+            null => null,
+            _ => BoxConstraints(minHeight: height ?? 36),
+          },
           filled: true,
           fillColor: enabled ? tokens.surfaceMuted : tokens.surface,
         ),

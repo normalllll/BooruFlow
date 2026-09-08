@@ -1,5 +1,5 @@
-import 'package:path/path.dart' as p;
 import 'package:booruflow/core/downloads/download_file_system.dart';
+import 'package:path/path.dart' as p;
 
 String booruPostDownloadFilename({
   required int postId,
@@ -12,7 +12,10 @@ String booruPostDownloadFilename({
       _safeExtension(p.extension(sourceUrl.path));
   final variantSuffix = variantIndex == 0 ? '' : '-$variantIndex';
   return safeDownloadFilename(
-    '$postId$variantSuffix${extension == null ? '' : '.$extension'}',
+    '$postId$variantSuffix${switch (extension) {
+      null => '',
+      _ => '.$extension',
+    }}',
   );
 }
 

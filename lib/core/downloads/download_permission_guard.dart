@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:flutter/services.dart';
 import 'package:booruflow/core/downloads/download_file_system.dart';
 import 'package:booruflow/core/downloads/download_models.dart';
+import 'package:flutter/services.dart';
 
 abstract interface class DownloadPermissionGuard {
   Future<void> ensureReadyForDownload();

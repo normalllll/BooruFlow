@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+
 import 'package:booruflow/core/settings_service.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/api/booru_engine.dart';
 import 'package:booruflow/src/rust/api/web_challenge.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
 import 'booru_service.dart';
 import 'web_challenge_failure.dart';
 import 'web_challenge_page.dart';

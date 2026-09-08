@@ -1,22 +1,24 @@
 import 'dart:async';
-import 'package:booruflow/features/search/common_tags_sheet.dart';
 import 'dart:math' as math;
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:booruflow/features/booru/booru_service.dart';
+
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
+import 'package:booruflow/features/booru/booru_service.dart';
 import 'package:booruflow/features/discovery/widgets/discovery_toolbar.dart';
-import 'package:booruflow/shared/widgets/tag_label.dart';
-import 'package:booruflow/shared/widgets/auto_scaffold.dart';
+import 'package:booruflow/features/search/common_tags_sheet.dart';
+import 'package:booruflow/features/search/query.dart';
 import 'package:booruflow/features/search/tag_suggestion_repository.dart';
 import 'package:booruflow/features/search/user_tags_page.dart';
-import 'package:booruflow/features/search/query.dart';
-export 'package:booruflow/features/search/query.dart' show parseQueryInput;
+import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_navigation.dart';
+import 'package:booruflow/shared/widgets/auto_scaffold.dart';
 import 'package:booruflow/shared/widgets/form_controls.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
-import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/widgets/tag_label.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+export 'package:booruflow/features/search/query.dart' show parseQueryInput;
 
 class PostSearchPage extends StatefulWidget {
   const PostSearchPage({
@@ -226,10 +228,10 @@ class _PostSearchPageState extends State<PostSearchPage> {
     final operator = replaceTerm && terms.isNotEmpty
         ? QueryTerm.parse(terms.removeLast()).operator
         : QueryOperator.include;
-    final value = QueryTerm(
-      tag.value,
-      operator == QueryOperator.metatag ? QueryOperator.include : operator,
-    ).raw;
+    final value = QueryTerm(tag.value, switch (operator) {
+      QueryOperator.metatag => QueryOperator.include,
+      _ => operator,
+    }).raw;
     setState(() {
       for (final term in [...terms, value]) {
         if (!_selected.contains(term)) _selected.add(term);
@@ -491,11 +493,11 @@ class _PostSearchPageState extends State<PostSearchPage> {
     final colors = Theme.of(context).colorScheme;
     return Material(
       key: ValueKey('suggestion-row-$index'),
-      color: index == _highlight
-          ? colors.primaryContainer
-          : index.isEven
-          ? colors.surface
-          : colors.surfaceContainerHighest,
+      color: switch (index) {
+        _ when index == _highlight => colors.primaryContainer,
+        _ when index.isEven => colors.surface,
+        _ => colors.surfaceContainerHighest,
+      },
       child: InkWell(
         onTap: () => _add(tag, replaceTerm: true),
         onLongPress: () => showDialog<void>(

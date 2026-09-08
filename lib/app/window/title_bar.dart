@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:booruflow/app/window/native_window.dart';
+import 'package:flutter/material.dart';
 
 class DesktopWindowFrame extends StatelessWidget {
   const DesktopWindowFrame({required this.child, super.key});

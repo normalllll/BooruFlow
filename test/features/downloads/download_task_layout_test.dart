@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:booruflow/core/downloads/download_models.dart';
 import 'package:booruflow/features/downloads/booru_download_item.dart';
 import 'package:booruflow/features/downloads/widgets/download_task_widgets.dart';
 import 'package:booruflow/intl/translations.g.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 DownloadTaskSnapshot snapshot(
   DownloadStatus status,

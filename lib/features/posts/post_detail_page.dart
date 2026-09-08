@@ -1,24 +1,24 @@
 import 'dart:io';
 import 'dart:math' as math;
 
+import 'package:booruflow/features/booru/booru_error_presentation.dart';
+import 'package:booruflow/features/downloads/logic.dart';
+import 'package:booruflow/features/posts/logic.dart';
+import 'package:booruflow/features/posts/models/post.dart';
+import 'package:booruflow/features/posts/post_attribution.dart';
+import 'package:booruflow/features/posts/widgets/booru_image.dart';
+import 'package:booruflow/features/tags/translated_tag.dart';
+import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/app_navigation.dart';
+import 'package:booruflow/shared/app_theme.dart';
+import 'package:booruflow/shared/app_toast.dart';
+import 'package:booruflow/shared/widgets/auto_scaffold.dart';
+import 'package:booruflow/shared/widgets/interaction_controls.dart';
+import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:booruflow/features/downloads/logic.dart';
-import 'package:booruflow/features/booru/booru_error_presentation.dart';
-import 'package:booruflow/features/posts/widgets/booru_image.dart';
-import 'package:booruflow/features/tags/translated_tag.dart';
-import 'package:booruflow/intl/translations.g.dart';
-import 'package:booruflow/features/posts/logic.dart';
-import 'package:booruflow/shared/app_navigation.dart';
-import 'package:booruflow/shared/app_toast.dart';
-import 'package:booruflow/features/posts/models/post.dart';
-import 'package:booruflow/features/posts/post_attribution.dart';
-import 'package:booruflow/src/rust/api/booru_models.dart';
-import 'package:booruflow/shared/app_theme.dart';
-import 'package:booruflow/shared/widgets/auto_scaffold.dart';
-import 'package:booruflow/shared/widgets/interaction_controls.dart';
 
 class PostDetailPage extends ConsumerStatefulWidget {
   const PostDetailPage({super.key, required this.post});
@@ -52,11 +52,12 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
   @override
   Widget build(BuildContext context) {
     final relatedGroupId = post.parentId ?? (post.hasChildren ? post.id : null);
-    final relatedValue = relatedGroupId != null
-        ? ref.watch(
-            getSimilarProvider(sourceId: post.sourceId, id: relatedGroupId),
-          )
-        : null;
+    final relatedValue = switch (relatedGroupId) {
+      null => null,
+      _ => ref.watch(
+        getSimilarProvider(sourceId: post.sourceId, id: relatedGroupId),
+      ),
+    };
     final imagePosts = <Post>[post];
     final seenIds = <String>{post.id};
     if (relatedValue case AsyncData(:final value)) {
@@ -80,11 +81,12 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
       AsyncError(:final error) => error,
       _ => null,
     };
-    final retryRelated = relatedGroupId == null
-        ? null
-        : () => ref.invalidate(
-            getSimilarProvider(sourceId: post.sourceId, id: relatedGroupId),
-          );
+    final retryRelated = switch (relatedGroupId) {
+      null => null,
+      _ => () => ref.invalidate(
+        getSimilarProvider(sourceId: post.sourceId, id: relatedGroupId),
+      ),
+    };
 
     return AutoScaffold(
       showAppBar: false,
@@ -377,7 +379,10 @@ class _PostImageViewer extends StatelessWidget {
             ),
           if (relatedError != null && onRetryRelated != null)
             PositionedDirectional(
-              top: selectedPost.rating == ContentRating.general ? 12 : 58,
+              top: switch (selectedPost.rating) {
+                ContentRating.general => 12,
+                _ => 58,
+              },
               start: 12,
               child: _RelatedLoadError(
                 error: relatedError!,
@@ -501,17 +506,18 @@ class _PostImagePage extends StatelessWidget {
                 width: imageSize.width,
                 height: imageSize.height,
                 fit: BoxFit.contain,
-                placeholderWidget: thumbnail == null
-                    ? null
-                    : BooruImage(
-                        thumbnail.url,
-                        sourceId: post.sourceId,
-                        postId: post.id,
-                        variant: thumbnail.kind,
-                        width: imageSize.width,
-                        height: imageSize.height,
-                        fit: BoxFit.contain,
-                      ),
+                placeholderWidget: switch (thumbnail) {
+                  null => null,
+                  _ => BooruImage(
+                    thumbnail.url,
+                    sourceId: post.sourceId,
+                    postId: post.id,
+                    variant: thumbnail.kind,
+                    width: imageSize.width,
+                    height: imageSize.height,
+                    fit: BoxFit.contain,
+                  ),
+                },
               ),
             ),
           ),
@@ -937,8 +943,14 @@ class _MetadataRow extends StatelessWidget {
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-        color: onTap == null ? colorScheme.onSurface : colorScheme.primary,
-        decoration: onTap == null ? null : TextDecoration.underline,
+        color: switch (onTap) {
+          null => colorScheme.onSurface,
+          _ => colorScheme.primary,
+        },
+        decoration: switch (onTap) {
+          null => null,
+          _ => TextDecoration.underline,
+        },
         decorationColor: colorScheme.primary,
       ),
     );
@@ -965,9 +977,10 @@ class _MetadataRow extends StatelessWidget {
               ),
             ),
           Expanded(
-            child: onTap == null
-                ? valueWidget
-                : InkWell(onTap: onTap, child: valueWidget),
+            child: switch (onTap) {
+              null => valueWidget,
+              _ => InkWell(onTap: onTap, child: valueWidget),
+            },
           ),
           if (onCopy != null) ...[
             const SizedBox(width: 4),

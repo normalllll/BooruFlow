@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:booruflow/features/posts/models/post.dart';
-import 'package:booruflow/features/posts/widgets/post_preview_footer.dart';
 import 'package:booruflow/features/posts/post_attribution.dart';
-import 'package:booruflow/features/posts/widgets/booru_image.dart';
 import 'package:booruflow/features/posts/resolution.dart';
+import 'package:booruflow/features/posts/widgets/booru_image.dart';
+import 'package:booruflow/features/posts/widgets/post_preview_footer.dart';
 import 'package:booruflow/shared/app_theme.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class PostPreviewCard extends StatelessWidget {
   const PostPreviewCard({

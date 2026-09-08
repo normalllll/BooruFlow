@@ -1,6 +1,6 @@
+import 'package:booruflow/features/search/post_search_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:booruflow/features/search/post_search_page.dart';
 
 void main() {
   test('raw query parsing preserves operators and rejects whitespace', () {

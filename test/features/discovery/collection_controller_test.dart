@@ -1,7 +1,8 @@
 import 'dart:async';
-import 'package:flutter_test/flutter_test.dart';
+
 import 'package:booruflow/features/discovery/logic.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 CollectionKey key({
   PostCollectionRequest? request,

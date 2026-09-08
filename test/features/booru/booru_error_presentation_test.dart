@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:booruflow/intl/translations.g.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:loading_more_list/loading_more_list.dart';
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
+import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/widgets/interaction_controls.dart';
 import 'package:booruflow/shared/widgets/loading_more_indicator.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
-import 'package:booruflow/shared/widgets/interaction_controls.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:loading_more_list/loading_more_list.dart';
 
 void main() {
   const error = BooruError(

@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
+import 'package:flutter/material.dart';
+
 import 'booru_error_presentation.dart';
 import 'web_challenge_controller.dart';
 
@@ -12,7 +13,10 @@ BooruError? challengeError(Object? error) {
     BooruError value => value,
     _ => null,
   };
-  return value?.code == BooruErrorCode.challengeRequired ? value : null;
+  return switch (value?.code) {
+    BooruErrorCode.challengeRequired => value,
+    _ => null,
+  };
 }
 
 class WebChallengeButton extends StatefulWidget {
@@ -67,11 +71,11 @@ class _WebChallengeButtonState extends State<WebChallengeButton> {
         );
       }
       return AppButton(
-        label: mine
-            ? active?.phase == WebChallengePhase.verifying
-                  ? t.webChallenge.saving
-                  : t.webChallenge.waiting
-            : t.webChallenge.open,
+        label: switch ((mine, active?.phase)) {
+          (true, WebChallengePhase.verifying) => t.webChallenge.saving,
+          (true, _) => t.webChallenge.waiting,
+          (false, _) => t.webChallenge.open,
+        },
         icon: Icons.verified_user_outlined,
         loading: mine,
         onPressed: busy ? null : _open,

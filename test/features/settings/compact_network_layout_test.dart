@@ -1,20 +1,22 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:booruflow/features/settings/network_settings_state.dart';
-import 'package:booruflow/features/settings/proxy_settings_state.dart';
 import 'dart:io';
 import 'dart:ui' as ui;
+
+import 'package:booruflow/features/settings/network_settings_state.dart';
+import 'package:booruflow/features/settings/network_status_panel.dart';
+import 'package:booruflow/features/settings/proxy_settings_panel.dart';
+import 'package:booruflow/features/settings/proxy_settings_state.dart';
+import 'package:booruflow/features/settings/web_challenge_data_panel.dart';
+import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/app_theme.dart';
+import 'package:booruflow/shared/widgets/form_controls.dart';
+import 'package:booruflow/shared/widgets/grouped_settings_list.dart';
+import 'package:booruflow/src/rust/api/web_challenge.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:booruflow/features/settings/proxy_settings_panel.dart';
-import 'package:booruflow/features/settings/network_status_panel.dart';
-import 'package:booruflow/features/settings/web_challenge_data_panel.dart';
-import 'package:booruflow/src/rust/api/web_challenge.dart';
-import 'package:booruflow/shared/widgets/form_controls.dart';
-import 'package:booruflow/intl/translations.g.dart';
-import 'package:booruflow/shared/app_theme.dart';
-import 'package:booruflow/shared/widgets/grouped_settings_list.dart';
+
 import '../discovery/search_interaction_test.dart' show testSource;
 import 'network_status_panel_test.dart' show snapshot, result;
 

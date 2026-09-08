@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:toastification/toastification.dart';
-import 'package:booruflow/core/app_runtime.dart';
 import 'package:booruflow/app/window/native_window.dart';
+import 'package:booruflow/core/app_runtime.dart';
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/intl/translations.g.dart';
+import 'package:flutter/material.dart';
+import 'package:toastification/toastification.dart';
 
 class AppToastWrapper extends StatelessWidget {
   const AppToastWrapper({required this.child, super.key});
@@ -75,7 +75,10 @@ abstract final class AppToast {
     toastification.show(
       type: type,
       style: ToastificationStyle.flatColored,
-      title: Text(message is String ? message : '$message'),
+      title: Text(switch (message) {
+        String() => message,
+        _ => '$message',
+      }),
       autoCloseDuration: duration,
       closeButton: _closeButton,
       closeOnClick: true,

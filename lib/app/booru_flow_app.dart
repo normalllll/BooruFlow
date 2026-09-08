@@ -1,7 +1,3 @@
-import 'package:booruflow/shared/widgets/immersive_system_ui.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:booruflow/app/app_router.dart';
 import 'package:booruflow/app/window/title_bar.dart';
 import 'package:booruflow/core/app_runtime.dart';
@@ -9,8 +5,12 @@ import 'package:booruflow/core/settings_service.dart';
 import 'package:booruflow/features/tags/tag_translations_service.dart';
 import 'package:booruflow/intl/locale_preferences.dart';
 import 'package:booruflow/intl/translations.g.dart';
-import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/shared/app_theme.dart';
+import 'package:booruflow/shared/app_toast.dart';
+import 'package:booruflow/shared/widgets/immersive_system_ui.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class BooruFlowApp extends ConsumerWidget {
   const BooruFlowApp({super.key});

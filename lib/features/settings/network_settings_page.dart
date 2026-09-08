@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/shared/widgets/form_controls.dart';
 import 'package:booruflow/shared/widgets/grouped_settings_list.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'network_settings_state.dart';
 import 'network_status_panel.dart';
 import 'proxy_settings_panel.dart';
@@ -107,9 +108,10 @@ class NetworkSettingsPage extends ConsumerWidget {
                   for (final value in RouteProvider.values)
                     AppSelectItem(
                       value: value,
-                      label: value == RouteProvider.uncensoredDns
-                          ? 'UncensoredDNS'
-                          : 'doh.sb',
+                      label: switch (value) {
+                        RouteProvider.uncensoredDns => 'UncensoredDNS',
+                        _ => 'doh.sb',
+                      },
                     ),
                 ],
                 onChanged: (dns) => apply(dns: dns),

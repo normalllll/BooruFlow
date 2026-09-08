@@ -1,11 +1,13 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:booruflow/features/settings/network_settings_state.dart';
 import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
+
+import 'package:booruflow/features/settings/network_settings_state.dart';
 import 'package:booruflow/features/settings/network_status_panel.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+
 import '../discovery/search_interaction_test.dart' show testSource;
 
 const snapshot = RouteCacheState(

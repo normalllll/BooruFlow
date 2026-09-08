@@ -1,15 +1,15 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:booruflow/features/posts/widgets/booru_image.dart';
 import 'package:booruflow/core/downloads/download_manager.dart';
 import 'package:booruflow/core/downloads/download_models.dart';
 import 'package:booruflow/features/downloads/booru_download_item.dart';
+import 'package:booruflow/features/posts/widgets/booru_image.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class DownloadSummaryView extends StatelessWidget {
   const DownloadSummaryView({
@@ -155,9 +155,10 @@ class DownloadTaskList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final visibleTasks = maxItems == null
-        ? tasks
-        : tasks.take(maxItems!).toList(growable: false);
+    final visibleTasks = switch (maxItems) {
+      null => tasks,
+      final limit => tasks.take(limit).toList(growable: false),
+    };
     if (visibleTasks.isEmpty) {
       return _DownloadEmptyState(compact: compact);
     }
@@ -557,7 +558,10 @@ class _SmallActionIcon extends StatelessWidget {
     );
 
     final tooltip = this.tooltip;
-    return tooltip == null ? child : Tooltip(message: tooltip, child: child);
+    return switch (tooltip) {
+      null => child,
+      _ => Tooltip(message: tooltip, child: child),
+    };
   }
 }
 
@@ -580,25 +584,26 @@ class _AnimatedRoundedProgressIndicator extends StatelessWidget {
         duration: const Duration(milliseconds: 180),
         switchInCurve: Curves.easeOutCubic,
         switchOutCurve: Curves.easeInCubic,
-        child: value == null
-            ? LinearProgressIndicator(
-                key: const ValueKey<String>('indeterminate'),
+        child: switch (value) {
+          null => LinearProgressIndicator(
+            key: const ValueKey<String>('indeterminate'),
+            minHeight: minHeight,
+            borderRadius: borderRadius,
+          ),
+          _ => TweenAnimationBuilder<double>(
+            key: const ValueKey<String>('determinate'),
+            tween: Tween<double>(end: value!.clamp(0, 1).toDouble()),
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            builder: (context, animatedValue, child) {
+              return LinearProgressIndicator(
+                value: animatedValue,
                 minHeight: minHeight,
                 borderRadius: borderRadius,
-              )
-            : TweenAnimationBuilder<double>(
-                key: const ValueKey<String>('determinate'),
-                tween: Tween<double>(end: value!.clamp(0, 1).toDouble()),
-                duration: const Duration(milliseconds: 220),
-                curve: Curves.easeOutCubic,
-                builder: (context, animatedValue, child) {
-                  return LinearProgressIndicator(
-                    value: animatedValue,
-                    minHeight: minHeight,
-                    borderRadius: borderRadius,
-                  );
-                },
-              ),
+              );
+            },
+          ),
+        },
       ),
     );
   }

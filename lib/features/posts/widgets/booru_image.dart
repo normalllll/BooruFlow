@@ -1,14 +1,14 @@
-import 'package:extended_image/extended_image.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:booruflow/intl/translations.g.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/features/booru/booru_service.dart';
 import 'package:booruflow/features/booru/web_challenge_button.dart';
 import 'package:booruflow/features/posts/widgets/rust_extended_network_image_provider.dart';
-import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
+import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:extended_image/extended_image.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class BooruImage extends StatefulWidget {
   const BooruImage(
@@ -190,9 +190,10 @@ class _BooruImageState extends State<BooruImage> {
     child: Wrap(
       alignment: WrapAlignment.center,
       children: [
-        if (challengeError(
-              error is MediaImageException ? error.cause : error,
-            )?.sourceId
+        if (challengeError(switch (error) {
+              MediaImageException() => error.cause,
+              _ => error,
+            })?.sourceId
             case final source?)
           WebChallengeButton(sourceId: source, compact: true),
         AppIconButton(
@@ -210,9 +211,11 @@ class _BooruImageState extends State<BooruImage> {
   );
 
   Future<void> _showError(Object? error, VoidCallback retry) async {
-    final details = error is MediaImageException
-        ? error.toString()
-        : 'source=${widget.sourceId ?? "unknown"} · post=${widget.postId ?? "unknown"} · variant=${widget.variant.name}\n${describeBooruError(error)}';
+    final details = switch (error) {
+      MediaImageException() => error.toString(),
+      _ =>
+        'source=${widget.sourceId ?? "unknown"} · post=${widget.postId ?? "unknown"} · variant=${widget.variant.name}\n${describeBooruError(error)}',
+    };
     await showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
@@ -224,11 +227,11 @@ class _BooruImageState extends State<BooruImage> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  error is MediaImageException && error.stage == 'decode'
-                      ? t.mediaError.decodeFailed
-                      : t.generic.loadFailed,
-                ),
+                Text(switch (error) {
+                  MediaImageException(stage: 'decode') =>
+                    t.mediaError.decodeFailed,
+                  _ => t.generic.loadFailed,
+                }),
                 const SizedBox(height: 12),
                 SelectableText(details),
               ],
@@ -236,9 +239,10 @@ class _BooruImageState extends State<BooruImage> {
           ),
         ),
         actions: [
-          if (challengeError(
-                error is MediaImageException ? error.cause : error,
-              )?.sourceId
+          if (challengeError(switch (error) {
+                MediaImageException() => error.cause,
+                _ => error,
+              })?.sourceId
               case final source?)
             WebChallengeButton(
               sourceId: source,

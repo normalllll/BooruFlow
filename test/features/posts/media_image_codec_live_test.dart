@@ -1,14 +1,15 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter/foundation.dart';
-import 'package:booruflow/features/posts/models/post.dart';
+
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
+import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/src/rust/api/booru_download.dart';
 import 'package:booruflow/src/rust/api/booru_engine.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/frb_generated.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

@@ -3,17 +3,17 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:booruflow/features/booru/booru_error_presentation.dart';
+import 'package:booruflow/features/booru/booru_service.dart';
+import 'package:booruflow/src/rust/api/booru_download.dart';
+import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:booruflow/src/rust/booru/error.dart';
 import 'package:extended_image/extended_image.dart'
     show cacheImageFolderName, keyToMd5;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
-import 'package:booruflow/features/booru/booru_error_presentation.dart';
-import 'package:booruflow/features/booru/booru_service.dart';
-import 'package:booruflow/src/rust/api/booru_download.dart';
-import 'package:booruflow/src/rust/api/booru_models.dart';
-import 'package:booruflow/src/rust/booru/error.dart';
 
 @immutable
 final class RustExtendedNetworkImageProvider
@@ -93,16 +93,14 @@ final class RustExtendedNetworkImageProvider
       return codec;
     } catch (error, stack) {
       scheduleMicrotask(() => PaintingBinding.instance.imageCache.evict(key));
-      Error.throwWithStackTrace(
-        error is MediaImageException
-            ? error
-            : MediaImageException(
-                request: request,
-                stage: 'download',
-                cause: makeBooruErrorReadable(error),
-              ),
-        stack,
-      );
+      Error.throwWithStackTrace(switch (error) {
+        MediaImageException() => error,
+        _ => MediaImageException(
+          request: request,
+          stage: 'download',
+          cause: makeBooruErrorReadable(error),
+        ),
+      }, stack);
     } finally {
       unawaited(chunkEvents.close());
     }
@@ -124,11 +122,12 @@ final class RustExtendedNetworkImageProvider
     try {
       codec = await decode(
         await ui.ImmutableBuffer.fromUint8List(bytes),
-        getTargetSize: decodeWidth == null
-            ? null
-            : (width, height) => ui.TargetImageSize(
-                width: width < decodeWidth! ? width : decodeWidth,
-              ),
+        getTargetSize: switch (decodeWidth) {
+          null => null,
+          final targetWidth => (width, height) => ui.TargetImageSize(
+            width: width < targetWidth ? width : targetWidth,
+          ),
+        },
       );
       final firstFrame = await codec.getNextFrame();
       return _ValidatedCodec(codec, firstFrame, (error) async {
@@ -291,11 +290,15 @@ final class MediaImageException implements Exception {
   String toString() {
     final uri = Uri.tryParse(request.url);
     // Authentication headers and signed query parameters are never diagnostics.
-    final location = uri == null
-        ? '(invalid URL)'
-        : '${uri.scheme}://${uri.host}${uri.path}';
+    final location = switch (uri) {
+      null => '(invalid URL)',
+      _ => '${uri.scheme}://${uri.host}${uri.path}',
+    };
     return 'source=${request.sourceId} · post=${request.postId} · variant=${request.variant.name}\n'
-        'stage=$stage · cache=$fromCache${byteCount == null ? "" : " · bytes=$byteCount"}\n'
+        'stage=$stage · cache=$fromCache${switch (byteCount) {
+          null => "",
+          _ => " · bytes=$byteCount",
+        }}\n'
         '$location\n${describeBooruError(cause).replaceAll(request.url, location)}';
   }
 }

@@ -1,13 +1,14 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:booruflow/features/settings/proxy_settings_state.dart';
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
+
 import 'package:booruflow/core/settings_service.dart';
 import 'package:booruflow/features/settings/proxy_settings_panel.dart';
+import 'package:booruflow/features/settings/proxy_settings_state.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 class Store implements SettingsServiceStore {
   final data = <String, dynamic>{};

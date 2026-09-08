@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 SystemUiOverlayStyle appSystemUiOverlayStyle(Brightness brightness) {
-  final icons = brightness == Brightness.dark
-      ? Brightness.light
-      : Brightness.dark;
+  final icons = switch (brightness) {
+    Brightness.dark => Brightness.light,
+    _ => Brightness.dark,
+  };
   return SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: icons,
@@ -63,9 +64,10 @@ class AppThemeTokens extends ThemeExtension<AppThemeTokens> {
   final Color shadow;
 
   static AppThemeTokens of(BuildContext context) {
-    final fallback = Theme.of(context).brightness == Brightness.dark
-        ? dark
-        : light;
+    final fallback = switch (Theme.of(context).brightness) {
+      Brightness.dark => dark,
+      _ => light,
+    };
     return Theme.of(context).extension<AppThemeTokens>() ?? fallback;
   }
 
@@ -135,7 +137,10 @@ ThemeData _buildTheme(
     highlightColor: primaryColor.withValues(alpha: 0.06),
     hoverColor: primaryColor.withValues(alpha: 0.05),
     dividerColor: tokens.line.withValues(
-      alpha: brightness == Brightness.light ? 0.55 : 0.45,
+      alpha: switch (brightness) {
+        Brightness.light => 0.55,
+        _ => 0.45,
+      },
     ),
     textTheme: base.textTheme.copyWith(
       titleLarge: base.textTheme.titleLarge?.copyWith(

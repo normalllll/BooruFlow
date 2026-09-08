@@ -126,9 +126,10 @@ final class RustIoDownloadEngine implements DownloadEngine {
         onProgress: (receivedBytes, totalBytes) {
           running.receivedBytes = receivedBytes;
           running.totalBytes = totalBytes;
-          running.progress = totalBytes == null
-              ? 0
-              : (receivedBytes / totalBytes).clamp(0.0, 1.0);
+          running.progress = switch (totalBytes) {
+            null => 0,
+            _ => (receivedBytes / totalBytes).clamp(0.0, 1.0),
+          };
 
           final now = DateTime.now();
           if (now.difference(lastEmit).inMilliseconds >= 300 ||

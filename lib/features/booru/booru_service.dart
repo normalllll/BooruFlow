@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
-import 'package:hive_ce/hive.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:booruflow/core/settings_service.dart';
 import 'package:booruflow/src/rust/api/booru_auth.dart';
 import 'package:booruflow/src/rust/api/booru_engine.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:flutter/foundation.dart';
+import 'package:hive_ce/hive.dart';
+import 'package:path_provider/path_provider.dart';
 
 final class BooruService {
   BooruService._();
@@ -35,7 +35,10 @@ final class BooruService {
   String cacheRevision(String sourceId) {
     final stored = _storedRevision('$sourceId:revision', 'anonymous');
     final browser = _webChallengeRevisions[sourceId];
-    return browser == null ? stored : '$stored:$browser';
+    return switch (browser) {
+      null => stored,
+      _ => '$stored:$browser',
+    };
   }
 
   String get networkCacheRevision =>

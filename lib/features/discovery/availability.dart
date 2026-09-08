@@ -1,8 +1,8 @@
-import 'package:hive_ce/hive.dart';
 import 'package:booruflow/core/app_runtime.dart';
 import 'package:booruflow/features/booru/booru_service.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
+import 'package:hive_ce/hive.dart';
 
 /// Successful probes survive restarts; authentication, route configuration and
 /// app changes invalidate them without changing the adapter's static contract.
@@ -51,9 +51,12 @@ class DiscoveryAvailability {
         } catch (_) {
           state = CapabilityAvailability.temporarilyUnavailable;
         }
-        final ttl = state == CapabilityAvailability.temporarilyUnavailable
-            ? const Duration(minutes: 5)
-            : const Duration(hours: 24);
+        final ttl = switch (state) {
+          CapabilityAvailability.temporarilyUnavailable => const Duration(
+            minutes: 5,
+          ),
+          _ => const Duration(hours: 24),
+        };
         await box.put(key, {
           'state': state.index,
           'expires': DateTime.now().add(ttl).millisecondsSinceEpoch,

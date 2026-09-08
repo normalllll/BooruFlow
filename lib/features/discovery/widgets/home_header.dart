@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
-import 'discovery_toolbar.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:flutter/material.dart';
+
+import 'discovery_toolbar.dart';
 
 /// Browsing navigation, separate from the search query editor and results header.
 class HomeHeader extends StatelessWidget {

@@ -1,19 +1,21 @@
-import 'dart:io';
 import 'dart:async';
-import 'package:toastification/toastification.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:hive_ce/hive.dart';
+import 'dart:io';
+
 import 'package:booruflow/app/app_router.dart';
 import 'package:booruflow/features/about/about_page.dart';
 import 'package:booruflow/features/booru/booru_service.dart';
 import 'package:booruflow/features/search/post_search_page.dart';
-import 'package:booruflow/features/search/user_tags_page.dart';
 import 'package:booruflow/features/search/tag_suggestion_repository.dart';
-import 'package:booruflow/shared/app_navigation.dart';
-import 'package:booruflow/shared/app_toast.dart';
-import 'package:booruflow/shared/app_theme.dart';
+import 'package:booruflow/features/search/user_tags_page.dart';
 import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/app_navigation.dart';
+import 'package:booruflow/shared/app_theme.dart';
+import 'package:booruflow/shared/app_toast.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:hive_ce/hive.dart';
+import 'package:toastification/toastification.dart';
+
 import 'search_interaction_test.dart' show testSource, SearchRepositoryFake;
 
 Future<void> settle(WidgetTester tester) async {

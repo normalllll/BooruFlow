@@ -1,21 +1,21 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_ce_flutter/adapters.dart';
-import 'package:package_info_plus/package_info_plus.dart';
-import 'package:booruflow/app/booru_flow_app.dart';
 import 'package:booruflow/app/app_http_overrides.dart';
+import 'package:booruflow/app/booru_flow_app.dart';
+import 'package:booruflow/core/app_runtime.dart';
 import 'package:booruflow/core/downloads/download_manager.dart';
 import 'package:booruflow/core/downloads/download_manager_configuration.dart';
-import 'package:booruflow/core/app_runtime.dart';
 import 'package:booruflow/core/settings_service.dart';
-import 'package:booruflow/features/downloads/logic.dart';
 import 'package:booruflow/features/booru/booru_service.dart';
+import 'package:booruflow/features/downloads/logic.dart';
 import 'package:booruflow/features/tags/tag_translations_service.dart';
 import 'package:booruflow/intl/locale_preferences.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/frb_generated.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_ce_flutter/adapters.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();

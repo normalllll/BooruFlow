@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:booruflow/shared/widgets/form_controls.dart';
+import 'package:flutter/material.dart';
+
 import 'source_picker.dart';
 
 /// Shared geometry keeps navigation and query editing anchored across pages.
@@ -32,30 +33,35 @@ class DiscoveryToolbar extends StatelessWidget {
       child: SizedBox(
         width: double.infinity,
         height: height,
-        child: query == null
-            ? SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                primary: false,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [picker, const SizedBox(width: 8), ...controls],
-                ),
-              )
-            : Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  picker,
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: SizedBox(height: height, child: query!),
-                  ),
-                  if (action != null) ...[
-                    const SizedBox(width: 8),
-                    SizedBox(width: actionSize, height: height, child: action!),
-                  ],
-                ],
+        child: switch (query) {
+          null => SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            primary: false,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [picker, const SizedBox(width: 8), ...controls],
+            ),
+          ),
+          final queryField => Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              picker,
+              const SizedBox(width: 8),
+              Expanded(
+                child: SizedBox(height: height, child: queryField),
               ),
+              if (action case final actionButton?) ...[
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: actionSize,
+                  height: height,
+                  child: actionButton,
+                ),
+              ],
+            ],
+          ),
+        },
       ),
     );
   }

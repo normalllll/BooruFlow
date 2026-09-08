@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:booruflow/features/discovery/discovery_page.dart';
+import 'package:flutter/material.dart';
 
 class PostListPage extends StatelessWidget {
   const PostListPage({super.key, required this.tags, required this.sourceId});

@@ -1,14 +1,15 @@
 import 'dart:math' as math;
-import 'package:flutter/material.dart';
-import 'package:booruflow/shared/widgets/tag_label.dart';
+
 import 'package:booruflow/features/booru/booru_service.dart';
+import 'package:booruflow/features/search/tag_suggestion_repository.dart';
+import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/widgets/auto_scaffold.dart'
     show AutoScaffold, shouldUseDesktopShell;
-import 'package:booruflow/features/search/tag_suggestion_repository.dart';
 import 'package:booruflow/shared/widgets/form_controls.dart';
-import 'package:booruflow/shared/widgets/rounded_surface.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
-import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/widgets/rounded_surface.dart';
+import 'package:booruflow/shared/widgets/tag_label.dart';
+import 'package:flutter/material.dart';
 
 class UserTagsPage extends StatefulWidget {
   const UserTagsPage({super.key, this.sourceId});
@@ -92,8 +93,13 @@ class _UserTagsPageState extends State<UserTagsPage> {
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: AppIconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 17),
-                      tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 17,
+                      ),
+                      tooltip: MaterialLocalizations.of(
+                        context,
+                      ).backButtonTooltip,
                       onPressed: () => Navigator.of(context).maybePop(),
                     ),
                   ),
@@ -123,15 +129,18 @@ class _UserTagsPageState extends State<UserTagsPage> {
                                   TagLabel(
                                     value: alias.value,
                                     translation: alias.displayName,
-                                    style:
-                                        Theme.of(context).textTheme.titleSmall,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleSmall,
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
                                     _sourceLabel(alias.sourceId),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: Theme.of(context).textTheme.bodySmall,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall,
                                   ),
                                 ],
                               ),
@@ -201,7 +210,10 @@ Future<UserTagAlias?> editUserTag(
                 DateTime.now().microsecondsSinceEpoch.toString(),
             value: raw.text.trim(),
             sourceId: source,
-            locale: existing == null ? locale : existing.locale,
+            locale: switch (existing) {
+              null => locale,
+              _ => existing.locale,
+            },
             displayName: display.text.trim().isEmpty
                 ? null
                 : display.text.trim(),
@@ -215,9 +227,10 @@ Future<UserTagAlias?> editUserTag(
         }
 
         return AlertDialog(
-          title: Text(
-            existing == null ? t.discovery.addCustomTag : t.discovery.editTag,
-          ),
+          title: Text(switch (existing) {
+            null => t.discovery.addCustomTag,
+            _ => t.discovery.editTag,
+          }),
           content: SizedBox(
             width: 420,
             child: SingleChildScrollView(
@@ -225,19 +238,18 @@ Future<UserTagAlias?> editUserTag(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (source == UserTagAlias.allSources)
-                    ...[
-                      Text(
-                        t.discovery.tagSource,
-                        style: Theme.of(context).textTheme.labelLarge,
-                      ),
-                      const SizedBox(height: 7),
-                      Text(
-                        t.discovery.allTagSources,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 16),
-                    ],
+                  if (source == UserTagAlias.allSources) ...[
+                    Text(
+                      t.discovery.tagSource,
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                    const SizedBox(height: 7),
+                    Text(
+                      t.discovery.allTagSources,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                   AppTextField(
                     controller: raw,
                     label: t.discovery.canonicalTag,

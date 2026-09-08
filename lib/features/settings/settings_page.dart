@@ -1,12 +1,5 @@
-import 'network_settings_page.dart';
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:path/path.dart' as path;
-import 'package:url_launcher/url_launcher_string.dart';
 import 'package:booruflow/core/app_runtime.dart';
 import 'package:booruflow/core/downloads/download_file_system.dart';
 import 'package:booruflow/core/settings_service.dart';
@@ -14,14 +7,22 @@ import 'package:booruflow/features/booru/booru_service.dart';
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/intl/locale_preferences.dart';
 import 'package:booruflow/intl/translations.g.dart';
-import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/shared/app_navigation.dart';
+import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/shared/widgets/auto_scaffold.dart';
 import 'package:booruflow/shared/widgets/form_controls.dart';
 import 'package:booruflow/shared/widgets/grouped_settings_list.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
 import 'package:booruflow/src/rust/api/booru_auth.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:path/path.dart' as path;
+import 'package:url_launcher/url_launcher_string.dart';
+
+import 'network_settings_page.dart';
 
 enum SettingsSection {
   sources('sources'),
@@ -68,11 +69,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
     _accountSource = service.selectedSource.value;
     _visitedSources.add(_accountSource);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
   Future<void> _open(SettingsSection section) async {
@@ -343,9 +339,11 @@ class _SettingsPageState extends State<SettingsPage> {
                     selectedRatings: SettingsService.ratings,
                     onChanged: (rating) {
                       final next = [...SettingsService.ratings];
-                      next.contains(rating)
-                          ? next.remove(rating)
-                          : next.add(rating);
+                      if (next.contains(rating)) {
+                        next.remove(rating);
+                      } else {
+                        next.add(rating);
+                      }
                       SettingsService.ratings = next;
                       refresh(() {});
                     },
@@ -583,9 +581,10 @@ class _AccountEditorState extends State<_AccountEditor> {
       future: _authState,
       builder: (_, snapshot) => Text(
         t.settings.account.statusValue(
-          status: snapshot.data == null
-              ? t.generic.loading
-              : _authStatusLabel(snapshot.data!.status),
+          status: switch (snapshot.data) {
+            null => t.generic.loading,
+            AuthState(:final status) => _authStatusLabel(status),
+          },
         ),
       ),
     ),

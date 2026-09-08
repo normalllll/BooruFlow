@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 
-import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:flutter/foundation.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 
 abstract interface class SettingsServiceStore {
   Map<String, dynamic> load();

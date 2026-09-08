@@ -1,20 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 import 'package:booruflow/core/app_runtime.dart';
+import 'package:booruflow/features/update/updater_service.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_toast.dart';
-import 'package:booruflow/features/update/updater_service.dart';
 import 'package:booruflow/shared/widgets/auto_scaffold.dart';
 import 'package:booruflow/shared/widgets/grouped_settings_list.dart';
+import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
-class AboutPage extends StatefulWidget {
+class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
-
-  @override
-  State<AboutPage> createState() => _AboutPageState();
-}
-
-class _AboutPageState extends State<AboutPage> {
   Widget buildItem({
     required String title,
     String? subtitle,
@@ -24,12 +18,14 @@ class _AboutPageState extends State<AboutPage> {
     return ListTile(
       leading: leading,
       title: Text(title),
-      subtitle: subtitle != null
-          ? Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis)
-          : null,
-      trailing: onTap == null
-          ? null
-          : const Icon(Icons.chevron_right_rounded, size: 20),
+      subtitle: switch (subtitle) {
+        null => null,
+        _ => Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis),
+      },
+      trailing: switch (onTap) {
+        null => null,
+        _ => const Icon(Icons.chevron_right_rounded, size: 20),
+      },
       onTap: onTap,
     );
   }

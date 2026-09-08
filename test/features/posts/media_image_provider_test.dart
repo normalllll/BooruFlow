@@ -3,13 +3,14 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-import 'package:flutter/painting.dart';
-import 'package:flutter_test/flutter_test.dart';
+
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/features/posts/widgets/rust_extended_network_image_provider.dart';
 import 'package:booruflow/src/rust/api/booru_download.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
+import 'package:flutter/painting.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 const request = MediaRequest(
   sourceId: 'source',

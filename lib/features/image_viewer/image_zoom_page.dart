@@ -1,14 +1,14 @@
 import 'dart:math' as math;
 
+import 'package:booruflow/features/posts/widgets/booru_image.dart';
+import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/widgets/auto_scaffold.dart';
+import 'package:booruflow/shared/widgets/interaction_controls.dart';
+import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 import 'package:vector_math/vector_math_64.dart' show Quad, Vector3, Matrix4;
-import 'package:booruflow/features/posts/widgets/booru_image.dart';
-import 'package:booruflow/intl/translations.g.dart';
-import 'package:booruflow/shared/widgets/auto_scaffold.dart';
-import 'package:booruflow/src/rust/api/booru_models.dart';
-import 'package:booruflow/shared/widgets/interaction_controls.dart';
 
 class ImageZoomPage extends StatefulWidget {
   final String url;
@@ -539,17 +539,15 @@ class _ZoomState extends State<Zoom>
       ..setTranslation(
         Vector3(
           unidirectionalCorrectedTotalTranslation.dx +
-              (widget.centerOnScale
-                  ? horizontalMid < 0
-                        ? 0
-                        : horizontalMid
-                  : 0),
+              switch ((widget.centerOnScale, horizontalMid)) {
+                (false, _) || (true, < 0) => 0,
+                (true, final mid) => mid,
+              },
           unidirectionalCorrectedTotalTranslation.dy +
-              (widget.centerOnScale
-                  ? verticalMid < 0
-                        ? 0
-                        : verticalMid
-                  : 0),
+              switch ((widget.centerOnScale, verticalMid)) {
+                (false, _) || (true, < 0) => 0,
+                (true, final mid) => mid,
+              },
           0.0,
         ),
       );
@@ -1099,11 +1097,11 @@ class _ZoomState extends State<Zoom>
             recalculateSizes();
           }
 
-          double opacity = widget.opacityScrollBars < 0
-              ? 0
-              : widget.opacityScrollBars > 1
-              ? 1
-              : widget.opacityScrollBars;
+          final opacity = switch (widget.opacityScrollBars) {
+            < 0 => 0.0,
+            > 1 => 1.0,
+            final value => value,
+          };
 
           return ClipRect(
             child: Container(

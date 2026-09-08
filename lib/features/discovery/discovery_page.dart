@@ -1,21 +1,22 @@
 import 'dart:async';
-import 'package:booruflow/features/discovery/widgets/home_header.dart';
-import 'package:flutter/material.dart';
-import 'package:booruflow/shared/widgets/auto_scaffold.dart';
+
 import 'package:booruflow/core/settings_service.dart';
 import 'package:booruflow/features/booru/booru_service.dart';
-import 'package:booruflow/features/discovery/logic.dart';
 import 'package:booruflow/features/discovery/availability.dart';
-import 'package:booruflow/features/discovery/widgets/post_collection_view.dart';
+import 'package:booruflow/features/discovery/logic.dart';
 import 'package:booruflow/features/discovery/widgets/discovery_toolbar.dart';
-import 'package:flutter/foundation.dart';
+import 'package:booruflow/features/discovery/widgets/home_header.dart';
+import 'package:booruflow/features/discovery/widgets/post_collection_view.dart';
 import 'package:booruflow/features/posts/models/post.dart';
+import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_navigation.dart';
 import 'package:booruflow/shared/app_toast.dart';
+import 'package:booruflow/shared/widgets/auto_scaffold.dart';
 import 'package:booruflow/shared/widgets/form_controls.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
-import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 class DiscoveryPage extends StatefulWidget {
   const DiscoveryPage({super.key, this.tags, this.sourceId, this.loader});
@@ -34,9 +35,10 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
   late PostCollectionController _controller;
   late final _query = TextEditingController(text: widget.tags?.join(' ') ?? '');
   BooruService get service => BooruService.instance;
-  String get sourceId => widget.tags == null
-      ? service.selectedSource.value
-      : widget.sourceId ?? service.selectedSource.value;
+  String get sourceId => switch (widget.tags) {
+    null => service.selectedSource.value,
+    _ => widget.sourceId ?? service.selectedSource.value,
+  };
   BooruSource get source => service.sourceById(sourceId);
   FeedCollectionRequest get feed =>
       _feeds[sourceId] ?? const FeedCollectionRequest();
@@ -56,9 +58,11 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
     _probe();
   }
 
-  PostCollectionController _acquire(CollectionKey key) => widget.loader == null
-      ? CollectionCache.instance.acquire(key)
-      : PostCollectionController(key, loader: widget.loader);
+  PostCollectionController _acquire(CollectionKey key) =>
+      switch (widget.loader) {
+        null => CollectionCache.instance.acquire(key),
+        _ => PostCollectionController(key, loader: widget.loader),
+      };
   void _release(PostCollectionController controller) {
     if (widget.loader == null) {
       CollectionCache.instance.release(controller.key);
@@ -69,9 +73,10 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
 
   CollectionKey _key() => CollectionKey(
     sourceId: sourceId,
-    request: widget.tags == null
-        ? feed
-        : TagSearchCollectionRequest(widget.tags!),
+    request: switch (widget.tags) {
+      null => feed,
+      _ => TagSearchCollectionRequest(widget.tags!),
+    },
     ratings: SettingsService.ratings,
     revision: service.revision.value,
   );
@@ -209,9 +214,11 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
                     value: SettingsService.ratings.contains(rating),
                     onChanged: (selected) {
                       final ratings = SettingsService.ratings.toSet();
-                      selected == true
-                          ? ratings.add(rating)
-                          : ratings.remove(rating);
+                      if (selected == true) {
+                        ratings.add(rating);
+                      } else {
+                        ratings.remove(rating);
+                      }
                       SettingsService.ratings = ratings.toList();
                       update(() {});
                     },
@@ -247,18 +254,20 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
     final caps = source.capabilities.discovery;
     _feeds[sourceId] = FeedCollectionRequest(
       kind: kind,
-      range: kind == FeedKind.recentPopular
-          ? caps.popularRanges.first
-          : kind == FeedKind.historicalPopular
-          ? caps.historicalRanges.first
-          : null,
-      date: kind == FeedKind.historicalPopular
-          ? DateTime.now()
-                .toUtc()
-                .subtract(const Duration(days: 1))
-                .toIso8601String()
-                .substring(0, 10)
-          : null,
+      range: switch (kind) {
+        FeedKind.recentPopular => caps.popularRanges.first,
+        FeedKind.historicalPopular => caps.historicalRanges.first,
+        _ => null,
+      },
+      date: switch (kind) {
+        FeedKind.historicalPopular =>
+          DateTime.now()
+              .toUtc()
+              .subtract(const Duration(days: 1))
+              .toIso8601String()
+              .substring(0, 10),
+        _ => null,
+      },
     );
     _changed();
   }
@@ -296,7 +305,12 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
         snap: false,
         automaticallyImplyLeading: false,
         toolbarHeight:
-            appFieldHeight(context) + 20 + (widget.tags != null ? 48 : 0),
+            appFieldHeight(context) +
+            20 +
+            (switch (widget.tags) {
+              null => 0,
+              _ => 48,
+            }),
         flexibleSpace: Padding(
           padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
           child: Column(
@@ -319,49 +333,51 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
                   onRetryProbe: _probeFailures.containsKey(_probeKey)
                       ? () => _probe(refresh: true)
                       : null,
-                  details: feed.range == null
-                      ? null
-                      : Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            SizedBox(
-                              width: 180,
-                              child: AppSelect<PopularRange>(
-                                value: feed.range,
-                                items: [
-                                  for (final range
-                                      in feed.kind == FeedKind.historicalPopular
-                                          ? caps.historicalRanges
-                                          : caps.popularRanges)
-                                    AppSelectItem(
-                                      value: range,
-                                      label:
-                                          feed.kind ==
-                                              FeedKind.historicalPopular
-                                          ? historicalRangeLabel(range)
-                                          : rangeLabel(range, caps.timeBasis),
-                                    ),
-                                ],
-                                onChanged: (range) {
-                                  _feeds[sourceId] = FeedCollectionRequest(
-                                    kind: feed.kind,
-                                    range: range,
-                                    date: feed.date,
-                                  );
-                                  _changed();
-                                },
-                              ),
-                            ),
-                            if (feed.kind == FeedKind.historicalPopular) ...[
-                              const SizedBox(width: 8),
-                              AppButton(
-                                label: feed.date!,
-                                compact: true,
-                                onPressed: _chooseDate,
-                              ),
+                  details: switch (feed.range) {
+                    null => null,
+                    _ => Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        SizedBox(
+                          width: 180,
+                          child: AppSelect<PopularRange>(
+                            value: feed.range,
+                            items: [
+                              for (final range in switch (feed.kind) {
+                                FeedKind.historicalPopular =>
+                                  caps.historicalRanges,
+                                _ => caps.popularRanges,
+                              })
+                                AppSelectItem(
+                                  value: range,
+                                  label: switch (feed.kind) {
+                                    FeedKind.historicalPopular =>
+                                      historicalRangeLabel(range),
+                                    _ => rangeLabel(range, caps.timeBasis),
+                                  },
+                                ),
                             ],
-                          ],
+                            onChanged: (range) {
+                              _feeds[sourceId] = FeedCollectionRequest(
+                                kind: feed.kind,
+                                range: range,
+                                date: feed.date,
+                              );
+                              _changed();
+                            },
+                          ),
                         ),
+                        if (feed.kind == FeedKind.historicalPopular) ...[
+                          const SizedBox(width: 8),
+                          AppButton(
+                            label: feed.date!,
+                            compact: true,
+                            onPressed: _chooseDate,
+                          ),
+                        ],
+                      ],
+                    ),
+                  },
                 )
               else ...[
                 SizedBox(

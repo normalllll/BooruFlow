@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:booruflow/features/tags/tag_translations_service.dart';
+import 'package:flutter/material.dart';
 
 class TranslatedTag extends StatelessWidget {
   final String text;

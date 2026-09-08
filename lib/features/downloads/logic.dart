@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:booruflow/core/downloads/download_manager.dart';
 import 'package:booruflow/core/downloads/download_models.dart';
+import 'package:booruflow/features/booru/booru_service.dart';
 import 'package:booruflow/features/downloads/booru_download_item.dart';
+import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_toast.dart';
-import 'package:booruflow/features/booru/booru_service.dart';
-import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 
 final class BooruDownloads {
@@ -48,15 +48,16 @@ final class BooruDownloads {
       final uri = Uri.parse(prepared.url);
       final expectedBytes = int.tryParse(prepared.expectedBytesDecimal ?? '');
       final preparedChecksum = prepared.checksum;
-      final checksum = preparedChecksum == null
-          ? null
-          : DownloadChecksum(
-              algorithm: switch (preparedChecksum.algorithm) {
-                ChecksumAlgorithm.md5 => DownloadChecksumAlgorithm.md5,
-                ChecksumAlgorithm.sha256 => DownloadChecksumAlgorithm.sha256,
-              },
-              value: preparedChecksum.value,
-            );
+      final checksum = switch (preparedChecksum) {
+        null => null,
+        _ => DownloadChecksum(
+          algorithm: switch (preparedChecksum.algorithm) {
+            ChecksumAlgorithm.md5 => DownloadChecksumAlgorithm.md5,
+            ChecksumAlgorithm.sha256 => DownloadChecksumAlgorithm.sha256,
+          },
+          value: preparedChecksum.value,
+        ),
+      };
       filename = prepared.filename;
       final job = DownloadJob.create(
         resourceId: post.resourceId,

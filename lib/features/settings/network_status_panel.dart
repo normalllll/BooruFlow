@@ -1,10 +1,10 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'network_settings_state.dart';
-import 'package:flutter/material.dart';
-
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'network_settings_state.dart';
 
 class NetworkStatusPanel extends ConsumerStatefulWidget {
   const NetworkStatusPanel({super.key});
@@ -219,17 +219,17 @@ class _NetworkStatusPanelState extends ConsumerState<NetworkStatusPanel> {
     mainAxisSize: MainAxisSize.min,
     children: [
       Icon(
-        available == null
-            ? Icons.remove_rounded
-            : available
-            ? Icons.check_circle_outline
-            : Icons.error_outline,
+        switch (available) {
+          null => Icons.remove_rounded,
+          true => Icons.check_circle_outline,
+          false => Icons.error_outline,
+        },
         size: 16,
-        color: available == null
-            ? Colors.grey
-            : available
-            ? Colors.green
-            : Colors.redAccent,
+        color: switch (available) {
+          null => Colors.grey,
+          true => Colors.green,
+          false => Colors.redAccent,
+        },
       ),
       const SizedBox(width: 5),
       Text(label, style: Theme.of(context).textTheme.bodySmall),
@@ -374,7 +374,10 @@ class _NetworkStatusPanelState extends ConsumerState<NetworkStatusPanel> {
           ),
           const SizedBox(height: 4),
           Text(
-            '$status${report.elapsedMs == null ? '' : ' · ${report.elapsedMs} ms'}',
+            '$status${switch (report.elapsedMs) {
+              null => '',
+              _ => ' · ${report.elapsedMs} ms',
+            }}',
             style: TextStyle(
               color: report.status == 'failed'
                   ? Theme.of(context).colorScheme.error

@@ -1,6 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'web_challenge_data_state.dart';
-import 'package:flutter/material.dart';
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/features/booru/booru_service.dart';
 import 'package:booruflow/features/booru/web_challenge_button.dart';
@@ -10,6 +7,10 @@ import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/api/web_challenge.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'web_challenge_data_state.dart';
 
 class WebChallengeDataPanel extends ConsumerStatefulWidget {
   const WebChallengeDataPanel({
@@ -102,16 +103,18 @@ class _WebChallengeDataPanelState extends ConsumerState<WebChallengeDataPanel> {
                             read: widget.readState,
                           )),
                         );
-                        final data = snapshot.asData?.value;
-                        final status = snapshot.hasError
-                            ? describeBooruError(snapshot.error)
-                            : data == null
-                            ? t.generic.loading
-                            : data.verified
-                            ? t.webChallenge.verified
-                            : data.hasSavedData
-                            ? t.webChallenge.saved
-                            : t.webChallenge.empty;
+                        final status = switch (snapshot) {
+                          AsyncValue(hasError: true, :final error) =>
+                            describeBooruError(error),
+                          AsyncData(value: WebChallengeState(verified: true)) =>
+                            t.webChallenge.verified,
+                          AsyncData(
+                            value: WebChallengeState(hasSavedData: true),
+                          ) =>
+                            t.webChallenge.saved,
+                          AsyncData() => t.webChallenge.empty,
+                          _ => t.generic.loading,
+                        };
                         return Tooltip(
                           message: status,
                           child: Text(

@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'save_target.dart';
 import 'download_request_options.dart';
+import 'save_target.dart';
 
 class DownloadJob {
   DownloadJob({

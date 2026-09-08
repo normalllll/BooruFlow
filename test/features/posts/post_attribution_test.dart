@@ -1,9 +1,10 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:booruflow/features/booru/booru_service.dart';
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/features/posts/post_attribution.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:flutter_test/flutter_test.dart';
+
 import '../discovery/search_interaction_test.dart' show testSource;
 
 Post post(String? author) => Post(
