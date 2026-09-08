@@ -691,6 +691,14 @@ class _PostDetailPanel extends StatelessWidget {
           ),
         ],
       ),
+      if (post.source.trim().isNotEmpty)
+        _MetadataRow(
+          label: t.postDetail.source,
+          icon: Icons.link,
+          value: post.source,
+          onTap: sourceIsUrl ? () => onOpenSource(post.source) : null,
+          onCopy: () => onCopy(post.source),
+        ),
       const SizedBox(height: 12),
       _StatsStrip(post: post),
       const SizedBox(height: 18),
@@ -726,14 +734,6 @@ class _PostDetailPanel extends StatelessWidget {
         value: _formatDateTime(post.createdAt),
       ),
       _MetadataRow(label: t.postDetail.author, value: post.authorLabel),
-      if (post.source.trim().isNotEmpty)
-        _MetadataRow(
-          label: t.postDetail.source,
-          icon: Icons.link,
-          value: post.source,
-          onTap: sourceIsUrl ? () => onOpenSource(post.source) : null,
-          onCopy: () => onCopy(post.source),
-        ),
       _MetadataRow(label: t.postDetail.width, value: '${post.width} px'),
       _MetadataRow(label: t.postDetail.height, value: '${post.height} px'),
       _MetadataRow(
