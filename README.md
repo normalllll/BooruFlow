@@ -28,8 +28,8 @@ Download packages from [GitHub Releases](https://github.com/normalllll/yande_gui
 | Android | [app-arm64-v8a-release.apk](https://github.com/normalllll/yande_gui/releases/latest/download/app-arm64-v8a-release.apk) | Suitable for most current phones. Choose [app-universal-release.apk](https://github.com/normalllll/yande_gui/releases/latest/download/app-universal-release.apk) if unsure about your architecture |
 | Windows | [windows-x64.zip](https://github.com/normalllll/yande_gui/releases/latest/download/windows-x64.zip) | Extract the archive and run the app |
 | Linux | [linux_amd64.deb](https://github.com/normalllll/yande_gui/releases/latest/download/linux_amd64.deb), [linux_amd64.rpm](https://github.com/normalllll/yande_gui/releases/latest/download/linux_amd64.rpm), or [linux-x64.tar.gz](https://github.com/normalllll/yande_gui/releases/latest/download/linux-x64.tar.gz) | Choose the package for your distribution. Builds target Ubuntu 24.04; older systems may lack required libraries |
-| macOS | [macos-universal-nosigned.zip](https://github.com/normalllll/yande_gui/releases/latest/download/macos-universal-nosigned.zip) | Supports Apple Silicon and Intel. The app is not notarized |
-| iOS | [ios-nosigned.ipa](https://github.com/normalllll/yande_gui/releases/latest/download/ios-nosigned.ipa) | Requires signing before installation |
+| macOS | [ARM64](https://github.com/normalllll/yande_gui/releases/latest/download/macos-arm64-nosigned.zip), [x86_64](https://github.com/normalllll/yande_gui/releases/latest/download/macos-x86_64-nosigned.zip) | Separate builds for Apple Silicon and Intel. The apps are not notarized |
+| iOS | [ios-nosigned.ipa](https://github.com/normalllll/yande_gui/releases/latest/download/ios-nosigned.ipa) | Requires signing before installation. SOCKS5, HTTPS, and authenticated download proxies require iOS 17+ |
 
 Android ARM32 and x86_64 packages are also available. Check the release assets for the packages included in each version.
 

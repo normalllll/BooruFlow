@@ -116,7 +116,7 @@ jobs:
             --android-project-arg=KEY_PASSWORD="$KEY_PASSWORD"
 
       - name: Upload android artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: release-android
           if-no-files-found: error
@@ -152,7 +152,7 @@ jobs:
           7z a -tzip windows-x64.zip .\*
 
       - name: Upload windows artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: release-windows
           if-no-files-found: error
@@ -320,7 +320,7 @@ jobs:
             usr
 
       - name: Upload linux artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: release-linux
           if-no-files-found: error
@@ -355,7 +355,7 @@ jobs:
           ditto -c -k --keepParent Payload ios-nosigned.ipa
 
       - name: Upload ios artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: release-ios
           if-no-files-found: error
@@ -365,9 +365,19 @@ jobs:
             build/ios/iphoneos/ios-nosigned.ipa
 
   build-and-release-macos:
-    name: Build macOS arm64 & x86_64
+    name: Build macOS ${{ matrix.arch }}
     runs-on: macos-26
     needs: validate
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            excluded-arch: x86_64
+            rust-target: aarch64-apple-darwin
+          - arch: x86_64
+            excluded-arch: arm64
+            rust-target: x86_64-apple-darwin
 
     steps:
       - name: Check out repository
@@ -376,38 +386,53 @@ jobs:
       - name: Set up SDKs and caches
         uses: ./.github/actions/setup
         with:
-          platform: macos
-          rust-targets: aarch64-apple-darwin,x86_64-apple-darwin
+          platform: macos-${{ matrix.arch }}
+          rust-targets: ${{ matrix.rust-target }}
 
-      - name: Build and package universal macOS app
+      - name: Select macOS architecture for all Xcode targets
+        env:
+          TARGET_ARCH: ${{ matrix.arch }}
+          EXCLUDED_ARCH: ${{ matrix.excluded-arch }}
+        run: |
+          # Xcode applies this override to Runner, Flutter, and plugin targets,
+          # including the build-settings queries made by Flutter before building.
+          CONFIG="$RUNNER_TEMP/booruflow-$TARGET_ARCH.xcconfig"
+          printf 'ARCHS = %s\nEXCLUDED_ARCHS = %s\nONLY_ACTIVE_ARCH = NO\n' \
+            "$TARGET_ARCH" "$EXCLUDED_ARCH" > "$CONFIG"
+          echo "XCODE_XCCONFIG_FILE=$CONFIG" >> "$GITHUB_ENV"
+
+      - name: Build and package macOS architecture
+        env:
+          TARGET_ARCH: ${{ matrix.arch }}
         run: |
           flutter config --no-enable-macos-arm64-only
           flutter build macos --release -v
           APP=build/macos/Build/Products/Release/BooruFlow.app
-          lipo -verify_arch arm64 x86_64 "$APP/Contents/MacOS/BooruFlow"
-          # Native Assets embeds Rust in a framework with an extensionless binary.
+          verify_architecture() {
+            local binary="$1"
+            lipo "$binary" -verify_arch "$TARGET_ARCH"
+            test "$(lipo "$binary" -archs)" = "$TARGET_ARCH" || {
+              echo "Expected only $TARGET_ARCH in $binary"
+              exit 1
+            }
+          }
+          verify_architecture "$APP/Contents/MacOS/BooruFlow"
           # Check every Mach-O library, including Flutter, plugins and Rust.
           while IFS= read -r -d '' library; do
             if file -b "$library" | grep -q 'Mach-O'; then
-              lipo -verify_arch arm64 x86_64 "$library"
+              verify_architecture "$library"
             fi
           done < <(find "$APP/Contents/Frameworks" -type f -print0)
-          ditto -c -k --sequesterRsrc --keepParent "$APP" macos-universal-nosigned.zip
-          # Keep filenames understood by previously released clients.
-          cp macos-universal-nosigned.zip macos-arm64-nosigned.zip
-          cp macos-universal-nosigned.zip macos-x86_64-nosigned.zip
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "macos-$TARGET_ARCH-nosigned.zip"
 
       - name: Upload macos artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
-          name: release-macos
+          name: release-macos-${{ matrix.arch }}
           if-no-files-found: error
           retention-days: 14
           compression-level: 0
-          path: |
-            macos-arm64-nosigned.zip
-            macos-x86_64-nosigned.zip
-            macos-universal-nosigned.zip
+          path: macos-${{ matrix.arch }}-nosigned.zip
 
   publish:
     name: Publish complete release
@@ -424,7 +449,7 @@ jobs:
       contents: write
     steps:
       - name: Download all release artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8.0.1
         with:
           pattern: release-*
           merge-multiple: true
@@ -435,7 +460,7 @@ jobs:
             app-arm64-v8a-release.apk app-armeabi-v7a-release.apk \
             app-universal-release.apk app-x86_64-release.apk \
             windows-x64.zip linux-x64.tar.gz linux_amd64.deb linux_amd64.rpm \
-            ios-nosigned.ipa macos-universal-nosigned.zip \
+            ios-nosigned.ipa \
             macos-arm64-nosigned.zip macos-x86_64-nosigned.zip; do
             test -s "release/$asset" || {
               echo "Missing or empty release asset: $asset"

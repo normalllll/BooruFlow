@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
@@ -79,8 +80,11 @@ class UpdaterService {
     } else if (Platform.isIOS) {
       return null;
     } else if (Platform.isMacOS) {
+      final assetName = Abi.current() == Abi.macosArm64
+          ? 'macos-arm64-nosigned.zip'
+          : 'macos-x86_64-nosigned.zip';
       for (final asset in assets) {
-        if (asset['name'] as String == 'macos-arm64-nosigned.zip') {
+        if (asset['name'] as String == assetName) {
           return asset['browser_download_url'] as String;
         }
       }

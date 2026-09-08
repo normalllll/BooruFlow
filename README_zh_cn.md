@@ -28,8 +28,8 @@
 | Android | [app-arm64-v8a-release.apk](https://github.com/normalllll/yande_gui/releases/latest/download/app-arm64-v8a-release.apk) | 适合大多数当前手机；不确定架构时选择 [app-universal-release.apk](https://github.com/normalllll/yande_gui/releases/latest/download/app-universal-release.apk) |
 | Windows | [windows-x64.zip](https://github.com/normalllll/yande_gui/releases/latest/download/windows-x64.zip) | 解压后运行应用 |
 | Linux | [linux_amd64.deb](https://github.com/normalllll/yande_gui/releases/latest/download/linux_amd64.deb)、[linux_amd64.rpm](https://github.com/normalllll/yande_gui/releases/latest/download/linux_amd64.rpm) 或 [linux-x64.tar.gz](https://github.com/normalllll/yande_gui/releases/latest/download/linux-x64.tar.gz) | 按发行版选择。基于 Ubuntu 24.04 构建，旧系统可能缺少所需库 |
-| macOS | [macos-universal-nosigned.zip](https://github.com/normalllll/yande_gui/releases/latest/download/macos-universal-nosigned.zip) | 支持 Apple Silicon 和 Intel，应用未经公证 |
-| iOS | [ios-nosigned.ipa](https://github.com/normalllll/yande_gui/releases/latest/download/ios-nosigned.ipa) | 安装前需要自行签名 |
+| macOS | [ARM64](https://github.com/normalllll/yande_gui/releases/latest/download/macos-arm64-nosigned.zip)、[x86_64](https://github.com/normalllll/yande_gui/releases/latest/download/macos-x86_64-nosigned.zip) | 分别为 Apple Silicon 和 Intel 构建，应用未经公证 |
+| iOS | [ios-nosigned.ipa](https://github.com/normalllll/yande_gui/releases/latest/download/ios-nosigned.ipa) | 安装前需要自行签名；SOCKS5、HTTPS 和带认证的下载代理需要 iOS 17+ |
 
 Android 另提供 ARM32 和 x86_64 安装包，各版本可用包以发行版附件为准。
 

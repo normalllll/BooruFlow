@@ -4,6 +4,7 @@ import Photos
 import UIKit
 import CryptoKit
 import CFNetwork
+import Network
 
 final class BooruFlowDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDownloadDelegate {
   static let shared = BooruFlowDownloadBridge()
@@ -34,7 +35,12 @@ final class BooruFlowDownloadBridge: NSObject, FlutterStreamHandler, URLSessionD
       self.backgroundCompletionHandlers[identifier] = completionHandler
       let stored = UserDefaults.standard.dictionary(forKey: self.sessionIdentifiersKey) as? [String: String]
       let proxyUrl = stored?[identifier].flatMap { $0.isEmpty ? nil : $0 }
-      _ = self.session(identifier: identifier, proxyUrl: proxyUrl)
+      do {
+        _ = try self.session(identifier: identifier, proxyUrl: proxyUrl)
+      } catch {
+        self.backgroundCompletionHandlers[identifier] = nil
+        DispatchQueue.main.async { completionHandler() }
+      }
     }
   }
 
@@ -122,7 +128,7 @@ final class BooruFlowDownloadBridge: NSObject, FlutterStreamHandler, URLSessionD
         if self.tasksByJob[job.id] != nil {
           continue
         }
-        guard let url = requestUrl(for: job) else {
+        guard let url = self.requestUrl(for: job) else {
           self.states[job.id] = NativeDownloadState(jobId: job.id, status: "failed", saveState: "none", error: "Invalid URL")
           self.emit(["type": "failed", "jobId": job.id, "error": "Invalid URL"])
           continue
@@ -143,7 +149,16 @@ final class BooruFlowDownloadBridge: NSObject, FlutterStreamHandler, URLSessionD
           self.emit(["type": "failed", "jobId": job.id, "error": "Could not encode download job"])
           continue
         }
-        let task = self.session(for: job.networkOptions).downloadTask(with: request)
+        let session: URLSession
+        do {
+          session = try self.session(for: job.networkOptions)
+        } catch {
+          let message = error.localizedDescription
+          self.states[job.id] = NativeDownloadState(jobId: job.id, status: "failed", saveState: "none", error: message)
+          self.emit(["type": "failed", "jobId": job.id, "error": message])
+          continue
+        }
+        let task = session.downloadTask(with: request)
         task.taskDescription = taskDescription
         self.tasksByJob[job.id] = task
         self.states[job.id] = NativeDownloadState(jobId: job.id, status: "running", saveState: "none", filename: job.filename)
@@ -346,15 +361,15 @@ final class BooruFlowDownloadBridge: NSObject, FlutterStreamHandler, URLSessionD
   private func restoreKnownSessions() {
     let stored = UserDefaults.standard.dictionary(forKey: sessionIdentifiersKey) as? [String: String] ?? [:]
     if stored.isEmpty {
-      _ = session(identifier: defaultSessionIdentifier, proxyUrl: nil)
+      _ = try? session(identifier: defaultSessionIdentifier, proxyUrl: nil)
       return
     }
     for (identifier, proxyUrl) in stored {
-      _ = session(identifier: identifier, proxyUrl: proxyUrl.isEmpty ? nil : proxyUrl)
+      _ = try? session(identifier: identifier, proxyUrl: proxyUrl.isEmpty ? nil : proxyUrl)
     }
   }
 
-  private func session(for options: NativeNetworkOptions) -> URLSession {
+  private func session(for options: NativeNetworkOptions) throws -> URLSession {
     let proxyUrl = options.proxyUrl?.trimmingCharacters(in: .whitespacesAndNewlines)
     let identifier: String
     if let proxyUrl, !proxyUrl.isEmpty {
@@ -363,10 +378,10 @@ final class BooruFlowDownloadBridge: NSObject, FlutterStreamHandler, URLSessionD
     } else {
       identifier = defaultSessionIdentifier
     }
-    return session(identifier: identifier, proxyUrl: proxyUrl)
+    return try session(identifier: identifier, proxyUrl: proxyUrl)
   }
 
-  private func session(identifier: String, proxyUrl: String?) -> URLSession {
+  private func session(identifier: String, proxyUrl: String?) throws -> URLSession {
     if let existing = sessionsByIdentifier[identifier] {
       return existing
     }
@@ -374,7 +389,7 @@ final class BooruFlowDownloadBridge: NSObject, FlutterStreamHandler, URLSessionD
     config.sessionSendsLaunchEvents = true
     config.httpMaximumConnectionsPerHost = 6
     if let proxyUrl, !proxyUrl.isEmpty {
-      config.connectionProxyDictionary = proxyDictionary(for: proxyUrl)
+      try configureProxy(for: proxyUrl, configuration: config)
     }
     let session = URLSession(configuration: config, delegate: self, delegateQueue: nil)
     sessionsByIdentifier[identifier] = session
@@ -384,27 +399,46 @@ final class BooruFlowDownloadBridge: NSObject, FlutterStreamHandler, URLSessionD
     return session
   }
 
-  private func proxyDictionary(for rawUrl: String) -> [AnyHashable: Any] {
-    guard let components = URLComponents(string: rawUrl), let host = components.host else {
-      return [:]
+  private func configureProxy(for rawUrl: String, configuration: URLSessionConfiguration) throws {
+    guard let components = URLComponents(string: rawUrl),
+          let host = components.host, !host.isEmpty else {
+      throw proxyError("Invalid download proxy URL.")
     }
     let scheme = components.scheme?.lowercased() ?? "http"
-    let port = components.port ?? (scheme.hasPrefix("socks") ? 1080 : 8080)
-    if scheme.hasPrefix("socks") {
-      return [
-        kCFNetworkProxiesSOCKSEnable as String: true,
-        kCFNetworkProxiesSOCKSProxy as String: host,
-        kCFNetworkProxiesSOCKSPort as String: port,
-      ]
+    let socks = scheme == "socks5" || scheme == "socks5h"
+    guard socks || scheme == "http" || scheme == "https" else {
+      throw proxyError("Unsupported download proxy scheme. Use HTTP, HTTPS, or SOCKS5.")
     }
-    return [
+    let port = components.port ?? (socks ? 1080 : (scheme == "https" ? 443 : 8080))
+    guard (1...65535).contains(port), let endpointPort = NWEndpoint.Port(rawValue: UInt16(port)) else {
+      throw proxyError("Invalid download proxy port.")
+    }
+    if #available(iOS 17.0, *) {
+      let endpoint = NWEndpoint.hostPort(host: NWEndpoint.Host(host), port: endpointPort)
+      var proxy = socks
+        ? ProxyConfiguration(socksv5Proxy: endpoint)
+        : ProxyConfiguration(httpCONNECTProxy: endpoint, tlsOptions: scheme == "https" ? NWProtocolTLS.Options() : nil)
+      proxy.allowFailover = false
+      if let username = components.user {
+        proxy.applyCredential(username: username, password: components.password ?? "")
+      }
+      configuration.proxyConfigurations = [proxy]
+      return
+    }
+    // Only the HTTP proxy constants are available on older iOS SDKs.
+    // Never drop an unsupported proxy and silently send a direct request.
+    guard scheme == "http", components.user == nil, components.password == nil else {
+      throw proxyError("SOCKS5, HTTPS, and authenticated download proxies require iOS 17 or later.")
+    }
+    configuration.connectionProxyDictionary = [
       kCFNetworkProxiesHTTPEnable as String: true,
       kCFNetworkProxiesHTTPProxy as String: host,
       kCFNetworkProxiesHTTPPort as String: port,
-      kCFNetworkProxiesHTTPSEnable as String: true,
-      kCFNetworkProxiesHTTPSProxy as String: host,
-      kCFNetworkProxiesHTTPSPort as String: port,
     ]
+  }
+
+  private func proxyError(_ message: String) -> NSError {
+    NSError(domain: "BooruFlowDownloadProxy", code: 1, userInfo: [NSLocalizedDescriptionKey: message])
   }
 
   private func requestUrl(for job: NativeDownloadJob) -> URL? {
@@ -509,13 +543,8 @@ final class BooruFlowDownloadBridge: NSObject, FlutterStreamHandler, URLSessionD
   }
 
   private func resolvePhotoAuthorizationStatus(_ status: PHAuthorizationStatus, openSettingsWhenDenied: Bool, completion: @escaping (PhotoPermissionOutcome) -> Void) {
-    if #available(iOS 14, *), status == .limited {
-      completion(.granted)
-      return
-    }
-
     switch status {
-    case .authorized:
+    case .authorized, .limited:
       completion(.granted)
     case .denied, .restricted:
       let message = "Photos add permission was denied."

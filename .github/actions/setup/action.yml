@@ -57,6 +57,20 @@ runs:
         echo "SCCACHE_GHA_ENABLED=true" >> "$GITHUB_ENV"
         echo "SCCACHE_GHA_VERSION=booruflow-v1-${{ inputs.platform }}" >> "$GITHUB_ENV"
 
+    - name: Connect Native Assets to compiler cache
+      shell: bash
+      run: |
+        # Hooks filter RUSTC_WRAPPER and the GHA credentials out of their env.
+        # Start the daemon here with credentials; Cargo hooks use its local socket.
+        # Keep credentials out of hook inputs and verbose Cargo environment logs.
+        SCCACHE_IDLE_TIMEOUT=0 sccache --start-server
+        mkdir -p .cargo
+        if [ -f .cargo/config.toml ] || [ -f .cargo/config ]; then
+          echo "A Cargo config already exists; merge the CI wrapper settings explicitly."
+          exit 1
+        fi
+        printf '[build]\nrustc-wrapper = "sccache"\nincremental = false\n' > .cargo/config.toml
+
     - name: Set up Flutter
       id: flutter
       uses: subosito/flutter-action@v2
