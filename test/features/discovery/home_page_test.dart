@@ -57,7 +57,7 @@ void main() {
                 tags: const ['hatsune_miku'],
                 sourceId: 'yande',
                 loader: (_, _) async =>
-                    const PostPageDto(items: [], exhausted: true),
+                    const PostPage(items: [], exhausted: true),
               ),
             ),
           ),
@@ -105,7 +105,7 @@ void main() {
             body: HomePage(
               loader: (key, _) async {
                 calls.add(key);
-                return const PostPageDto(items: [], exhausted: true);
+                return const PostPage(items: [], exhausted: true);
               },
             ),
           ),
@@ -146,7 +146,7 @@ void main() {
           body: HomePage(
             loader: (key, _) async {
               calls.add(key.ratings);
-              return const PostPageDto(items: [], exhausted: true);
+              return const PostPage(items: [], exhausted: true);
             },
           ),
         ),
@@ -172,7 +172,7 @@ void main() {
               tags: const ['sky'],
               sourceId: 'yande',
               loader: (_, _) async =>
-                  const PostPageDto(items: [], exhausted: true),
+                  const PostPage(items: [], exhausted: true),
             ),
           ),
         ),
@@ -308,7 +308,7 @@ void main() {
             child: Scaffold(
               body: HomePage(
                 loader: (_, _) async =>
-                    const PostPageDto(items: [], exhausted: true),
+                    const PostPage(items: [], exhausted: true),
               ),
             ),
           ),
@@ -332,7 +332,7 @@ void main() {
         home: Scaffold(
           body: HomePage(
             loader: (_, _) async {
-              throw const BooruErrorDto(
+              throw const BooruError(
                 code: BooruErrorCode.sourceUnavailable,
                 sourceId: 'yande',
                 httpStatus: 503,

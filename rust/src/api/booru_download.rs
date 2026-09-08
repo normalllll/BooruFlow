@@ -1,8 +1,8 @@
-use crate::api::booru_models::{ChecksumDto, HttpHeaderDto, MediaKind, MediaVariantKind};
+use crate::api::booru_models::{Checksum, HttpHeader, MediaKind, MediaVariantKind};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct DownloadRequestDto {
+pub struct DownloadRequest {
     pub source_id: String,
     pub post_id: String,
     pub variant: MediaVariantKind,
@@ -10,20 +10,20 @@ pub struct DownloadRequestDto {
 }
 
 #[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct PreparedDownloadDto {
+pub struct PreparedDownload {
     pub source_id: String,
     pub post_id: String,
     pub variant: MediaVariantKind,
     pub url: String,
-    pub headers: Vec<HttpHeaderDto>,
+    pub headers: Vec<HttpHeader>,
     pub expected_bytes_decimal: Option<String>,
     pub allowed_media_kinds: Vec<MediaKind>,
-    pub checksum: Option<ChecksumDto>,
+    pub checksum: Option<Checksum>,
     pub filename: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub enum DownloadEventDto {
+pub enum DownloadEvent {
     Progress {
         received_bytes_decimal: String,
         total_bytes_decimal: Option<String>,
@@ -35,9 +35,9 @@ pub enum DownloadEventDto {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub enum MediaFetchEventDto {
+pub enum MediaFetchEvent {
     Failed {
-        error: crate::booru::error::BooruErrorDto,
+        error: crate::booru::error::BooruError,
     },
     Chunk {
         bytes: Vec<u8>,

@@ -59,7 +59,7 @@ final class CollectionKey {
 }
 
 typedef CollectionLoader =
-    Future<PostPageDto> Function(CollectionKey key, String? cursor);
+    Future<PostPage> Function(CollectionKey key, String? cursor);
 
 class NoSupportedRatings implements Exception {}
 
@@ -77,7 +77,7 @@ List<ContentRating> ratingsForSource(
   return values;
 }
 
-Future<PostPageDto> loadCollection(CollectionKey key, String? cursor) {
+Future<PostPage> loadCollection(CollectionKey key, String? cursor) {
   final engine = BooruService.instance.engine;
   final ratings = ratingsForSource(
     key,
@@ -86,7 +86,7 @@ Future<PostPageDto> loadCollection(CollectionKey key, String? cursor) {
   return switch (key.request) {
     FeedCollectionRequest(:final kind, :final range, :final date) =>
       engine.feed(
-        request: FeedRequestDto(
+        request: FeedRequest(
           sourceId: key.sourceId,
           kind: kind,
           range: range,
@@ -97,7 +97,7 @@ Future<PostPageDto> loadCollection(CollectionKey key, String? cursor) {
         ),
       ),
     TagSearchCollectionRequest(:final tags) => engine.search(
-      request: SearchRequestDto(
+      request: SearchRequest(
         sourceId: key.sourceId,
         queryText: tags.join(' '),
         ratings: ratings,

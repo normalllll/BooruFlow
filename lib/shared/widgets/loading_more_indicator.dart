@@ -192,7 +192,7 @@ class _ErrorContentState extends State<_ErrorContent> {
     _timer?.cancel();
     final error = switch (widget.error) {
       BooruReadableException(:final cause) => cause,
-      BooruErrorDto value => value,
+      BooruError value => value,
       _ => null,
     };
     final seconds = error?.code == BooruErrorCode.rateLimited

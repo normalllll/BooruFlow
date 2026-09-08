@@ -17,20 +17,20 @@ final class BooruService {
   final selectedSource = ValueNotifier<String>('yande');
   final revision = ValueNotifier<int>(0);
   late BooruEngine _engine;
-  late List<BooruSourceDto> _sources;
+  late List<BooruSource> _sources;
   late Box<dynamic> _credentials;
   late String _supportDirectory;
   late String _version;
 
   BooruEngine get engine => _engine;
-  List<BooruSourceDto> get sources => List.unmodifiable(_sources);
+  List<BooruSource> get sources => List.unmodifiable(_sources);
   @visibleForTesting
-  void useSourcesForTesting(List<BooruSourceDto> sources) {
+  void useSourcesForTesting(List<BooruSource> sources) {
     _sources = List.unmodifiable(sources);
     selectedSource.value = sources.first.sourceId;
   }
 
-  BooruSourceDto get currentSource => sourceById(selectedSource.value);
+  BooruSource get currentSource => sourceById(selectedSource.value);
   String cacheRevision(String sourceId) =>
       _storedRevision('$sourceId:revision', 'anonymous');
   String get networkCacheRevision =>
@@ -43,7 +43,7 @@ final class BooruService {
     return fallback;
   }
 
-  BooruSourceDto sourceById(String sourceId) =>
+  BooruSource sourceById(String sourceId) =>
       _sources.firstWhere((source) => source.sourceId == sourceId);
 
   Future<void> initialize(String version) async {
@@ -63,7 +63,7 @@ final class BooruService {
     revision.value++;
   }
 
-  Future<RouteCacheStateDto> refreshNetworkRoutes() async {
+  Future<RouteCacheState> refreshNetworkRoutes() async {
     final state = await _engine.refreshRouteCache();
     await _credentials.put(
       'networkRevision',
@@ -80,7 +80,7 @@ final class BooruService {
 
   Future<void> _createEngine() async {
     _engine = await BooruEngine.newInstance(
-      config: BooruEngineConfigDto(
+      config: BooruEngineConfig(
         appSupportDirectory: _supportDirectory,
         proxyUrl: SettingsService.proxyUrl,
         fallbackMode: SettingsService.networkFallbackMode,
@@ -97,15 +97,15 @@ final class BooruService {
     await _engine.initializeRouteCache();
   }
 
-  Future<AuthStateDto> authState(String sourceId) =>
+  Future<AuthState> authState(String sourceId) =>
       _engine.authState(sourceId: sourceId);
 
-  Future<AuthSchemaDto> authSchema(String sourceId) =>
+  Future<AuthSchema> authSchema(String sourceId) =>
       _engine.authSchema(sourceId: sourceId);
 
-  Future<AuthStateDto> saveCredentials(
+  Future<AuthState> saveCredentials(
     String sourceId,
-    SourceCredentialsDto value,
+    SourceCredentials value,
   ) async {
     await _credentials.put(sourceId, <String, String?>{
       'username': value.username,
@@ -124,7 +124,7 @@ final class BooruService {
     return state;
   }
 
-  Future<AuthStateDto> saveWebSession(
+  Future<AuthState> saveWebSession(
     String sourceId, {
     required String cookieHeader,
     required String userAgent,
@@ -190,7 +190,7 @@ final class BooruService {
         } else {
           await _engine.setCredentials(
             sourceId: source.sourceId,
-            credentials: SourceCredentialsDto(
+            credentials: SourceCredentials(
               username: _nullIfEmpty(saved['username']),
               userId: _nullIfEmpty(saved['userId']),
               apiKey: _nullIfEmpty(saved['apiKey']),
@@ -203,14 +203,14 @@ final class BooruService {
     }
   }
 
-  List<WebCookieDto> _parseCookieHeader(String value) {
+  List<WebCookie> _parseCookieHeader(String value) {
     return value
         .split(';')
         .map((part) => part.trim())
         .where((part) => part.contains('='))
         .map((part) {
           final separator = part.indexOf('=');
-          return WebCookieDto(
+          return WebCookie(
             name: part.substring(0, separator).trim(),
             value: part.substring(separator + 1).trim(),
             domain: '.anime-pictures.net',

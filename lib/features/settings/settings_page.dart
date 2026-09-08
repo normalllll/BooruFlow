@@ -583,7 +583,7 @@ class _AccountEditor extends StatefulWidget {
   });
 
   final BooruService service;
-  final BooruSourceDto source;
+  final BooruSource source;
 
   @override
   State<_AccountEditor> createState() => _AccountEditorState();
@@ -593,8 +593,8 @@ class _AccountEditorState extends State<_AccountEditor> {
   final _auth = <AuthFieldKind, TextEditingController>{};
   final _cookie = TextEditingController();
   final _userAgent = TextEditingController();
-  late Future<AuthSchemaDto> _schema;
-  late Future<AuthStateDto> _authState;
+  late Future<AuthSchema> _schema;
+  late Future<AuthState> _authState;
   bool _busy = false;
 
   String get sourceId => widget.source.sourceId;
@@ -634,7 +634,7 @@ class _AccountEditorState extends State<_AccountEditor> {
   }
 
   @override
-  Widget build(BuildContext context) => FutureBuilder<AuthSchemaDto>(
+  Widget build(BuildContext context) => FutureBuilder<AuthSchema>(
     future: _schema,
     builder: (context, snapshot) {
       final items = <Widget>[_header()];
@@ -682,7 +682,7 @@ class _AccountEditorState extends State<_AccountEditor> {
   Widget _header() => ListTile(
     leading: const Icon(CupertinoIcons.person_crop_circle),
     title: Text(widget.source.displayName),
-    subtitle: FutureBuilder<AuthStateDto>(
+    subtitle: FutureBuilder<AuthState>(
       future: _authState,
       builder: (_, snapshot) => Text(
         t.settings.account.statusValue(
@@ -694,7 +694,7 @@ class _AccountEditorState extends State<_AccountEditor> {
     ),
   );
 
-  List<Widget> _fields(AuthSchemaDto schema) {
+  List<Widget> _fields(AuthSchema schema) {
     if (schema.usesWebSession) {
       return [
         ListTile(
@@ -737,7 +737,7 @@ class _AccountEditorState extends State<_AccountEditor> {
     ];
   }
 
-  Widget _actions(AuthSchemaDto schema) => ListTile(
+  Widget _actions(AuthSchema schema) => ListTile(
     leading: const Icon(CupertinoIcons.shield),
     title: Text(t.settings.account.actions),
     subtitle: Padding(
@@ -766,7 +766,7 @@ class _AccountEditorState extends State<_AccountEditor> {
     ),
   );
 
-  Future<void> _save(AuthSchemaDto schema) async {
+  Future<void> _save(AuthSchema schema) async {
     setState(() => _busy = true);
     try {
       final state = schema.usesWebSession
@@ -777,7 +777,7 @@ class _AccountEditorState extends State<_AccountEditor> {
             )
           : await widget.service.saveCredentials(
               sourceId,
-              SourceCredentialsDto(
+              SourceCredentials(
                 username: _value(AuthFieldKind.username),
                 userId: _value(AuthFieldKind.userId),
                 apiKey: _value(AuthFieldKind.apiKey),

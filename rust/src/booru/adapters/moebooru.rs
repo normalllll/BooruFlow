@@ -1,14 +1,14 @@
-#[cfg(test)]
-use crate::api::booru_models::{ChecksumAlgorithm, ChecksumDto};
 use crate::api::booru_models::{
-    ContentRating, MediaType, MediaVariantKind, TagCategory, TagSuggestionDto,
+    BooruTagSuggestion, ContentRating, MediaType, MediaVariantKind, TagCategory,
 };
+#[cfg(test)]
+use crate::api::booru_models::{Checksum, ChecksumAlgorithm};
 use crate::booru::adapter::{BooruAdapter, RequestContext};
 use crate::booru::adapters::common::{
     boolean, media, parse_json, rating, signed32, string, tag_list, unix_to_iso8601, unsigned,
     unsigned32, username, validate_media_hosts,
 };
-use crate::booru::error::{BooruErrorDto, BooruResult};
+use crate::booru::error::{BooruError, BooruResult};
 use crate::booru::model::{Post, PostFlags, PostId, PostPage, SearchQuery};
 use crate::booru::network::{RequestSpec, ResponseKind};
 use crate::booru::source::SourceDefinition;
@@ -29,13 +29,13 @@ impl MoebooruAdapter {
         let json = parse_json(self.definition.id, bytes)?;
         let items = json
             .as_array()
-            .ok_or_else(|| BooruErrorDto::invalid_response(self.definition.id))?;
+            .ok_or_else(|| BooruError::invalid_response(self.definition.id))?;
         items.iter().map(|value| self.parse_post(value)).collect()
     }
 
     fn parse_post(&self, value: &Value) -> BooruResult<Post> {
-        let id = string(value, "id")
-            .ok_or_else(|| BooruErrorDto::invalid_response(self.definition.id))?;
+        let id =
+            string(value, "id").ok_or_else(|| BooruError::invalid_response(self.definition.id))?;
         let md5 = string(value, "md5");
         let file_ext = string(value, "file_ext");
         let mut variants = Vec::new();
@@ -90,7 +90,7 @@ impl MoebooruAdapter {
             variants.push(value);
         }
         if variants.is_empty() {
-            return Err(BooruErrorDto::invalid_response(self.definition.id));
+            return Err(BooruError::invalid_response(self.definition.id));
         }
         validate_media_hosts(&self.definition, &variants)?;
         Ok(Post {
@@ -130,7 +130,7 @@ impl BooruAdapter for MoebooruAdapter {
             .as_deref()
             .unwrap_or("1")
             .parse::<u32>()
-            .map_err(|_| BooruErrorDto::invalid_request(Some(self.definition.id)))?;
+            .map_err(|_| BooruError::invalid_request(Some(self.definition.id)))?;
         let limit = query.page_size.clamp(1, self.definition.max_page_size);
         let mut tags = query.text.trim().to_owned();
         if query.ratings.len() == 1 {
@@ -148,7 +148,7 @@ impl BooruAdapter for MoebooruAdapter {
             }
         }
         let url = reqwest::Url::parse(&format!("{}/post.json", self.definition.api_base))
-            .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
         let mut spec = RequestSpec::get(url, ResponseKind::Json);
         spec.query = vec![
             ("tags".to_owned(), tags),
@@ -171,7 +171,7 @@ impl BooruAdapter for MoebooruAdapter {
     async fn feed(
         &self,
         ctx: &RequestContext,
-        request: crate::api::booru_models::FeedRequestDto,
+        request: crate::api::booru_models::FeedRequest,
     ) -> BooruResult<PostPage> {
         use crate::api::booru_models::FeedKind;
         use crate::booru::discovery::{latest_query, parse_date, period, scale};
@@ -179,11 +179,11 @@ impl BooruAdapter for MoebooruAdapter {
             return self.search(ctx, latest_query(request)).await;
         }
         if request.cursor.is_some() {
-            return Err(BooruErrorDto::invalid_request(Some(self.definition.id)));
+            return Err(BooruError::invalid_request(Some(self.definition.id)));
         }
         let range = request
             .range
-            .ok_or_else(|| BooruErrorDto::invalid_request(Some(self.definition.id)))?;
+            .ok_or_else(|| BooruError::invalid_request(Some(self.definition.id)))?;
         let (endpoint, query) = match request.kind {
             FeedKind::RecentPopular => (
                 "popular_recent".to_owned(),
@@ -209,7 +209,7 @@ impl BooruAdapter for MoebooruAdapter {
             "{}/post/{endpoint}.json",
             self.definition.api_base
         ))
-        .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+        .map_err(|_| BooruError::invalid_response(self.definition.id))?;
         let mut spec = RequestSpec::get(url, ResponseKind::Json);
         spec.query = query;
         let response = ctx.runtime.execute(&self.definition, spec).await?;
@@ -225,7 +225,7 @@ impl BooruAdapter for MoebooruAdapter {
     async fn get_post(&self, ctx: &RequestContext, id: &PostId) -> BooruResult<Post> {
         validate_post_id(id, self.definition.id)?;
         let url = reqwest::Url::parse(&format!("{}/post.json", self.definition.api_base))
-            .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
         let mut spec = RequestSpec::get(url, ResponseKind::Json);
         spec.query = vec![
             ("tags".to_owned(), format!("id:{}", id.0)),
@@ -235,16 +235,16 @@ impl BooruAdapter for MoebooruAdapter {
         self.parse_posts(&response.body)?
             .into_iter()
             .next()
-            .ok_or_else(|| BooruErrorDto::invalid_response(self.definition.id))
+            .ok_or_else(|| BooruError::invalid_response(self.definition.id))
     }
 
     async fn autocomplete(
         &self,
         ctx: &RequestContext,
         text: &str,
-    ) -> BooruResult<Vec<TagSuggestionDto>> {
+    ) -> BooruResult<Vec<BooruTagSuggestion>> {
         let url = reqwest::Url::parse(&format!("{}/tag.json", self.definition.api_base))
-            .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
         let mut spec = RequestSpec::get(url, ResponseKind::Json);
         spec.query = vec![
             ("name".to_owned(), format!("{}*", text.trim())),
@@ -255,7 +255,7 @@ impl BooruAdapter for MoebooruAdapter {
         let json = parse_json(self.definition.id, &response.body)?;
         let values = json
             .as_array()
-            .ok_or_else(|| BooruErrorDto::invalid_response(self.definition.id))?;
+            .ok_or_else(|| BooruError::invalid_response(self.definition.id))?;
         Ok(values
             .iter()
             .filter_map(|value| {
@@ -267,7 +267,7 @@ impl BooruAdapter for MoebooruAdapter {
                     Some(5) => TagCategory::Meta,
                     _ => TagCategory::General,
                 };
-                Some(TagSuggestionDto {
+                Some(BooruTagSuggestion {
                     label: value_text.clone(),
                     value: value_text,
                     category,
@@ -280,7 +280,7 @@ impl BooruAdapter for MoebooruAdapter {
     async fn related_posts(&self, ctx: &RequestContext, id: &PostId) -> BooruResult<Vec<Post>> {
         validate_post_id(id, self.definition.id)?;
         let url = reqwest::Url::parse(&format!("{}/post/similar.json", self.definition.api_base))
-            .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
         let mut spec = RequestSpec::get(url, ResponseKind::Json);
         spec.query = vec![("id".to_owned(), id.0.clone())];
         let response = ctx.runtime.execute(&self.definition, spec).await?;
@@ -304,7 +304,7 @@ fn validate_post_id(id: &PostId, source_id: &str) -> BooruResult<()> {
     if !id.0.is_empty() && id.0.bytes().all(|byte| byte.is_ascii_digit()) {
         Ok(())
     } else {
-        Err(BooruErrorDto::invalid_request(Some(source_id)))
+        Err(BooruError::invalid_request(Some(source_id)))
     }
 }
 
@@ -323,11 +323,11 @@ mod tests {
     }
 
     #[test]
-    fn preserves_source_username_in_dto() {
+    fn preserves_source_username_in_api_model() {
         let fixture = serde_json::json!({"id":1,"file_url":"https://files.yande.re/a.jpg","author":" Alice "});
         let post = adapter().parse_post(&fixture).unwrap();
         assert_eq!(post.author.as_deref(), Some("Alice"));
-        assert_eq!(post.into_dto().author.as_deref(), Some("Alice"));
+        assert_eq!(post.into_api().author.as_deref(), Some("Alice"));
     }
     #[test]
     fn parses_moebooru_post_and_variants() {
@@ -338,7 +338,7 @@ mod tests {
         assert_eq!(posts[0].media.len(), 2);
         assert_eq!(
             posts[0].media.last().unwrap().checksum,
-            Some(ChecksumDto {
+            Some(Checksum {
                 algorithm: ChecksumAlgorithm::Md5,
                 value: "0123456789abcdef0123456789abcdef".to_owned(),
             })

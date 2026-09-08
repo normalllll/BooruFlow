@@ -1,6 +1,6 @@
 use crate::api::booru_models::{
-    post_key, BooruPostDto, BooruTagDto, ChecksumDto, ContentRating, MediaType, MediaVariantDto,
-    MediaVariantKind, PostFlagsDto, TagCategory,
+    post_key, BooruPost, BooruTag, Checksum, ContentRating, MediaType,
+    MediaVariant as ApiMediaVariant, MediaVariantKind, PostFlags as ApiPostFlags, TagCategory,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -51,7 +51,7 @@ pub struct MediaVariant {
     pub byte_length: Option<u64>,
     pub media_type: Option<MediaType>,
     pub extension: Option<String>,
-    pub checksum: Option<ChecksumDto>,
+    pub checksum: Option<Checksum>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -64,9 +64,9 @@ pub struct PostFlags {
 }
 
 impl Post {
-    pub fn into_dto(self) -> BooruPostDto {
+    pub fn into_api(self) -> BooruPost {
         let key = post_key(&self.source_id, &self.id.0);
-        BooruPostDto {
+        BooruPost {
             source_id: self.source_id,
             author: self.author,
             post_id: self.id.0,
@@ -79,7 +79,7 @@ impl Post {
             tags: self
                 .tags
                 .into_iter()
-                .map(|tag| BooruTagDto {
+                .map(|tag| BooruTag {
                     name: tag.name,
                     category: tag.category,
                 })
@@ -87,7 +87,7 @@ impl Post {
             media: self
                 .media
                 .into_iter()
-                .map(|media| MediaVariantDto {
+                .map(|media| ApiMediaVariant {
                     kind: media.kind,
                     url: media.url,
                     width: media.width,
@@ -98,7 +98,7 @@ impl Post {
                     checksum: media.checksum,
                 })
                 .collect(),
-            flags: PostFlagsDto {
+            flags: ApiPostFlags {
                 has_children: self.flags.has_children,
                 parent_id: self.flags.parent_id.map(|id| id.0),
                 is_pending: self.flags.is_pending,

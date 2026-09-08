@@ -1,13 +1,13 @@
 use crate::api::booru_models::{
-    ChecksumAlgorithm, ChecksumDto, ContentRating, MediaType, MediaVariantKind, TagCategory,
+    Checksum, ChecksumAlgorithm, ContentRating, MediaType, MediaVariantKind, TagCategory,
 };
-use crate::booru::error::{BooruErrorDto, BooruResult};
+use crate::booru::error::{BooruError, BooruResult};
 use crate::booru::model::{extension_from_url, media_type_from_extension, MediaVariant, Tag};
 use crate::booru::source::SourceDefinition;
 use serde_json::Value;
 
 pub fn parse_json(source_id: &str, bytes: &[u8]) -> BooruResult<Value> {
-    serde_json::from_slice(bytes).map_err(|_| BooruErrorDto::invalid_response(source_id))
+    serde_json::from_slice(bytes).map_err(|_| BooruError::invalid_response(source_id))
 }
 
 pub fn string(value: &Value, key: &str) -> Option<String> {
@@ -112,12 +112,10 @@ pub fn media(
     let extension = extension.or_else(|| extension_from_url(&url));
     let media_type =
         media_type.or_else(|| extension.as_deref().and_then(media_type_from_extension));
-    let checksum = md5
-        .filter(|value| is_hex(value, 32))
-        .map(|value| ChecksumDto {
-            algorithm: ChecksumAlgorithm::Md5,
-            value: value.to_ascii_lowercase(),
-        });
+    let checksum = md5.filter(|value| is_hex(value, 32)).map(|value| Checksum {
+        algorithm: ChecksumAlgorithm::Md5,
+        value: value.to_ascii_lowercase(),
+    });
     Some(MediaVariant {
         kind,
         url,
@@ -140,10 +138,10 @@ pub fn unix_to_iso8601(seconds: Option<u64>) -> Option<String> {
 
 pub fn validate_media_hosts(source: &SourceDefinition, media: &[MediaVariant]) -> BooruResult<()> {
     for item in media {
-        let url = reqwest::Url::parse(&item.url)
-            .map_err(|_| BooruErrorDto::invalid_response(source.id))?;
+        let url =
+            reqwest::Url::parse(&item.url).map_err(|_| BooruError::invalid_response(source.id))?;
         if url.scheme() != "https" || !url.host_str().is_some_and(|host| source.allows_host(host)) {
-            return Err(BooruErrorDto::invalid_response(source.id));
+            return Err(BooruError::invalid_response(source.id));
         }
     }
     Ok(())

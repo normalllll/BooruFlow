@@ -1,10 +1,10 @@
-use crate::api::booru_auth::{AuthStateDto, AuthStatus};
+use crate::api::booru_auth::{AuthState, AuthStatus};
 use crate::api::booru_models::{ContentRating, MediaType, MediaVariantKind, TagCategory};
 use crate::booru::adapter::{BooruAdapter, PreparedMedia, RequestContext};
 use crate::booru::adapters::common::{
     media, parse_json, signed32, string, unsigned, unsigned32, username, validate_media_hosts,
 };
-use crate::booru::error::{BooruErrorCode, BooruErrorDto, BooruResult};
+use crate::booru::error::{BooruError, BooruErrorCode, BooruResult};
 use crate::booru::model::{Post, PostFlags, PostId, PostPage, SearchQuery, Tag};
 use crate::booru::network::{RequestSpec, ResponseKind};
 use crate::booru::source::SourceDefinition;
@@ -25,7 +25,7 @@ impl AnimePicturesAdapter {
         let values = json
             .get("posts")
             .and_then(Value::as_array)
-            .ok_or_else(|| BooruErrorDto::invalid_response(self.definition.id))?;
+            .ok_or_else(|| BooruError::invalid_response(self.definition.id))?;
         let pages = unsigned32(&json, "max_pages")
             .or_else(|| unsigned32(&json, "pages"))
             .or_else(|| unsigned32(&json, "page_count"));
@@ -37,8 +37,8 @@ impl AnimePicturesAdapter {
     }
 
     fn parse_post(&self, value: &Value, detail: bool) -> BooruResult<Post> {
-        let id = string(value, "id")
-            .ok_or_else(|| BooruErrorDto::invalid_response(self.definition.id))?;
+        let id =
+            string(value, "id").ok_or_else(|| BooruError::invalid_response(self.definition.id))?;
         let md5 = string(value, "md5");
         let extension = string(value, "ext").map(|value| value.trim_start_matches('.').to_owned());
         let width = unsigned32(value, "width");
@@ -98,7 +98,7 @@ impl AnimePicturesAdapter {
             }
         }
         if variants.is_empty() {
-            return Err(BooruErrorDto::invalid_response(self.definition.id));
+            return Err(BooruError::invalid_response(self.definition.id));
         }
         validate_media_hosts(&self.definition, &variants)?;
         let tags = value
@@ -124,14 +124,14 @@ impl AnimePicturesAdapter {
     fn original_url(&self, file_url: &str) -> BooruResult<String> {
         if file_url.starts_with("https://") {
             let parsed = reqwest::Url::parse(file_url)
-                .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+                .map_err(|_| BooruError::invalid_response(self.definition.id))?;
             if parsed
                 .host_str()
                 .is_some_and(|host| self.definition.allows_host(host))
             {
                 return Ok(parsed.to_string());
             }
-            return Err(BooruErrorDto::invalid_response(self.definition.id));
+            return Err(BooruError::invalid_response(self.definition.id));
         }
         let segments = file_url
             .trim_start_matches('/')
@@ -143,14 +143,14 @@ impl AnimePicturesAdapter {
                 .iter()
                 .any(|segment| matches!(*segment, "." | ".."))
         {
-            return Err(BooruErrorDto::invalid_response(self.definition.id));
+            return Err(BooruError::invalid_response(self.definition.id));
         }
         let mut url =
             reqwest::Url::parse("https://api.anime-pictures.net/pictures/download_image/")
-                .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+                .map_err(|_| BooruError::invalid_response(self.definition.id))?;
         let mut path = url
             .path_segments_mut()
-            .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
         path.pop_if_empty().extend(segments);
         drop(path);
         Ok(url.to_string())
@@ -169,9 +169,9 @@ impl BooruAdapter for AnimePicturesAdapter {
             .as_deref()
             .unwrap_or("0")
             .parse::<u32>()
-            .map_err(|_| BooruErrorDto::invalid_request(Some(self.definition.id)))?;
+            .map_err(|_| BooruError::invalid_request(Some(self.definition.id)))?;
         let url = reqwest::Url::parse(&format!("{}/posts", self.definition.api_base))
-            .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
         let mut spec = RequestSpec::get(url, ResponseKind::Json);
         spec.query = vec![
             ("page".to_owned(), page.to_string()),
@@ -200,10 +200,10 @@ impl BooruAdapter for AnimePicturesAdapter {
 
     async fn get_post(&self, ctx: &RequestContext, id: &PostId) -> BooruResult<Post> {
         if id.0.is_empty() || !id.0.bytes().all(|byte| byte.is_ascii_digit()) {
-            return Err(BooruErrorDto::invalid_request(Some(self.definition.id)));
+            return Err(BooruError::invalid_request(Some(self.definition.id)));
         }
         let url = reqwest::Url::parse(&format!("{}/posts/{}", self.definition.api_base, id.0))
-            .map_err(|_| BooruErrorDto::invalid_request(Some(self.definition.id)))?;
+            .map_err(|_| BooruError::invalid_request(Some(self.definition.id)))?;
         let response = ctx
             .runtime
             .execute(&self.definition, RequestSpec::get(url, ResponseKind::Json))
@@ -212,7 +212,7 @@ impl BooruAdapter for AnimePicturesAdapter {
         let mut post = json.get("post").cloned().unwrap_or_else(|| json.clone());
         let post_object = post
             .as_object_mut()
-            .ok_or_else(|| BooruErrorDto::invalid_response(self.definition.id))?;
+            .ok_or_else(|| BooruError::invalid_response(self.definition.id))?;
         for key in ["file_url", "tags", "user", "user_name"] {
             if let Some(value) = json.get(key) {
                 post_object.insert(key.to_owned(), value.clone());
@@ -238,7 +238,7 @@ impl BooruAdapter for AnimePicturesAdapter {
         let media = crate::booru::adapter::select_media(&post.media, variant)
             .ok_or_else(|| self.unsupported())?;
         let url = reqwest::Url::parse(&media.url)
-            .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
         Ok(PreparedMedia {
             headers: ctx.runtime.prepared_headers(&self.definition, &url)?,
             media,
@@ -246,16 +246,16 @@ impl BooruAdapter for AnimePicturesAdapter {
         })
     }
 
-    async fn verify_auth(&self, ctx: &RequestContext) -> BooruResult<AuthStateDto> {
+    async fn verify_auth(&self, ctx: &RequestContext) -> BooruResult<AuthState> {
         if ctx.runtime.auth_state(self.definition.id)?.status == AuthStatus::NotConfigured {
-            return Err(BooruErrorDto::new(
+            return Err(BooruError::new(
                 BooruErrorCode::AuthenticationRequired,
                 Some(self.definition.id),
                 "booru.error.authenticationRequired",
             ));
         }
         let url = reqwest::Url::parse(&format!("{}/users/me", self.definition.api_base))
-            .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
         match ctx
             .runtime
             .execute(&self.definition, RequestSpec::get(url, ResponseKind::Json))
@@ -323,11 +323,11 @@ mod tests {
     }
 
     #[test]
-    fn preserves_source_username_in_dto() {
+    fn preserves_source_username_in_api_model() {
         let fixture = serde_json::json!({"id":1,"md5":"abcdef0123456789abcdef0123456789","user":{"name":" Alice "}});
         let post = adapter().parse_post(&fixture, false).unwrap();
         assert_eq!(post.author.as_deref(), Some("Alice"));
-        assert_eq!(post.into_dto().author.as_deref(), Some("Alice"));
+        assert_eq!(post.into_api().author.as_deref(), Some("Alice"));
     }
     #[test]
     fn parses_listing_preview_urls() {

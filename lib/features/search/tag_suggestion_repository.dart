@@ -302,7 +302,7 @@ class TagSuggestionRepository {
             .toList();
         await _write(key, result);
         return result;
-      } on BooruErrorDto catch (e) {
+      } on BooruError catch (e) {
         if (e.code == BooruErrorCode.rateLimited) {
           _cooldown[source] = DateTime.now().add(
             Duration(seconds: e.retryAfterSeconds ?? 60),
@@ -337,11 +337,7 @@ class TagSuggestionRepository {
     }
     try {
       final result = await BooruService.instance.engine.commonTags(
-        request: CommonTagsRequestDto(
-          sourceId: source,
-          page: page,
-          pageSize: 50,
-        ),
+        request: CommonTagsRequest(sourceId: source, page: page, pageSize: 50),
       );
       final tags = result.items
           .map(

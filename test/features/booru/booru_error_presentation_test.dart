@@ -8,7 +8,7 @@ import 'package:booruflow/src/rust/booru/error.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
 
 void main() {
-  const error = BooruErrorDto(
+  const error = BooruError(
     code: BooruErrorCode.rateLimited,
     sourceId: 'danbooru',
     userMessageKey: 'booru.error.rateLimited',
@@ -28,13 +28,13 @@ void main() {
     expect(message, contains('action=retry'));
     expect(message, contains('message=booru.error.rateLimited'));
     expect(message, contains('id=booru-test-id'));
-    expect(message, isNot(contains("Instance of 'BooruErrorDto'")));
+    expect(message, isNot(contains("Instance of 'BooruError'")));
   });
 
   test(
     'missing routes explain local routing instead of source availability',
     () {
-      const routeError = BooruErrorDto(
+      const routeError = BooruError(
         code: BooruErrorCode.network,
         sourceId: 'gelbooru',
         userMessageKey: 'booru.error.routeUnavailable',
@@ -70,7 +70,7 @@ void main() {
     expect(find.textContaining('source=danbooru'), findsOneWidget);
     expect(find.textContaining('HTTP=429'), findsOneWidget);
     expect(find.textContaining('id=booru-test-id'), findsOneWidget);
-    expect(find.textContaining("Instance of 'BooruErrorDto'"), findsNothing);
+    expect(find.textContaining("Instance of 'BooruError'"), findsNothing);
   });
 
   testWidgets(

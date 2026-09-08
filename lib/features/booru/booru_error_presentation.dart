@@ -4,7 +4,7 @@ import 'package:booruflow/src/rust/booru/error.dart';
 String describeBooruError(Object? error) {
   final booruError = switch (error) {
     BooruReadableException(:final cause) => cause,
-    BooruErrorDto value => value,
+    BooruError value => value,
     _ => null,
   };
   if (booruError == null) return error?.toString() ?? t.generic.loadFailed;
@@ -46,14 +46,14 @@ String describeBooruError(Object? error) {
 
 Object makeBooruErrorReadable(Object error) => switch (error) {
   BooruReadableException() => error,
-  BooruErrorDto value => BooruReadableException(value),
+  BooruError value => BooruReadableException(value),
   _ => error,
 };
 
 final class BooruReadableException implements Exception {
   const BooruReadableException(this.cause);
 
-  final BooruErrorDto cause;
+  final BooruError cause;
 
   @override
   String toString() => describeBooruError(cause);

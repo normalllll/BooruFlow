@@ -1,4 +1,4 @@
-use crate::api::booru_models::{AuthKind, ContentRating, SourceCapabilitiesDto};
+use crate::api::booru_models::{AuthKind, ContentRating, SourceCapabilities};
 
 pub fn capabilities(
     ratings: Vec<ContentRating>,
@@ -6,8 +6,8 @@ pub fn capabilities(
     autocomplete: bool,
     related: bool,
     authenticated_media: bool,
-) -> SourceCapabilitiesDto {
-    SourceCapabilitiesDto {
+) -> SourceCapabilities {
+    SourceCapabilities {
         discovery: crate::booru::discovery::unsupported_capabilities(),
         ratings,
         auth_kind,

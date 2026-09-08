@@ -1,11 +1,11 @@
-use crate::api::booru_auth::{AuthStateDto, AuthStatus};
+use crate::api::booru_auth::{AuthState, AuthStatus};
 use crate::api::booru_models::{MediaVariantKind, TagCategory};
 use crate::booru::adapter::{BooruAdapter, RequestContext};
 use crate::booru::adapters::common::{
     media, parse_json, rating, signed32, string, tag_list, unix_to_iso8601, unsigned, unsigned32,
     username, validate_media_hosts,
 };
-use crate::booru::error::{BooruErrorCode, BooruErrorDto, BooruResult};
+use crate::booru::error::{BooruError, BooruErrorCode, BooruResult};
 use crate::booru::model::{Post, PostFlags, PostId, PostPage, SearchQuery};
 use crate::booru::network::{RequestSpec, ResponseKind};
 use crate::booru::source::SourceDefinition;
@@ -28,15 +28,15 @@ impl GelbooruAdapter {
             Value::Object(_) => json
                 .get("post")
                 .and_then(Value::as_array)
-                .ok_or_else(|| BooruErrorDto::invalid_response(self.definition.id))?,
-            _ => return Err(BooruErrorDto::invalid_response(self.definition.id)),
+                .ok_or_else(|| BooruError::invalid_response(self.definition.id))?,
+            _ => return Err(BooruError::invalid_response(self.definition.id)),
         };
         values.iter().map(|value| self.parse_post(value)).collect()
     }
 
     fn parse_post(&self, value: &Value) -> BooruResult<Post> {
-        let id = string(value, "id")
-            .ok_or_else(|| BooruErrorDto::invalid_response(self.definition.id))?;
+        let id =
+            string(value, "id").ok_or_else(|| BooruError::invalid_response(self.definition.id))?;
         let width = unsigned32(value, "width");
         let height = unsigned32(value, "height");
         let md5 = string(value, "md5");
@@ -78,7 +78,7 @@ impl GelbooruAdapter {
             variants.push(item);
         }
         if variants.is_empty() {
-            return Err(BooruErrorDto::invalid_response(self.definition.id));
+            return Err(BooruError::invalid_response(self.definition.id));
         }
         validate_media_hosts(&self.definition, &variants)?;
         let created_at_iso8601 =
@@ -109,7 +109,7 @@ impl GelbooruAdapter {
 
     fn request(&self, tags: &str, limit: u32, page: u32) -> BooruResult<RequestSpec> {
         let url = reqwest::Url::parse(&format!("{}/index.php", self.definition.api_base))
-            .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
         let mut spec = RequestSpec::get(url, ResponseKind::Json);
         spec.query = vec![
             ("page".to_owned(), "dapi".to_owned()),
@@ -125,7 +125,7 @@ impl GelbooruAdapter {
 
     fn public_listing_request(&self, tags: &str, offset: u32) -> BooruResult<RequestSpec> {
         let url = reqwest::Url::parse(&format!("{}/index.php", self.definition.web_base))
-            .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
         let mut spec = RequestSpec::get(url, ResponseKind::Html);
         spec.query = vec![
             ("page".to_owned(), "post".to_owned()),
@@ -145,10 +145,10 @@ impl GelbooruAdapter {
 
     fn public_detail_request(&self, id: &PostId) -> BooruResult<RequestSpec> {
         if id.0.is_empty() || !id.0.bytes().all(|byte| byte.is_ascii_digit()) {
-            return Err(BooruErrorDto::invalid_request(Some(self.definition.id)));
+            return Err(BooruError::invalid_request(Some(self.definition.id)));
         }
         let url = reqwest::Url::parse(&format!("{}/index.php", self.definition.web_base))
-            .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
         let mut spec = RequestSpec::get(url, ResponseKind::Html);
         spec.query = vec![
             ("page".to_owned(), "post".to_owned()),
@@ -160,7 +160,7 @@ impl GelbooruAdapter {
 
     fn parse_public_listing(&self, bytes: &[u8], limit: usize) -> BooruResult<Vec<Post>> {
         let html = std::str::from_utf8(bytes)
-            .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
         let mut posts = Vec::new();
         for anchor in html.split("<a ").skip(1) {
             let Some((anchor, _)) = anchor.split_once("</a>") else {
@@ -201,7 +201,7 @@ impl GelbooruAdapter {
                 None,
                 None,
             )
-            .ok_or_else(|| BooruErrorDto::invalid_response(self.definition.id))?;
+            .ok_or_else(|| BooruError::invalid_response(self.definition.id))?;
             validate_media_hosts(&self.definition, std::slice::from_ref(&preview))?;
             posts.push(Post {
                 source_id: self.definition.id.to_owned(),
@@ -228,7 +228,7 @@ impl GelbooruAdapter {
             }
         }
         if posts.is_empty() {
-            Err(BooruErrorDto::invalid_response(self.definition.id))
+            Err(BooruError::invalid_response(self.definition.id))
         } else {
             Ok(posts)
         }
@@ -236,12 +236,12 @@ impl GelbooruAdapter {
 
     fn parse_public_detail(&self, id: &PostId, bytes: &[u8]) -> BooruResult<Post> {
         let html = std::str::from_utf8(bytes)
-            .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
         let original_url = html
             .split("property=\"og:image\" content=\"")
             .nth(1)
             .and_then(|tail| tail.split_once('"').map(|(url, _)| url))
-            .ok_or_else(|| BooruErrorDto::invalid_response(self.definition.id))?;
+            .ok_or_else(|| BooruError::invalid_response(self.definition.id))?;
         let original = media(
             MediaVariantKind::Original,
             Some(original_url.to_owned()),
@@ -252,7 +252,7 @@ impl GelbooruAdapter {
             None,
             None,
         )
-        .ok_or_else(|| BooruErrorDto::invalid_response(self.definition.id))?;
+        .ok_or_else(|| BooruError::invalid_response(self.definition.id))?;
         validate_media_hosts(&self.definition, std::slice::from_ref(&original))?;
         Ok(Post {
             source_id: self.definition.id.to_owned(),
@@ -295,7 +295,7 @@ impl BooruAdapter for GelbooruAdapter {
             .as_deref()
             .unwrap_or("0")
             .parse::<u32>()
-            .map_err(|_| BooruErrorDto::invalid_request(Some(self.definition.id)))?;
+            .map_err(|_| BooruError::invalid_request(Some(self.definition.id)))?;
         let limit = query.page_size.clamp(1, self.definition.max_page_size);
         if ctx.runtime.auth_state(self.definition.id)?.status == AuthStatus::NotConfigured {
             let response = ctx
@@ -338,7 +338,7 @@ impl BooruAdapter for GelbooruAdapter {
 
     async fn get_post(&self, ctx: &RequestContext, id: &PostId) -> BooruResult<Post> {
         if id.0.is_empty() || !id.0.bytes().all(|byte| byte.is_ascii_digit()) {
-            return Err(BooruErrorDto::invalid_request(Some(self.definition.id)));
+            return Err(BooruError::invalid_request(Some(self.definition.id)));
         }
         if ctx.runtime.auth_state(self.definition.id)?.status == AuthStatus::NotConfigured {
             let response = ctx
@@ -353,12 +353,12 @@ impl BooruAdapter for GelbooruAdapter {
         self.parse_posts(&response.body)?
             .into_iter()
             .next()
-            .ok_or_else(|| BooruErrorDto::invalid_response(self.definition.id))
+            .ok_or_else(|| BooruError::invalid_response(self.definition.id))
     }
 
-    async fn verify_auth(&self, ctx: &RequestContext) -> BooruResult<AuthStateDto> {
+    async fn verify_auth(&self, ctx: &RequestContext) -> BooruResult<AuthState> {
         if ctx.runtime.auth_state(self.definition.id)?.status == AuthStatus::NotConfigured {
-            return Err(BooruErrorDto::new(
+            return Err(BooruError::new(
                 BooruErrorCode::AuthenticationRequired,
                 Some(self.definition.id),
                 "booru.error.authenticationRequired",
@@ -414,11 +414,11 @@ mod tests {
     }
 
     #[test]
-    fn preserves_source_username_in_dto() {
+    fn preserves_source_username_in_api_model() {
         let fixture = serde_json::json!({"id":1,"file_url":"https://img3.gelbooru.com/a.jpg","owner":" Alice "});
         let post = adapter().parse_post(&fixture).unwrap();
         assert_eq!(post.author.as_deref(), Some("Alice"));
-        assert_eq!(post.into_dto().author.as_deref(), Some("Alice"));
+        assert_eq!(post.into_api().author.as_deref(), Some("Alice"));
     }
     #[test]
     fn parses_wrapped_response_and_string_numbers() {

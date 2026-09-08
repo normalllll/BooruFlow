@@ -121,19 +121,19 @@ pub enum RouteProvider {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct BooruTagDto {
+pub struct BooruTag {
     pub name: String,
     pub category: TagCategory,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct ChecksumDto {
+pub struct Checksum {
     pub algorithm: ChecksumAlgorithm,
     pub value: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct MediaVariantDto {
+pub struct MediaVariant {
     pub kind: MediaVariantKind,
     pub url: String,
     pub width: Option<u32>,
@@ -141,11 +141,11 @@ pub struct MediaVariantDto {
     pub byte_length_decimal: Option<String>,
     pub media_type: Option<MediaType>,
     pub extension: Option<String>,
-    pub checksum: Option<ChecksumDto>,
+    pub checksum: Option<Checksum>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
-pub struct PostFlagsDto {
+pub struct PostFlags {
     pub has_children: bool,
     pub parent_id: Option<String>,
     pub is_pending: bool,
@@ -154,7 +154,7 @@ pub struct PostFlagsDto {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct BooruPostDto {
+pub struct BooruPost {
     pub source_id: String,
     pub author: Option<String>,
     pub post_id: String,
@@ -164,14 +164,14 @@ pub struct BooruPostDto {
     pub score: Option<i32>,
     pub created_at_iso8601: Option<String>,
     pub source_url: Option<String>,
-    pub tags: Vec<BooruTagDto>,
-    pub media: Vec<MediaVariantDto>,
-    pub flags: PostFlagsDto,
+    pub tags: Vec<BooruTag>,
+    pub media: Vec<MediaVariant>,
+    pub flags: PostFlags,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct SourceCapabilitiesDto {
-    pub discovery: DiscoveryCapabilitiesDto,
+pub struct SourceCapabilities {
+    pub discovery: DiscoveryCapabilities,
     pub ratings: Vec<ContentRating>,
     pub auth_kind: AuthKind,
     pub supports_search: bool,
@@ -220,7 +220,7 @@ pub enum PopularTimeBasis {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct DiscoveryCapabilitiesDto {
+pub struct DiscoveryCapabilities {
     pub popular: CapabilityAvailability,
     pub common_tags: CapabilityAvailability,
     pub popular_ranges: Vec<PopularRange>,
@@ -232,7 +232,7 @@ pub struct DiscoveryCapabilitiesDto {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct FeedRequestDto {
+pub struct FeedRequest {
     pub source_id: String,
     pub kind: FeedKind,
     pub range: Option<PopularRange>,
@@ -246,30 +246,30 @@ pub struct FeedRequestDto {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct CommonTagsRequestDto {
+pub struct CommonTagsRequest {
     pub source_id: String,
     pub page: u32,
     pub page_size: u32,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct CommonTagsPageDto {
-    pub items: Vec<TagSuggestionDto>,
+pub struct CommonTagsPage {
+    pub items: Vec<BooruTagSuggestion>,
     pub next_page: Option<u32>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct BooruSourceDto {
+pub struct BooruSource {
     pub source_id: String,
     pub display_name: String,
     pub protocol: BooruProtocol,
     pub enabled_by_default: bool,
     pub is_ai_source: bool,
-    pub capabilities: SourceCapabilitiesDto,
+    pub capabilities: SourceCapabilities,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct SearchRequestDto {
+pub struct SearchRequest {
     pub source_id: String,
     pub query_text: String,
     pub ratings: Vec<ContentRating>,
@@ -278,14 +278,14 @@ pub struct SearchRequestDto {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct PostPageDto {
-    pub items: Vec<BooruPostDto>,
+pub struct PostPage {
+    pub items: Vec<BooruPost>,
     pub next_cursor: Option<String>,
     pub exhausted: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct TagSuggestionDto {
+pub struct BooruTagSuggestion {
     pub value: String,
     pub label: String,
     pub category: TagCategory,
@@ -293,18 +293,18 @@ pub struct TagSuggestionDto {
 }
 
 #[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct HttpHeaderDto {
+pub struct HttpHeader {
     pub name: String,
     pub value: String,
 }
 
 #[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct MediaRequestDto {
+pub struct MediaRequest {
     pub source_id: String,
     pub post_id: String,
     pub variant: MediaVariantKind,
     pub url: String,
-    pub headers: Vec<HttpHeaderDto>,
+    pub headers: Vec<HttpHeader>,
     pub route_key: String,
     pub cache_key: String,
     pub auth_revision: u32,
@@ -313,7 +313,7 @@ pub struct MediaRequestDto {
 }
 
 #[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct BooruEngineConfigDto {
+pub struct BooruEngineConfig {
     pub app_support_directory: String,
     pub proxy_url: Option<String>,
     pub fallback_mode: NetworkFallbackMode,
@@ -322,21 +322,21 @@ pub struct BooruEngineConfigDto {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct PersistedHostRouteDto {
+pub struct PersistedHostRoute {
     pub logical_host: String,
     pub https_port: u16,
     pub candidates: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct RouteCacheStateDto {
+pub struct RouteCacheState {
     pub initialized: bool,
     pub refreshing: bool,
     pub route_revision: String,
     pub fetched_at_iso8601: Option<String>,
     pub provider: Option<RouteProvider>,
-    pub routes: Vec<PersistedHostRouteDto>,
-    pub diagnostics: Vec<RouteDiagnosticDto>,
+    pub routes: Vec<PersistedHostRoute>,
+    pub diagnostics: Vec<RouteDiagnostic>,
 }
 
 pub fn post_key(source_id: &str, post_id: &str) -> String {
@@ -344,7 +344,7 @@ pub fn post_key(source_id: &str, post_id: &str) -> String {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct RouteDiagnosticDto {
+pub struct RouteDiagnostic {
     pub source_ids: Vec<String>,
     pub logical_host: String,
     pub status: String,

@@ -11,14 +11,14 @@ import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/features/discovery/widgets/source_picker.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
 
-BooruSourceDto testSource(String id) => BooruSourceDto(
+BooruSource testSource(String id) => BooruSource(
   sourceId: id,
   displayName: id,
   protocol: BooruProtocol.moebooru,
   enabledByDefault: true,
   isAiSource: false,
-  capabilities: const SourceCapabilitiesDto(
-    discovery: DiscoveryCapabilitiesDto(
+  capabilities: const SourceCapabilities(
+    discovery: DiscoveryCapabilities(
       popular: CapabilityAvailability.unsupported,
       commonTags: CapabilityAvailability.available,
       popularRanges: [],

@@ -34,7 +34,7 @@ class DiscoveryAvailability {
         var state = CapabilityAvailability.available;
         try {
           await service.engine.feed(
-            request: FeedRequestDto(
+            request: FeedRequest(
               sourceId: source,
               kind: FeedKind.recentPopular,
               range: PopularRange.day,
@@ -42,7 +42,7 @@ class DiscoveryAvailability {
               pageSize: 1,
             ),
           );
-        } on BooruErrorDto catch (error) {
+        } on BooruError catch (error) {
           state =
               error.code == BooruErrorCode.unsupportedCapability ||
                   error.httpStatus == 404

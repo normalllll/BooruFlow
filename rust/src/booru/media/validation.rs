@@ -1,5 +1,5 @@
 use crate::api::booru_models::{ChecksumAlgorithm, MediaKind, MediaType};
-use crate::booru::error::{BooruErrorCode, BooruErrorDto, BooruResult};
+use crate::booru::error::{BooruError, BooruErrorCode, BooruResult};
 use md5::Md5;
 use sha2::{Digest, Sha256};
 
@@ -47,7 +47,7 @@ pub fn validate_content_type(
         .filter(|value| !value.is_empty())
         .ok_or_else(|| validation_error(source_id, "booru.error.missingContentType"))?;
     if actual == "text/html" || actual == "application/xhtml+xml" {
-        return Err(BooruErrorDto::new(
+        return Err(BooruError::new(
             BooruErrorCode::ChallengeRequired,
             Some(source_id),
             "booru.error.challengeRequired",
@@ -73,7 +73,7 @@ pub fn validate_filename_component(source_id: &str, value: &str) -> BooruResult<
     if valid {
         Ok(())
     } else {
-        Err(BooruErrorDto::invalid_request(Some(source_id)))
+        Err(BooruError::invalid_request(Some(source_id)))
     }
 }
 
@@ -94,8 +94,8 @@ fn is_windows_device_name(value: &str) -> bool {
             })
 }
 
-fn validation_error(source_id: &str, key: &str) -> BooruErrorDto {
-    BooruErrorDto::new(BooruErrorCode::MediaValidationFailed, Some(source_id), key)
+fn validation_error(source_id: &str, key: &str) -> BooruError {
+    BooruError::new(BooruErrorCode::MediaValidationFailed, Some(source_id), key)
 }
 
 #[cfg(test)]

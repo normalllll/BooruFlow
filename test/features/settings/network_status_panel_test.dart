@@ -7,7 +7,7 @@ import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import '../discovery/search_interaction_test.dart' show testSource;
 
-const _cached = RouteDiagnosticDto(
+const _cached = RouteDiagnostic(
   sourceIds: ['yande'],
   logicalHost: 'yande.re',
   status: 'cached',
@@ -15,7 +15,7 @@ const _cached = RouteDiagnosticDto(
   updatedAtIso8601: '2026-09-08T05:00:00Z',
   elapsedMs: 720,
 );
-const _failed = RouteDiagnosticDto(
+const _failed = RouteDiagnostic(
   sourceIds: ['danbooru'],
   logicalHost: 'danbooru.donmai.us',
   status: 'failed',
@@ -24,10 +24,10 @@ const _failed = RouteDiagnosticDto(
   elapsedMs: 8000,
 );
 
-RouteCacheStateDto state(
-  List<RouteDiagnosticDto> reports, {
+RouteCacheState state(
+  List<RouteDiagnostic> reports, {
   bool refreshing = false,
-}) => RouteCacheStateDto(
+}) => RouteCacheState(
   initialized: true,
   refreshing: refreshing,
   routeRevision: '1',
@@ -130,7 +130,7 @@ void main() {
   testWidgets(
     'refresh preserves the source list and shows progress and final API error',
     (tester) async {
-      final done = Completer<RouteCacheStateDto>();
+      final done = Completer<RouteCacheState>();
       final check = Completer<void>();
       var snapshot = state([_cached, _failed]);
       final busy = <bool>[];
@@ -159,7 +159,7 @@ void main() {
       await tester.tap(find.text(t.settings.network.refreshRoutes));
       await tester.pump();
       snapshot = state([
-        const RouteDiagnosticDto(
+        const RouteDiagnostic(
           sourceIds: ['yande'],
           logicalHost: 'yande.re',
           status: 'resolving',
@@ -225,4 +225,3 @@ void main() {
     }
   }
 }
-

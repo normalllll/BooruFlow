@@ -1,6 +1,6 @@
-use crate::api::booru_auth::AuthStateDto;
-use crate::api::booru_models::{HttpHeaderDto, MediaVariantKind, TagSuggestionDto};
-use crate::booru::error::{BooruErrorCode, BooruErrorDto, BooruResult};
+use crate::api::booru_auth::AuthState;
+use crate::api::booru_models::{BooruTagSuggestion, HttpHeader, MediaVariantKind};
+use crate::booru::error::{BooruError, BooruErrorCode, BooruResult};
 use crate::booru::model::{MediaVariant, Post, PostId, PostPage, SearchQuery};
 use crate::booru::network::NetworkRuntime;
 use crate::booru::source::SourceDefinition;
@@ -15,7 +15,7 @@ pub struct RequestContext {
 #[derive(Clone)]
 pub struct PreparedMedia {
     pub media: MediaVariant,
-    pub headers: Vec<HttpHeaderDto>,
+    pub headers: Vec<HttpHeader>,
     pub allow_disk_cache: bool,
 }
 
@@ -28,7 +28,7 @@ pub trait BooruAdapter: Send + Sync {
     async fn feed(
         &self,
         ctx: &RequestContext,
-        request: crate::api::booru_models::FeedRequestDto,
+        request: crate::api::booru_models::FeedRequest,
     ) -> BooruResult<PostPage> {
         if request.kind != crate::api::booru_models::FeedKind::Latest {
             return Err(self.unsupported());
@@ -43,7 +43,7 @@ pub trait BooruAdapter: Send + Sync {
         &self,
         _ctx: &RequestContext,
         _text: &str,
-    ) -> BooruResult<Vec<TagSuggestionDto>> {
+    ) -> BooruResult<Vec<BooruTagSuggestion>> {
         Err(self.unsupported())
     }
 
@@ -60,7 +60,7 @@ pub trait BooruAdapter: Send + Sync {
         let post = self.get_post(ctx, id).await?;
         let media = select_media(&post.media, variant).ok_or_else(|| self.unsupported())?;
         let url = reqwest::Url::parse(&media.url)
-            .map_err(|_| BooruErrorDto::invalid_response(self.definition().id))?;
+            .map_err(|_| BooruError::invalid_response(self.definition().id))?;
         let headers = ctx.runtime.prepared_headers(self.definition(), &url)?;
         Ok(PreparedMedia {
             media,
@@ -69,12 +69,12 @@ pub trait BooruAdapter: Send + Sync {
         })
     }
 
-    async fn verify_auth(&self, _ctx: &RequestContext) -> BooruResult<AuthStateDto> {
+    async fn verify_auth(&self, _ctx: &RequestContext) -> BooruResult<AuthState> {
         Err(self.unsupported())
     }
 
-    fn unsupported(&self) -> BooruErrorDto {
-        BooruErrorDto::new(
+    fn unsupported(&self) -> BooruError {
+        BooruError::new(
             BooruErrorCode::UnsupportedCapability,
             Some(self.definition().id),
             "booru.error.unsupportedCapability",

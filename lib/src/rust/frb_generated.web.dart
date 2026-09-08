@@ -50,19 +50,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  RustStreamSink<DownloadEventDto> dco_decode_StreamSink_download_event_dto_Sse(
+  RustStreamSink<DownloadEvent> dco_decode_StreamSink_download_event_Sse(
     dynamic raw,
   );
 
   @protected
-  RustStreamSink<MediaFetchEventDto>
-  dco_decode_StreamSink_media_fetch_event_dto_Sse(dynamic raw);
+  RustStreamSink<MediaFetchEvent> dco_decode_StreamSink_media_fetch_event_Sse(
+    dynamic raw,
+  );
 
   @protected
   String dco_decode_String(dynamic raw);
 
   @protected
-  AuthFieldDto dco_decode_auth_field_dto(dynamic raw);
+  AuthField dco_decode_auth_field(dynamic raw);
 
   @protected
   AuthFieldKind dco_decode_auth_field_kind(dynamic raw);
@@ -71,10 +72,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AuthKind dco_decode_auth_kind(dynamic raw);
 
   @protected
-  AuthSchemaDto dco_decode_auth_schema_dto(dynamic raw);
+  AuthSchema dco_decode_auth_schema(dynamic raw);
 
   @protected
-  AuthStateDto dco_decode_auth_state_dto(dynamic raw);
+  AuthState dco_decode_auth_state(dynamic raw);
 
   @protected
   AuthStatus dco_decode_auth_status(dynamic raw);
@@ -83,53 +84,52 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool dco_decode_bool(dynamic raw);
 
   @protected
-  BooruEngineConfigDto dco_decode_booru_engine_config_dto(dynamic raw);
+  BooruEngineConfig dco_decode_booru_engine_config(dynamic raw);
+
+  @protected
+  BooruError dco_decode_booru_error(dynamic raw);
 
   @protected
   BooruErrorCode dco_decode_booru_error_code(dynamic raw);
 
   @protected
-  BooruErrorDto dco_decode_booru_error_dto(dynamic raw);
-
-  @protected
-  BooruPostDto dco_decode_booru_post_dto(dynamic raw);
+  BooruPost dco_decode_booru_post(dynamic raw);
 
   @protected
   BooruProtocol dco_decode_booru_protocol(dynamic raw);
 
   @protected
-  BooruSourceDto dco_decode_booru_source_dto(dynamic raw);
+  BooruSource dco_decode_booru_source(dynamic raw);
 
   @protected
-  BooruTagDto dco_decode_booru_tag_dto(dynamic raw);
+  BooruTag dco_decode_booru_tag(dynamic raw);
 
   @protected
-  BooruEngineConfigDto dco_decode_box_autoadd_booru_engine_config_dto(
-    dynamic raw,
-  );
+  BooruTagSuggestion dco_decode_booru_tag_suggestion(dynamic raw);
 
   @protected
-  BooruErrorDto dco_decode_box_autoadd_booru_error_dto(dynamic raw);
+  BooruEngineConfig dco_decode_box_autoadd_booru_engine_config(dynamic raw);
 
   @protected
-  ChecksumDto dco_decode_box_autoadd_checksum_dto(dynamic raw);
+  BooruError dco_decode_box_autoadd_booru_error(dynamic raw);
 
   @protected
-  CommonTagsRequestDto dco_decode_box_autoadd_common_tags_request_dto(
-    dynamic raw,
-  );
+  Checksum dco_decode_box_autoadd_checksum(dynamic raw);
 
   @protected
-  DownloadRequestDto dco_decode_box_autoadd_download_request_dto(dynamic raw);
+  CommonTagsRequest dco_decode_box_autoadd_common_tags_request(dynamic raw);
 
   @protected
-  FeedRequestDto dco_decode_box_autoadd_feed_request_dto(dynamic raw);
+  DownloadRequest dco_decode_box_autoadd_download_request(dynamic raw);
+
+  @protected
+  FeedRequest dco_decode_box_autoadd_feed_request(dynamic raw);
 
   @protected
   int dco_decode_box_autoadd_i_32(dynamic raw);
 
   @protected
-  MediaRequestDto dco_decode_box_autoadd_media_request_dto(dynamic raw);
+  MediaRequest dco_decode_box_autoadd_media_request(dynamic raw);
 
   @protected
   MediaType dco_decode_box_autoadd_media_type(dynamic raw);
@@ -144,12 +144,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   RouteProvider dco_decode_box_autoadd_route_provider(dynamic raw);
 
   @protected
-  SearchRequestDto dco_decode_box_autoadd_search_request_dto(dynamic raw);
+  SearchRequest dco_decode_box_autoadd_search_request(dynamic raw);
 
   @protected
-  SourceCredentialsDto dco_decode_box_autoadd_source_credentials_dto(
-    dynamic raw,
-  );
+  SourceCredentials dco_decode_box_autoadd_source_credentials(dynamic raw);
 
   @protected
   int dco_decode_box_autoadd_u_32(dynamic raw);
@@ -158,28 +156,28 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   CapabilityAvailability dco_decode_capability_availability(dynamic raw);
 
   @protected
+  Checksum dco_decode_checksum(dynamic raw);
+
+  @protected
   ChecksumAlgorithm dco_decode_checksum_algorithm(dynamic raw);
 
   @protected
-  ChecksumDto dco_decode_checksum_dto(dynamic raw);
+  CommonTagsPage dco_decode_common_tags_page(dynamic raw);
 
   @protected
-  CommonTagsPageDto dco_decode_common_tags_page_dto(dynamic raw);
-
-  @protected
-  CommonTagsRequestDto dco_decode_common_tags_request_dto(dynamic raw);
+  CommonTagsRequest dco_decode_common_tags_request(dynamic raw);
 
   @protected
   ContentRating dco_decode_content_rating(dynamic raw);
 
   @protected
-  DiscoveryCapabilitiesDto dco_decode_discovery_capabilities_dto(dynamic raw);
+  DiscoveryCapabilities dco_decode_discovery_capabilities(dynamic raw);
 
   @protected
-  DownloadEventDto dco_decode_download_event_dto(dynamic raw);
+  DownloadEvent dco_decode_download_event(dynamic raw);
 
   @protected
-  DownloadRequestDto dco_decode_download_request_dto(dynamic raw);
+  DownloadRequest dco_decode_download_request(dynamic raw);
 
   @protected
   double dco_decode_f_64(dynamic raw);
@@ -188,10 +186,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   FeedKind dco_decode_feed_kind(dynamic raw);
 
   @protected
-  FeedRequestDto dco_decode_feed_request_dto(dynamic raw);
+  FeedRequest dco_decode_feed_request(dynamic raw);
 
   @protected
-  HttpHeaderDto dco_decode_http_header_dto(dynamic raw);
+  HttpHeader dco_decode_http_header(dynamic raw);
 
   @protected
   int dco_decode_i_32(dynamic raw);
@@ -200,16 +198,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<String> dco_decode_list_String(dynamic raw);
 
   @protected
-  List<AuthFieldDto> dco_decode_list_auth_field_dto(dynamic raw);
+  List<AuthField> dco_decode_list_auth_field(dynamic raw);
 
   @protected
-  List<BooruPostDto> dco_decode_list_booru_post_dto(dynamic raw);
+  List<BooruPost> dco_decode_list_booru_post(dynamic raw);
 
   @protected
-  List<BooruSourceDto> dco_decode_list_booru_source_dto(dynamic raw);
+  List<BooruSource> dco_decode_list_booru_source(dynamic raw);
 
   @protected
-  List<BooruTagDto> dco_decode_list_booru_tag_dto(dynamic raw);
+  List<BooruTag> dco_decode_list_booru_tag(dynamic raw);
+
+  @protected
+  List<BooruTagSuggestion> dco_decode_list_booru_tag_suggestion(dynamic raw);
 
   @protected
   List<ContentRating> dco_decode_list_content_rating(dynamic raw);
@@ -218,18 +219,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<FeedKind> dco_decode_list_feed_kind(dynamic raw);
 
   @protected
-  List<HttpHeaderDto> dco_decode_list_http_header_dto(dynamic raw);
+  List<HttpHeader> dco_decode_list_http_header(dynamic raw);
 
   @protected
   List<MediaKind> dco_decode_list_media_kind(dynamic raw);
 
   @protected
-  List<MediaVariantDto> dco_decode_list_media_variant_dto(dynamic raw);
+  List<MediaVariant> dco_decode_list_media_variant(dynamic raw);
 
   @protected
-  List<PersistedHostRouteDto> dco_decode_list_persisted_host_route_dto(
-    dynamic raw,
-  );
+  List<PersistedHostRoute> dco_decode_list_persisted_host_route(dynamic raw);
 
   @protected
   List<PopularRange> dco_decode_list_popular_range(dynamic raw);
@@ -238,28 +237,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
-  List<RouteDiagnosticDto> dco_decode_list_route_diagnostic_dto(dynamic raw);
+  List<RouteDiagnostic> dco_decode_list_route_diagnostic(dynamic raw);
 
   @protected
-  List<TagSuggestionDto> dco_decode_list_tag_suggestion_dto(dynamic raw);
+  List<WebCookie> dco_decode_list_web_cookie(dynamic raw);
 
   @protected
-  List<WebCookieDto> dco_decode_list_web_cookie_dto(dynamic raw);
-
-  @protected
-  MediaFetchEventDto dco_decode_media_fetch_event_dto(dynamic raw);
+  MediaFetchEvent dco_decode_media_fetch_event(dynamic raw);
 
   @protected
   MediaKind dco_decode_media_kind(dynamic raw);
 
   @protected
-  MediaRequestDto dco_decode_media_request_dto(dynamic raw);
+  MediaRequest dco_decode_media_request(dynamic raw);
 
   @protected
   MediaType dco_decode_media_type(dynamic raw);
 
   @protected
-  MediaVariantDto dco_decode_media_variant_dto(dynamic raw);
+  MediaVariant dco_decode_media_variant(dynamic raw);
 
   @protected
   MediaVariantKind dco_decode_media_variant_kind(dynamic raw);
@@ -271,7 +267,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String? dco_decode_opt_String(dynamic raw);
 
   @protected
-  ChecksumDto? dco_decode_opt_box_autoadd_checksum_dto(dynamic raw);
+  Checksum? dco_decode_opt_box_autoadd_checksum(dynamic raw);
 
   @protected
   int? dco_decode_opt_box_autoadd_i_32(dynamic raw);
@@ -292,7 +288,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
 
   @protected
-  PersistedHostRouteDto dco_decode_persisted_host_route_dto(dynamic raw);
+  PersistedHostRoute dco_decode_persisted_host_route(dynamic raw);
 
   @protected
   PopularRange dco_decode_popular_range(dynamic raw);
@@ -301,40 +297,37 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PopularTimeBasis dco_decode_popular_time_basis(dynamic raw);
 
   @protected
-  PostFlagsDto dco_decode_post_flags_dto(dynamic raw);
+  PostFlags dco_decode_post_flags(dynamic raw);
 
   @protected
-  PostPageDto dco_decode_post_page_dto(dynamic raw);
+  PostPage dco_decode_post_page(dynamic raw);
 
   @protected
-  PreparedDownloadDto dco_decode_prepared_download_dto(dynamic raw);
+  PreparedDownload dco_decode_prepared_download(dynamic raw);
 
   @protected
   RecoveryAction dco_decode_recovery_action(dynamic raw);
 
   @protected
-  RouteCacheStateDto dco_decode_route_cache_state_dto(dynamic raw);
+  RouteCacheState dco_decode_route_cache_state(dynamic raw);
 
   @protected
-  RouteDiagnosticDto dco_decode_route_diagnostic_dto(dynamic raw);
+  RouteDiagnostic dco_decode_route_diagnostic(dynamic raw);
 
   @protected
   RouteProvider dco_decode_route_provider(dynamic raw);
 
   @protected
-  SearchRequestDto dco_decode_search_request_dto(dynamic raw);
+  SearchRequest dco_decode_search_request(dynamic raw);
 
   @protected
-  SourceCapabilitiesDto dco_decode_source_capabilities_dto(dynamic raw);
+  SourceCapabilities dco_decode_source_capabilities(dynamic raw);
 
   @protected
-  SourceCredentialsDto dco_decode_source_credentials_dto(dynamic raw);
+  SourceCredentials dco_decode_source_credentials(dynamic raw);
 
   @protected
   TagCategory dco_decode_tag_category(dynamic raw);
-
-  @protected
-  TagSuggestionDto dco_decode_tag_suggestion_dto(dynamic raw);
 
   @protected
   int dco_decode_u_16(dynamic raw);
@@ -352,7 +345,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   BigInt dco_decode_usize(dynamic raw);
 
   @protected
-  WebCookieDto dco_decode_web_cookie_dto(dynamic raw);
+  WebCookie dco_decode_web_cookie(dynamic raw);
 
   @protected
   AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
@@ -376,19 +369,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  RustStreamSink<DownloadEventDto> sse_decode_StreamSink_download_event_dto_Sse(
+  RustStreamSink<DownloadEvent> sse_decode_StreamSink_download_event_Sse(
     SseDeserializer deserializer,
   );
 
   @protected
-  RustStreamSink<MediaFetchEventDto>
-  sse_decode_StreamSink_media_fetch_event_dto_Sse(SseDeserializer deserializer);
+  RustStreamSink<MediaFetchEvent> sse_decode_StreamSink_media_fetch_event_Sse(
+    SseDeserializer deserializer,
+  );
 
   @protected
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
-  AuthFieldDto sse_decode_auth_field_dto(SseDeserializer deserializer);
+  AuthField sse_decode_auth_field(SseDeserializer deserializer);
 
   @protected
   AuthFieldKind sse_decode_auth_field_kind(SseDeserializer deserializer);
@@ -397,10 +391,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AuthKind sse_decode_auth_kind(SseDeserializer deserializer);
 
   @protected
-  AuthSchemaDto sse_decode_auth_schema_dto(SseDeserializer deserializer);
+  AuthSchema sse_decode_auth_schema(SseDeserializer deserializer);
 
   @protected
-  AuthStateDto sse_decode_auth_state_dto(SseDeserializer deserializer);
+  AuthState sse_decode_auth_state(SseDeserializer deserializer);
 
   @protected
   AuthStatus sse_decode_auth_status(SseDeserializer deserializer);
@@ -409,61 +403,62 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
-  BooruEngineConfigDto sse_decode_booru_engine_config_dto(
+  BooruEngineConfig sse_decode_booru_engine_config(
     SseDeserializer deserializer,
   );
+
+  @protected
+  BooruError sse_decode_booru_error(SseDeserializer deserializer);
 
   @protected
   BooruErrorCode sse_decode_booru_error_code(SseDeserializer deserializer);
 
   @protected
-  BooruErrorDto sse_decode_booru_error_dto(SseDeserializer deserializer);
-
-  @protected
-  BooruPostDto sse_decode_booru_post_dto(SseDeserializer deserializer);
+  BooruPost sse_decode_booru_post(SseDeserializer deserializer);
 
   @protected
   BooruProtocol sse_decode_booru_protocol(SseDeserializer deserializer);
 
   @protected
-  BooruSourceDto sse_decode_booru_source_dto(SseDeserializer deserializer);
+  BooruSource sse_decode_booru_source(SseDeserializer deserializer);
 
   @protected
-  BooruTagDto sse_decode_booru_tag_dto(SseDeserializer deserializer);
+  BooruTag sse_decode_booru_tag(SseDeserializer deserializer);
 
   @protected
-  BooruEngineConfigDto sse_decode_box_autoadd_booru_engine_config_dto(
+  BooruTagSuggestion sse_decode_booru_tag_suggestion(
     SseDeserializer deserializer,
   );
 
   @protected
-  BooruErrorDto sse_decode_box_autoadd_booru_error_dto(
+  BooruEngineConfig sse_decode_box_autoadd_booru_engine_config(
     SseDeserializer deserializer,
   );
 
   @protected
-  ChecksumDto sse_decode_box_autoadd_checksum_dto(SseDeserializer deserializer);
+  BooruError sse_decode_box_autoadd_booru_error(SseDeserializer deserializer);
 
   @protected
-  CommonTagsRequestDto sse_decode_box_autoadd_common_tags_request_dto(
+  Checksum sse_decode_box_autoadd_checksum(SseDeserializer deserializer);
+
+  @protected
+  CommonTagsRequest sse_decode_box_autoadd_common_tags_request(
     SseDeserializer deserializer,
   );
 
   @protected
-  DownloadRequestDto sse_decode_box_autoadd_download_request_dto(
+  DownloadRequest sse_decode_box_autoadd_download_request(
     SseDeserializer deserializer,
   );
 
   @protected
-  FeedRequestDto sse_decode_box_autoadd_feed_request_dto(
-    SseDeserializer deserializer,
-  );
+  FeedRequest sse_decode_box_autoadd_feed_request(SseDeserializer deserializer);
 
   @protected
   int sse_decode_box_autoadd_i_32(SseDeserializer deserializer);
 
   @protected
-  MediaRequestDto sse_decode_box_autoadd_media_request_dto(
+  MediaRequest sse_decode_box_autoadd_media_request(
     SseDeserializer deserializer,
   );
 
@@ -486,12 +481,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  SearchRequestDto sse_decode_box_autoadd_search_request_dto(
+  SearchRequest sse_decode_box_autoadd_search_request(
     SseDeserializer deserializer,
   );
 
   @protected
-  SourceCredentialsDto sse_decode_box_autoadd_source_credentials_dto(
+  SourceCredentials sse_decode_box_autoadd_source_credentials(
     SseDeserializer deserializer,
   );
 
@@ -504,18 +499,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  Checksum sse_decode_checksum(SseDeserializer deserializer);
+
+  @protected
   ChecksumAlgorithm sse_decode_checksum_algorithm(SseDeserializer deserializer);
 
   @protected
-  ChecksumDto sse_decode_checksum_dto(SseDeserializer deserializer);
+  CommonTagsPage sse_decode_common_tags_page(SseDeserializer deserializer);
 
   @protected
-  CommonTagsPageDto sse_decode_common_tags_page_dto(
-    SseDeserializer deserializer,
-  );
-
-  @protected
-  CommonTagsRequestDto sse_decode_common_tags_request_dto(
+  CommonTagsRequest sse_decode_common_tags_request(
     SseDeserializer deserializer,
   );
 
@@ -523,17 +516,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ContentRating sse_decode_content_rating(SseDeserializer deserializer);
 
   @protected
-  DiscoveryCapabilitiesDto sse_decode_discovery_capabilities_dto(
+  DiscoveryCapabilities sse_decode_discovery_capabilities(
     SseDeserializer deserializer,
   );
 
   @protected
-  DownloadEventDto sse_decode_download_event_dto(SseDeserializer deserializer);
+  DownloadEvent sse_decode_download_event(SseDeserializer deserializer);
 
   @protected
-  DownloadRequestDto sse_decode_download_request_dto(
-    SseDeserializer deserializer,
-  );
+  DownloadRequest sse_decode_download_request(SseDeserializer deserializer);
 
   @protected
   double sse_decode_f_64(SseDeserializer deserializer);
@@ -542,10 +533,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   FeedKind sse_decode_feed_kind(SseDeserializer deserializer);
 
   @protected
-  FeedRequestDto sse_decode_feed_request_dto(SseDeserializer deserializer);
+  FeedRequest sse_decode_feed_request(SseDeserializer deserializer);
 
   @protected
-  HttpHeaderDto sse_decode_http_header_dto(SseDeserializer deserializer);
+  HttpHeader sse_decode_http_header(SseDeserializer deserializer);
 
   @protected
   int sse_decode_i_32(SseDeserializer deserializer);
@@ -554,22 +545,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<String> sse_decode_list_String(SseDeserializer deserializer);
 
   @protected
-  List<AuthFieldDto> sse_decode_list_auth_field_dto(
-    SseDeserializer deserializer,
-  );
+  List<AuthField> sse_decode_list_auth_field(SseDeserializer deserializer);
 
   @protected
-  List<BooruPostDto> sse_decode_list_booru_post_dto(
-    SseDeserializer deserializer,
-  );
+  List<BooruPost> sse_decode_list_booru_post(SseDeserializer deserializer);
 
   @protected
-  List<BooruSourceDto> sse_decode_list_booru_source_dto(
-    SseDeserializer deserializer,
-  );
+  List<BooruSource> sse_decode_list_booru_source(SseDeserializer deserializer);
 
   @protected
-  List<BooruTagDto> sse_decode_list_booru_tag_dto(SseDeserializer deserializer);
+  List<BooruTag> sse_decode_list_booru_tag(SseDeserializer deserializer);
+
+  @protected
+  List<BooruTagSuggestion> sse_decode_list_booru_tag_suggestion(
+    SseDeserializer deserializer,
+  );
 
   @protected
   List<ContentRating> sse_decode_list_content_rating(
@@ -580,20 +570,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<FeedKind> sse_decode_list_feed_kind(SseDeserializer deserializer);
 
   @protected
-  List<HttpHeaderDto> sse_decode_list_http_header_dto(
-    SseDeserializer deserializer,
-  );
+  List<HttpHeader> sse_decode_list_http_header(SseDeserializer deserializer);
 
   @protected
   List<MediaKind> sse_decode_list_media_kind(SseDeserializer deserializer);
 
   @protected
-  List<MediaVariantDto> sse_decode_list_media_variant_dto(
+  List<MediaVariant> sse_decode_list_media_variant(
     SseDeserializer deserializer,
   );
 
   @protected
-  List<PersistedHostRouteDto> sse_decode_list_persisted_host_route_dto(
+  List<PersistedHostRoute> sse_decode_list_persisted_host_route(
     SseDeserializer deserializer,
   );
 
@@ -606,36 +594,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
   @protected
-  List<RouteDiagnosticDto> sse_decode_list_route_diagnostic_dto(
+  List<RouteDiagnostic> sse_decode_list_route_diagnostic(
     SseDeserializer deserializer,
   );
 
   @protected
-  List<TagSuggestionDto> sse_decode_list_tag_suggestion_dto(
-    SseDeserializer deserializer,
-  );
+  List<WebCookie> sse_decode_list_web_cookie(SseDeserializer deserializer);
 
   @protected
-  List<WebCookieDto> sse_decode_list_web_cookie_dto(
-    SseDeserializer deserializer,
-  );
-
-  @protected
-  MediaFetchEventDto sse_decode_media_fetch_event_dto(
-    SseDeserializer deserializer,
-  );
+  MediaFetchEvent sse_decode_media_fetch_event(SseDeserializer deserializer);
 
   @protected
   MediaKind sse_decode_media_kind(SseDeserializer deserializer);
 
   @protected
-  MediaRequestDto sse_decode_media_request_dto(SseDeserializer deserializer);
+  MediaRequest sse_decode_media_request(SseDeserializer deserializer);
 
   @protected
   MediaType sse_decode_media_type(SseDeserializer deserializer);
 
   @protected
-  MediaVariantDto sse_decode_media_variant_dto(SseDeserializer deserializer);
+  MediaVariant sse_decode_media_variant(SseDeserializer deserializer);
 
   @protected
   MediaVariantKind sse_decode_media_variant_kind(SseDeserializer deserializer);
@@ -649,9 +628,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String? sse_decode_opt_String(SseDeserializer deserializer);
 
   @protected
-  ChecksumDto? sse_decode_opt_box_autoadd_checksum_dto(
-    SseDeserializer deserializer,
-  );
+  Checksum? sse_decode_opt_box_autoadd_checksum(SseDeserializer deserializer);
 
   @protected
   int? sse_decode_opt_box_autoadd_i_32(SseDeserializer deserializer);
@@ -680,7 +657,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
-  PersistedHostRouteDto sse_decode_persisted_host_route_dto(
+  PersistedHostRoute sse_decode_persisted_host_route(
     SseDeserializer deserializer,
   );
 
@@ -691,50 +668,39 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PopularTimeBasis sse_decode_popular_time_basis(SseDeserializer deserializer);
 
   @protected
-  PostFlagsDto sse_decode_post_flags_dto(SseDeserializer deserializer);
+  PostFlags sse_decode_post_flags(SseDeserializer deserializer);
 
   @protected
-  PostPageDto sse_decode_post_page_dto(SseDeserializer deserializer);
+  PostPage sse_decode_post_page(SseDeserializer deserializer);
 
   @protected
-  PreparedDownloadDto sse_decode_prepared_download_dto(
-    SseDeserializer deserializer,
-  );
+  PreparedDownload sse_decode_prepared_download(SseDeserializer deserializer);
 
   @protected
   RecoveryAction sse_decode_recovery_action(SseDeserializer deserializer);
 
   @protected
-  RouteCacheStateDto sse_decode_route_cache_state_dto(
-    SseDeserializer deserializer,
-  );
+  RouteCacheState sse_decode_route_cache_state(SseDeserializer deserializer);
 
   @protected
-  RouteDiagnosticDto sse_decode_route_diagnostic_dto(
-    SseDeserializer deserializer,
-  );
+  RouteDiagnostic sse_decode_route_diagnostic(SseDeserializer deserializer);
 
   @protected
   RouteProvider sse_decode_route_provider(SseDeserializer deserializer);
 
   @protected
-  SearchRequestDto sse_decode_search_request_dto(SseDeserializer deserializer);
+  SearchRequest sse_decode_search_request(SseDeserializer deserializer);
 
   @protected
-  SourceCapabilitiesDto sse_decode_source_capabilities_dto(
+  SourceCapabilities sse_decode_source_capabilities(
     SseDeserializer deserializer,
   );
 
   @protected
-  SourceCredentialsDto sse_decode_source_credentials_dto(
-    SseDeserializer deserializer,
-  );
+  SourceCredentials sse_decode_source_credentials(SseDeserializer deserializer);
 
   @protected
   TagCategory sse_decode_tag_category(SseDeserializer deserializer);
-
-  @protected
-  TagSuggestionDto sse_decode_tag_suggestion_dto(SseDeserializer deserializer);
 
   @protected
   int sse_decode_u_16(SseDeserializer deserializer);
@@ -752,7 +718,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   BigInt sse_decode_usize(SseDeserializer deserializer);
 
   @protected
-  WebCookieDto sse_decode_web_cookie_dto(SseDeserializer deserializer);
+  WebCookie sse_decode_web_cookie(SseDeserializer deserializer);
 
   @protected
   void sse_encode_AnyhowException(
@@ -782,14 +748,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_StreamSink_download_event_dto_Sse(
-    RustStreamSink<DownloadEventDto> self,
+  void sse_encode_StreamSink_download_event_Sse(
+    RustStreamSink<DownloadEvent> self,
     SseSerializer serializer,
   );
 
   @protected
-  void sse_encode_StreamSink_media_fetch_event_dto_Sse(
-    RustStreamSink<MediaFetchEventDto> self,
+  void sse_encode_StreamSink_media_fetch_event_Sse(
+    RustStreamSink<MediaFetchEvent> self,
     SseSerializer serializer,
   );
 
@@ -797,7 +763,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
-  void sse_encode_auth_field_dto(AuthFieldDto self, SseSerializer serializer);
+  void sse_encode_auth_field(AuthField self, SseSerializer serializer);
 
   @protected
   void sse_encode_auth_field_kind(AuthFieldKind self, SseSerializer serializer);
@@ -806,10 +772,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_auth_kind(AuthKind self, SseSerializer serializer);
 
   @protected
-  void sse_encode_auth_schema_dto(AuthSchemaDto self, SseSerializer serializer);
+  void sse_encode_auth_schema(AuthSchema self, SseSerializer serializer);
 
   @protected
-  void sse_encode_auth_state_dto(AuthStateDto self, SseSerializer serializer);
+  void sse_encode_auth_state(AuthState self, SseSerializer serializer);
 
   @protected
   void sse_encode_auth_status(AuthStatus self, SseSerializer serializer);
@@ -818,10 +784,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_bool(bool self, SseSerializer serializer);
 
   @protected
-  void sse_encode_booru_engine_config_dto(
-    BooruEngineConfigDto self,
+  void sse_encode_booru_engine_config(
+    BooruEngineConfig self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_booru_error(BooruError self, SseSerializer serializer);
 
   @protected
   void sse_encode_booru_error_code(
@@ -830,56 +799,53 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_booru_error_dto(BooruErrorDto self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_booru_post_dto(BooruPostDto self, SseSerializer serializer);
+  void sse_encode_booru_post(BooruPost self, SseSerializer serializer);
 
   @protected
   void sse_encode_booru_protocol(BooruProtocol self, SseSerializer serializer);
 
   @protected
-  void sse_encode_booru_source_dto(
-    BooruSourceDto self,
+  void sse_encode_booru_source(BooruSource self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_booru_tag(BooruTag self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_booru_tag_suggestion(
+    BooruTagSuggestion self,
     SseSerializer serializer,
   );
 
   @protected
-  void sse_encode_booru_tag_dto(BooruTagDto self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_box_autoadd_booru_engine_config_dto(
-    BooruEngineConfigDto self,
+  void sse_encode_box_autoadd_booru_engine_config(
+    BooruEngineConfig self,
     SseSerializer serializer,
   );
 
   @protected
-  void sse_encode_box_autoadd_booru_error_dto(
-    BooruErrorDto self,
+  void sse_encode_box_autoadd_booru_error(
+    BooruError self,
     SseSerializer serializer,
   );
 
   @protected
-  void sse_encode_box_autoadd_checksum_dto(
-    ChecksumDto self,
+  void sse_encode_box_autoadd_checksum(Checksum self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_common_tags_request(
+    CommonTagsRequest self,
     SseSerializer serializer,
   );
 
   @protected
-  void sse_encode_box_autoadd_common_tags_request_dto(
-    CommonTagsRequestDto self,
+  void sse_encode_box_autoadd_download_request(
+    DownloadRequest self,
     SseSerializer serializer,
   );
 
   @protected
-  void sse_encode_box_autoadd_download_request_dto(
-    DownloadRequestDto self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_box_autoadd_feed_request_dto(
-    FeedRequestDto self,
+  void sse_encode_box_autoadd_feed_request(
+    FeedRequest self,
     SseSerializer serializer,
   );
 
@@ -887,8 +853,8 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_box_autoadd_i_32(int self, SseSerializer serializer);
 
   @protected
-  void sse_encode_box_autoadd_media_request_dto(
-    MediaRequestDto self,
+  void sse_encode_box_autoadd_media_request(
+    MediaRequest self,
     SseSerializer serializer,
   );
 
@@ -917,14 +883,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_box_autoadd_search_request_dto(
-    SearchRequestDto self,
+  void sse_encode_box_autoadd_search_request(
+    SearchRequest self,
     SseSerializer serializer,
   );
 
   @protected
-  void sse_encode_box_autoadd_source_credentials_dto(
-    SourceCredentialsDto self,
+  void sse_encode_box_autoadd_source_credentials(
+    SourceCredentials self,
     SseSerializer serializer,
   );
 
@@ -938,23 +904,23 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_checksum(Checksum self, SseSerializer serializer);
+
+  @protected
   void sse_encode_checksum_algorithm(
     ChecksumAlgorithm self,
     SseSerializer serializer,
   );
 
   @protected
-  void sse_encode_checksum_dto(ChecksumDto self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_common_tags_page_dto(
-    CommonTagsPageDto self,
+  void sse_encode_common_tags_page(
+    CommonTagsPage self,
     SseSerializer serializer,
   );
 
   @protected
-  void sse_encode_common_tags_request_dto(
-    CommonTagsRequestDto self,
+  void sse_encode_common_tags_request(
+    CommonTagsRequest self,
     SseSerializer serializer,
   );
 
@@ -962,20 +928,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_content_rating(ContentRating self, SseSerializer serializer);
 
   @protected
-  void sse_encode_discovery_capabilities_dto(
-    DiscoveryCapabilitiesDto self,
+  void sse_encode_discovery_capabilities(
+    DiscoveryCapabilities self,
     SseSerializer serializer,
   );
 
   @protected
-  void sse_encode_download_event_dto(
-    DownloadEventDto self,
-    SseSerializer serializer,
-  );
+  void sse_encode_download_event(DownloadEvent self, SseSerializer serializer);
 
   @protected
-  void sse_encode_download_request_dto(
-    DownloadRequestDto self,
+  void sse_encode_download_request(
+    DownloadRequest self,
     SseSerializer serializer,
   );
 
@@ -986,13 +949,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_feed_kind(FeedKind self, SseSerializer serializer);
 
   @protected
-  void sse_encode_feed_request_dto(
-    FeedRequestDto self,
-    SseSerializer serializer,
-  );
+  void sse_encode_feed_request(FeedRequest self, SseSerializer serializer);
 
   @protected
-  void sse_encode_http_header_dto(HttpHeaderDto self, SseSerializer serializer);
+  void sse_encode_http_header(HttpHeader self, SseSerializer serializer);
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
@@ -1001,26 +961,29 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_list_String(List<String> self, SseSerializer serializer);
 
   @protected
-  void sse_encode_list_auth_field_dto(
-    List<AuthFieldDto> self,
+  void sse_encode_list_auth_field(
+    List<AuthField> self,
     SseSerializer serializer,
   );
 
   @protected
-  void sse_encode_list_booru_post_dto(
-    List<BooruPostDto> self,
+  void sse_encode_list_booru_post(
+    List<BooruPost> self,
     SseSerializer serializer,
   );
 
   @protected
-  void sse_encode_list_booru_source_dto(
-    List<BooruSourceDto> self,
+  void sse_encode_list_booru_source(
+    List<BooruSource> self,
     SseSerializer serializer,
   );
 
   @protected
-  void sse_encode_list_booru_tag_dto(
-    List<BooruTagDto> self,
+  void sse_encode_list_booru_tag(List<BooruTag> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_booru_tag_suggestion(
+    List<BooruTagSuggestion> self,
     SseSerializer serializer,
   );
 
@@ -1034,8 +997,8 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_list_feed_kind(List<FeedKind> self, SseSerializer serializer);
 
   @protected
-  void sse_encode_list_http_header_dto(
-    List<HttpHeaderDto> self,
+  void sse_encode_list_http_header(
+    List<HttpHeader> self,
     SseSerializer serializer,
   );
 
@@ -1046,14 +1009,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_list_media_variant_dto(
-    List<MediaVariantDto> self,
+  void sse_encode_list_media_variant(
+    List<MediaVariant> self,
     SseSerializer serializer,
   );
 
   @protected
-  void sse_encode_list_persisted_host_route_dto(
-    List<PersistedHostRouteDto> self,
+  void sse_encode_list_persisted_host_route(
+    List<PersistedHostRoute> self,
     SseSerializer serializer,
   );
 
@@ -1070,26 +1033,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_list_route_diagnostic_dto(
-    List<RouteDiagnosticDto> self,
+  void sse_encode_list_route_diagnostic(
+    List<RouteDiagnostic> self,
     SseSerializer serializer,
   );
 
   @protected
-  void sse_encode_list_tag_suggestion_dto(
-    List<TagSuggestionDto> self,
+  void sse_encode_list_web_cookie(
+    List<WebCookie> self,
     SseSerializer serializer,
   );
 
   @protected
-  void sse_encode_list_web_cookie_dto(
-    List<WebCookieDto> self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_media_fetch_event_dto(
-    MediaFetchEventDto self,
+  void sse_encode_media_fetch_event(
+    MediaFetchEvent self,
     SseSerializer serializer,
   );
 
@@ -1097,19 +1054,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_media_kind(MediaKind self, SseSerializer serializer);
 
   @protected
-  void sse_encode_media_request_dto(
-    MediaRequestDto self,
-    SseSerializer serializer,
-  );
+  void sse_encode_media_request(MediaRequest self, SseSerializer serializer);
 
   @protected
   void sse_encode_media_type(MediaType self, SseSerializer serializer);
 
   @protected
-  void sse_encode_media_variant_dto(
-    MediaVariantDto self,
-    SseSerializer serializer,
-  );
+  void sse_encode_media_variant(MediaVariant self, SseSerializer serializer);
 
   @protected
   void sse_encode_media_variant_kind(
@@ -1127,8 +1078,8 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_opt_String(String? self, SseSerializer serializer);
 
   @protected
-  void sse_encode_opt_box_autoadd_checksum_dto(
-    ChecksumDto? self,
+  void sse_encode_opt_box_autoadd_checksum(
+    Checksum? self,
     SseSerializer serializer,
   );
 
@@ -1163,8 +1114,8 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);
 
   @protected
-  void sse_encode_persisted_host_route_dto(
-    PersistedHostRouteDto self,
+  void sse_encode_persisted_host_route(
+    PersistedHostRoute self,
     SseSerializer serializer,
   );
 
@@ -1178,14 +1129,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_post_flags_dto(PostFlagsDto self, SseSerializer serializer);
+  void sse_encode_post_flags(PostFlags self, SseSerializer serializer);
 
   @protected
-  void sse_encode_post_page_dto(PostPageDto self, SseSerializer serializer);
+  void sse_encode_post_page(PostPage self, SseSerializer serializer);
 
   @protected
-  void sse_encode_prepared_download_dto(
-    PreparedDownloadDto self,
+  void sse_encode_prepared_download(
+    PreparedDownload self,
     SseSerializer serializer,
   );
 
@@ -1196,14 +1147,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_route_cache_state_dto(
-    RouteCacheStateDto self,
+  void sse_encode_route_cache_state(
+    RouteCacheState self,
     SseSerializer serializer,
   );
 
   @protected
-  void sse_encode_route_diagnostic_dto(
-    RouteDiagnosticDto self,
+  void sse_encode_route_diagnostic(
+    RouteDiagnostic self,
     SseSerializer serializer,
   );
 
@@ -1211,31 +1162,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_route_provider(RouteProvider self, SseSerializer serializer);
 
   @protected
-  void sse_encode_search_request_dto(
-    SearchRequestDto self,
+  void sse_encode_search_request(SearchRequest self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_source_capabilities(
+    SourceCapabilities self,
     SseSerializer serializer,
   );
 
   @protected
-  void sse_encode_source_capabilities_dto(
-    SourceCapabilitiesDto self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_source_credentials_dto(
-    SourceCredentialsDto self,
+  void sse_encode_source_credentials(
+    SourceCredentials self,
     SseSerializer serializer,
   );
 
   @protected
   void sse_encode_tag_category(TagCategory self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_tag_suggestion_dto(
-    TagSuggestionDto self,
-    SseSerializer serializer,
-  );
 
   @protected
   void sse_encode_u_16(int self, SseSerializer serializer);
@@ -1253,7 +1195,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_usize(BigInt self, SseSerializer serializer);
 
   @protected
-  void sse_encode_web_cookie_dto(WebCookieDto self, SseSerializer serializer);
+  void sse_encode_web_cookie(WebCookie self, SseSerializer serializer);
 }
 
 // Section: wire_class

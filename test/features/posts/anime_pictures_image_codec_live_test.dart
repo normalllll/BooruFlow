@@ -22,7 +22,7 @@ void main() {
       });
 
       final engine = await BooruEngine.newInstance(
-        config: BooruEngineConfigDto(
+        config: BooruEngineConfig(
           appSupportDirectory: support.path,
           fallbackMode: NetworkFallbackMode.persistedIpOverride,
           dnsProvider: RouteProvider.uncensoredDns,
@@ -38,9 +38,9 @@ void main() {
       final bytes = BytesBuilder(copy: false);
       await for (final event in engine.streamMedia(request: request)) {
         switch (event) {
-          case MediaFetchEventDto_Failed(:final error):
+          case MediaFetchEvent_Failed(:final error):
             throw error;
-          case MediaFetchEventDto_Chunk(bytes: final chunk):
+          case MediaFetchEvent_Chunk(bytes: final chunk):
             bytes.add(chunk);
         }
       }

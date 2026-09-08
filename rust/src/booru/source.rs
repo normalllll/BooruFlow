@@ -1,5 +1,5 @@
 use crate::api::booru_models::{
-    AuthKind, BooruProtocol, BooruSourceDto, ContentRating, SourceCapabilitiesDto,
+    AuthKind, BooruProtocol, BooruSource, ContentRating, SourceCapabilities,
 };
 use crate::booru::capabilities::capabilities;
 
@@ -27,12 +27,12 @@ pub struct SourceDefinition {
     pub max_concurrency: u32,
     pub enabled_by_default: bool,
     pub is_ai_source: bool,
-    pub capabilities: SourceCapabilitiesDto,
+    pub capabilities: SourceCapabilities,
 }
 
 impl SourceDefinition {
-    pub fn to_dto(&self) -> BooruSourceDto {
-        BooruSourceDto {
+    pub fn to_api(&self) -> BooruSource {
+        BooruSource {
             source_id: self.id.to_owned(),
             display_name: self.display_name.to_owned(),
             protocol: match self.family {

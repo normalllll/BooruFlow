@@ -19,7 +19,7 @@ void main() {
       final support = await Directory.systemTemp.createTemp('booruflow-codec-');
       addTearDown(() => support.delete(recursive: true));
       final engine = await BooruEngine.newInstance(
-        config: BooruEngineConfigDto(
+        config: BooruEngineConfig(
           appSupportDirectory: support.path,
           fallbackMode: NetworkFallbackMode.off,
           dnsProvider: RouteProvider.uncensoredDns,
@@ -57,13 +57,13 @@ void main() {
               in engine
                   .streamMedia(request: request)
                   .timeout(const Duration(seconds: 30))) {
-            if (event case MediaFetchEventDto_Chunk(
+            if (event case MediaFetchEvent_Chunk(
               :final bytes,
               :final totalBytesDecimal,
             )) {
               buffer.add(bytes);
               expected = int.tryParse(totalBytesDecimal ?? '') ?? expected;
-            } else if (event case MediaFetchEventDto_Failed(:final error)) {
+            } else if (event case MediaFetchEvent_Failed(:final error)) {
               throw makeBooruErrorReadable(error);
             }
           }

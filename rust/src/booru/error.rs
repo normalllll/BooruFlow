@@ -33,7 +33,7 @@ pub enum RecoveryAction {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct BooruErrorDto {
+pub struct BooruError {
     pub code: BooruErrorCode,
     pub source_id: Option<String>,
     pub user_message_key: String,
@@ -43,7 +43,7 @@ pub struct BooruErrorDto {
     pub action: Option<RecoveryAction>,
 }
 
-impl BooruErrorDto {
+impl BooruError {
     pub fn new(code: BooruErrorCode, source_id: Option<&str>, message_key: &str) -> Self {
         let sequence = DIAGNOSTIC_SEQUENCE.fetch_add(1, Ordering::Relaxed);
         Self {
@@ -84,7 +84,7 @@ impl BooruErrorDto {
     }
 }
 
-impl Display for BooruErrorDto {
+impl Display for BooruError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             formatter,
@@ -94,7 +94,7 @@ impl Display for BooruErrorDto {
     }
 }
 
-impl std::error::Error for BooruErrorDto {}
+impl std::error::Error for BooruError {}
 
 fn default_action(code: BooruErrorCode) -> Option<RecoveryAction> {
     match code {
@@ -110,4 +110,4 @@ fn default_action(code: BooruErrorCode) -> Option<RecoveryAction> {
     }
 }
 
-pub type BooruResult<T> = Result<T, BooruErrorDto>;
+pub type BooruResult<T> = Result<T, BooruError>;

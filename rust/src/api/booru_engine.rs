@@ -1,10 +1,10 @@
-use crate::api::booru_auth::{AuthSchemaDto, AuthStateDto, SourceCredentialsDto, WebCookieDto};
+use crate::api::booru_auth::{AuthSchema, AuthState, SourceCredentials, WebCookie};
 use crate::api::booru_download::{
-    DownloadEventDto, DownloadRequestDto, MediaFetchEventDto, PreparedDownloadDto,
+    DownloadEvent, DownloadRequest, MediaFetchEvent, PreparedDownload,
 };
 use crate::api::booru_models::{
-    BooruEngineConfigDto, BooruPostDto, BooruSourceDto, MediaRequestDto, MediaVariantKind,
-    PostPageDto, RouteCacheStateDto, SearchRequestDto, TagSuggestionDto,
+    BooruEngineConfig, BooruPost, BooruSource, BooruTagSuggestion, MediaRequest, MediaVariantKind,
+    PostPage, RouteCacheState, SearchRequest,
 };
 use crate::booru::adapter::{BooruAdapter, RequestContext};
 use crate::booru::adapters::anime_pictures::AnimePicturesAdapter;
@@ -14,7 +14,7 @@ use crate::booru::adapters::moebooru::MoebooruAdapter;
 use crate::booru::adapters::wallhaven::WallhavenAdapter;
 use crate::booru::auth::credential::auth_schema;
 use crate::booru::auth::SessionStore;
-use crate::booru::error::{BooruErrorCode, BooruErrorDto, BooruResult};
+use crate::booru::error::{BooruError, BooruErrorCode, BooruResult};
 use crate::booru::media::download::{
     download_to_path, open_prepared_unthrottled, DownloadProgress,
 };
@@ -38,7 +38,7 @@ pub struct BooruEngine {
 }
 
 impl BooruEngine {
-    pub fn new(config: BooruEngineConfigDto) -> BooruResult<Self> {
+    pub fn new(config: BooruEngineConfig) -> BooruResult<Self> {
         let definitions = builtin_sources();
         let sessions = Arc::new(SessionStore::default());
         let runtime = Arc::new(NetworkRuntime::new(config, &definitions, sessions.clone())?);
@@ -64,14 +64,14 @@ impl BooruEngine {
         })
     }
 
-    pub fn list_sources(&self) -> Vec<BooruSourceDto> {
+    pub fn list_sources(&self) -> Vec<BooruSource> {
         self.registry
             .all()
-            .map(|adapter| adapter.definition().to_dto())
+            .map(|adapter| adapter.definition().to_api())
             .collect()
     }
 
-    pub async fn search(&self, request: SearchRequestDto) -> BooruResult<PostPageDto> {
+    pub async fn search(&self, request: SearchRequest) -> BooruResult<PostPage> {
         let adapter = self.registry.get(&request.source_id)?;
         let capabilities = &adapter.definition().capabilities;
         if !capabilities.supports_search
@@ -82,7 +82,7 @@ impl BooruEngine {
                 .iter()
                 .any(|rating| !capabilities.ratings.contains(rating))
         {
-            return Err(BooruErrorDto::invalid_request(Some(&request.source_id)));
+            return Err(BooruError::invalid_request(Some(&request.source_id)));
         }
         let query = SearchQuery {
             text: request.query_text,
@@ -99,26 +99,26 @@ impl BooruEngine {
             cursor: request.cursor,
         };
         let page = adapter.search(&self.context(), query).await?;
-        Ok(PostPageDto {
-            items: page.items.into_iter().map(|post| post.into_dto()).collect(),
+        Ok(PostPage {
+            items: page.items.into_iter().map(|post| post.into_api()).collect(),
             next_cursor: page.next_cursor,
             exhausted: page.exhausted,
         })
     }
 
-    pub async fn get_post(&self, source_id: String, post_id: String) -> BooruResult<BooruPostDto> {
+    pub async fn get_post(&self, source_id: String, post_id: String) -> BooruResult<BooruPost> {
         let adapter = self.registry.get(&source_id)?;
         adapter
             .get_post(&self.context(), &PostId(post_id))
             .await
-            .map(|post| post.into_dto())
+            .map(|post| post.into_api())
     }
 
     pub async fn autocomplete(
         &self,
         source_id: String,
         text: String,
-    ) -> BooruResult<Vec<TagSuggestionDto>> {
+    ) -> BooruResult<Vec<BooruTagSuggestion>> {
         let adapter = self.registry.get(&source_id)?;
         if text.trim().chars().count()
             < adapter
@@ -127,7 +127,7 @@ impl BooruEngine {
                 .discovery
                 .autocomplete_min_chars as usize
         {
-            return Err(BooruErrorDto::invalid_request(Some(&source_id)));
+            return Err(BooruError::invalid_request(Some(&source_id)));
         }
         if !adapter.definition().capabilities.supports_autocomplete {
             return Err(unsupported(&source_id));
@@ -148,8 +148,8 @@ impl BooruEngine {
 
     pub async fn feed(
         &self,
-        mut request: crate::api::booru_models::FeedRequestDto,
-    ) -> BooruResult<PostPageDto> {
+        mut request: crate::api::booru_models::FeedRequest,
+    ) -> BooruResult<PostPage> {
         let adapter = self.registry.get(&request.source_id)?;
         crate::booru::discovery::validate_feed(adapter.definition(), &request)?;
         request.ratings = crate::booru::discovery::resolve_ratings(
@@ -164,8 +164,8 @@ impl BooruEngine {
         let ratings = request.ratings.clone();
         let mut page = adapter.feed(&self.context(), request).await?;
         page.items.retain(|post| ratings.contains(&post.rating));
-        Ok(PostPageDto {
-            items: page.items.into_iter().map(|post| post.into_dto()).collect(),
+        Ok(PostPage {
+            items: page.items.into_iter().map(|post| post.into_api()).collect(),
             next_cursor: page.next_cursor,
             exhausted: page.exhausted,
         })
@@ -173,8 +173,8 @@ impl BooruEngine {
 
     pub async fn common_tags(
         &self,
-        request: crate::api::booru_models::CommonTagsRequestDto,
-    ) -> BooruResult<crate::api::booru_models::CommonTagsPageDto> {
+        request: crate::api::booru_models::CommonTagsRequest,
+    ) -> BooruResult<crate::api::booru_models::CommonTagsPage> {
         let adapter = self.registry.get(&request.source_id)?;
         crate::booru::discovery::tags(
             &self.context(),
@@ -190,7 +190,7 @@ impl BooruEngine {
         &self,
         source_id: String,
         post_id: String,
-    ) -> BooruResult<Vec<BooruPostDto>> {
+    ) -> BooruResult<Vec<BooruPost>> {
         let adapter = self.registry.get(&source_id)?;
         if !adapter.definition().capabilities.supports_related_posts {
             return Err(unsupported(&source_id));
@@ -199,11 +199,11 @@ impl BooruEngine {
             .related_posts(&self.context(), &PostId(post_id))
             .await?
             .into_iter()
-            .map(|post| post.into_dto())
+            .map(|post| post.into_api())
             .collect())
     }
 
-    pub fn auth_schema(&self, source_id: String) -> BooruResult<AuthSchemaDto> {
+    pub fn auth_schema(&self, source_id: String) -> BooruResult<AuthSchema> {
         let adapter = self.registry.get(&source_id)?;
         Ok(auth_schema(
             &source_id,
@@ -211,7 +211,7 @@ impl BooruEngine {
         ))
     }
 
-    pub fn auth_state(&self, source_id: String) -> BooruResult<AuthStateDto> {
+    pub fn auth_state(&self, source_id: String) -> BooruResult<AuthState> {
         self.registry.get(&source_id)?;
         self.sessions.state(&source_id)
     }
@@ -219,8 +219,8 @@ impl BooruEngine {
     pub async fn set_credentials(
         &self,
         source_id: String,
-        credentials: SourceCredentialsDto,
-    ) -> BooruResult<AuthStateDto> {
+        credentials: SourceCredentials,
+    ) -> BooruResult<AuthState> {
         let adapter = self.registry.get(&source_id)?;
         let state = self.sessions.set_credentials(
             &source_id,
@@ -234,9 +234,9 @@ impl BooruEngine {
     pub async fn set_web_session(
         &self,
         source_id: String,
-        cookies: Vec<WebCookieDto>,
+        cookies: Vec<WebCookie>,
         user_agent: String,
-    ) -> BooruResult<AuthStateDto> {
+    ) -> BooruResult<AuthState> {
         let adapter = self.registry.get(&source_id)?;
         if adapter.definition().capabilities.auth_kind
             != crate::api::booru_models::AuthKind::WebSession
@@ -248,7 +248,7 @@ impl BooruEngine {
                 .definition()
                 .allows_host(cookie.domain.trim().trim_start_matches('.'))
         }) {
-            return Err(BooruErrorDto::invalid_request(Some(&source_id)));
+            return Err(BooruError::invalid_request(Some(&source_id)));
         }
         let state = self
             .sessions
@@ -257,7 +257,7 @@ impl BooruEngine {
         Ok(state)
     }
 
-    pub async fn verify_auth(&self, source_id: String) -> BooruResult<AuthStateDto> {
+    pub async fn verify_auth(&self, source_id: String) -> BooruResult<AuthState> {
         let adapter = self.registry.get(&source_id)?;
         adapter.verify_auth(&self.context()).await
     }
@@ -273,14 +273,14 @@ impl BooruEngine {
         source_id: String,
         post_id: String,
         variant: MediaVariantKind,
-    ) -> BooruResult<MediaRequestDto> {
+    ) -> BooruResult<MediaRequest> {
         let adapter = self.registry.get(&source_id)?;
         let prepared = adapter
             .prepare_media(&self.context(), &PostId(post_id.clone()), variant)
             .await?;
         let auth_revision = self.sessions.revision(&source_id);
         let route_revision = self.runtime.route_revision();
-        Ok(MediaRequestDto {
+        Ok(MediaRequest {
             source_id: source_id.clone(),
             post_id,
             variant: prepared.media.kind,
@@ -304,14 +304,14 @@ impl BooruEngine {
         variant: MediaVariantKind,
         url: String,
         allow_disk_cache: bool,
-    ) -> BooruResult<MediaRequestDto> {
+    ) -> BooruResult<MediaRequest> {
         let adapter = self.registry.get(&source_id)?;
-        let url = reqwest::Url::parse(&url)
-            .map_err(|_| BooruErrorDto::invalid_request(Some(&source_id)))?;
+        let url =
+            reqwest::Url::parse(&url).map_err(|_| BooruError::invalid_request(Some(&source_id)))?;
         let headers = self.runtime.prepared_headers(adapter.definition(), &url)?;
         let auth_revision = self.sessions.revision(&source_id);
         let route_revision = self.runtime.route_revision();
-        Ok(MediaRequestDto {
+        Ok(MediaRequest {
             source_id: source_id.clone(),
             post_id,
             variant,
@@ -330,7 +330,7 @@ impl BooruEngine {
         source_id: String,
         post_id: String,
         variant: MediaVariantKind,
-    ) -> BooruResult<PreparedDownloadDto> {
+    ) -> BooruResult<PreparedDownload> {
         let adapter = self.registry.get(&source_id)?;
         let prepared = adapter
             .prepare_media(&self.context(), &PostId(post_id.clone()), variant)
@@ -338,25 +338,21 @@ impl BooruEngine {
         prepared_download(&source_id, &post_id, variant, prepared)
     }
 
-    pub async fn stream_media(
-        &self,
-        request: MediaRequestDto,
-        sink: StreamSink<MediaFetchEventDto>,
-    ) {
+    pub async fn stream_media(&self, request: MediaRequest, sink: StreamSink<MediaFetchEvent>) {
         // FRB exposes the sink as a Dart stream; a returned Result belongs to a
         // separate, unawaited Future. Deliver failures on the same event stream.
         if let Err(error) = self.stream_media_inner(request, &sink).await {
-            let _ = sink.add(MediaFetchEventDto::Failed { error });
+            let _ = sink.add(MediaFetchEvent::Failed { error });
         }
     }
 
     async fn stream_media_inner(
         &self,
-        request: MediaRequestDto,
-        sink: &StreamSink<MediaFetchEventDto>,
+        request: MediaRequest,
+        sink: &StreamSink<MediaFetchEvent>,
     ) -> BooruResult<()> {
         let adapter = self.registry.get(&request.source_id)?;
-        let prepared = PreparedDownloadDto {
+        let prepared = PreparedDownload {
             source_id: request.source_id.clone(),
             post_id: request.post_id,
             variant: request.variant,
@@ -385,7 +381,7 @@ impl BooruEngine {
         let mut chunks = response.bytes_stream();
         while let Some(chunk) = chunks.next().await {
             let chunk = chunk.map_err(|_| {
-                BooruErrorDto::new(
+                BooruError::new(
                     BooruErrorCode::Network,
                     Some(&request.source_id),
                     "booru.error.network",
@@ -398,13 +394,13 @@ impl BooruEngine {
             } else {
                 chunk.to_vec()
             };
-            sink.add(MediaFetchEventDto::Chunk {
+            sink.add(MediaFetchEvent::Chunk {
                 bytes,
                 received_bytes_decimal: received.to_string(),
                 total_bytes_decimal: total.map(|value| value.to_string()),
             })
             .map_err(|_| {
-                BooruErrorDto::new(
+                BooruError::new(
                     BooruErrorCode::Cancelled,
                     Some(&request.source_id),
                     "booru.error.cancelled",
@@ -412,7 +408,7 @@ impl BooruEngine {
             })?;
         }
         if received == 0 {
-            return Err(BooruErrorDto::new(
+            return Err(BooruError::new(
                 BooruErrorCode::MediaValidationFailed,
                 Some(&request.source_id),
                 "booru.error.emptyDownload",
@@ -423,7 +419,7 @@ impl BooruEngine {
             let png = tokio::task::spawn_blocking(move || avif_to_png(&source_id, &avif_bytes))
                 .await
                 .map_err(|_| {
-                    BooruErrorDto::new(
+                    BooruError::new(
                         BooruErrorCode::Internal,
                         Some(&request.source_id),
                         "booru.error.imageDecodeFailed",
@@ -432,13 +428,13 @@ impl BooruEngine {
             let mut delivered = 0;
             for chunk in png.chunks(64 * 1024) {
                 delivered += chunk.len();
-                sink.add(MediaFetchEventDto::Chunk {
+                sink.add(MediaFetchEvent::Chunk {
                     bytes: chunk.to_vec(),
                     received_bytes_decimal: delivered.to_string(),
                     total_bytes_decimal: Some(png.len().to_string()),
                 })
                 .map_err(|_| {
-                    BooruErrorDto::new(
+                    BooruError::new(
                         BooruErrorCode::Cancelled,
                         Some(&request.source_id),
                         "booru.error.cancelled",
@@ -451,12 +447,12 @@ impl BooruEngine {
 
     pub async fn download_to_file_stream(
         &self,
-        request: DownloadRequestDto,
-        sink: StreamSink<DownloadEventDto>,
+        request: DownloadRequest,
+        sink: StreamSink<DownloadEvent>,
     ) -> BooruResult<()> {
         self.download_to_file(request, |event| {
             sink.add(event).map_err(|_| {
-                BooruErrorDto::new(BooruErrorCode::Cancelled, None, "booru.error.cancelled")
+                BooruError::new(BooruErrorCode::Cancelled, None, "booru.error.cancelled")
             })
         })
         .await
@@ -464,14 +460,14 @@ impl BooruEngine {
 
     pub async fn download_to_file<F>(
         &self,
-        request: DownloadRequestDto,
+        request: DownloadRequest,
         mut on_event: F,
     ) -> BooruResult<()>
     where
-        F: FnMut(DownloadEventDto) -> BooruResult<()>,
+        F: FnMut(DownloadEvent) -> BooruResult<()>,
     {
         if request.download_root.trim().is_empty() {
-            return Err(BooruErrorDto::invalid_request(Some(&request.source_id)));
+            return Err(BooruError::invalid_request(Some(&request.source_id)));
         }
         let job_key = format!(
             "{}:{}:{:?}",
@@ -479,14 +475,14 @@ impl BooruEngine {
         );
         {
             let mut active = self.active_downloads.lock().map_err(|_| {
-                BooruErrorDto::new(
+                BooruError::new(
                     BooruErrorCode::Internal,
                     Some(&request.source_id),
                     "booru.error.internal",
                 )
             })?;
             if !active.insert(job_key.clone()) {
-                return Err(BooruErrorDto::new(
+                return Err(BooruError::new(
                     BooruErrorCode::InvalidRequest,
                     Some(&request.source_id),
                     "booru.error.downloadAlreadyActive",
@@ -517,7 +513,7 @@ impl BooruEngine {
                 &prepared,
                 &destination,
                 |event: DownloadProgress| {
-                    on_event(DownloadEventDto::Progress {
+                    on_event(DownloadEvent::Progress {
                         received_bytes_decimal: event.received.to_string(),
                         total_bytes_decimal: event.total.map(|value| value.to_string()),
                         progress: event.progress,
@@ -525,7 +521,7 @@ impl BooruEngine {
                 },
             )
             .await?;
-            on_event(DownloadEventDto::Done {
+            on_event(DownloadEvent::Done {
                 path: completed_path.to_string_lossy().into_owned(),
             })?;
             Ok(())
@@ -554,7 +550,7 @@ impl BooruEngine {
         )
         .await
         .map_err(|_| {
-            BooruErrorDto::new(
+            BooruError::new(
                 BooruErrorCode::Timeout,
                 Some(&source_id),
                 "booru.error.timeout",
@@ -563,17 +559,17 @@ impl BooruEngine {
         Ok(())
     }
 
-    pub async fn initialize_route_cache(&self) -> BooruResult<RouteCacheStateDto> {
+    pub async fn initialize_route_cache(&self) -> BooruResult<RouteCacheState> {
         let state = self.runtime.route_cache.initialize().await?;
         self.runtime.invalidate_all_clients()?;
         Ok(state)
     }
 
-    pub fn route_cache_state(&self) -> BooruResult<RouteCacheStateDto> {
+    pub fn route_cache_state(&self) -> BooruResult<RouteCacheState> {
         self.runtime.route_cache.snapshot()
     }
 
-    pub async fn refresh_route_cache(&self) -> BooruResult<RouteCacheStateDto> {
+    pub async fn refresh_route_cache(&self) -> BooruResult<RouteCacheState> {
         let state = self.runtime.route_cache.refresh().await?;
         self.runtime.invalidate_all_clients()?;
         Ok(state)
@@ -586,8 +582,8 @@ impl BooruEngine {
     }
 }
 
-fn unsupported(source_id: &str) -> BooruErrorDto {
-    BooruErrorDto::new(
+fn unsupported(source_id: &str) -> BooruError {
+    BooruError::new(
         BooruErrorCode::UnsupportedCapability,
         Some(source_id),
         "booru.error.unsupportedCapability",
@@ -609,7 +605,7 @@ mod tests {
                 .unwrap_err();
             assert_eq!(error.code, BooruErrorCode::InvalidRequest);
             let error = engine
-                .search(SearchRequestDto {
+                .search(SearchRequest {
                     source_id: source.source_id,
                     query_text: " ".into(),
                     ratings: vec![ContentRating::General],
@@ -625,13 +621,13 @@ mod tests {
     #[tokio::test]
     #[ignore = "manual default home acceptance, no media downloads"]
     async fn live_default_home_all_sources() {
-        use crate::api::booru_models::{FeedKind, FeedRequestDto};
+        use crate::api::booru_models::{FeedKind, FeedRequest};
         let engine = engine();
         let mut failures = vec![];
         for source in engine.list_sources() {
             let result = tokio::time::timeout(
                 std::time::Duration::from_secs(30),
-                engine.feed(FeedRequestDto {
+                engine.feed(FeedRequest {
                     source_id: source.source_id.clone(),
                     kind: FeedKind::Latest,
                     range: None,
@@ -661,7 +657,7 @@ mod tests {
     #[ignore = "manual discovery API smoke, no media downloads"]
     async fn live_discovery_smoke() {
         use crate::api::booru_models::{
-            CapabilityAvailability, CommonTagsRequestDto, FeedKind, FeedRequestDto,
+            CapabilityAvailability, CommonTagsRequest, FeedKind, FeedRequest,
         };
         let engine = engine();
         let source_filter = std::env::var("BOORUFLOW_LIVE_SOURCE").ok();
@@ -691,7 +687,7 @@ mod tests {
                     .map(|range| (FeedKind::HistoricalPopular, Some(*range))),
             );
             for (kind, range) in modes {
-                let request = FeedRequestDto {
+                let request = FeedRequest {
                     source_id: source.source_id.clone(),
                     kind,
                     range,
@@ -723,7 +719,7 @@ mod tests {
             if source.capabilities.discovery.common_tags != CapabilityAvailability::Unsupported {
                 match tokio::time::timeout(
                     std::time::Duration::from_secs(25),
-                    engine.common_tags(CommonTagsRequestDto {
+                    engine.common_tags(CommonTagsRequest {
                         source_id: source.source_id.clone(),
                         page: 1,
                         page_size: 12,
@@ -764,7 +760,7 @@ mod tests {
     #[tokio::test]
     #[ignore = "manual Wallhaven extra discovery acceptance"]
     async fn live_wallhaven_extra_feeds() {
-        use crate::api::booru_models::{FeedKind, FeedRequestDto};
+        use crate::api::booru_models::{FeedKind, FeedRequest};
         let engine = engine();
         for kind in [
             FeedKind::Random,
@@ -775,7 +771,7 @@ mod tests {
             let mut ids = BTreeSet::new();
             for page in 1..=3 {
                 let result = engine
-                    .feed(FeedRequestDto {
+                    .feed(FeedRequest {
                         source_id: "wallhaven".into(),
                         kind,
                         range: None,
@@ -810,7 +806,7 @@ mod tests {
 
     fn engine() -> BooruEngine {
         let directory = tempfile::tempdir().unwrap().keep();
-        BooruEngine::new(BooruEngineConfigDto {
+        BooruEngine::new(BooruEngineConfig {
             app_support_directory: directory.to_string_lossy().to_string(),
             proxy_url: None,
             fallback_mode: NetworkFallbackMode::Off,
@@ -854,7 +850,7 @@ mod tests {
     async fn rejects_unsupported_rating_and_capability_without_network() {
         let engine = engine();
         let error = engine
-            .search(SearchRequestDto {
+            .search(SearchRequest {
                 source_id: "yande".to_owned(),
                 query_text: String::new(),
                 ratings: vec![ContentRating::Sensitive],
@@ -878,7 +874,7 @@ mod tests {
         let first = engine
             .set_credentials(
                 "wallhaven".to_owned(),
-                SourceCredentialsDto {
+                SourceCredentials {
                     username: None,
                     user_id: None,
                     api_key: Some("first".to_owned()),
@@ -889,7 +885,7 @@ mod tests {
         let second = engine
             .set_credentials(
                 "wallhaven".to_owned(),
-                SourceCredentialsDto {
+                SourceCredentials {
                     username: None,
                     user_id: None,
                     api_key: Some("second".to_owned()),
@@ -910,7 +906,7 @@ mod tests {
         let error = engine()
             .set_web_session(
                 "anime_pictures".to_owned(),
-                vec![WebCookieDto {
+                vec![WebCookie {
                     name: "session".to_owned(),
                     value: "secret".to_owned(),
                     domain: "example.com".to_owned(),
@@ -935,7 +931,7 @@ mod tests {
             .insert("yande:1:Original".to_owned());
         let error = engine
             .download_to_file(
-                DownloadRequestDto {
+                DownloadRequest {
                     source_id: "yande".to_owned(),
                     post_id: "1".to_owned(),
                     variant: MediaVariantKind::Original,
@@ -952,7 +948,7 @@ mod tests {
     #[ignore = "checks actual APIs with selected DNS and bypass; no media downloads"]
     async fn live_network_settings_checks_all_sources() {
         let directory = tempfile::tempdir().unwrap();
-        let engine = BooruEngine::new(BooruEngineConfigDto {
+        let engine = BooruEngine::new(BooruEngineConfig {
             app_support_directory: directory.path().to_string_lossy().into_owned(),
             proxy_url: None,
             fallback_mode: NetworkFallbackMode::PersistedIpOverride,
@@ -993,7 +989,7 @@ mod tests {
             Ok("sample") => MediaVariantKind::Sample,
             _ => MediaVariantKind::Original,
         };
-        let engine = BooruEngine::new(BooruEngineConfigDto {
+        let engine = BooruEngine::new(BooruEngineConfig {
             app_support_directory: support.to_string_lossy().into_owned(),
             proxy_url: None,
             fallback_mode: if bypass {
@@ -1043,7 +1039,7 @@ mod tests {
                 }
             } else {
                 match engine
-                    .feed(crate::api::booru_models::FeedRequestDto {
+                    .feed(crate::api::booru_models::FeedRequest {
                         source_id: source.source_id.clone(),
                         kind: crate::api::booru_models::FeedKind::Latest,
                         range: None,
@@ -1108,14 +1104,14 @@ mod tests {
                 let mut completed_path = None;
                 let result = engine
                     .download_to_file(
-                        DownloadRequestDto {
+                        DownloadRequest {
                             source_id: post.source_id,
                             post_id: post.post_id,
                             variant,
                             download_root: output_root.to_string_lossy().into_owned(),
                         },
                         |event| {
-                            if let DownloadEventDto::Done { path } = event {
+                            if let DownloadEvent::Done { path } = event {
                                 completed_path = Some(path);
                             }
                             Ok(())

@@ -1,5 +1,5 @@
 use crate::booru::adapter::BooruAdapter;
-use crate::booru::error::{BooruErrorCode, BooruErrorDto, BooruResult};
+use crate::booru::error::{BooruError, BooruErrorCode, BooruResult};
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
@@ -15,7 +15,7 @@ impl SourceRegistry {
         for adapter in adapters {
             let id = adapter.definition().id.to_owned();
             if map.insert(id.clone(), adapter).is_some() {
-                return Err(BooruErrorDto::new(
+                return Err(BooruError::new(
                     BooruErrorCode::Internal,
                     Some(&id),
                     "booru.error.duplicateSource",
@@ -31,7 +31,7 @@ impl SourceRegistry {
 
     pub fn get(&self, source_id: &str) -> BooruResult<Arc<dyn BooruAdapter>> {
         self.adapters.get(source_id).cloned().ok_or_else(|| {
-            BooruErrorDto::new(
+            BooruError::new(
                 BooruErrorCode::InvalidRequest,
                 Some(source_id),
                 "booru.error.unknownSource",

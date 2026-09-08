@@ -13,25 +13,24 @@ part 'booru_download.freezed.dart';
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `assert_fields_are_eq`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`
 
 @freezed
-sealed class DownloadEventDto with _$DownloadEventDto {
-  const DownloadEventDto._();
+sealed class DownloadEvent with _$DownloadEvent {
+  const DownloadEvent._();
 
-  const factory DownloadEventDto.progress({
+  const factory DownloadEvent.progress({
     required String receivedBytesDecimal,
     String? totalBytesDecimal,
     required double progress,
-  }) = DownloadEventDto_Progress;
-  const factory DownloadEventDto.done({required String path}) =
-      DownloadEventDto_Done;
+  }) = DownloadEvent_Progress;
+  const factory DownloadEvent.done({required String path}) = DownloadEvent_Done;
 }
 
-class DownloadRequestDto {
+class DownloadRequest {
   final String sourceId;
   final String postId;
   final MediaVariantKind variant;
   final String downloadRoot;
 
-  const DownloadRequestDto({
+  const DownloadRequest({
     required this.sourceId,
     required this.postId,
     required this.variant,
@@ -48,7 +47,7 @@ class DownloadRequestDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is DownloadRequestDto &&
+      other is DownloadRequest &&
           runtimeType == other.runtimeType &&
           sourceId == other.sourceId &&
           postId == other.postId &&
@@ -57,30 +56,30 @@ class DownloadRequestDto {
 }
 
 @freezed
-sealed class MediaFetchEventDto with _$MediaFetchEventDto {
-  const MediaFetchEventDto._();
+sealed class MediaFetchEvent with _$MediaFetchEvent {
+  const MediaFetchEvent._();
 
-  const factory MediaFetchEventDto.failed({required BooruErrorDto error}) =
-      MediaFetchEventDto_Failed;
-  const factory MediaFetchEventDto.chunk({
+  const factory MediaFetchEvent.failed({required BooruError error}) =
+      MediaFetchEvent_Failed;
+  const factory MediaFetchEvent.chunk({
     required Uint8List bytes,
     required String receivedBytesDecimal,
     String? totalBytesDecimal,
-  }) = MediaFetchEventDto_Chunk;
+  }) = MediaFetchEvent_Chunk;
 }
 
-class PreparedDownloadDto {
+class PreparedDownload {
   final String sourceId;
   final String postId;
   final MediaVariantKind variant;
   final String url;
-  final List<HttpHeaderDto> headers;
+  final List<HttpHeader> headers;
   final String? expectedBytesDecimal;
   final List<MediaKind> allowedMediaKinds;
-  final ChecksumDto? checksum;
+  final Checksum? checksum;
   final String filename;
 
-  const PreparedDownloadDto({
+  const PreparedDownload({
     required this.sourceId,
     required this.postId,
     required this.variant,
@@ -107,7 +106,7 @@ class PreparedDownloadDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is PreparedDownloadDto &&
+      other is PreparedDownload &&
           runtimeType == other.runtimeType &&
           sourceId == other.sourceId &&
           postId == other.postId &&

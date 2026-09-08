@@ -6,25 +6,7 @@
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-enum BooruErrorCode {
-  invalidRequest,
-  unsupportedCapability,
-  authenticationRequired,
-  authenticationRejected,
-  permissionDenied,
-  rateLimited,
-  challengeRequired,
-  sourceUnavailable,
-  network,
-  timeout,
-  invalidResponse,
-  unsafeRedirect,
-  mediaValidationFailed,
-  cancelled,
-  internal,
-}
-
-class BooruErrorDto implements FrbException {
+class BooruError implements FrbException {
   final BooruErrorCode code;
   final String? sourceId;
   final String userMessageKey;
@@ -33,7 +15,7 @@ class BooruErrorDto implements FrbException {
   final int? retryAfterSeconds;
   final RecoveryAction? action;
 
-  const BooruErrorDto({
+  const BooruError({
     required this.code,
     this.sourceId,
     required this.userMessageKey,
@@ -56,7 +38,7 @@ class BooruErrorDto implements FrbException {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is BooruErrorDto &&
+      other is BooruError &&
           runtimeType == other.runtimeType &&
           code == other.code &&
           sourceId == other.sourceId &&
@@ -65,6 +47,24 @@ class BooruErrorDto implements FrbException {
           httpStatus == other.httpStatus &&
           retryAfterSeconds == other.retryAfterSeconds &&
           action == other.action;
+}
+
+enum BooruErrorCode {
+  invalidRequest,
+  unsupportedCapability,
+  authenticationRequired,
+  authenticationRejected,
+  permissionDenied,
+  rateLimited,
+  challengeRequired,
+  sourceUnavailable,
+  network,
+  timeout,
+  invalidResponse,
+  unsafeRedirect,
+  mediaValidationFailed,
+  cancelled,
+  internal,
 }
 
 enum RecoveryAction { retry, login, switchSource, checkProxy, refreshRoute }

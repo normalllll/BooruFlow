@@ -1,8 +1,8 @@
-use crate::api::booru_download::PreparedDownloadDto;
+use crate::api::booru_download::PreparedDownload;
 #[cfg(test)]
 use crate::api::booru_models::ChecksumAlgorithm;
 use crate::api::booru_models::{MediaType, MediaVariantKind};
-use crate::booru::error::{BooruErrorCode, BooruErrorDto, BooruResult};
+use crate::booru::error::{BooruError, BooruErrorCode, BooruResult};
 use crate::booru::media::validation::{validate_content_type, StreamingChecksum};
 use crate::booru::network::{NetworkRuntime, RequestSpec, ResponseKind};
 use crate::booru::source::SourceDefinition;
@@ -22,7 +22,7 @@ pub struct DownloadProgress {
 pub async fn download_to_path<F>(
     runtime: &NetworkRuntime,
     source: &SourceDefinition,
-    prepared: &PreparedDownloadDto,
+    prepared: &PreparedDownload,
     destination: &Path,
     mut on_progress: F,
 ) -> BooruResult<PathBuf>
@@ -53,7 +53,7 @@ where
 async fn download_inner<F>(
     runtime: &NetworkRuntime,
     source: &SourceDefinition,
-    prepared: &PreparedDownloadDto,
+    prepared: &PreparedDownload,
     destination: &Path,
     part_path: &Path,
     on_progress: &mut F,
@@ -83,7 +83,7 @@ where
         .as_deref()
         .map(|value| value.parse::<u64>())
         .transpose()
-        .map_err(|_| BooruErrorDto::invalid_request(Some(source.id)))?;
+        .map_err(|_| BooruError::invalid_request(Some(source.id)))?;
     if let (Some(expected), Some(actual)) = (expected_length, declared_length) {
         if expected != actual {
             return Err(validation_error(source.id, "booru.error.lengthMismatch"));
@@ -104,13 +104,13 @@ where
     while let Some(chunk) = stream.next().await {
         let chunk = chunk.map_err(|error| {
             if error.is_timeout() {
-                BooruErrorDto::new(
+                BooruError::new(
                     BooruErrorCode::Timeout,
                     Some(source.id),
                     "booru.error.timeout",
                 )
             } else {
-                BooruErrorDto::new(
+                BooruError::new(
                     BooruErrorCode::Network,
                     Some(source.id),
                     "booru.error.network",
@@ -168,7 +168,7 @@ async fn replace_file(part_path: &Path, destination: &Path, source_id: &str) -> 
     let filename = destination
         .file_name()
         .and_then(|value| value.to_str())
-        .ok_or_else(|| BooruErrorDto::invalid_request(Some(source_id)))?;
+        .ok_or_else(|| BooruError::invalid_request(Some(source_id)))?;
     let backup = destination.with_file_name(format!(".{filename}.backup"));
     let destination_exists = tokio::fs::try_exists(destination).await.unwrap_or(false);
     let backup_exists = tokio::fs::try_exists(&backup).await.unwrap_or(false);
@@ -201,7 +201,7 @@ async fn replace_file(part_path: &Path, destination: &Path, source_id: &str) -> 
 pub(crate) async fn open_prepared(
     runtime: &NetworkRuntime,
     source: &SourceDefinition,
-    prepared: &PreparedDownloadDto,
+    prepared: &PreparedDownload,
 ) -> BooruResult<reqwest::Response> {
     open_prepared_inner(runtime, source, prepared, true).await
 }
@@ -209,7 +209,7 @@ pub(crate) async fn open_prepared(
 pub(crate) async fn open_prepared_unthrottled(
     runtime: &NetworkRuntime,
     source: &SourceDefinition,
-    prepared: &PreparedDownloadDto,
+    prepared: &PreparedDownload,
 ) -> BooruResult<reqwest::Response> {
     open_prepared_inner(runtime, source, prepared, false).await
 }
@@ -217,11 +217,11 @@ pub(crate) async fn open_prepared_unthrottled(
 async fn open_prepared_inner(
     runtime: &NetworkRuntime,
     source: &SourceDefinition,
-    prepared: &PreparedDownloadDto,
+    prepared: &PreparedDownload,
     throttle: bool,
 ) -> BooruResult<reqwest::Response> {
     let url = reqwest::Url::parse(&prepared.url)
-        .map_err(|_| BooruErrorDto::invalid_request(Some(source.id)))?;
+        .map_err(|_| BooruError::invalid_request(Some(source.id)))?;
     let mut spec = RequestSpec::get(url.clone(), ResponseKind::Media);
     spec.headers = prepared
         .headers
@@ -243,9 +243,7 @@ async fn open_prepared_inner(
         .get(LOCATION)
         .and_then(|value| value.to_str().ok())
         .ok_or_else(|| unsafe_redirect(source.id))?;
-    let target = url
-        .join(location)
-        .map_err(|_| unsafe_redirect(source.id))?;
+    let target = url.join(location).map_err(|_| unsafe_redirect(source.id))?;
     let temporary_cookie = response
         .headers()
         .get_all(SET_COOKIE)
@@ -299,24 +297,24 @@ fn part_path(destination: &Path) -> BooruResult<PathBuf> {
         .file_name()
         .and_then(|value| value.to_str())
         .filter(|value| !value.is_empty())
-        .ok_or_else(|| BooruErrorDto::invalid_request(None))?;
+        .ok_or_else(|| BooruError::invalid_request(None))?;
     Ok(destination.with_file_name(format!(".{filename}.part")))
 }
 
-fn validation_error(source_id: &str, key: &str) -> BooruErrorDto {
-    BooruErrorDto::new(BooruErrorCode::MediaValidationFailed, Some(source_id), key)
+fn validation_error(source_id: &str, key: &str) -> BooruError {
+    BooruError::new(BooruErrorCode::MediaValidationFailed, Some(source_id), key)
 }
 
-fn io_error(source_id: &str) -> BooruErrorDto {
-    BooruErrorDto::new(
+fn io_error(source_id: &str) -> BooruError {
+    BooruError::new(
         BooruErrorCode::Internal,
         Some(source_id),
         "booru.error.fileIo",
     )
 }
 
-fn unsafe_redirect(source_id: &str) -> BooruErrorDto {
-    BooruErrorDto::new(
+fn unsafe_redirect(source_id: &str) -> BooruError {
+    BooruError::new(
         BooruErrorCode::UnsafeRedirect,
         Some(source_id),
         "booru.error.invalidRedirect",

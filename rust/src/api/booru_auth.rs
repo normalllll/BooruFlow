@@ -8,7 +8,7 @@ pub enum AuthFieldKind {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct AuthFieldDto {
+pub struct AuthField {
     pub kind: AuthFieldKind,
     pub label_key: String,
     pub required: bool,
@@ -17,21 +17,21 @@ pub struct AuthFieldDto {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct AuthSchemaDto {
+pub struct AuthSchema {
     pub source_id: String,
-    pub fields: Vec<AuthFieldDto>,
+    pub fields: Vec<AuthField>,
     pub uses_web_session: bool,
 }
 
 #[derive(Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
-pub struct SourceCredentialsDto {
+pub struct SourceCredentials {
     pub username: Option<String>,
     pub user_id: Option<String>,
     pub api_key: Option<String>,
 }
 
 #[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct WebCookieDto {
+pub struct WebCookie {
     pub name: String,
     pub value: String,
     pub domain: String,
@@ -50,7 +50,7 @@ pub enum AuthStatus {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct AuthStateDto {
+pub struct AuthState {
     pub source_id: String,
     pub status: AuthStatus,
     pub username: Option<String>,

@@ -1,11 +1,11 @@
-use crate::api::booru_auth::{AuthStateDto, AuthStatus};
+use crate::api::booru_auth::{AuthState, AuthStatus};
 use crate::api::booru_models::{ContentRating, MediaType, MediaVariantKind, TagCategory};
 use crate::booru::adapter::{BooruAdapter, RequestContext};
 use crate::booru::adapters::common::{
     media, parse_json, rating, signed32, string, tag_list, unsigned, unsigned32, username,
     validate_media_hosts,
 };
-use crate::booru::error::{BooruErrorCode, BooruErrorDto, BooruResult};
+use crate::booru::error::{BooruError, BooruErrorCode, BooruResult};
 use crate::booru::model::{Post, PostFlags, PostId, PostPage, SearchQuery, Tag};
 use crate::booru::network::{RequestSpec, ResponseKind};
 use crate::booru::source::SourceDefinition;
@@ -22,13 +22,13 @@ impl WallhavenAdapter {
     }
 
     fn parse_post(&self, value: &Value) -> BooruResult<Post> {
-        let id = string(value, "id")
-            .ok_or_else(|| BooruErrorDto::invalid_response(self.definition.id))?;
+        let id =
+            string(value, "id").ok_or_else(|| BooruError::invalid_response(self.definition.id))?;
         if !id
             .bytes()
             .all(|byte| byte.is_ascii_alphanumeric() || byte == b'-')
         {
-            return Err(BooruErrorDto::invalid_response(self.definition.id));
+            return Err(BooruError::invalid_response(self.definition.id));
         }
         let width = unsigned32(value, "dimension_x");
         let height = unsigned32(value, "dimension_y");
@@ -74,7 +74,7 @@ impl WallhavenAdapter {
             variants.push(item);
         }
         if variants.is_empty() {
-            return Err(BooruErrorDto::invalid_response(self.definition.id));
+            return Err(BooruError::invalid_response(self.definition.id));
         }
         validate_media_hosts(&self.definition, &variants)?;
         let tags = value
@@ -117,10 +117,10 @@ impl WallhavenAdapter {
         let values = json
             .get("data")
             .and_then(Value::as_array)
-            .ok_or_else(|| BooruErrorDto::invalid_response(self.definition.id))?;
+            .ok_or_else(|| BooruError::invalid_response(self.definition.id))?;
         let meta = json
             .get("meta")
-            .ok_or_else(|| BooruErrorDto::invalid_response(self.definition.id))?;
+            .ok_or_else(|| BooruError::invalid_response(self.definition.id))?;
         let current = unsigned32(meta, "current_page").unwrap_or(1);
         let last = unsigned32(meta, "last_page").unwrap_or(current);
         let seed = string(meta, "seed");
@@ -142,7 +142,7 @@ impl BooruAdapter for WallhavenAdapter {
         if query.ratings.contains(&ContentRating::Explicit)
             && ctx.runtime.auth_state(self.definition.id)?.status == AuthStatus::NotConfigured
         {
-            return Err(BooruErrorDto::new(
+            return Err(BooruError::new(
                 BooruErrorCode::AuthenticationRequired,
                 Some(self.definition.id),
                 "booru.error.authenticationRequired",
@@ -150,7 +150,7 @@ impl BooruAdapter for WallhavenAdapter {
         }
         let (page, seed) = parse_cursor(query.cursor.as_deref())?;
         let url = reqwest::Url::parse(&format!("{}/search", self.definition.api_base))
-            .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
         let mut spec = RequestSpec::get(url, ResponseKind::Json);
         spec.query = vec![
             ("sorting".to_owned(), "date_added".to_owned()),
@@ -176,7 +176,7 @@ impl BooruAdapter for WallhavenAdapter {
     async fn feed(
         &self,
         ctx: &RequestContext,
-        request: crate::api::booru_models::FeedRequestDto,
+        request: crate::api::booru_models::FeedRequest,
     ) -> BooruResult<PostPage> {
         use crate::api::booru_models::FeedKind;
         if request.kind == FeedKind::Latest {
@@ -194,7 +194,7 @@ impl BooruAdapter for WallhavenAdapter {
         if request.ratings.contains(&ContentRating::Explicit)
             && ctx.runtime.auth_state(self.definition.id)?.status == AuthStatus::NotConfigured
         {
-            return Err(BooruErrorDto::new(
+            return Err(BooruError::new(
                 BooruErrorCode::AuthenticationRequired,
                 Some(self.definition.id),
                 "booru.error.authenticationRequired",
@@ -202,7 +202,7 @@ impl BooruAdapter for WallhavenAdapter {
         }
         let (page, cursor_seed) = parse_cursor(request.cursor.as_deref())?;
         let url = reqwest::Url::parse(&format!("{}/search", self.definition.api_base))
-            .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
         let mut spec = RequestSpec::get(url, ResponseKind::Json);
         spec.query = vec![
             ("sorting".into(), sorting.into()),
@@ -225,7 +225,7 @@ impl BooruAdapter for WallhavenAdapter {
         let (items, current, last, response_seed) = self.parse_listing(&response.body)?;
         let seed = response_seed.or(seed);
         if request.kind == FeedKind::Random && seed.is_none() {
-            return Err(BooruErrorDto::invalid_response(self.definition.id));
+            return Err(BooruError::invalid_response(self.definition.id));
         }
         let exhausted = current >= last || items.is_empty() || current == u32::MAX;
         Ok(PostPage {
@@ -242,10 +242,10 @@ impl BooruAdapter for WallhavenAdapter {
                 .bytes()
                 .all(|byte| byte.is_ascii_alphanumeric() || byte == b'-')
         {
-            return Err(BooruErrorDto::invalid_request(Some(self.definition.id)));
+            return Err(BooruError::invalid_request(Some(self.definition.id)));
         }
         let url = reqwest::Url::parse(&format!("{}/w/{}", self.definition.api_base, id.0))
-            .map_err(|_| BooruErrorDto::invalid_request(Some(self.definition.id)))?;
+            .map_err(|_| BooruError::invalid_request(Some(self.definition.id)))?;
         let response = ctx
             .runtime
             .execute(&self.definition, RequestSpec::get(url, ResponseKind::Json))
@@ -253,20 +253,20 @@ impl BooruAdapter for WallhavenAdapter {
         let json = parse_json(self.definition.id, &response.body)?;
         let data = json
             .get("data")
-            .ok_or_else(|| BooruErrorDto::invalid_response(self.definition.id))?;
+            .ok_or_else(|| BooruError::invalid_response(self.definition.id))?;
         self.parse_post(data)
     }
 
-    async fn verify_auth(&self, ctx: &RequestContext) -> BooruResult<AuthStateDto> {
+    async fn verify_auth(&self, ctx: &RequestContext) -> BooruResult<AuthState> {
         if ctx.runtime.auth_state(self.definition.id)?.status == AuthStatus::NotConfigured {
-            return Err(BooruErrorDto::new(
+            return Err(BooruError::new(
                 BooruErrorCode::AuthenticationRequired,
                 Some(self.definition.id),
                 "booru.error.authenticationRequired",
             ));
         }
         let url = reqwest::Url::parse(&format!("{}/settings", self.definition.api_base))
-            .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
         match ctx
             .runtime
             .execute(&self.definition, RequestSpec::get(url, ResponseKind::Json))
@@ -302,7 +302,7 @@ fn parse_cursor(cursor: Option<&str>) -> BooruResult<(u32, Option<String>)> {
         .next()
         .and_then(|value| value.parse::<u32>().ok())
         .filter(|page| *page > 0)
-        .ok_or_else(|| BooruErrorDto::invalid_request(Some("wallhaven")))?;
+        .ok_or_else(|| BooruError::invalid_request(Some("wallhaven")))?;
     let seed = parts
         .next()
         .filter(|value| !value.is_empty())
@@ -311,7 +311,7 @@ fn parse_cursor(cursor: Option<&str>) -> BooruResult<(u32, Option<String>)> {
         .as_deref()
         .is_some_and(|seed| !seed.bytes().all(|byte| byte.is_ascii_alphanumeric()))
     {
-        return Err(BooruErrorDto::invalid_request(Some("wallhaven")));
+        return Err(BooruError::invalid_request(Some("wallhaven")));
     }
     Ok((page, seed))
 }
@@ -348,11 +348,11 @@ mod tests {
     }
 
     #[test]
-    fn preserves_source_username_in_dto() {
+    fn preserves_source_username_in_api_model() {
         let fixture = serde_json::json!({"id":"94x38z","path":"https://w.wallhaven.cc/full/94/wallhaven-94x38z.jpg","uploader":{"username":" Alice "}});
         let post = adapter().parse_post(&fixture).unwrap();
         assert_eq!(post.author.as_deref(), Some("Alice"));
-        assert_eq!(post.into_dto().author.as_deref(), Some("Alice"));
+        assert_eq!(post.into_api().author.as_deref(), Some("Alice"));
     }
     #[test]
     fn parses_alphanumeric_id_and_pagination_seed() {

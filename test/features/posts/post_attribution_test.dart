@@ -7,7 +7,7 @@ import 'package:booruflow/src/rust/api/booru_models.dart';
 import '../discovery/search_interaction_test.dart' show testSource;
 
 Post post(String? author) => Post(
-  BooruPostDto(
+  BooruPost(
     sourceId: 'yande',
     author: author,
     postId: '1',
@@ -15,7 +15,7 @@ Post post(String? author) => Post(
     rating: ContentRating.general,
     tags: const [],
     media: const [],
-    flags: const PostFlagsDto(
+    flags: const PostFlags(
       hasChildren: false,
       isPending: false,
       isDeleted: false,

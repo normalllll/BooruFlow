@@ -11,7 +11,7 @@ import 'package:booruflow/src/rust/api/booru_download.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
 
-const request = MediaRequestDto(
+const request = MediaRequest(
   sourceId: 'source',
   postId: '1268303',
   variant: MediaVariantKind.sample,
@@ -52,14 +52,13 @@ Future<ImageInfo> load(
   return result.future;
 }
 
-Stream<MediaFetchEventDto> chunks(Uint8List bytes, {int? total}) =>
-    Stream.value(
-      MediaFetchEventDto.chunk(
-        bytes: bytes,
-        receivedBytesDecimal: '${bytes.length}',
-        totalBytesDecimal: '${total ?? bytes.length}',
-      ),
-    );
+Stream<MediaFetchEvent> chunks(Uint8List bytes, {int? total}) => Stream.value(
+  MediaFetchEvent.chunk(
+    bytes: bytes,
+    receivedBytesDecimal: '${bytes.length}',
+    totalBytesDecimal: '${total ?? bytes.length}',
+  ),
+);
 
 class LazyBrokenCodec implements ui.Codec {
   bool disposed = false;
@@ -100,7 +99,7 @@ void main() {
       'stream failure $code retains the upstream error without immediate retries',
       () async {
         var calls = 0;
-        final error = BooruErrorDto(
+        final error = BooruError(
           code: code,
           sourceId: 'source',
           httpStatus: code == BooruErrorCode.rateLimited ? 429 : 403,
@@ -112,7 +111,7 @@ void main() {
           cacheFile: cache,
           mediaStream: (_) {
             calls++;
-            return Stream.value(MediaFetchEventDto.failed(error: error));
+            return Stream.value(MediaFetchEvent.failed(error: error));
           },
         );
         await expectLater(
@@ -149,12 +148,12 @@ void main() {
         request: request,
         cacheFile: cache,
         mediaStream: (_) async* {
-          yield MediaFetchEventDto.chunk(
+          yield MediaFetchEvent.chunk(
             bytes: Uint8List(0),
             receivedBytesDecimal: '37923',
             totalBytesDecimal: '37923',
           );
-          yield MediaFetchEventDto.chunk(
+          yield MediaFetchEvent.chunk(
             bytes: png,
             receivedBytesDecimal: '${png.length}',
             totalBytesDecimal: '${png.length}',
@@ -329,15 +328,15 @@ void main() {
     'all sources prefer a sample for browsing and preserve the original',
     () {
       for (final source in ['yande', 'danbooru', 'custom']) {
-        Post post(List<MediaVariantDto> media) => Post(
-          BooruPostDto(
+        Post post(List<MediaVariant> media) => Post(
+          BooruPost(
             sourceId: source,
             postId: '1',
             postKey: '$source:1',
             rating: ContentRating.general,
             tags: [],
             media: media,
-            flags: const PostFlagsDto(
+            flags: const PostFlags(
               hasChildren: false,
               isPending: false,
               isDeleted: false,
@@ -345,15 +344,15 @@ void main() {
             ),
           ),
         );
-        const sample = MediaVariantDto(
+        const sample = MediaVariant(
           kind: MediaVariantKind.sample,
           url: 'sample',
         );
-        const preview = MediaVariantDto(
+        const preview = MediaVariant(
           kind: MediaVariantKind.preview,
           url: 'preview',
         );
-        const original = MediaVariantDto(
+        const original = MediaVariant(
           kind: MediaVariantKind.original,
           url: 'original',
         );

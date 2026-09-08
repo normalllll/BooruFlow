@@ -8,14 +8,14 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
-class AuthFieldDto {
+class AuthField {
   final AuthFieldKind kind;
   final String labelKey;
   final bool required_;
   final bool secret;
   final String? helpUrl;
 
-  const AuthFieldDto({
+  const AuthField({
     required this.kind,
     required this.labelKey,
     required this.required_,
@@ -34,7 +34,7 @@ class AuthFieldDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is AuthFieldDto &&
+      other is AuthField &&
           runtimeType == other.runtimeType &&
           kind == other.kind &&
           labelKey == other.labelKey &&
@@ -45,12 +45,12 @@ class AuthFieldDto {
 
 enum AuthFieldKind { username, userId, apiKey }
 
-class AuthSchemaDto {
+class AuthSchema {
   final String sourceId;
-  final List<AuthFieldDto> fields;
+  final List<AuthField> fields;
   final bool usesWebSession;
 
-  const AuthSchemaDto({
+  const AuthSchema({
     required this.sourceId,
     required this.fields,
     required this.usesWebSession,
@@ -63,20 +63,20 @@ class AuthSchemaDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is AuthSchemaDto &&
+      other is AuthSchema &&
           runtimeType == other.runtimeType &&
           sourceId == other.sourceId &&
           fields == other.fields &&
           usesWebSession == other.usesWebSession;
 }
 
-class AuthStateDto {
+class AuthState {
   final String sourceId;
   final AuthStatus status;
   final String? username;
   final int authRevision;
 
-  const AuthStateDto({
+  const AuthState({
     required this.sourceId,
     required this.status,
     this.username,
@@ -93,7 +93,7 @@ class AuthStateDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is AuthStateDto &&
+      other is AuthState &&
           runtimeType == other.runtimeType &&
           sourceId == other.sourceId &&
           status == other.status &&
@@ -111,15 +111,15 @@ enum AuthStatus {
       RustLib.instance.api.crateApiBooruAuthAuthStatusDefault();
 }
 
-class SourceCredentialsDto {
+class SourceCredentials {
   final String? username;
   final String? userId;
   final String? apiKey;
 
-  const SourceCredentialsDto({this.username, this.userId, this.apiKey});
+  const SourceCredentials({this.username, this.userId, this.apiKey});
 
-  static Future<SourceCredentialsDto> default_() =>
-      RustLib.instance.api.crateApiBooruAuthSourceCredentialsDtoDefault();
+  static Future<SourceCredentials> default_() =>
+      RustLib.instance.api.crateApiBooruAuthSourceCredentialsDefault();
 
   @override
   int get hashCode => username.hashCode ^ userId.hashCode ^ apiKey.hashCode;
@@ -127,14 +127,14 @@ class SourceCredentialsDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is SourceCredentialsDto &&
+      other is SourceCredentials &&
           runtimeType == other.runtimeType &&
           username == other.username &&
           userId == other.userId &&
           apiKey == other.apiKey;
 }
 
-class WebCookieDto {
+class WebCookie {
   final String name;
   final String value;
   final String domain;
@@ -142,7 +142,7 @@ class WebCookieDto {
   final bool secure;
   final String? expiresAtIso8601;
 
-  const WebCookieDto({
+  const WebCookie({
     required this.name,
     required this.value,
     required this.domain,
@@ -163,7 +163,7 @@ class WebCookieDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is WebCookieDto &&
+      other is WebCookie &&
           runtimeType == other.runtimeType &&
           name == other.name &&
           value == other.value &&

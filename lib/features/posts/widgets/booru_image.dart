@@ -48,7 +48,7 @@ class BooruImage extends StatefulWidget {
 }
 
 class _BooruImageState extends State<BooruImage> {
-  Future<MediaRequestDto>? _request;
+  Future<MediaRequest>? _request;
   bool _failed = false;
   bool _retrying = false;
   int _reloadRevision = 0;
@@ -113,7 +113,7 @@ class _BooruImageState extends State<BooruImage> {
         ),
       );
     }
-    return FutureBuilder<MediaRequestDto>(
+    return FutureBuilder<MediaRequest>(
       future: _request,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {

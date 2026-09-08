@@ -37,7 +37,7 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
   String get sourceId => widget.tags == null
       ? service.selectedSource.value
       : widget.sourceId ?? service.selectedSource.value;
-  BooruSourceDto get source => service.sourceById(sourceId);
+  BooruSource get source => service.sourceById(sourceId);
   FeedCollectionRequest get feed =>
       _feeds[sourceId] ?? const FeedCollectionRequest();
   String get _probeKey => '$sourceId:${service.revision.value}';

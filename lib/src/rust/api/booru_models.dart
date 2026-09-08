@@ -25,14 +25,14 @@ enum AuthKind {
       RustLib.instance.api.crateApiBooruModelsAuthKindDefault();
 }
 
-class BooruEngineConfigDto {
+class BooruEngineConfig {
   final String appSupportDirectory;
   final String? proxyUrl;
   final NetworkFallbackMode fallbackMode;
   final RouteProvider dnsProvider;
   final String userAgent;
 
-  const BooruEngineConfigDto({
+  const BooruEngineConfig({
     required this.appSupportDirectory,
     this.proxyUrl,
     required this.fallbackMode,
@@ -51,7 +51,7 @@ class BooruEngineConfigDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is BooruEngineConfigDto &&
+      other is BooruEngineConfig &&
           runtimeType == other.runtimeType &&
           appSupportDirectory == other.appSupportDirectory &&
           proxyUrl == other.proxyUrl &&
@@ -60,7 +60,7 @@ class BooruEngineConfigDto {
           userAgent == other.userAgent;
 }
 
-class BooruPostDto {
+class BooruPost {
   final String sourceId;
   final String? author;
   final String postId;
@@ -70,11 +70,11 @@ class BooruPostDto {
   final int? score;
   final String? createdAtIso8601;
   final String? sourceUrl;
-  final List<BooruTagDto> tags;
-  final List<MediaVariantDto> media;
-  final PostFlagsDto flags;
+  final List<BooruTag> tags;
+  final List<MediaVariant> media;
+  final PostFlags flags;
 
-  const BooruPostDto({
+  const BooruPost({
     required this.sourceId,
     this.author,
     required this.postId,
@@ -107,7 +107,7 @@ class BooruPostDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is BooruPostDto &&
+      other is BooruPost &&
           runtimeType == other.runtimeType &&
           sourceId == other.sourceId &&
           author == other.author &&
@@ -131,15 +131,15 @@ enum BooruProtocol {
   animePicturesV3,
 }
 
-class BooruSourceDto {
+class BooruSource {
   final String sourceId;
   final String displayName;
   final BooruProtocol protocol;
   final bool enabledByDefault;
   final bool isAiSource;
-  final SourceCapabilitiesDto capabilities;
+  final SourceCapabilities capabilities;
 
-  const BooruSourceDto({
+  const BooruSource({
     required this.sourceId,
     required this.displayName,
     required this.protocol,
@@ -160,7 +160,7 @@ class BooruSourceDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is BooruSourceDto &&
+      other is BooruSource &&
           runtimeType == other.runtimeType &&
           sourceId == other.sourceId &&
           displayName == other.displayName &&
@@ -170,11 +170,11 @@ class BooruSourceDto {
           capabilities == other.capabilities;
 }
 
-class BooruTagDto {
+class BooruTag {
   final String name;
   final TagCategory category;
 
-  const BooruTagDto({required this.name, required this.category});
+  const BooruTag({required this.name, required this.category});
 
   @override
   int get hashCode => name.hashCode ^ category.hashCode;
@@ -182,10 +182,41 @@ class BooruTagDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is BooruTagDto &&
+      other is BooruTag &&
           runtimeType == other.runtimeType &&
           name == other.name &&
           category == other.category;
+}
+
+class BooruTagSuggestion {
+  final String value;
+  final String label;
+  final TagCategory category;
+  final String? postCountDecimal;
+
+  const BooruTagSuggestion({
+    required this.value,
+    required this.label,
+    required this.category,
+    this.postCountDecimal,
+  });
+
+  @override
+  int get hashCode =>
+      value.hashCode ^
+      label.hashCode ^
+      category.hashCode ^
+      postCountDecimal.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BooruTagSuggestion &&
+          runtimeType == other.runtimeType &&
+          value == other.value &&
+          label == other.label &&
+          category == other.category &&
+          postCountDecimal == other.postCountDecimal;
 }
 
 enum CapabilityAvailability {
@@ -193,6 +224,24 @@ enum CapabilityAvailability {
   requiresProbe,
   available,
   temporarilyUnavailable,
+}
+
+class Checksum {
+  final ChecksumAlgorithm algorithm;
+  final String value;
+
+  const Checksum({required this.algorithm, required this.value});
+
+  @override
+  int get hashCode => algorithm.hashCode ^ value.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Checksum &&
+          runtimeType == other.runtimeType &&
+          algorithm == other.algorithm &&
+          value == other.value;
 }
 
 enum ChecksumAlgorithm {
@@ -203,29 +252,11 @@ enum ChecksumAlgorithm {
       RustLib.instance.api.crateApiBooruModelsChecksumAlgorithmDefault();
 }
 
-class ChecksumDto {
-  final ChecksumAlgorithm algorithm;
-  final String value;
-
-  const ChecksumDto({required this.algorithm, required this.value});
-
-  @override
-  int get hashCode => algorithm.hashCode ^ value.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is ChecksumDto &&
-          runtimeType == other.runtimeType &&
-          algorithm == other.algorithm &&
-          value == other.value;
-}
-
-class CommonTagsPageDto {
-  final List<TagSuggestionDto> items;
+class CommonTagsPage {
+  final List<BooruTagSuggestion> items;
   final int? nextPage;
 
-  const CommonTagsPageDto({required this.items, this.nextPage});
+  const CommonTagsPage({required this.items, this.nextPage});
 
   @override
   int get hashCode => items.hashCode ^ nextPage.hashCode;
@@ -233,18 +264,18 @@ class CommonTagsPageDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is CommonTagsPageDto &&
+      other is CommonTagsPage &&
           runtimeType == other.runtimeType &&
           items == other.items &&
           nextPage == other.nextPage;
 }
 
-class CommonTagsRequestDto {
+class CommonTagsRequest {
   final String sourceId;
   final int page;
   final int pageSize;
 
-  const CommonTagsRequestDto({
+  const CommonTagsRequest({
     required this.sourceId,
     required this.page,
     required this.pageSize,
@@ -256,7 +287,7 @@ class CommonTagsRequestDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is CommonTagsRequestDto &&
+      other is CommonTagsRequest &&
           runtimeType == other.runtimeType &&
           sourceId == other.sourceId &&
           page == other.page &&
@@ -274,7 +305,7 @@ enum ContentRating {
       RustLib.instance.api.crateApiBooruModelsContentRatingDefault();
 }
 
-class DiscoveryCapabilitiesDto {
+class DiscoveryCapabilities {
   final CapabilityAvailability popular;
   final CapabilityAvailability commonTags;
   final List<PopularRange> popularRanges;
@@ -284,7 +315,7 @@ class DiscoveryCapabilitiesDto {
   final List<FeedKind> additionalFeeds;
   final int autocompleteMinChars;
 
-  const DiscoveryCapabilitiesDto({
+  const DiscoveryCapabilities({
     required this.popular,
     required this.commonTags,
     required this.popularRanges,
@@ -309,7 +340,7 @@ class DiscoveryCapabilitiesDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is DiscoveryCapabilitiesDto &&
+      other is DiscoveryCapabilities &&
           runtimeType == other.runtimeType &&
           popular == other.popular &&
           commonTags == other.commonTags &&
@@ -330,7 +361,7 @@ enum FeedKind {
   lifetimeFavorites,
 }
 
-class FeedRequestDto {
+class FeedRequest {
   final String sourceId;
   final FeedKind kind;
   final PopularRange? range;
@@ -344,7 +375,7 @@ class FeedRequestDto {
   final int pageSize;
   final String? cursor;
 
-  const FeedRequestDto({
+  const FeedRequest({
     required this.sourceId,
     required this.kind,
     this.range,
@@ -369,7 +400,7 @@ class FeedRequestDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is FeedRequestDto &&
+      other is FeedRequest &&
           runtimeType == other.runtimeType &&
           sourceId == other.sourceId &&
           kind == other.kind &&
@@ -381,11 +412,11 @@ class FeedRequestDto {
           cursor == other.cursor;
 }
 
-class HttpHeaderDto {
+class HttpHeader {
   final String name;
   final String value;
 
-  const HttpHeaderDto({required this.name, required this.value});
+  const HttpHeader({required this.name, required this.value});
 
   @override
   int get hashCode => name.hashCode ^ value.hashCode;
@@ -393,7 +424,7 @@ class HttpHeaderDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is HttpHeaderDto &&
+      other is HttpHeader &&
           runtimeType == other.runtimeType &&
           name == other.name &&
           value == other.value;
@@ -401,19 +432,19 @@ class HttpHeaderDto {
 
 enum MediaKind { image, video }
 
-class MediaRequestDto {
+class MediaRequest {
   final String sourceId;
   final String postId;
   final MediaVariantKind variant;
   final String url;
-  final List<HttpHeaderDto> headers;
+  final List<HttpHeader> headers;
   final String routeKey;
   final String cacheKey;
   final int authRevision;
   final String routeRevision;
   final bool allowDiskCache;
 
-  const MediaRequestDto({
+  const MediaRequest({
     required this.sourceId,
     required this.postId,
     required this.variant,
@@ -442,7 +473,7 @@ class MediaRequestDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is MediaRequestDto &&
+      other is MediaRequest &&
           runtimeType == other.runtimeType &&
           sourceId == other.sourceId &&
           postId == other.postId &&
@@ -474,7 +505,7 @@ enum MediaType {
       RustLib.instance.api.crateApiBooruModelsMediaTypeKind(that: this);
 }
 
-class MediaVariantDto {
+class MediaVariant {
   final MediaVariantKind kind;
   final String url;
   final int? width;
@@ -482,9 +513,9 @@ class MediaVariantDto {
   final String? byteLengthDecimal;
   final MediaType? mediaType;
   final String? extension_;
-  final ChecksumDto? checksum;
+  final Checksum? checksum;
 
-  const MediaVariantDto({
+  const MediaVariant({
     required this.kind,
     required this.url,
     this.width,
@@ -509,7 +540,7 @@ class MediaVariantDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is MediaVariantDto &&
+      other is MediaVariant &&
           runtimeType == other.runtimeType &&
           kind == other.kind &&
           url == other.url &&
@@ -540,12 +571,12 @@ enum NetworkFallbackMode {
       RustLib.instance.api.crateApiBooruModelsNetworkFallbackModeDefault();
 }
 
-class PersistedHostRouteDto {
+class PersistedHostRoute {
   final String logicalHost;
   final int httpsPort;
   final List<String> candidates;
 
-  const PersistedHostRouteDto({
+  const PersistedHostRoute({
     required this.logicalHost,
     required this.httpsPort,
     required this.candidates,
@@ -558,7 +589,7 @@ class PersistedHostRouteDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is PersistedHostRouteDto &&
+      other is PersistedHostRoute &&
           runtimeType == other.runtimeType &&
           logicalHost == other.logicalHost &&
           httpsPort == other.httpsPort &&
@@ -573,14 +604,14 @@ enum PopularTimeBasis {
   sourceActivityWindow,
 }
 
-class PostFlagsDto {
+class PostFlags {
   final bool hasChildren;
   final String? parentId;
   final bool isPending;
   final bool isDeleted;
   final bool isAiGenerated;
 
-  const PostFlagsDto({
+  const PostFlags({
     required this.hasChildren,
     this.parentId,
     required this.isPending,
@@ -588,8 +619,8 @@ class PostFlagsDto {
     required this.isAiGenerated,
   });
 
-  static Future<PostFlagsDto> default_() =>
-      RustLib.instance.api.crateApiBooruModelsPostFlagsDtoDefault();
+  static Future<PostFlags> default_() =>
+      RustLib.instance.api.crateApiBooruModelsPostFlagsDefault();
 
   @override
   int get hashCode =>
@@ -602,7 +633,7 @@ class PostFlagsDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is PostFlagsDto &&
+      other is PostFlags &&
           runtimeType == other.runtimeType &&
           hasChildren == other.hasChildren &&
           parentId == other.parentId &&
@@ -611,12 +642,12 @@ class PostFlagsDto {
           isAiGenerated == other.isAiGenerated;
 }
 
-class PostPageDto {
-  final List<BooruPostDto> items;
+class PostPage {
+  final List<BooruPost> items;
   final String? nextCursor;
   final bool exhausted;
 
-  const PostPageDto({
+  const PostPage({
     required this.items,
     this.nextCursor,
     required this.exhausted,
@@ -628,23 +659,23 @@ class PostPageDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is PostPageDto &&
+      other is PostPage &&
           runtimeType == other.runtimeType &&
           items == other.items &&
           nextCursor == other.nextCursor &&
           exhausted == other.exhausted;
 }
 
-class RouteCacheStateDto {
+class RouteCacheState {
   final bool initialized;
   final bool refreshing;
   final String routeRevision;
   final String? fetchedAtIso8601;
   final RouteProvider? provider;
-  final List<PersistedHostRouteDto> routes;
-  final List<RouteDiagnosticDto> diagnostics;
+  final List<PersistedHostRoute> routes;
+  final List<RouteDiagnostic> diagnostics;
 
-  const RouteCacheStateDto({
+  const RouteCacheState({
     required this.initialized,
     required this.refreshing,
     required this.routeRevision,
@@ -667,7 +698,7 @@ class RouteCacheStateDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is RouteCacheStateDto &&
+      other is RouteCacheState &&
           runtimeType == other.runtimeType &&
           initialized == other.initialized &&
           refreshing == other.refreshing &&
@@ -678,7 +709,7 @@ class RouteCacheStateDto {
           diagnostics == other.diagnostics;
 }
 
-class RouteDiagnosticDto {
+class RouteDiagnostic {
   final List<String> sourceIds;
   final String logicalHost;
   final String status;
@@ -687,7 +718,7 @@ class RouteDiagnosticDto {
   final int? elapsedMs;
   final String? updatedAtIso8601;
 
-  const RouteDiagnosticDto({
+  const RouteDiagnostic({
     required this.sourceIds,
     required this.logicalHost,
     required this.status,
@@ -710,7 +741,7 @@ class RouteDiagnosticDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is RouteDiagnosticDto &&
+      other is RouteDiagnostic &&
           runtimeType == other.runtimeType &&
           sourceIds == other.sourceIds &&
           logicalHost == other.logicalHost &&
@@ -723,14 +754,14 @@ class RouteDiagnosticDto {
 
 enum RouteProvider { uncensoredDns, dohSb }
 
-class SearchRequestDto {
+class SearchRequest {
   final String sourceId;
   final String queryText;
   final List<ContentRating> ratings;
   final int pageSize;
   final String? cursor;
 
-  const SearchRequestDto({
+  const SearchRequest({
     required this.sourceId,
     required this.queryText,
     required this.ratings,
@@ -749,7 +780,7 @@ class SearchRequestDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is SearchRequestDto &&
+      other is SearchRequest &&
           runtimeType == other.runtimeType &&
           sourceId == other.sourceId &&
           queryText == other.queryText &&
@@ -758,8 +789,8 @@ class SearchRequestDto {
           cursor == other.cursor;
 }
 
-class SourceCapabilitiesDto {
-  final DiscoveryCapabilitiesDto discovery;
+class SourceCapabilities {
+  final DiscoveryCapabilities discovery;
   final List<ContentRating> ratings;
   final AuthKind authKind;
   final bool supportsSearch;
@@ -770,7 +801,7 @@ class SourceCapabilitiesDto {
   final bool supportsAuthenticatedMedia;
   final bool supportsBackgroundDownload;
 
-  const SourceCapabilitiesDto({
+  const SourceCapabilities({
     required this.discovery,
     required this.ratings,
     required this.authKind,
@@ -799,7 +830,7 @@ class SourceCapabilitiesDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is SourceCapabilitiesDto &&
+      other is SourceCapabilities &&
           runtimeType == other.runtimeType &&
           discovery == other.discovery &&
           ratings == other.ratings &&
@@ -822,35 +853,4 @@ enum TagCategory {
 
   static Future<TagCategory> default_() =>
       RustLib.instance.api.crateApiBooruModelsTagCategoryDefault();
-}
-
-class TagSuggestionDto {
-  final String value;
-  final String label;
-  final TagCategory category;
-  final String? postCountDecimal;
-
-  const TagSuggestionDto({
-    required this.value,
-    required this.label,
-    required this.category,
-    this.postCountDecimal,
-  });
-
-  @override
-  int get hashCode =>
-      value.hashCode ^
-      label.hashCode ^
-      category.hashCode ^
-      postCountDecimal.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is TagSuggestionDto &&
-          runtimeType == other.runtimeType &&
-          value == other.value &&
-          label == other.label &&
-          category == other.category &&
-          postCountDecimal == other.postCountDecimal;
 }

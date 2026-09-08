@@ -218,7 +218,7 @@ class _RunningDownload {
   _RunningDownload({required this.job});
 
   final DownloadJob job;
-  StreamSubscription<DownloadEventDto>? subscription;
+  StreamSubscription<DownloadEvent>? subscription;
   Completer<String>? _pathCompleter;
   final _finishedCompleter = Completer<void>();
   bool cancelled = false;
@@ -240,7 +240,7 @@ class _RunningDownload {
     _pathCompleter = completer;
     subscription = BooruService.instance.engine
         .downloadToFileStream(
-          request: DownloadRequestDto(
+          request: DownloadRequest(
             sourceId: job.sourceId,
             postId: job.postId,
             variant:
@@ -257,7 +257,7 @@ class _RunningDownload {
               return;
             }
             switch (event) {
-              case DownloadEventDto_Progress(
+              case DownloadEvent_Progress(
                 :final receivedBytesDecimal,
                 :final totalBytesDecimal,
               ):
@@ -265,7 +265,7 @@ class _RunningDownload {
                   int.tryParse(receivedBytesDecimal) ?? 0,
                   int.tryParse(totalBytesDecimal ?? ''),
                 );
-              case DownloadEventDto_Done(:final path):
+              case DownloadEvent_Done(:final path):
                 complete(path);
             }
           },

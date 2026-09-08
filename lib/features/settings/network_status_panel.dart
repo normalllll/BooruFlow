@@ -17,9 +17,9 @@ class NetworkStatusPanel extends StatefulWidget {
     this.enabled = true,
   });
 
-  final List<BooruSourceDto> sources;
-  final Future<RouteCacheStateDto> Function() readState;
-  final Future<RouteCacheStateDto> Function() refreshRoutes;
+  final List<BooruSource> sources;
+  final Future<RouteCacheState> Function() readState;
+  final Future<RouteCacheState> Function() refreshRoutes;
   final Future<void> Function(String) checkSource;
   final ValueChanged<bool> onBusyChanged;
   final bool enabled;
@@ -32,7 +32,7 @@ class _NetworkStatusPanelState extends State<NetworkStatusPanel>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
-  RouteCacheStateDto? _state;
+  RouteCacheState? _state;
   final _checks = <String, String>{};
   final _errors = <String, String>{};
   bool _busy = false;
@@ -119,7 +119,7 @@ class _NetworkStatusPanelState extends State<NetworkStatusPanel>
   Widget build(BuildContext context) {
     super.build(context);
     final n = t.settings.network;
-    final reports = _state?.diagnostics ?? const <RouteDiagnosticDto>[];
+    final reports = _state?.diagnostics ?? const <RouteDiagnostic>[];
     final finished = reports
         .where(
           (r) =>
@@ -247,11 +247,7 @@ class _NetworkStatusPanelState extends State<NetworkStatusPanel>
     );
   }
 
-  Widget _host(
-    BuildContext context,
-    RouteDiagnosticDto report,
-    bool refreshing,
-  ) {
+  Widget _host(BuildContext context, RouteDiagnostic report, bool refreshing) {
     final n = t.settings.network;
     final status = switch (report.status) {
       'resolving' => n.dnsResolving,

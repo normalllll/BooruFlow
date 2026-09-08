@@ -14,8 +14,8 @@ CollectionKey key({
   revision: revision,
 );
 
-PostPageDto page({String? next, bool exhausted = false}) =>
-    PostPageDto(items: const [], nextCursor: next, exhausted: exhausted);
+PostPage page({String? next, bool exhausted = false}) =>
+    PostPage(items: const [], nextCursor: next, exhausted: exhausted);
 
 void main() {
   test('keys distinguish feed, query, filters and revision by value', () {
@@ -68,7 +68,7 @@ void main() {
   test(
     'refresh supersedes pending load and ignores its later failure',
     () async {
-      final old = Completer<PostPageDto>();
+      final old = Completer<PostPage>();
       var calls = 0;
       final controller = PostCollectionController(
         key(),
@@ -87,7 +87,7 @@ void main() {
   );
 
   test('dispose prevents pending request from publishing', () async {
-    final response = Completer<PostPageDto>();
+    final response = Completer<PostPage>();
     final controller = PostCollectionController(
       key(),
       loader: (_, _) => response.future,

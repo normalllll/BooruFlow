@@ -1,14 +1,14 @@
 use crate::api::booru_models::*;
 use crate::booru::adapter::RequestContext;
 use crate::booru::adapters::common::{parse_json, string, unsigned};
-use crate::booru::error::{BooruErrorDto, BooruResult};
+use crate::booru::error::{BooruError, BooruResult};
 use crate::booru::model::SearchQuery;
 use crate::booru::network::{RequestSpec, ResponseKind};
 use crate::booru::source::{ProtocolFamily, SourceDefinition};
 use serde::{Deserialize, Serialize};
 
-pub fn unsupported_capabilities() -> DiscoveryCapabilitiesDto {
-    DiscoveryCapabilitiesDto {
+pub fn unsupported_capabilities() -> DiscoveryCapabilities {
+    DiscoveryCapabilities {
         popular: CapabilityAvailability::Unsupported,
         common_tags: CapabilityAvailability::Unsupported,
         popular_ranges: vec![],
@@ -20,7 +20,7 @@ pub fn unsupported_capabilities() -> DiscoveryCapabilitiesDto {
     }
 }
 
-pub fn capabilities(source: &SourceDefinition) -> DiscoveryCapabilitiesDto {
+pub fn capabilities(source: &SourceDefinition) -> DiscoveryCapabilities {
     use CapabilityAvailability::*;
     use PopularRange::*;
     let mut caps = unsupported_capabilities();
@@ -62,7 +62,7 @@ pub fn capabilities(source: &SourceDefinition) -> DiscoveryCapabilitiesDto {
     caps
 }
 
-pub fn latest_query(request: FeedRequestDto) -> SearchQuery {
+pub fn latest_query(request: FeedRequest) -> SearchQuery {
     SearchQuery {
         text: String::new(),
         ratings: request.ratings,
@@ -94,8 +94,8 @@ pub fn resolve_ratings(
         .collect()
 }
 
-pub fn validate_feed(source: &SourceDefinition, request: &FeedRequestDto) -> BooruResult<()> {
-    let invalid = || BooruErrorDto::invalid_request(Some(source.id));
+pub fn validate_feed(source: &SourceDefinition, request: &FeedRequest) -> BooruResult<()> {
+    let invalid = || BooruError::invalid_request(Some(source.id));
     if request.page_size == 0
         || request
             .ratings
@@ -149,8 +149,8 @@ pub fn validate_feed(source: &SourceDefinition, request: &FeedRequestDto) -> Boo
     Ok(())
 }
 
-pub fn unsupported(source: &str) -> BooruErrorDto {
-    BooruErrorDto::new(
+pub fn unsupported(source: &str) -> BooruError {
+    BooruError::new(
         crate::booru::error::BooruErrorCode::UnsupportedCapability,
         Some(source),
         "booru.error.unsupportedCapability",
@@ -160,10 +160,10 @@ pub fn unsupported(source: &str) -> BooruErrorDto {
 pub fn parse_date(source: &str, value: &str) -> BooruResult<time::Date> {
     let format =
         time::format_description::parse_borrowed::<2>("[year]-[month]-[day]").expect("date format");
-    let date = time::Date::parse(value, &format)
-        .map_err(|_| BooruErrorDto::invalid_request(Some(source)))?;
+    let date =
+        time::Date::parse(value, &format).map_err(|_| BooruError::invalid_request(Some(source)))?;
     if date.to_string() != value {
-        return Err(BooruErrorDto::invalid_request(Some(source)));
+        return Err(BooruError::invalid_request(Some(source)));
     }
     Ok(date)
 }
@@ -200,10 +200,10 @@ pub struct RankingCursor {
 }
 
 impl RankingCursor {
-    pub fn new(request: &FeedRequestDto) -> BooruResult<Self> {
+    pub fn new(request: &FeedRequest) -> BooruResult<Self> {
         if let Some(raw) = &request.cursor {
             let cursor: Self = serde_json::from_str(raw)
-                .map_err(|_| BooruErrorDto::invalid_request(Some(&request.source_id)))?;
+                .map_err(|_| BooruError::invalid_request(Some(&request.source_id)))?;
             if cursor.page == 0
                 || cursor.source != request.source_id
                 || cursor.kind != request.kind
@@ -211,7 +211,7 @@ impl RankingCursor {
                 || cursor.size != request.page_size
                 || request.date.as_ref().is_some_and(|d| *d != cursor.date)
             {
-                return Err(BooruErrorDto::invalid_request(Some(&request.source_id)));
+                return Err(BooruError::invalid_request(Some(&request.source_id)));
             }
             parse_date(&request.source_id, &cursor.date)?;
             return Ok(cursor);
@@ -227,7 +227,7 @@ impl RankingCursor {
             kind: request.kind,
             range: request
                 .range
-                .ok_or_else(|| BooruErrorDto::invalid_request(Some(&request.source_id)))?,
+                .ok_or_else(|| BooruError::invalid_request(Some(&request.source_id)))?,
             size: request.page_size,
         })
     }
@@ -243,9 +243,9 @@ pub async fn tags(
     prefix: Option<&str>,
     page: u32,
     limit: u32,
-) -> BooruResult<CommonTagsPageDto> {
+) -> BooruResult<CommonTagsPage> {
     if page == 0 || limit == 0 || limit > 100 {
-        return Err(BooruErrorDto::invalid_request(Some(source.id)));
+        return Err(BooruError::invalid_request(Some(source.id)));
     }
     let spec = tag_request(source, prefix, page, limit)?;
     // Never reuse the empty-autocomplete path for recommendations.
@@ -254,12 +254,12 @@ pub async fn tags(
     let values = json
         .as_array()
         .or_else(|| json.get("tag").and_then(serde_json::Value::as_array))
-        .ok_or_else(|| BooruErrorDto::invalid_response(source.id))?;
+        .ok_or_else(|| BooruError::invalid_response(source.id))?;
     let items = values
         .iter()
         .map(|value| {
             let name =
-                string(value, "name").ok_or_else(|| BooruErrorDto::invalid_response(source.id))?;
+                string(value, "name").ok_or_else(|| BooruError::invalid_response(source.id))?;
             let category = match unsigned(value, "category").or_else(|| unsigned(value, "type")) {
                 Some(1) => TagCategory::Artist,
                 Some(3) => TagCategory::Copyright,
@@ -267,7 +267,7 @@ pub async fn tags(
                 Some(5) => TagCategory::Meta,
                 _ => TagCategory::General,
             };
-            Ok(TagSuggestionDto {
+            Ok(BooruTagSuggestion {
                 value: name.clone(),
                 label: name,
                 category,
@@ -275,7 +275,7 @@ pub async fn tags(
             })
         })
         .collect::<BooruResult<Vec<_>>>()?;
-    Ok(CommonTagsPageDto {
+    Ok(CommonTagsPage {
         next_page: if items.len() >= limit as usize {
             page.checked_add(1)
         } else {
@@ -330,7 +330,7 @@ pub fn tag_request(
         query.push((key.into(), format!("{prefix}*")));
     }
     let url = reqwest::Url::parse(&format!("{}{path}", source.api_base))
-        .map_err(|_| BooruErrorDto::invalid_response(source.id))?;
+        .map_err(|_| BooruError::invalid_response(source.id))?;
     let mut spec = RequestSpec::get(url, ResponseKind::Json);
     spec.query = query;
     Ok(spec)
@@ -339,8 +339,8 @@ pub fn tag_request(
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn request(source: &str) -> FeedRequestDto {
-        FeedRequestDto {
+    fn request(source: &str) -> FeedRequest {
+        FeedRequest {
             source_id: source.into(),
             kind: FeedKind::RecentPopular,
             range: Some(PopularRange::Day),

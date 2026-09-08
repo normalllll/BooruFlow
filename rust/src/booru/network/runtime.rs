@@ -1,7 +1,7 @@
-use crate::api::booru_auth::AuthStateDto;
-use crate::api::booru_models::{BooruEngineConfigDto, HttpHeaderDto, NetworkFallbackMode};
+use crate::api::booru_auth::AuthState;
+use crate::api::booru_models::{BooruEngineConfig, HttpHeader, NetworkFallbackMode};
 use crate::booru::auth::SessionStore;
-use crate::booru::error::{BooruErrorCode, BooruErrorDto, BooruResult, RecoveryAction};
+use crate::booru::error::{BooruError, BooruErrorCode, BooruResult, RecoveryAction};
 use crate::booru::network::challenge::looks_like_challenge;
 use crate::booru::network::rate_limit::RateLimiter;
 use crate::booru::network::route_cache::RouteCache;
@@ -55,7 +55,7 @@ pub struct NetworkResponse {
 }
 
 pub struct NetworkRuntime {
-    config: BooruEngineConfigDto,
+    config: BooruEngineConfig,
     sessions: Arc<SessionStore>,
     clients: Mutex<HashMap<String, Client>>,
     limiters: HashMap<&'static str, RateLimiter>,
@@ -73,7 +73,7 @@ impl NetworkRuntime {
                     u32::try_from(remaining.as_secs().saturating_add(1)).unwrap_or(u32::MAX)
                 })
         }) {
-            return Err(BooruErrorDto::new(
+            return Err(BooruError::new(
                 BooruErrorCode::RateLimited,
                 Some(source),
                 "booru.error.rateLimited",
@@ -94,16 +94,16 @@ impl NetworkRuntime {
     }
 
     pub fn new(
-        mut config: BooruEngineConfigDto,
+        mut config: BooruEngineConfig,
         sources: &[SourceDefinition],
         sessions: Arc<SessionStore>,
     ) -> BooruResult<Self> {
         if config.app_support_directory.trim().is_empty() {
-            return Err(BooruErrorDto::invalid_request(None));
+            return Err(BooruError::invalid_request(None));
         }
         config.user_agent = normalize_user_agent(&config.user_agent);
         if let Some(proxy) = config.proxy_url.as_deref() {
-            reqwest::Proxy::all(proxy).map_err(|_| BooruErrorDto::invalid_request(None))?;
+            reqwest::Proxy::all(proxy).map_err(|_| BooruError::invalid_request(None))?;
         }
         let limiters = sources
             .iter()
@@ -137,14 +137,14 @@ impl NetworkRuntime {
             spec.url.query_pairs_mut().append_pair(key, value);
         }
         let limiter = self.limiters.get(source.id).ok_or_else(|| {
-            BooruErrorDto::new(
+            BooruError::new(
                 BooruErrorCode::Internal,
                 Some(source.id),
                 "booru.error.internal",
             )
         })?;
         let _permit = limiter.acquire().await.map_err(|_| {
-            BooruErrorDto::new(
+            BooruError::new(
                 BooruErrorCode::Cancelled,
                 Some(source.id),
                 "booru.error.cancelled",
@@ -183,11 +183,11 @@ impl NetworkRuntime {
             if let Some(ip) = route_ip {
                 request_url
                     .set_ip_host(ip)
-                    .map_err(|_| BooruErrorDto::invalid_request(Some(source.id)))?;
+                    .map_err(|_| BooruError::invalid_request(Some(source.id)))?;
                 headers.insert(
                     HOST,
                     HeaderValue::from_str(&url_authority(&authenticated_url))
-                        .map_err(|_| BooruErrorDto::invalid_request(Some(source.id)))?,
+                        .map_err(|_| BooruError::invalid_request(Some(source.id)))?,
                 );
             }
             let client = self.client(source)?;
@@ -203,7 +203,7 @@ impl NetworkRuntime {
                     let index = usize::try_from(attempt - 1).unwrap_or_default();
                     request_url
                         .set_ip_host(route_candidates[index])
-                        .map_err(|_| BooruErrorDto::invalid_request(Some(source.id)))?;
+                        .map_err(|_| BooruError::invalid_request(Some(source.id)))?;
                 }
                 match client
                     .get(request_url.clone())
@@ -221,7 +221,7 @@ impl NetworkRuntime {
                             }
                             redirects += 1;
                             if redirects > MAX_REDIRECTS {
-                                return Err(BooruErrorDto::new(
+                                return Err(BooruError::new(
                                     BooruErrorCode::UnsafeRedirect,
                                     Some(source.id),
                                     "booru.error.tooManyRedirects",
@@ -231,14 +231,14 @@ impl NetworkRuntime {
                                 .get(LOCATION)
                                 .and_then(|value| value.to_str().ok())
                                 .ok_or_else(|| {
-                                    BooruErrorDto::new(
+                                    BooruError::new(
                                         BooruErrorCode::UnsafeRedirect,
                                         Some(source.id),
                                         "booru.error.invalidRedirect",
                                     )
                                 })?;
                             url = response_url.join(location).map_err(|_| {
-                                BooruErrorDto::new(
+                                BooruError::new(
                                     BooruErrorCode::UnsafeRedirect,
                                     Some(source.id),
                                     "booru.error.invalidRedirect",
@@ -272,7 +272,7 @@ impl NetworkRuntime {
                             &body,
                             status.is_success() && spec.response_kind == ResponseKind::Json,
                         ) {
-                            return Err(BooruErrorDto::new(
+                            return Err(BooruError::new(
                                 BooruErrorCode::ChallengeRequired,
                                 Some(source.id),
                                 "booru.error.challengeRequired",
@@ -295,7 +295,7 @@ impl NetworkRuntime {
                                     value.to_ascii_lowercase().contains("text/html")
                                 })
                         {
-                            return Err(BooruErrorDto::new(
+                            return Err(BooruError::new(
                                 BooruErrorCode::MediaValidationFailed,
                                 Some(source.id),
                                 "booru.error.invalidMediaType",
@@ -311,7 +311,7 @@ impl NetworkRuntime {
                     Err(error) => return Err(classify_reqwest_error(source.id, &error)),
                 }
             }
-            return Err(BooruErrorDto::new(
+            return Err(BooruError::new(
                 BooruErrorCode::Network,
                 Some(source.id),
                 "booru.error.network",
@@ -329,7 +329,7 @@ impl NetworkRuntime {
             .get(source.id)
             .ok_or_else(|| internal_error(source.id))?;
         let _permit = limiter.acquire().await.map_err(|_| {
-            BooruErrorDto::new(
+            BooruError::new(
                 BooruErrorCode::Cancelled,
                 Some(source.id),
                 "booru.error.cancelled",
@@ -386,11 +386,11 @@ impl NetworkRuntime {
             if let Some(ip) = route_ip {
                 request_url
                     .set_ip_host(ip)
-                    .map_err(|_| BooruErrorDto::invalid_request(Some(source.id)))?;
+                    .map_err(|_| BooruError::invalid_request(Some(source.id)))?;
                 headers.insert(
                     HOST,
                     HeaderValue::from_str(&url_authority(&authenticated_url))
-                        .map_err(|_| BooruErrorDto::invalid_request(Some(source.id)))?,
+                        .map_err(|_| BooruError::invalid_request(Some(source.id)))?,
                 );
             }
             let client = self.client(source)?;
@@ -405,7 +405,7 @@ impl NetworkRuntime {
                     let index = usize::try_from(attempt - 1).unwrap_or_default();
                     request_url
                         .set_ip_host(route_candidates[index])
-                        .map_err(|_| BooruErrorDto::invalid_request(Some(source.id)))?;
+                        .map_err(|_| BooruError::invalid_request(Some(source.id)))?;
                 }
                 self.check_cooldown(source.id)?;
                 let response = match client
@@ -445,7 +445,7 @@ impl NetworkRuntime {
                     }
                     redirects += 1;
                     if redirects > MAX_REDIRECTS {
-                        return Err(BooruErrorDto::new(
+                        return Err(BooruError::new(
                             BooruErrorCode::UnsafeRedirect,
                             Some(source.id),
                             "booru.error.tooManyRedirects",
@@ -456,14 +456,14 @@ impl NetworkRuntime {
                         .get(LOCATION)
                         .and_then(|value| value.to_str().ok())
                         .ok_or_else(|| {
-                            BooruErrorDto::new(
+                            BooruError::new(
                                 BooruErrorCode::UnsafeRedirect,
                                 Some(source.id),
                                 "booru.error.invalidRedirect",
                             )
                         })?;
                     url = authenticated_url.join(location).map_err(|_| {
-                        BooruErrorDto::new(
+                        BooruError::new(
                             BooruErrorCode::UnsafeRedirect,
                             Some(source.id),
                             "booru.error.invalidRedirect",
@@ -480,7 +480,7 @@ impl NetworkRuntime {
                         .await
                         .map_err(|error| classify_reqwest_error(source.id, &error))?;
                     if looks_like_challenge(&response_headers, &body, false) {
-                        return Err(BooruErrorDto::new(
+                        return Err(BooruError::new(
                             BooruErrorCode::ChallengeRequired,
                             Some(source.id),
                             "booru.error.challengeRequired",
@@ -501,7 +501,7 @@ impl NetworkRuntime {
                     .unwrap_or_default()
                     .to_ascii_lowercase();
                 if content_type.contains("text/html") {
-                    return Err(BooruErrorDto::new(
+                    return Err(BooruError::new(
                         BooruErrorCode::ChallengeRequired,
                         Some(source.id),
                         "booru.error.challengeRequired",
@@ -510,7 +510,7 @@ impl NetworkRuntime {
                 }
                 return Ok(response);
             }
-            return Err(BooruErrorDto::new(
+            return Err(BooruError::new(
                 BooruErrorCode::Network,
                 Some(source.id),
                 "booru.error.network",
@@ -522,13 +522,13 @@ impl NetworkRuntime {
         &self,
         source: &SourceDefinition,
         url: &Url,
-    ) -> BooruResult<Vec<HttpHeaderDto>> {
+    ) -> BooruResult<Vec<HttpHeader>> {
         validate_url(source, url)?;
         let headers = self.request_headers(source, url, &[], false)?;
         Ok(headers
             .iter()
             .filter_map(|(name, value)| {
-                value.to_str().ok().map(|value| HttpHeaderDto {
+                value.to_str().ok().map(|value| HttpHeader {
                     name: name.as_str().to_owned(),
                     value: value.to_owned(),
                 })
@@ -540,15 +540,15 @@ impl NetworkRuntime {
         self.route_cache.revision()
     }
 
-    pub fn auth_state(&self, source_id: &str) -> BooruResult<AuthStateDto> {
+    pub fn auth_state(&self, source_id: &str) -> BooruResult<AuthState> {
         self.sessions.state(source_id)
     }
 
-    pub fn mark_auth_verified(&self, source_id: &str) -> BooruResult<AuthStateDto> {
+    pub fn mark_auth_verified(&self, source_id: &str) -> BooruResult<AuthState> {
         self.sessions.mark_verified(source_id)
     }
 
-    pub fn mark_auth_rejected(&self, source_id: &str) -> BooruResult<AuthStateDto> {
+    pub fn mark_auth_rejected(&self, source_id: &str) -> BooruResult<AuthState> {
         self.sessions.mark_rejected(source_id)
     }
 
@@ -582,7 +582,7 @@ impl NetworkRuntime {
                 ProtocolFamily::AnimePictures => BROWSER_USER_AGENT,
                 _ => &self.config.user_agent,
             })
-            .map_err(|_| BooruErrorDto::invalid_request(Some(source.id)))?,
+            .map_err(|_| BooruError::invalid_request(Some(source.id)))?,
         );
         headers.insert(REFERER, HeaderValue::from_static(source.referer));
         headers.insert(ACCEPT, HeaderValue::from_static("*/*"));
@@ -591,14 +591,14 @@ impl NetworkRuntime {
         }
         for (name, value) in requested {
             let name = HeaderName::from_bytes(name.as_bytes())
-                .map_err(|_| BooruErrorDto::invalid_request(Some(source.id)))?;
+                .map_err(|_| BooruError::invalid_request(Some(source.id)))?;
             if is_protected_header(&name) && !allow_protected_headers {
-                return Err(BooruErrorDto::invalid_request(Some(source.id)));
+                return Err(BooruError::invalid_request(Some(source.id)));
             }
             headers.insert(
                 name,
                 HeaderValue::from_str(value)
-                    .map_err(|_| BooruErrorDto::invalid_request(Some(source.id)))?,
+                    .map_err(|_| BooruError::invalid_request(Some(source.id)))?,
             );
         }
         let api_host = Url::parse(source.api_base)
@@ -665,7 +665,7 @@ impl NetworkRuntime {
         if let Some(proxy) = self.config.proxy_url.as_deref() {
             builder = builder.proxy(
                 reqwest::Proxy::all(proxy)
-                    .map_err(|_| BooruErrorDto::invalid_request(Some(source.id)))?,
+                    .map_err(|_| BooruError::invalid_request(Some(source.id)))?,
             );
         } else if self.route_mode_active() {
             // IP URL requests must connect directly, without OS proxy discovery.
@@ -690,7 +690,7 @@ fn validate_url(source: &SourceDefinition, url: &Url) -> BooruResult<String> {
         || !url.username().is_empty()
         || url.password().is_some()
     {
-        return Err(BooruErrorDto::new(
+        return Err(BooruError::new(
             BooruErrorCode::InvalidRequest,
             Some(source.id),
             "booru.error.httpsRequired",
@@ -698,9 +698,9 @@ fn validate_url(source: &SourceDefinition, url: &Url) -> BooruResult<String> {
     }
     let host = url
         .host_str()
-        .ok_or_else(|| BooruErrorDto::invalid_request(Some(source.id)))?;
+        .ok_or_else(|| BooruError::invalid_request(Some(source.id)))?;
     if !source.allows_host(host) {
-        return Err(BooruErrorDto::new(
+        return Err(BooruError::new(
             BooruErrorCode::UnsafeRedirect,
             Some(source.id),
             "booru.error.unsafeHost",
@@ -760,15 +760,15 @@ fn retry_delay(attempt: u32, retry_after: Option<u32>) -> Duration {
     Duration::from_millis(250 * u64::from(1_u32 << attempt.saturating_sub(1)))
 }
 
-fn classify_reqwest_error(source_id: &str, error: &reqwest::Error) -> BooruErrorDto {
+fn classify_reqwest_error(source_id: &str, error: &reqwest::Error) -> BooruError {
     if error.is_timeout() {
-        BooruErrorDto::new(
+        BooruError::new(
             BooruErrorCode::Timeout,
             Some(source_id),
             "booru.error.timeout",
         )
     } else {
-        BooruErrorDto::new(
+        BooruError::new(
             BooruErrorCode::Network,
             Some(source_id),
             "booru.error.network",
@@ -781,7 +781,7 @@ fn classify_status(
     status: StatusCode,
     retry_after: Option<u32>,
     authenticated: bool,
-) -> BooruErrorDto {
+) -> BooruError {
     let code = match status.as_u16() {
         401 => {
             if authenticated {
@@ -803,21 +803,21 @@ fn classify_status(
         BooruErrorCode::SourceUnavailable => "booru.error.sourceUnavailable",
         _ => "booru.error.invalidResponse",
     };
-    BooruErrorDto::new(code, Some(source_id), key)
+    BooruError::new(code, Some(source_id), key)
         .with_http_status(u32::from(status.as_u16()))
         .with_retry_after(retry_after)
 }
 
-fn internal_error(source_id: &str) -> BooruErrorDto {
-    BooruErrorDto::new(
+fn internal_error(source_id: &str) -> BooruError {
+    BooruError::new(
         BooruErrorCode::Internal,
         Some(source_id),
         "booru.error.internal",
     )
 }
 
-fn missing_route(source_id: &str) -> BooruErrorDto {
-    let mut error = BooruErrorDto::new(
+fn missing_route(source_id: &str) -> BooruError {
+    let mut error = BooruError::new(
         BooruErrorCode::Network,
         Some(source_id),
         "booru.error.routeUnavailable",
@@ -829,7 +829,7 @@ fn missing_route(source_id: &str) -> BooruErrorDto {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::booru_models::{BooruEngineConfigDto, NetworkFallbackMode};
+    use crate::api::booru_models::{BooruEngineConfig, NetworkFallbackMode};
     use crate::booru::source::builtin_sources;
 
     #[test]
@@ -858,7 +858,7 @@ mod tests {
         let sources = builtin_sources();
         let directory = tempfile::tempdir().unwrap();
         let runtime = NetworkRuntime::new(
-            BooruEngineConfigDto {
+            BooruEngineConfig {
                 app_support_directory: directory.path().to_string_lossy().to_string(),
                 proxy_url: None,
                 fallback_mode: NetworkFallbackMode::Off,
@@ -915,7 +915,7 @@ mod tests {
         let sessions = Arc::new(SessionStore::default());
         let directory = tempfile::tempdir().unwrap();
         let runtime = NetworkRuntime::new(
-            BooruEngineConfigDto {
+            BooruEngineConfig {
                 app_support_directory: directory.path().to_string_lossy().to_string(),
                 proxy_url: None,
                 fallback_mode: NetworkFallbackMode::Off,
@@ -940,7 +940,7 @@ mod tests {
         let sources = builtin_sources();
         let directory = tempfile::tempdir().unwrap();
         let runtime = NetworkRuntime::new(
-            BooruEngineConfigDto {
+            BooruEngineConfig {
                 app_support_directory: directory.path().to_string_lossy().to_string(),
                 proxy_url: None,
                 fallback_mode: NetworkFallbackMode::Off,
@@ -1004,7 +1004,7 @@ mod tests {
         let source = &sources[0];
         let directory = tempfile::tempdir().unwrap();
         let runtime = NetworkRuntime::new(
-            BooruEngineConfigDto {
+            BooruEngineConfig {
                 app_support_directory: directory.path().to_string_lossy().to_string(),
                 proxy_url: None,
                 fallback_mode: NetworkFallbackMode::PersistedIpOverride,
@@ -1053,7 +1053,7 @@ mod tests {
             .unwrap();
         let directory = tempfile::tempdir().unwrap();
         let runtime = NetworkRuntime::new(
-            BooruEngineConfigDto {
+            BooruEngineConfig {
                 app_support_directory: directory.path().to_string_lossy().to_string(),
                 proxy_url: None,
                 fallback_mode: NetworkFallbackMode::PersistedIpOverride,

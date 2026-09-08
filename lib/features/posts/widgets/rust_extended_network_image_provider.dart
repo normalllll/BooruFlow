@@ -29,13 +29,13 @@ final class RustExtendedNetworkImageProvider
   }) : assert(retries >= 0),
        assert(decodeWidth == null || decodeWidth > 0);
 
-  final MediaRequestDto request;
+  final MediaRequest request;
   final double scale;
   final int retries;
   final int? decodeWidth;
   final int reloadRevision;
   @visibleForTesting
-  final Stream<MediaFetchEventDto> Function(MediaRequestDto)? mediaStream;
+  final Stream<MediaFetchEvent> Function(MediaRequest)? mediaStream;
   @visibleForTesting
   final File? cacheFile;
 
@@ -156,9 +156,9 @@ final class RustExtendedNetworkImageProvider
             BooruService.instance.engine.streamMedia(request: request);
         await for (final event in stream.timeout(const Duration(seconds: 45))) {
           switch (event) {
-            case MediaFetchEventDto_Failed(:final error):
+            case MediaFetchEvent_Failed(:final error):
               throw error;
-            case MediaFetchEventDto_Chunk(
+            case MediaFetchEvent_Chunk(
               :final bytes,
               :final receivedBytesDecimal,
               :final totalBytesDecimal,
@@ -193,7 +193,7 @@ final class RustExtendedNetworkImageProvider
         }
         return builder.takeBytes();
       } catch (error, stack) {
-        if (error is BooruErrorDto &&
+        if (error is BooruError &&
             ![
               BooruErrorCode.network,
               BooruErrorCode.timeout,
@@ -281,7 +281,7 @@ final class MediaImageException implements Exception {
     this.byteCount,
     this.fromCache = false,
   });
-  final MediaRequestDto request;
+  final MediaRequest request;
   final String stage;
   final Object cause;
   final int? byteCount;

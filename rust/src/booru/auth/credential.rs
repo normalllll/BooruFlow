@@ -1,15 +1,15 @@
-use crate::api::booru_auth::{AuthFieldDto, AuthFieldKind, AuthSchemaDto, SourceCredentialsDto};
+use crate::api::booru_auth::{AuthField, AuthFieldKind, AuthSchema, SourceCredentials};
 use crate::api::booru_models::AuthKind;
-use crate::booru::error::{BooruErrorDto, BooruResult};
+use crate::booru::error::{BooruError, BooruResult};
 
-pub fn auth_schema(source_id: &str, kind: AuthKind) -> AuthSchemaDto {
+pub fn auth_schema(source_id: &str, kind: AuthKind) -> AuthSchema {
     let field = |kind: AuthFieldKind, secret: bool, help_url: Option<&str>| {
         let key = match kind {
             AuthFieldKind::Username => "username",
             AuthFieldKind::UserId => "userId",
             AuthFieldKind::ApiKey => "apiKey",
         };
-        AuthFieldDto {
+        AuthField {
             kind,
             label_key: format!("booru.auth.field.{key}"),
             required: true,
@@ -51,7 +51,7 @@ pub fn auth_schema(source_id: &str, kind: AuthKind) -> AuthSchemaDto {
         ),
         AuthKind::WebSession => (Vec::new(), true),
     };
-    AuthSchemaDto {
+    AuthSchema {
         source_id: source_id.to_owned(),
         fields,
         uses_web_session,
@@ -61,7 +61,7 @@ pub fn auth_schema(source_id: &str, kind: AuthKind) -> AuthSchemaDto {
 pub fn validate_credentials(
     source_id: &str,
     kind: AuthKind,
-    credentials: &SourceCredentialsDto,
+    credentials: &SourceCredentials,
 ) -> BooruResult<()> {
     let present = |value: &Option<String>| {
         value
@@ -89,7 +89,7 @@ pub fn validate_credentials(
     if valid {
         Ok(())
     } else {
-        Err(BooruErrorDto::invalid_request(Some(source_id)))
+        Err(BooruError::invalid_request(Some(source_id)))
     }
 }
 
@@ -125,7 +125,7 @@ mod tests {
 
     #[test]
     fn gelbooru_user_id_must_be_decimal() {
-        let credentials = SourceCredentialsDto {
+        let credentials = SourceCredentials {
             username: None,
             user_id: Some("../1".to_owned()),
             api_key: Some("key".to_owned()),

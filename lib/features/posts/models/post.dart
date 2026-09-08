@@ -11,37 +11,37 @@ extension ContentRatingLabel on ContentRating {
 }
 
 final class Post {
-  const Post(this.dto);
+  const Post(this.data);
 
-  final BooruPostDto dto;
+  final BooruPost data;
 
-  String get id => dto.postId;
-  String get sourceId => dto.sourceId;
-  String get postKey => dto.postKey;
-  ContentRating get rating => dto.rating;
-  int get score => dto.score ?? 0;
-  String get tags => dto.tags.map((tag) => tag.name).join(' ');
-  String get author => dto.author?.trim() ?? '';
-  String get source => dto.sourceUrl ?? dto.webUrl ?? '';
-  bool get hasChildren => dto.flags.hasChildren;
-  String? get parentId => dto.flags.parentId;
-  bool get isPending => dto.flags.isPending;
-  String? get webUrl => dto.webUrl;
+  String get id => data.postId;
+  String get sourceId => data.sourceId;
+  String get postKey => data.postKey;
+  ContentRating get rating => data.rating;
+  int get score => data.score ?? 0;
+  String get tags => data.tags.map((tag) => tag.name).join(' ');
+  String get author => data.author?.trim() ?? '';
+  String get source => data.sourceUrl ?? data.webUrl ?? '';
+  bool get hasChildren => data.flags.hasChildren;
+  String? get parentId => data.flags.parentId;
+  bool get isPending => data.flags.isPending;
+  String? get webUrl => data.webUrl;
 
-  MediaVariantDto? variant(MediaVariantKind kind) {
-    for (final media in dto.media) {
+  MediaVariant? variant(MediaVariantKind kind) {
+    for (final media in data.media) {
       if (media.kind == kind) return media;
     }
     return null;
   }
 
-  MediaVariantDto get displayMedia =>
+  MediaVariant get displayMedia =>
       variant(MediaVariantKind.sample) ??
       variant(MediaVariantKind.preview) ??
       variant(MediaVariantKind.thumbnail) ??
-      dto.media.first;
+      data.media.first;
 
-  MediaVariantDto get originalMedia =>
+  MediaVariant get originalMedia =>
       variant(MediaVariantKind.original) ?? displayMedia;
 
   String get previewUrl => displayMedia.url;
@@ -66,7 +66,7 @@ final class Post {
   String get fileExt => originalMedia.extension_ ?? 'jpg';
   String get md5 => originalMedia.checksum?.value ?? '';
   int get createdAt {
-    final value = DateTime.tryParse(dto.createdAtIso8601 ?? '');
+    final value = DateTime.tryParse(data.createdAtIso8601 ?? '');
     return value == null ? 0 : value.millisecondsSinceEpoch ~/ 1000;
   }
 

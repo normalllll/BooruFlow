@@ -12,7 +12,7 @@ part of 'booru_download.dart';
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
-mixin _$DownloadEventDto {
+mixin _$DownloadEvent {
 
 
 
@@ -20,7 +20,7 @@ mixin _$DownloadEventDto {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DownloadEventDto);
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DownloadEvent);
 }
 
 
@@ -29,20 +29,20 @@ int get hashCode => runtimeType.hashCode;
 
 @override
 String toString() {
-  return 'DownloadEventDto()';
+  return 'DownloadEvent()';
 }
 
 
 }
 
 /// @nodoc
-class $DownloadEventDtoCopyWith<$Res>  {
-$DownloadEventDtoCopyWith(DownloadEventDto _, $Res Function(DownloadEventDto) __);
+class $DownloadEventCopyWith<$Res>  {
+$DownloadEventCopyWith(DownloadEvent _, $Res Function(DownloadEvent) __);
 }
 
 
-/// Adds pattern-matching-related methods to [DownloadEventDto].
-extension DownloadEventDtoPatterns on DownloadEventDto {
+/// Adds pattern-matching-related methods to [DownloadEvent].
+extension DownloadEventPatterns on DownloadEvent {
 /// A variant of `map` that fallback to returning `orElse`.
 ///
 /// It is equivalent to doing:
@@ -55,11 +55,11 @@ extension DownloadEventDtoPatterns on DownloadEventDto {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( DownloadEventDto_Progress value)?  progress,TResult Function( DownloadEventDto_Done value)?  done,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( DownloadEvent_Progress value)?  progress,TResult Function( DownloadEvent_Done value)?  done,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
-case DownloadEventDto_Progress() when progress != null:
-return progress(_that);case DownloadEventDto_Done() when done != null:
+case DownloadEvent_Progress() when progress != null:
+return progress(_that);case DownloadEvent_Done() when done != null:
 return done(_that);case _:
   return orElse();
 
@@ -78,11 +78,11 @@ return done(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( DownloadEventDto_Progress value)  progress,required TResult Function( DownloadEventDto_Done value)  done,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( DownloadEvent_Progress value)  progress,required TResult Function( DownloadEvent_Done value)  done,}){
 final _that = this;
 switch (_that) {
-case DownloadEventDto_Progress():
-return progress(_that);case DownloadEventDto_Done():
+case DownloadEvent_Progress():
+return progress(_that);case DownloadEvent_Done():
 return done(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
@@ -97,11 +97,11 @@ return done(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( DownloadEventDto_Progress value)?  progress,TResult? Function( DownloadEventDto_Done value)?  done,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( DownloadEvent_Progress value)?  progress,TResult? Function( DownloadEvent_Done value)?  done,}){
 final _that = this;
 switch (_that) {
-case DownloadEventDto_Progress() when progress != null:
-return progress(_that);case DownloadEventDto_Done() when done != null:
+case DownloadEvent_Progress() when progress != null:
+return progress(_that);case DownloadEvent_Done() when done != null:
 return done(_that);case _:
   return null;
 
@@ -121,8 +121,8 @@ return done(_that);case _:
 
 @optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String receivedBytesDecimal,  String? totalBytesDecimal,  double progress)?  progress,TResult Function( String path)?  done,required TResult orElse(),}) {final _that = this;
 switch (_that) {
-case DownloadEventDto_Progress() when progress != null:
-return progress(_that.receivedBytesDecimal,_that.totalBytesDecimal,_that.progress);case DownloadEventDto_Done() when done != null:
+case DownloadEvent_Progress() when progress != null:
+return progress(_that.receivedBytesDecimal,_that.totalBytesDecimal,_that.progress);case DownloadEvent_Done() when done != null:
 return done(_that.path);case _:
   return orElse();
 
@@ -143,8 +143,8 @@ return done(_that.path);case _:
 
 @optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String receivedBytesDecimal,  String? totalBytesDecimal,  double progress)  progress,required TResult Function( String path)  done,}) {final _that = this;
 switch (_that) {
-case DownloadEventDto_Progress():
-return progress(_that.receivedBytesDecimal,_that.totalBytesDecimal,_that.progress);case DownloadEventDto_Done():
+case DownloadEvent_Progress():
+return progress(_that.receivedBytesDecimal,_that.totalBytesDecimal,_that.progress);case DownloadEvent_Done():
 return done(_that.path);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -161,8 +161,8 @@ return done(_that.path);}
 
 @optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String receivedBytesDecimal,  String? totalBytesDecimal,  double progress)?  progress,TResult? Function( String path)?  done,}) {final _that = this;
 switch (_that) {
-case DownloadEventDto_Progress() when progress != null:
-return progress(_that.receivedBytesDecimal,_that.totalBytesDecimal,_that.progress);case DownloadEventDto_Done() when done != null:
+case DownloadEvent_Progress() when progress != null:
+return progress(_that.receivedBytesDecimal,_that.totalBytesDecimal,_that.progress);case DownloadEvent_Done() when done != null:
 return done(_that.path);case _:
   return null;
 
@@ -174,25 +174,25 @@ return done(_that.path);case _:
 /// @nodoc
 
 
-class DownloadEventDto_Progress extends DownloadEventDto {
-  const DownloadEventDto_Progress({required this.receivedBytesDecimal, this.totalBytesDecimal, required this.progress}): super._();
+class DownloadEvent_Progress extends DownloadEvent {
+  const DownloadEvent_Progress({required this.receivedBytesDecimal, this.totalBytesDecimal, required this.progress}): super._();
 
 
  final  String receivedBytesDecimal;
  final  String? totalBytesDecimal;
  final  double progress;
 
-/// Create a copy of DownloadEventDto
+/// Create a copy of DownloadEvent
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
-$DownloadEventDto_ProgressCopyWith<DownloadEventDto_Progress> get copyWith => _$DownloadEventDto_ProgressCopyWithImpl<DownloadEventDto_Progress>(this, _$identity);
+$DownloadEvent_ProgressCopyWith<DownloadEvent_Progress> get copyWith => _$DownloadEvent_ProgressCopyWithImpl<DownloadEvent_Progress>(this, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DownloadEventDto_Progress&&(identical(other.receivedBytesDecimal, receivedBytesDecimal) || other.receivedBytesDecimal == receivedBytesDecimal)&&(identical(other.totalBytesDecimal, totalBytesDecimal) || other.totalBytesDecimal == totalBytesDecimal)&&(identical(other.progress, progress) || other.progress == progress));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DownloadEvent_Progress&&(identical(other.receivedBytesDecimal, receivedBytesDecimal) || other.receivedBytesDecimal == receivedBytesDecimal)&&(identical(other.totalBytesDecimal, totalBytesDecimal) || other.totalBytesDecimal == totalBytesDecimal)&&(identical(other.progress, progress) || other.progress == progress));
 }
 
 
@@ -201,15 +201,15 @@ int get hashCode => Object.hash(runtimeType,receivedBytesDecimal,totalBytesDecim
 
 @override
 String toString() {
-  return 'DownloadEventDto.progress(receivedBytesDecimal: $receivedBytesDecimal, totalBytesDecimal: $totalBytesDecimal, progress: $progress)';
+  return 'DownloadEvent.progress(receivedBytesDecimal: $receivedBytesDecimal, totalBytesDecimal: $totalBytesDecimal, progress: $progress)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class $DownloadEventDto_ProgressCopyWith<$Res> implements $DownloadEventDtoCopyWith<$Res> {
-  factory $DownloadEventDto_ProgressCopyWith(DownloadEventDto_Progress value, $Res Function(DownloadEventDto_Progress) _then) = _$DownloadEventDto_ProgressCopyWithImpl;
+abstract mixin class $DownloadEvent_ProgressCopyWith<$Res> implements $DownloadEventCopyWith<$Res> {
+  factory $DownloadEvent_ProgressCopyWith(DownloadEvent_Progress value, $Res Function(DownloadEvent_Progress) _then) = _$DownloadEvent_ProgressCopyWithImpl;
 @useResult
 $Res call({
  String receivedBytesDecimal, String? totalBytesDecimal, double progress
@@ -220,17 +220,17 @@ $Res call({
 
 }
 /// @nodoc
-class _$DownloadEventDto_ProgressCopyWithImpl<$Res>
-    implements $DownloadEventDto_ProgressCopyWith<$Res> {
-  _$DownloadEventDto_ProgressCopyWithImpl(this._self, this._then);
+class _$DownloadEvent_ProgressCopyWithImpl<$Res>
+    implements $DownloadEvent_ProgressCopyWith<$Res> {
+  _$DownloadEvent_ProgressCopyWithImpl(this._self, this._then);
 
-  final DownloadEventDto_Progress _self;
-  final $Res Function(DownloadEventDto_Progress) _then;
+  final DownloadEvent_Progress _self;
+  final $Res Function(DownloadEvent_Progress) _then;
 
-/// Create a copy of DownloadEventDto
+/// Create a copy of DownloadEvent
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') $Res call({Object? receivedBytesDecimal = null,Object? totalBytesDecimal = freezed,Object? progress = null,}) {
-  return _then(DownloadEventDto_Progress(
+  return _then(DownloadEvent_Progress(
 receivedBytesDecimal: null == receivedBytesDecimal ? _self.receivedBytesDecimal : receivedBytesDecimal // ignore: cast_nullable_to_non_nullable
 as String,totalBytesDecimal: freezed == totalBytesDecimal ? _self.totalBytesDecimal : totalBytesDecimal // ignore: cast_nullable_to_non_nullable
 as String?,progress: null == progress ? _self.progress : progress // ignore: cast_nullable_to_non_nullable
@@ -244,23 +244,23 @@ as double,
 /// @nodoc
 
 
-class DownloadEventDto_Done extends DownloadEventDto {
-  const DownloadEventDto_Done({required this.path}): super._();
+class DownloadEvent_Done extends DownloadEvent {
+  const DownloadEvent_Done({required this.path}): super._();
 
 
  final  String path;
 
-/// Create a copy of DownloadEventDto
+/// Create a copy of DownloadEvent
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
-$DownloadEventDto_DoneCopyWith<DownloadEventDto_Done> get copyWith => _$DownloadEventDto_DoneCopyWithImpl<DownloadEventDto_Done>(this, _$identity);
+$DownloadEvent_DoneCopyWith<DownloadEvent_Done> get copyWith => _$DownloadEvent_DoneCopyWithImpl<DownloadEvent_Done>(this, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DownloadEventDto_Done&&(identical(other.path, path) || other.path == path));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DownloadEvent_Done&&(identical(other.path, path) || other.path == path));
 }
 
 
@@ -269,15 +269,15 @@ int get hashCode => Object.hash(runtimeType,path);
 
 @override
 String toString() {
-  return 'DownloadEventDto.done(path: $path)';
+  return 'DownloadEvent.done(path: $path)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class $DownloadEventDto_DoneCopyWith<$Res> implements $DownloadEventDtoCopyWith<$Res> {
-  factory $DownloadEventDto_DoneCopyWith(DownloadEventDto_Done value, $Res Function(DownloadEventDto_Done) _then) = _$DownloadEventDto_DoneCopyWithImpl;
+abstract mixin class $DownloadEvent_DoneCopyWith<$Res> implements $DownloadEventCopyWith<$Res> {
+  factory $DownloadEvent_DoneCopyWith(DownloadEvent_Done value, $Res Function(DownloadEvent_Done) _then) = _$DownloadEvent_DoneCopyWithImpl;
 @useResult
 $Res call({
  String path
@@ -288,17 +288,17 @@ $Res call({
 
 }
 /// @nodoc
-class _$DownloadEventDto_DoneCopyWithImpl<$Res>
-    implements $DownloadEventDto_DoneCopyWith<$Res> {
-  _$DownloadEventDto_DoneCopyWithImpl(this._self, this._then);
+class _$DownloadEvent_DoneCopyWithImpl<$Res>
+    implements $DownloadEvent_DoneCopyWith<$Res> {
+  _$DownloadEvent_DoneCopyWithImpl(this._self, this._then);
 
-  final DownloadEventDto_Done _self;
-  final $Res Function(DownloadEventDto_Done) _then;
+  final DownloadEvent_Done _self;
+  final $Res Function(DownloadEvent_Done) _then;
 
-/// Create a copy of DownloadEventDto
+/// Create a copy of DownloadEvent
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') $Res call({Object? path = null,}) {
-  return _then(DownloadEventDto_Done(
+  return _then(DownloadEvent_Done(
 path: null == path ? _self.path : path // ignore: cast_nullable_to_non_nullable
 as String,
   ));
@@ -308,7 +308,7 @@ as String,
 }
 
 /// @nodoc
-mixin _$MediaFetchEventDto {
+mixin _$MediaFetchEvent {
 
 
 
@@ -316,7 +316,7 @@ mixin _$MediaFetchEventDto {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MediaFetchEventDto);
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MediaFetchEvent);
 }
 
 
@@ -325,20 +325,20 @@ int get hashCode => runtimeType.hashCode;
 
 @override
 String toString() {
-  return 'MediaFetchEventDto()';
+  return 'MediaFetchEvent()';
 }
 
 
 }
 
 /// @nodoc
-class $MediaFetchEventDtoCopyWith<$Res>  {
-$MediaFetchEventDtoCopyWith(MediaFetchEventDto _, $Res Function(MediaFetchEventDto) __);
+class $MediaFetchEventCopyWith<$Res>  {
+$MediaFetchEventCopyWith(MediaFetchEvent _, $Res Function(MediaFetchEvent) __);
 }
 
 
-/// Adds pattern-matching-related methods to [MediaFetchEventDto].
-extension MediaFetchEventDtoPatterns on MediaFetchEventDto {
+/// Adds pattern-matching-related methods to [MediaFetchEvent].
+extension MediaFetchEventPatterns on MediaFetchEvent {
 /// A variant of `map` that fallback to returning `orElse`.
 ///
 /// It is equivalent to doing:
@@ -351,11 +351,11 @@ extension MediaFetchEventDtoPatterns on MediaFetchEventDto {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( MediaFetchEventDto_Failed value)?  failed,TResult Function( MediaFetchEventDto_Chunk value)?  chunk,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( MediaFetchEvent_Failed value)?  failed,TResult Function( MediaFetchEvent_Chunk value)?  chunk,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
-case MediaFetchEventDto_Failed() when failed != null:
-return failed(_that);case MediaFetchEventDto_Chunk() when chunk != null:
+case MediaFetchEvent_Failed() when failed != null:
+return failed(_that);case MediaFetchEvent_Chunk() when chunk != null:
 return chunk(_that);case _:
   return orElse();
 
@@ -374,11 +374,11 @@ return chunk(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( MediaFetchEventDto_Failed value)  failed,required TResult Function( MediaFetchEventDto_Chunk value)  chunk,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( MediaFetchEvent_Failed value)  failed,required TResult Function( MediaFetchEvent_Chunk value)  chunk,}){
 final _that = this;
 switch (_that) {
-case MediaFetchEventDto_Failed():
-return failed(_that);case MediaFetchEventDto_Chunk():
+case MediaFetchEvent_Failed():
+return failed(_that);case MediaFetchEvent_Chunk():
 return chunk(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
@@ -393,11 +393,11 @@ return chunk(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( MediaFetchEventDto_Failed value)?  failed,TResult? Function( MediaFetchEventDto_Chunk value)?  chunk,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( MediaFetchEvent_Failed value)?  failed,TResult? Function( MediaFetchEvent_Chunk value)?  chunk,}){
 final _that = this;
 switch (_that) {
-case MediaFetchEventDto_Failed() when failed != null:
-return failed(_that);case MediaFetchEventDto_Chunk() when chunk != null:
+case MediaFetchEvent_Failed() when failed != null:
+return failed(_that);case MediaFetchEvent_Chunk() when chunk != null:
 return chunk(_that);case _:
   return null;
 
@@ -415,10 +415,10 @@ return chunk(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( BooruErrorDto error)?  failed,TResult Function( Uint8List bytes,  String receivedBytesDecimal,  String? totalBytesDecimal)?  chunk,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( BooruError error)?  failed,TResult Function( Uint8List bytes,  String receivedBytesDecimal,  String? totalBytesDecimal)?  chunk,required TResult orElse(),}) {final _that = this;
 switch (_that) {
-case MediaFetchEventDto_Failed() when failed != null:
-return failed(_that.error);case MediaFetchEventDto_Chunk() when chunk != null:
+case MediaFetchEvent_Failed() when failed != null:
+return failed(_that.error);case MediaFetchEvent_Chunk() when chunk != null:
 return chunk(_that.bytes,_that.receivedBytesDecimal,_that.totalBytesDecimal);case _:
   return orElse();
 
@@ -437,10 +437,10 @@ return chunk(_that.bytes,_that.receivedBytesDecimal,_that.totalBytesDecimal);cas
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( BooruErrorDto error)  failed,required TResult Function( Uint8List bytes,  String receivedBytesDecimal,  String? totalBytesDecimal)  chunk,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( BooruError error)  failed,required TResult Function( Uint8List bytes,  String receivedBytesDecimal,  String? totalBytesDecimal)  chunk,}) {final _that = this;
 switch (_that) {
-case MediaFetchEventDto_Failed():
-return failed(_that.error);case MediaFetchEventDto_Chunk():
+case MediaFetchEvent_Failed():
+return failed(_that.error);case MediaFetchEvent_Chunk():
 return chunk(_that.bytes,_that.receivedBytesDecimal,_that.totalBytesDecimal);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -455,10 +455,10 @@ return chunk(_that.bytes,_that.receivedBytesDecimal,_that.totalBytesDecimal);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( BooruErrorDto error)?  failed,TResult? Function( Uint8List bytes,  String receivedBytesDecimal,  String? totalBytesDecimal)?  chunk,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( BooruError error)?  failed,TResult? Function( Uint8List bytes,  String receivedBytesDecimal,  String? totalBytesDecimal)?  chunk,}) {final _that = this;
 switch (_that) {
-case MediaFetchEventDto_Failed() when failed != null:
-return failed(_that.error);case MediaFetchEventDto_Chunk() when chunk != null:
+case MediaFetchEvent_Failed() when failed != null:
+return failed(_that.error);case MediaFetchEvent_Chunk() when chunk != null:
 return chunk(_that.bytes,_that.receivedBytesDecimal,_that.totalBytesDecimal);case _:
   return null;
 
@@ -470,23 +470,23 @@ return chunk(_that.bytes,_that.receivedBytesDecimal,_that.totalBytesDecimal);cas
 /// @nodoc
 
 
-class MediaFetchEventDto_Failed extends MediaFetchEventDto {
-  const MediaFetchEventDto_Failed({required this.error}): super._();
+class MediaFetchEvent_Failed extends MediaFetchEvent {
+  const MediaFetchEvent_Failed({required this.error}): super._();
 
 
- final  BooruErrorDto error;
+ final  BooruError error;
 
-/// Create a copy of MediaFetchEventDto
+/// Create a copy of MediaFetchEvent
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
-$MediaFetchEventDto_FailedCopyWith<MediaFetchEventDto_Failed> get copyWith => _$MediaFetchEventDto_FailedCopyWithImpl<MediaFetchEventDto_Failed>(this, _$identity);
+$MediaFetchEvent_FailedCopyWith<MediaFetchEvent_Failed> get copyWith => _$MediaFetchEvent_FailedCopyWithImpl<MediaFetchEvent_Failed>(this, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MediaFetchEventDto_Failed&&(identical(other.error, error) || other.error == error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MediaFetchEvent_Failed&&(identical(other.error, error) || other.error == error));
 }
 
 
@@ -495,18 +495,18 @@ int get hashCode => Object.hash(runtimeType,error);
 
 @override
 String toString() {
-  return 'MediaFetchEventDto.failed(error: $error)';
+  return 'MediaFetchEvent.failed(error: $error)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class $MediaFetchEventDto_FailedCopyWith<$Res> implements $MediaFetchEventDtoCopyWith<$Res> {
-  factory $MediaFetchEventDto_FailedCopyWith(MediaFetchEventDto_Failed value, $Res Function(MediaFetchEventDto_Failed) _then) = _$MediaFetchEventDto_FailedCopyWithImpl;
+abstract mixin class $MediaFetchEvent_FailedCopyWith<$Res> implements $MediaFetchEventCopyWith<$Res> {
+  factory $MediaFetchEvent_FailedCopyWith(MediaFetchEvent_Failed value, $Res Function(MediaFetchEvent_Failed) _then) = _$MediaFetchEvent_FailedCopyWithImpl;
 @useResult
 $Res call({
- BooruErrorDto error
+ BooruError error
 });
 
 
@@ -514,19 +514,19 @@ $Res call({
 
 }
 /// @nodoc
-class _$MediaFetchEventDto_FailedCopyWithImpl<$Res>
-    implements $MediaFetchEventDto_FailedCopyWith<$Res> {
-  _$MediaFetchEventDto_FailedCopyWithImpl(this._self, this._then);
+class _$MediaFetchEvent_FailedCopyWithImpl<$Res>
+    implements $MediaFetchEvent_FailedCopyWith<$Res> {
+  _$MediaFetchEvent_FailedCopyWithImpl(this._self, this._then);
 
-  final MediaFetchEventDto_Failed _self;
-  final $Res Function(MediaFetchEventDto_Failed) _then;
+  final MediaFetchEvent_Failed _self;
+  final $Res Function(MediaFetchEvent_Failed) _then;
 
-/// Create a copy of MediaFetchEventDto
+/// Create a copy of MediaFetchEvent
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') $Res call({Object? error = null,}) {
-  return _then(MediaFetchEventDto_Failed(
+  return _then(MediaFetchEvent_Failed(
 error: null == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
-as BooruErrorDto,
+as BooruError,
   ));
 }
 
@@ -536,25 +536,25 @@ as BooruErrorDto,
 /// @nodoc
 
 
-class MediaFetchEventDto_Chunk extends MediaFetchEventDto {
-  const MediaFetchEventDto_Chunk({required this.bytes, required this.receivedBytesDecimal, this.totalBytesDecimal}): super._();
+class MediaFetchEvent_Chunk extends MediaFetchEvent {
+  const MediaFetchEvent_Chunk({required this.bytes, required this.receivedBytesDecimal, this.totalBytesDecimal}): super._();
 
 
  final  Uint8List bytes;
  final  String receivedBytesDecimal;
  final  String? totalBytesDecimal;
 
-/// Create a copy of MediaFetchEventDto
+/// Create a copy of MediaFetchEvent
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
-$MediaFetchEventDto_ChunkCopyWith<MediaFetchEventDto_Chunk> get copyWith => _$MediaFetchEventDto_ChunkCopyWithImpl<MediaFetchEventDto_Chunk>(this, _$identity);
+$MediaFetchEvent_ChunkCopyWith<MediaFetchEvent_Chunk> get copyWith => _$MediaFetchEvent_ChunkCopyWithImpl<MediaFetchEvent_Chunk>(this, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MediaFetchEventDto_Chunk&&const DeepCollectionEquality().equals(other.bytes, bytes)&&(identical(other.receivedBytesDecimal, receivedBytesDecimal) || other.receivedBytesDecimal == receivedBytesDecimal)&&(identical(other.totalBytesDecimal, totalBytesDecimal) || other.totalBytesDecimal == totalBytesDecimal));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MediaFetchEvent_Chunk&&const DeepCollectionEquality().equals(other.bytes, bytes)&&(identical(other.receivedBytesDecimal, receivedBytesDecimal) || other.receivedBytesDecimal == receivedBytesDecimal)&&(identical(other.totalBytesDecimal, totalBytesDecimal) || other.totalBytesDecimal == totalBytesDecimal));
 }
 
 
@@ -563,15 +563,15 @@ int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(
 
 @override
 String toString() {
-  return 'MediaFetchEventDto.chunk(bytes: $bytes, receivedBytesDecimal: $receivedBytesDecimal, totalBytesDecimal: $totalBytesDecimal)';
+  return 'MediaFetchEvent.chunk(bytes: $bytes, receivedBytesDecimal: $receivedBytesDecimal, totalBytesDecimal: $totalBytesDecimal)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class $MediaFetchEventDto_ChunkCopyWith<$Res> implements $MediaFetchEventDtoCopyWith<$Res> {
-  factory $MediaFetchEventDto_ChunkCopyWith(MediaFetchEventDto_Chunk value, $Res Function(MediaFetchEventDto_Chunk) _then) = _$MediaFetchEventDto_ChunkCopyWithImpl;
+abstract mixin class $MediaFetchEvent_ChunkCopyWith<$Res> implements $MediaFetchEventCopyWith<$Res> {
+  factory $MediaFetchEvent_ChunkCopyWith(MediaFetchEvent_Chunk value, $Res Function(MediaFetchEvent_Chunk) _then) = _$MediaFetchEvent_ChunkCopyWithImpl;
 @useResult
 $Res call({
  Uint8List bytes, String receivedBytesDecimal, String? totalBytesDecimal
@@ -582,17 +582,17 @@ $Res call({
 
 }
 /// @nodoc
-class _$MediaFetchEventDto_ChunkCopyWithImpl<$Res>
-    implements $MediaFetchEventDto_ChunkCopyWith<$Res> {
-  _$MediaFetchEventDto_ChunkCopyWithImpl(this._self, this._then);
+class _$MediaFetchEvent_ChunkCopyWithImpl<$Res>
+    implements $MediaFetchEvent_ChunkCopyWith<$Res> {
+  _$MediaFetchEvent_ChunkCopyWithImpl(this._self, this._then);
 
-  final MediaFetchEventDto_Chunk _self;
-  final $Res Function(MediaFetchEventDto_Chunk) _then;
+  final MediaFetchEvent_Chunk _self;
+  final $Res Function(MediaFetchEvent_Chunk) _then;
 
-/// Create a copy of MediaFetchEventDto
+/// Create a copy of MediaFetchEvent
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') $Res call({Object? bytes = null,Object? receivedBytesDecimal = null,Object? totalBytesDecimal = freezed,}) {
-  return _then(MediaFetchEventDto_Chunk(
+  return _then(MediaFetchEvent_Chunk(
 bytes: null == bytes ? _self.bytes : bytes // ignore: cast_nullable_to_non_nullable
 as Uint8List,receivedBytesDecimal: null == receivedBytesDecimal ? _self.receivedBytesDecimal : receivedBytesDecimal // ignore: cast_nullable_to_non_nullable
 as String,totalBytesDecimal: freezed == totalBytesDecimal ? _self.totalBytesDecimal : totalBytesDecimal // ignore: cast_nullable_to_non_nullable

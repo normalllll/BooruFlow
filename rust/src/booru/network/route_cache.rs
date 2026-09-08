@@ -1,7 +1,7 @@
 use crate::api::booru_models::{
-    PersistedHostRouteDto, RouteCacheStateDto, RouteDiagnosticDto, RouteProvider,
+    PersistedHostRoute as ApiPersistedHostRoute, RouteCacheState, RouteDiagnostic, RouteProvider,
 };
-use crate::booru::error::{BooruErrorCode, BooruErrorDto, BooruResult};
+use crate::booru::error::{BooruError, BooruErrorCode, BooruResult};
 use crate::booru::source::SourceDefinition;
 use futures_util::{stream, StreamExt};
 use serde::{Deserialize, Serialize};
@@ -20,12 +20,12 @@ struct PersistedRouteCache {
     route_revision: String,
     fetched_at_iso8601: String,
     provider: RouteProvider,
-    routes: Vec<PersistedHostRoute>,
-    diagnostics: Vec<RouteDiagnosticDto>,
+    routes: Vec<StoredHostRoute>,
+    diagnostics: Vec<RouteDiagnostic>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct PersistedHostRoute {
+struct StoredHostRoute {
     logical_host: String,
     https_port: u16,
     candidates: Vec<String>,
@@ -36,7 +36,7 @@ pub struct RouteCache {
     path: PathBuf,
     provider: RouteProvider,
     sources: Vec<SourceDefinition>,
-    diagnostics: RwLock<BTreeMap<String, RouteDiagnosticDto>>,
+    diagnostics: RwLock<BTreeMap<String, RouteDiagnostic>>,
     state: RwLock<Option<PersistedRouteCache>>,
     refreshing: AtomicBool,
     refresh_lock: tokio::sync::Mutex<()>,
@@ -76,8 +76,8 @@ impl RouteCache {
         cache
     }
 
-    fn pending(&self, host: &str) -> RouteDiagnosticDto {
-        RouteDiagnosticDto {
+    fn pending(&self, host: &str) -> RouteDiagnostic {
+        RouteDiagnostic {
             source_ids: self
                 .sources
                 .iter()
@@ -94,7 +94,7 @@ impl RouteCache {
     }
 
     /// Only read saved state. Startup never performs an invisible DNS refresh.
-    pub async fn initialize(&self) -> BooruResult<RouteCacheStateDto> {
+    pub async fn initialize(&self) -> BooruResult<RouteCacheState> {
         if let Ok(bytes) = tokio::fs::read(&self.path).await {
             if let Ok(cache) = serde_json::from_slice::<PersistedRouteCache>(&bytes) {
                 if self.validate_cache_structure(&cache).is_ok() {
@@ -112,7 +112,7 @@ impl RouteCache {
         self.snapshot()
     }
 
-    pub async fn refresh(&self) -> BooruResult<RouteCacheStateDto> {
+    pub async fn refresh(&self) -> BooruResult<RouteCacheState> {
         let _guard = self.refresh_lock.lock().await;
         self.refreshing.store(true, Ordering::Release);
         let result = self.fetch_and_store().await;
@@ -121,7 +121,7 @@ impl RouteCache {
         self.snapshot()
     }
 
-    pub fn snapshot(&self) -> BooruResult<RouteCacheStateDto> {
+    pub fn snapshot(&self) -> BooruResult<RouteCacheState> {
         let diagnostics = self
             .diagnostics
             .read()
@@ -130,7 +130,7 @@ impl RouteCache {
             .cloned()
             .collect();
         let state = self.state.read().map_err(|_| internal_error())?;
-        Ok(RouteCacheStateDto {
+        Ok(RouteCacheState {
             initialized: state.is_some(),
             refreshing: self.refreshing.load(Ordering::Acquire),
             route_revision: state
@@ -144,7 +144,7 @@ impl RouteCache {
                 .map(|s| {
                     s.routes
                         .iter()
-                        .map(|r| PersistedHostRouteDto {
+                        .map(|r| ApiPersistedHostRoute {
                             logical_host: r.logical_host.clone(),
                             https_port: r.https_port,
                             candidates: r.candidates.clone(),
@@ -189,7 +189,7 @@ impl RouteCache {
     ) -> BooruResult<Vec<IpAddr>> {
         let host = host.trim_end_matches('.').to_ascii_lowercase();
         if !source.allows_host(&host) || !self.host_is_allowed(&host) {
-            return Err(BooruErrorDto::invalid_request(Some(source.id)));
+            return Err(BooruError::invalid_request(Some(source.id)));
         }
         self.diagnostics
             .write()
@@ -271,7 +271,7 @@ impl RouteCache {
         cache.routes = results
             .iter()
             .filter(|r| r.status == "resolved")
-            .map(|r| PersistedHostRoute {
+            .map(|r| StoredHostRoute {
                 logical_host: r.logical_host.clone(),
                 https_port: 443,
                 candidates: r.candidates.clone(),
@@ -352,7 +352,7 @@ async fn write_cache(path: &Path, cache: &PersistedRouteCache) -> BooruResult<()
     }
     if tokio::fs::rename(&temporary, path).await.is_err() {
         let _ = tokio::fs::rename(&backup, path).await;
-        return Err(BooruErrorDto::new(
+        return Err(BooruError::new(
             BooruErrorCode::Internal,
             None,
             "booru.error.routeCacheWrite",
@@ -417,12 +417,12 @@ fn now_iso8601() -> String {
         .unwrap_or_else(|_| unix_seconds().to_string())
 }
 
-fn internal_error() -> BooruErrorDto {
-    BooruErrorDto::new(BooruErrorCode::Internal, None, "booru.error.internal")
+fn internal_error() -> BooruError {
+    BooruError::new(BooruErrorCode::Internal, None, "booru.error.internal")
 }
 
-fn network_error() -> BooruErrorDto {
-    BooruErrorDto::new(
+fn network_error() -> BooruError {
+    BooruError::new(
         BooruErrorCode::Network,
         None,
         "booru.error.routeRefreshFailed",

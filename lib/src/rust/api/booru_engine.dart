@@ -15,11 +15,11 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<BooruEngine>>
 abstract class BooruEngine implements RustOpaqueInterface {
-  Future<AuthSchemaDto> authSchema({required String sourceId});
+  Future<AuthSchema> authSchema({required String sourceId});
 
-  Future<AuthStateDto> authState({required String sourceId});
+  Future<AuthState> authState({required String sourceId});
 
-  Future<List<TagSuggestionDto>> autocomplete({
+  Future<List<BooruTagSuggestion>> autocomplete({
     required String sourceId,
     required String text,
   });
@@ -29,41 +29,37 @@ abstract class BooruEngine implements RustOpaqueInterface {
 
   Future<void> clearAuth({required String sourceId});
 
-  Future<CommonTagsPageDto> commonTags({required CommonTagsRequestDto request});
+  Future<CommonTagsPage> commonTags({required CommonTagsRequest request});
 
-  Stream<DownloadEventDto> downloadToFileStream({
-    required DownloadRequestDto request,
+  Stream<DownloadEvent> downloadToFileStream({
+    required DownloadRequest request,
   });
 
-  Future<PostPageDto> feed({required FeedRequestDto request});
+  Future<PostPage> feed({required FeedRequest request});
 
-  Future<BooruPostDto> getPost({
-    required String sourceId,
-    required String postId,
-  });
+  Future<BooruPost> getPost({required String sourceId, required String postId});
 
-  Future<RouteCacheStateDto> initializeRouteCache();
+  Future<RouteCacheState> initializeRouteCache();
 
-  Future<List<BooruSourceDto>> listSources();
+  Future<List<BooruSource>> listSources();
 
   // HINT: Make it `#[frb(sync)]` to let it become the default constructor of Dart class.
-  static Future<BooruEngine> newInstance({
-    required BooruEngineConfigDto config,
-  }) => RustLib.instance.api.crateApiBooruEngineBooruEngineNew(config: config);
+  static Future<BooruEngine> newInstance({required BooruEngineConfig config}) =>
+      RustLib.instance.api.crateApiBooruEngineBooruEngineNew(config: config);
 
-  Future<PreparedDownloadDto> prepareDownload({
+  Future<PreparedDownload> prepareDownload({
     required String sourceId,
     required String postId,
     required MediaVariantKind variant,
   });
 
-  Future<MediaRequestDto> prepareMedia({
+  Future<MediaRequest> prepareMedia({
     required String sourceId,
     required String postId,
     required MediaVariantKind variant,
   });
 
-  Future<MediaRequestDto> prepareMediaUrl({
+  Future<MediaRequest> prepareMediaUrl({
     required String sourceId,
     required String postId,
     required MediaVariantKind variant,
@@ -71,29 +67,29 @@ abstract class BooruEngine implements RustOpaqueInterface {
     required bool allowDiskCache,
   });
 
-  Future<RouteCacheStateDto> refreshRouteCache();
+  Future<RouteCacheState> refreshRouteCache();
 
-  Future<List<BooruPostDto>> relatedPosts({
+  Future<List<BooruPost>> relatedPosts({
     required String sourceId,
     required String postId,
   });
 
-  Future<RouteCacheStateDto> routeCacheState();
+  Future<RouteCacheState> routeCacheState();
 
-  Future<PostPageDto> search({required SearchRequestDto request});
+  Future<PostPage> search({required SearchRequest request});
 
-  Future<AuthStateDto> setCredentials({
+  Future<AuthState> setCredentials({
     required String sourceId,
-    required SourceCredentialsDto credentials,
+    required SourceCredentials credentials,
   });
 
-  Future<AuthStateDto> setWebSession({
+  Future<AuthState> setWebSession({
     required String sourceId,
-    required List<WebCookieDto> cookies,
+    required List<WebCookie> cookies,
     required String userAgent,
   });
 
-  Stream<MediaFetchEventDto> streamMedia({required MediaRequestDto request});
+  Stream<MediaFetchEvent> streamMedia({required MediaRequest request});
 
-  Future<AuthStateDto> verifyAuth({required String sourceId});
+  Future<AuthState> verifyAuth({required String sourceId});
 }

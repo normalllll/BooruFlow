@@ -1,7 +1,7 @@
-use crate::api::booru_auth::{AuthStateDto, AuthStatus, SourceCredentialsDto, WebCookieDto};
+use crate::api::booru_auth::{AuthState, AuthStatus, SourceCredentials, WebCookie};
 use crate::api::booru_models::AuthKind;
 use crate::booru::auth::credential::validate_credentials;
-use crate::booru::error::{BooruErrorDto, BooruResult};
+use crate::booru::error::{BooruError, BooruResult};
 use base64::Engine;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, COOKIE};
 use reqwest::Url;
@@ -10,9 +10,9 @@ use std::sync::RwLock;
 
 #[derive(Clone)]
 enum AuthMaterial {
-    Credentials(SourceCredentialsDto),
+    Credentials(SourceCredentials),
     WebSession {
-        cookies: Vec<WebCookieDto>,
+        cookies: Vec<WebCookie>,
         user_agent: String,
     },
 }
@@ -35,8 +35,8 @@ impl SessionStore {
         &self,
         source_id: &str,
         auth_kind: AuthKind,
-        mut credentials: SourceCredentialsDto,
-    ) -> BooruResult<AuthStateDto> {
+        mut credentials: SourceCredentials,
+    ) -> BooruResult<AuthState> {
         trim_option(&mut credentials.username);
         trim_option(&mut credentials.user_id);
         trim_option(&mut credentials.api_key);
@@ -59,11 +59,11 @@ impl SessionStore {
     pub fn set_web_session(
         &self,
         source_id: &str,
-        mut cookies: Vec<WebCookieDto>,
+        mut cookies: Vec<WebCookie>,
         user_agent: String,
-    ) -> BooruResult<AuthStateDto> {
+    ) -> BooruResult<AuthState> {
         if cookies.is_empty() || user_agent.trim().is_empty() {
-            return Err(BooruErrorDto::invalid_request(Some(source_id)));
+            return Err(BooruError::invalid_request(Some(source_id)));
         }
         let user_agent = user_agent.trim().to_owned();
         for cookie in &cookies {
@@ -92,7 +92,7 @@ impl SessionStore {
                     .as_deref()
                     .is_some_and(|value| parse_expiry(value).is_none())
             {
-                return Err(BooruErrorDto::invalid_request(Some(source_id)));
+                return Err(BooruError::invalid_request(Some(source_id)));
             }
         }
         cookies.retain(|cookie| {
@@ -103,7 +103,7 @@ impl SessionStore {
                 .is_none_or(|expires| expires > time::OffsetDateTime::now_utc())
         });
         if cookies.is_empty() {
-            return Err(BooruErrorDto::invalid_request(Some(source_id)));
+            return Err(BooruError::invalid_request(Some(source_id)));
         }
         let revision = self.next_revision(source_id)?;
         self.sessions
@@ -132,13 +132,13 @@ impl SessionStore {
         Ok(())
     }
 
-    pub fn mark_verified(&self, source_id: &str) -> BooruResult<AuthStateDto> {
+    pub fn mark_verified(&self, source_id: &str) -> BooruResult<AuthState> {
         let mut sessions = self
             .sessions
             .write()
             .map_err(|_| internal_error(source_id))?;
         let session = sessions.get_mut(source_id).ok_or_else(|| {
-            BooruErrorDto::new(
+            BooruError::new(
                 crate::booru::error::BooruErrorCode::AuthenticationRequired,
                 Some(source_id),
                 "booru.error.authenticationRequired",
@@ -148,13 +148,13 @@ impl SessionStore {
         state_from_session(source_id, session)
     }
 
-    pub fn mark_rejected(&self, source_id: &str) -> BooruResult<AuthStateDto> {
+    pub fn mark_rejected(&self, source_id: &str) -> BooruResult<AuthState> {
         let mut sessions = self
             .sessions
             .write()
             .map_err(|_| internal_error(source_id))?;
         let session = sessions.get_mut(source_id).ok_or_else(|| {
-            BooruErrorDto::new(
+            BooruError::new(
                 crate::booru::error::BooruErrorCode::AuthenticationRequired,
                 Some(source_id),
                 "booru.error.authenticationRequired",
@@ -164,7 +164,7 @@ impl SessionStore {
         state_from_session(source_id, session)
     }
 
-    pub fn state(&self, source_id: &str) -> BooruResult<AuthStateDto> {
+    pub fn state(&self, source_id: &str) -> BooruResult<AuthState> {
         let sessions = self
             .sessions
             .read()
@@ -172,7 +172,7 @@ impl SessionStore {
         if let Some(session) = sessions.get(source_id) {
             state_from_session(source_id, session)
         } else {
-            Ok(AuthStateDto {
+            Ok(AuthState {
                 source_id: source_id.to_owned(),
                 status: AuthStatus::NotConfigured,
                 username: None,
@@ -220,7 +220,7 @@ impl SessionStore {
                 let encoded =
                     base64::engine::general_purpose::STANDARD.encode(format!("{username}:{key}"));
                 let value = HeaderValue::from_str(&format!("Basic {encoded}"))
-                    .map_err(|_| BooruErrorDto::invalid_request(Some(source_id)))?;
+                    .map_err(|_| BooruError::invalid_request(Some(source_id)))?;
                 headers.insert(AUTHORIZATION, value);
             }
             (AuthMaterial::Credentials(credentials), AuthKind::UserIdApiKey)
@@ -247,7 +247,7 @@ impl SessionStore {
             (AuthMaterial::Credentials(credentials), AuthKind::ApiKey) if allow_api_credentials => {
                 let value =
                     HeaderValue::from_str(credentials.api_key.as_deref().unwrap_or_default())
-                        .map_err(|_| BooruErrorDto::invalid_request(Some(source_id)))?;
+                        .map_err(|_| BooruError::invalid_request(Some(source_id)))?;
                 headers.insert("x-api-key", value);
             }
             (
@@ -265,7 +265,7 @@ impl SessionStore {
                 headers.insert(
                     reqwest::header::USER_AGENT,
                     HeaderValue::from_str(user_agent)
-                        .map_err(|_| BooruErrorDto::invalid_request(Some(source_id)))?,
+                        .map_err(|_| BooruError::invalid_request(Some(source_id)))?,
                 );
             }
             _ => {}
@@ -284,7 +284,7 @@ impl SessionStore {
     }
 }
 
-fn state_from_session(source_id: &str, session: &Session) -> BooruResult<AuthStateDto> {
+fn state_from_session(source_id: &str, session: &Session) -> BooruResult<AuthState> {
     let username = match &session.material {
         AuthMaterial::Credentials(credentials) => credentials
             .username
@@ -292,7 +292,7 @@ fn state_from_session(source_id: &str, session: &Session) -> BooruResult<AuthSta
             .or_else(|| credentials.user_id.clone()),
         AuthMaterial::WebSession { .. } => None,
     };
-    Ok(AuthStateDto {
+    Ok(AuthState {
         source_id: source_id.to_owned(),
         status: session.status,
         username,
@@ -300,7 +300,7 @@ fn state_from_session(source_id: &str, session: &Session) -> BooruResult<AuthSta
     })
 }
 
-fn cookie_matches(cookie: &WebCookieDto, url: &Url) -> bool {
+fn cookie_matches(cookie: &WebCookie, url: &Url) -> bool {
     if cookie.secure && url.scheme() != "https" {
         return false;
     }
@@ -372,14 +372,14 @@ fn merge_cookie_header<'a>(
         headers.insert(
             COOKIE,
             HeaderValue::from_str(&values.join("; "))
-                .map_err(|_| BooruErrorDto::invalid_request(Some(source_id)))?,
+                .map_err(|_| BooruError::invalid_request(Some(source_id)))?,
         );
     }
     Ok(())
 }
 
-fn internal_error(source_id: &str) -> BooruErrorDto {
-    BooruErrorDto::new(
+fn internal_error(source_id: &str) -> BooruError {
+    BooruError::new(
         crate::booru::error::BooruErrorCode::Internal,
         Some(source_id),
         "booru.error.internal",
@@ -398,7 +398,7 @@ mod tests {
 
     #[test]
     fn cookie_scope_rejects_suffix_confusion_and_insecure_urls() {
-        let cookie = WebCookieDto {
+        let cookie = WebCookie {
             name: "session".to_owned(),
             value: "marker".to_owned(),
             domain: ".anime-pictures.net".to_owned(),
@@ -419,7 +419,7 @@ mod tests {
             &Url::parse("http://api.anime-pictures.net/pictures/a").unwrap()
         ));
         assert!(!cookie_matches(
-            &WebCookieDto {
+            &WebCookie {
                 domain: "api.anime-pictures.net".to_owned(),
                 path: "/pictures".to_owned(),
                 ..cookie.clone()
@@ -434,7 +434,7 @@ mod tests {
 
     #[test]
     fn expired_cookie_is_not_sent() {
-        let cookie = WebCookieDto {
+        let cookie = WebCookie {
             name: "session".to_owned(),
             value: "marker".to_owned(),
             domain: ".anime-pictures.net".to_owned(),
@@ -470,7 +470,7 @@ mod tests {
         store
             .set_web_session(
                 "anime_pictures",
-                vec![WebCookieDto {
+                vec![WebCookie {
                     name: "session".to_owned(),
                     value: "marker".to_owned(),
                     domain: ".anime-pictures.net".to_owned(),
@@ -500,7 +500,7 @@ mod tests {
     #[test]
     fn changing_credentials_increments_revision() {
         let store = SessionStore::default();
-        let credentials = SourceCredentialsDto {
+        let credentials = SourceCredentials {
             username: None,
             user_id: None,
             api_key: Some("marker".to_owned()),
@@ -523,7 +523,7 @@ mod tests {
             .set_credentials(
                 "danbooru",
                 AuthKind::LoginApiKey,
-                SourceCredentialsDto {
+                SourceCredentials {
                     username: Some("alice".to_owned()),
                     user_id: None,
                     api_key: Some("secret".to_owned()),
@@ -552,7 +552,7 @@ mod tests {
             .set_credentials(
                 "gelbooru",
                 AuthKind::UserIdApiKey,
-                SourceCredentialsDto {
+                SourceCredentials {
                     username: None,
                     user_id: Some("42".to_owned()),
                     api_key: Some("key".to_owned()),
@@ -580,7 +580,7 @@ mod tests {
             .set_credentials(
                 "wallhaven",
                 AuthKind::ApiKey,
-                SourceCredentialsDto {
+                SourceCredentials {
                     username: None,
                     user_id: None,
                     api_key: Some("wall-key".to_owned()),

@@ -1,4 +1,4 @@
-use crate::booru::error::{BooruErrorCode, BooruErrorDto, BooruResult};
+use crate::booru::error::{BooruError, BooruErrorCode, BooruResult};
 
 const MAX_AVIF_INPUT_BYTES: usize = 32 * 1024 * 1024;
 const MAX_PREVIEW_PIXELS: usize = 36_000_000;
@@ -27,8 +27,8 @@ fn validate_dimensions(source_id: &str, width: usize, height: usize) -> BooruRes
     Ok(())
 }
 
-fn transcode_error(source_id: &str) -> BooruErrorDto {
-    BooruErrorDto::new(
+fn transcode_error(source_id: &str) -> BooruError {
+    BooruError::new(
         BooruErrorCode::MediaValidationFailed,
         Some(source_id),
         "booru.error.imageDecodeFailed",

@@ -1,7 +1,7 @@
-use crate::api::booru_download::PreparedDownloadDto;
+use crate::api::booru_download::PreparedDownload;
 use crate::api::booru_models::{MediaKind, MediaType, MediaVariantKind};
 use crate::booru::adapter::PreparedMedia;
-use crate::booru::error::{BooruErrorDto, BooruResult};
+use crate::booru::error::{BooruError, BooruResult};
 use crate::booru::media::validation::validate_filename_component;
 
 pub fn prepared_download(
@@ -9,7 +9,7 @@ pub fn prepared_download(
     post_id: &str,
     variant: MediaVariantKind,
     prepared: PreparedMedia,
-) -> BooruResult<PreparedDownloadDto> {
+) -> BooruResult<PreparedDownload> {
     validate_filename_component(source_id, source_id)?;
     validate_filename_component(source_id, post_id)?;
     let extension = prepared
@@ -33,9 +33,9 @@ pub fn prepared_download(
         .map(MediaType::kind)
         .unwrap_or(MediaKind::Image)];
     if reqwest::Url::parse(&prepared.media.url).is_err() {
-        return Err(BooruErrorDto::invalid_response(source_id));
+        return Err(BooruError::invalid_response(source_id));
     }
-    Ok(PreparedDownloadDto {
+    Ok(PreparedDownload {
         source_id: source_id.to_owned(),
         post_id: post_id.to_owned(),
         variant,

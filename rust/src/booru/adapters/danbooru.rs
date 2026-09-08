@@ -1,11 +1,11 @@
-use crate::api::booru_auth::AuthStateDto;
-use crate::api::booru_models::{ContentRating, MediaVariantKind, TagCategory, TagSuggestionDto};
+use crate::api::booru_auth::AuthState;
+use crate::api::booru_models::{BooruTagSuggestion, ContentRating, MediaVariantKind, TagCategory};
 use crate::booru::adapter::{BooruAdapter, RequestContext};
 use crate::booru::adapters::common::{
     boolean, media, parse_json, signed32, string, tag_list, unsigned, unsigned32, username,
     validate_media_hosts,
 };
-use crate::booru::error::{BooruErrorCode, BooruErrorDto, BooruResult};
+use crate::booru::error::{BooruError, BooruErrorCode, BooruResult};
 use crate::booru::model::{Post, PostFlags, PostId, PostPage, SearchQuery, Tag};
 use crate::booru::network::{RequestSpec, ResponseKind};
 use crate::booru::source::SourceDefinition;
@@ -36,12 +36,12 @@ impl DanbooruAdapter {
         let json = parse_json(self.definition.id, bytes)?;
         let values = json
             .as_array()
-            .ok_or_else(|| BooruErrorDto::invalid_response(self.definition.id))?;
+            .ok_or_else(|| BooruError::invalid_response(self.definition.id))?;
         let mut items = Vec::with_capacity(values.len());
         let mut last_id = None;
         for value in values {
             let id = string(value, "id")
-                .ok_or_else(|| BooruErrorDto::invalid_response(self.definition.id))?;
+                .ok_or_else(|| BooruError::invalid_response(self.definition.id))?;
             last_id = Some(id);
             if media_is_hidden(value) {
                 continue;
@@ -56,8 +56,8 @@ impl DanbooruAdapter {
     }
 
     fn parse_post(&self, value: &Value) -> BooruResult<Post> {
-        let id = string(value, "id")
-            .ok_or_else(|| BooruErrorDto::invalid_response(self.definition.id))?;
+        let id =
+            string(value, "id").ok_or_else(|| BooruError::invalid_response(self.definition.id))?;
         let width = unsigned32(value, "image_width");
         let height = unsigned32(value, "image_height");
         let extension = string(value, "file_ext");
@@ -101,9 +101,9 @@ impl DanbooruAdapter {
         }
         if variants.is_empty() {
             if !media_is_hidden(value) {
-                return Err(BooruErrorDto::invalid_response(self.definition.id));
+                return Err(BooruError::invalid_response(self.definition.id));
             }
-            return Err(BooruErrorDto::new(
+            return Err(BooruError::new(
                 BooruErrorCode::PermissionDenied,
                 Some(self.definition.id),
                 "booru.error.permissionDenied",
@@ -162,7 +162,7 @@ impl BooruAdapter for DanbooruAdapter {
         let mut exhausted = false;
         for _ in 0..3 {
             let url = reqwest::Url::parse(&format!("{}/posts.json", self.definition.api_base))
-                .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+                .map_err(|_| BooruError::invalid_response(self.definition.id))?;
             let mut spec = RequestSpec::get(url, ResponseKind::Json);
             spec.query = vec![
                 ("only".to_owned(), POST_FIELDS.to_owned()),
@@ -214,7 +214,7 @@ impl BooruAdapter for DanbooruAdapter {
     async fn feed(
         &self,
         ctx: &RequestContext,
-        request: crate::api::booru_models::FeedRequestDto,
+        request: crate::api::booru_models::FeedRequest,
     ) -> BooruResult<PostPage> {
         use crate::api::booru_models::FeedKind;
         use crate::booru::discovery::{latest_query, scale, RankingCursor};
@@ -233,7 +233,7 @@ impl BooruAdapter for DanbooruAdapter {
             "{}/explore/posts/popular.json",
             self.definition.api_base
         ))
-        .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+        .map_err(|_| BooruError::invalid_response(self.definition.id))?;
         let mut spec = RequestSpec::get(url, ResponseKind::Json);
         spec.query = vec![
             ("only".to_owned(), POST_FIELDS.to_owned()),
@@ -261,7 +261,7 @@ impl BooruAdapter for DanbooruAdapter {
     async fn get_post(&self, ctx: &RequestContext, id: &PostId) -> BooruResult<Post> {
         validate_post_id(id)?;
         let url = reqwest::Url::parse(&format!("{}/posts/{}.json", self.definition.api_base, id.0))
-            .map_err(|_| BooruErrorDto::invalid_request(Some(self.definition.id)))?;
+            .map_err(|_| BooruError::invalid_request(Some(self.definition.id)))?;
         let mut spec = RequestSpec::get(url, ResponseKind::Json);
         spec.query.push(("only".to_owned(), POST_FIELDS.to_owned()));
         let response = ctx.runtime.execute(&self.definition, spec).await?;
@@ -273,9 +273,9 @@ impl BooruAdapter for DanbooruAdapter {
         &self,
         ctx: &RequestContext,
         text: &str,
-    ) -> BooruResult<Vec<TagSuggestionDto>> {
+    ) -> BooruResult<Vec<BooruTagSuggestion>> {
         let url = reqwest::Url::parse(&format!("{}/autocomplete.json", self.definition.api_base))
-            .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
         let mut spec = RequestSpec::get(url, ResponseKind::Json);
         spec.query = vec![
             ("search[query]".to_owned(), text.trim().to_owned()),
@@ -286,12 +286,12 @@ impl BooruAdapter for DanbooruAdapter {
         let json = parse_json(self.definition.id, &response.body)?;
         let values = json
             .as_array()
-            .ok_or_else(|| BooruErrorDto::invalid_response(self.definition.id))?;
+            .ok_or_else(|| BooruError::invalid_response(self.definition.id))?;
         Ok(values
             .iter()
             .filter_map(|item| {
                 let value = string(item, "value")?;
-                Some(TagSuggestionDto {
+                Some(BooruTagSuggestion {
                     label: string(item, "label").unwrap_or_else(|| value.clone()),
                     value,
                     category: TagCategory::General,
@@ -301,18 +301,18 @@ impl BooruAdapter for DanbooruAdapter {
             .collect())
     }
 
-    async fn verify_auth(&self, ctx: &RequestContext) -> BooruResult<AuthStateDto> {
+    async fn verify_auth(&self, ctx: &RequestContext) -> BooruResult<AuthState> {
         if ctx.runtime.auth_state(self.definition.id)?.status
             == crate::api::booru_auth::AuthStatus::NotConfigured
         {
-            return Err(BooruErrorDto::new(
+            return Err(BooruError::new(
                 BooruErrorCode::AuthenticationRequired,
                 Some(self.definition.id),
                 "booru.error.authenticationRequired",
             ));
         }
         let url = reqwest::Url::parse(&format!("{}/profile.json", self.definition.api_base))
-            .map_err(|_| BooruErrorDto::invalid_response(self.definition.id))?;
+            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
         match ctx
             .runtime
             .execute(&self.definition, RequestSpec::get(url, ResponseKind::Json))
@@ -367,7 +367,7 @@ fn validate_danbooru_cursor(cursor: &str) -> BooruResult<()> {
     if valid {
         Ok(())
     } else {
-        Err(BooruErrorDto::invalid_request(None))
+        Err(BooruError::invalid_request(None))
     }
 }
 
@@ -375,7 +375,7 @@ fn validate_post_id(id: &PostId) -> BooruResult<()> {
     if !id.0.is_empty() && id.0.bytes().all(|byte| byte.is_ascii_digit()) {
         Ok(())
     } else {
-        Err(BooruErrorDto::invalid_request(None))
+        Err(BooruError::invalid_request(None))
     }
 }
 
@@ -459,11 +459,11 @@ mod tests {
     }
 
     #[test]
-    fn preserves_source_username_in_dto() {
+    fn preserves_source_username_in_api_model() {
         let fixture = serde_json::json!({"id":1,"file_url":"https://cdn.aibooru.online/a.jpg","uploader":{"name":" Alice "},"tag_string_artist":"someone_else"});
         let post = adapter("aibooru").parse_post(&fixture).unwrap();
         assert_eq!(post.author.as_deref(), Some("Alice"));
-        assert_eq!(post.into_dto().author.as_deref(), Some("Alice"));
+        assert_eq!(post.into_api().author.as_deref(), Some("Alice"));
     }
     #[test]
     fn parses_tag_categories_and_ai_flag() {
