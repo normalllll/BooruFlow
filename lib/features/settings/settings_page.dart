@@ -95,6 +95,7 @@ class _SettingsPageState extends State<SettingsPage> {
       );
     }
     return AutoScaffold(
+      showAppBar: false,
       verticalOnlyTitleWidget: Text(t.settings.title),
       builder: (_, _) => GroupedSettingsList(
         groups: [

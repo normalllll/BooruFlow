@@ -1,4 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+SystemUiOverlayStyle appSystemUiOverlayStyle(Brightness brightness) {
+  final icons = brightness == Brightness.dark
+      ? Brightness.light
+      : Brightness.dark;
+  return SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: icons,
+    statusBarBrightness: brightness,
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarIconBrightness: icons,
+    systemNavigationBarDividerColor: Colors.transparent,
+  );
+}
 
 /// Reusable visual tokens shared by application and feature widgets.
 @immutable
@@ -143,6 +158,7 @@ ThemeData _buildTheme(
       ),
     ),
     appBarTheme: AppBarTheme(
+      systemOverlayStyle: appSystemUiOverlayStyle(brightness),
       backgroundColor: tokens.surface,
       foregroundColor: colorScheme.onSurface,
       elevation: 0,

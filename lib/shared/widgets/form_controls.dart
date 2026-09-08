@@ -34,6 +34,7 @@ class AppSelect<T> extends StatefulWidget {
     this.label,
     this.autofocus = false,
     this.compact = true,
+    this.borderColor,
     super.key,
   });
 
@@ -43,6 +44,7 @@ class AppSelect<T> extends StatefulWidget {
   final ValueChanged<T> onChanged;
   final bool autofocus;
   final bool compact;
+  final Color? borderColor;
 
   @override
   State<AppSelect<T>> createState() => _AppSelectState<T>();
@@ -163,8 +165,10 @@ class _AppSelectState<T> extends State<AppSelect<T>> {
             autofocus: widget.autofocus,
             child: AppRoundedSurface(
               color: _open ? tokens.surfaceRaised : tokens.surfaceMuted,
-              borderColor: _open ? colors.primary : colors.outline,
-              borderWidth: _open ? 1.5 : 1,
+              borderColor:
+                  widget.borderColor ??
+                  (_open ? colors.primary : colors.outline),
+              borderWidth: widget.borderColor == null && _open ? 1.5 : 1,
               child: InkWell(
                 borderRadius: BorderRadius.circular(8),
                 onTap: controller.isOpen ? controller.close : controller.open,

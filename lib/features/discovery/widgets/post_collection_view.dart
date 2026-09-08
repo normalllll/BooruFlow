@@ -18,10 +18,12 @@ class PostCollectionView extends StatefulWidget {
     required this.controller,
     this.columns,
     this.onResetFilters,
+    this.headerSliver,
   });
   final PostCollectionController controller;
   final int? columns;
   final VoidCallback? onResetFilters;
+  final Widget? headerSliver;
   @override
   State<PostCollectionView> createState() => _PostCollectionViewState();
 }
@@ -99,6 +101,7 @@ class _PostCollectionViewState extends State<PostCollectionView> {
             controller: _scroll,
             physics: physics,
             slivers: [
+              if (widget.headerSliver != null) widget.headerSliver!,
               header,
               if (skeleton) PostWaterfallSkeleton(configuredColumns: columns),
               if (state.items.isNotEmpty)

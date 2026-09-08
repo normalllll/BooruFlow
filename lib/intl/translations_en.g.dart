@@ -537,6 +537,9 @@ class Translations$discovery$en {
   /// en: 'Search results'
   String get searchResults => 'Search results';
 
+  /// en: 'Search ${count} terms'
+  String searchTermsTitle({required Object count}) => 'Search ${count} terms';
+
   /// en: 'All available'
   String get allAvailable => 'All available';
 
@@ -1613,6 +1616,7 @@ extension on Translations {
       'settings.maxConcurrentDownloadsDialog.title' => 'Max Concurrent Download Tasks',
       'settings.maxSegmentsPerTaskDialog.title' => 'Max Segments per Download Task',
       'discovery.searchResults' => 'Search results',
+      'discovery.searchTermsTitle' => ({required Object count}) => 'Search ${count} terms',
       'discovery.allAvailable' => 'All available',
       'discovery.defaultRatingsHint' =>
         'Ratings apply across all sources. With none selected, show everything the current source and account can access.',

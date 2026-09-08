@@ -21,15 +21,11 @@ class DiscoveryToolbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final height = appFieldHeight(context);
-    final width = MediaQuery.sizeOf(context).width;
     final actionSize = height;
-    final picker = SizedBox(
-      width: width < 640 ? 160 : 190,
-      child: SourcePicker(
-        sourceId: sourceId,
-        onChanged: onSource,
-        height: height,
-      ),
+    final picker = SourcePicker(
+      sourceId: sourceId,
+      onChanged: onSource,
+      height: height,
     );
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),

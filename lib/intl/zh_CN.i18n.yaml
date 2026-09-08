@@ -287,6 +287,7 @@ settings:
 
 discovery:
   searchResults: "搜索结果"
+  searchTermsTitle: "搜索${count}个词条"
   allAvailable: "全部可用内容"
   defaultRatingsHint: "分级偏好适用于所有图源。未选择分级时，显示当前图源和账号能访问的所有内容。"
   resetFilters: "恢复默认"

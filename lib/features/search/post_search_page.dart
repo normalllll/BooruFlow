@@ -358,7 +358,9 @@ class _PostSearchPageState extends State<PostSearchPage> {
       context,
       source: _source,
       locale: _locale,
-      value: QueryTerm.parse(parseQueryInput(_input.text).lastOrNull ?? '').value,
+      value: QueryTerm.parse(
+        parseQueryInput(_input.text).lastOrNull ?? '',
+      ).value,
     );
     if (!mounted || alias == null) return;
     _add(
@@ -441,7 +443,10 @@ class _PostSearchPageState extends State<PostSearchPage> {
                     ),
                   if (!_suggestions.any(
                     (tag) =>
-                        tag.value == QueryTerm.parse(parseQueryInput(_input.text).lastOrNull ?? '').value,
+                        tag.value ==
+                        QueryTerm.parse(
+                          parseQueryInput(_input.text).lastOrNull ?? '',
+                        ).value,
                   ))
                     Align(
                       alignment: AlignmentDirectional.centerStart,
@@ -548,128 +553,147 @@ class _PostSearchPageState extends State<PostSearchPage> {
 
   @override
   Widget build(BuildContext context) => Material(
-    child: SafeArea(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextFieldTapRegion(
-                child: DiscoveryToolbar(
-                  sourceId: _source,
-                  onSource: _switchSource,
-                  query: _queryField(),
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        final showBack =
+            widget.isQueryEditor && !shouldUseDesktopShell(context);
+        return CustomScrollView(
+          key: const ValueKey('search-tags-scroll'),
+          physics: const ClampingScrollPhysics(),
+          slivers: [
+            SliverAppBar(
+              floating: true,
+              snap: false,
+              automaticallyImplyLeading: false,
+              toolbarHeight: appFieldHeight(context) + 20 + (showBack ? 48 : 0),
+              flexibleSpace: Padding(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.paddingOf(context).top,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFieldTapRegion(
+                      child: DiscoveryToolbar(
+                        sourceId: _source,
+                        onSource: _switchSource,
+                        query: _queryField(),
+                      ),
+                    ),
+                    if (showBack)
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: BackButton(),
+                      ),
+                  ],
                 ),
               ),
-              if (widget.isQueryEditor && !shouldUseDesktopShell(context))
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: BackButton(),
-                ),
-              if (widget.invalidQuery || _invalidSource)
-                Text(t.booruError.invalidRequest),
-              Expanded(
-                child: SingleChildScrollView(
-                  key: const ValueKey('search-tags-scroll'),
-                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (!_ready && _error != null)
-                        Text(describeBooruError(_error)),
-                      if (_selected.isNotEmpty) ...[
-                        SelectedTags(
-                          tags: _selected,
-                          displayName: _displayName,
-                          onRemove: (tag) =>
-                              setState(() => _selected.remove(tag)),
-                          onMore: _manageSelected,
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (widget.invalidQuery || _invalidSource)
+                      Text(t.booruError.invalidRequest),
+                    if (!_ready && _error != null)
+                      Text(describeBooruError(_error)),
+                    if (_selected.isNotEmpty) ...[
+                      SelectedTags(
+                        tags: _selected,
+                        displayName: _displayName,
+                        onRemove: (tag) =>
+                            setState(() => _selected.remove(tag)),
+                        onMore: _manageSelected,
+                      ),
+                      if (_selected.any((tag) => !_verified.contains(tag)))
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Text(
+                            t.discovery.unverifiedTag,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
                         ),
-                        if (_selected.any((tag) => !_verified.contains(tag)))
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
-                            child: Text(
-                              t.discovery.unverifiedTag,
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ),
-                        const SizedBox(height: 8),
-                      ],
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 4,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          Text(
-                            t.discovery.commonTags,
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
+                      const SizedBox(height: 8),
+                    ],
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          t.discovery.commonTags,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        AppButton(
+                          label: t.discovery.manageTags,
+                          icon: Icons.sell_outlined,
+                          compact: true,
+                          kind: AppButtonKind.ghost,
+                          onPressed: _manageAliases,
+                        ),
+                        if (_common.isNotEmpty)
                           AppButton(
-                            label: t.discovery.manageTags,
-                            icon: Icons.sell_outlined,
+                            label: t.discovery.moreTags,
                             compact: true,
                             kind: AppButtonKind.ghost,
-                            onPressed: _manageAliases,
+                            onPressed: _moreCommon,
                           ),
-                          if (_common.isNotEmpty)
-                            AppButton(
-                              label: t.discovery.moreTags,
-                              compact: true,
-                              kind: AppButtonKind.ghost,
-                              onPressed: _moreCommon,
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    if (_common.isNotEmpty) ...[
+                      Wrap(
+                        key: const ValueKey('common-tags'),
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final tag in _common.take(40))
+                            ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth: math.min(
+                                  240,
+                                  constraints.maxWidth - 24,
+                                ),
+                              ),
+                              child: AppButton(
+                                compact: true,
+                                label: TagLabel.text(
+                                  tag.value,
+                                  _displayName(tag.value, tag.displayName),
+                                ),
+                                labelWidget: TagLabel(
+                                  value: tag.value,
+                                  translation: _displayName(
+                                    tag.value,
+                                    tag.displayName,
+                                  ),
+                                ),
+                                onPressed: () => _add(tag),
+                              ),
                             ),
                         ],
                       ),
-                      const SizedBox(height: 8),
-                      if (_common.isNotEmpty) ...[
-                        Wrap(
-                          key: const ValueKey('common-tags'),
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            for (final tag in _common.take(40))
-                              ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxWidth: math.min(
-                                    240,
-                                    constraints.maxWidth - 24,
-                                  ),
-                                ),
-                                child: AppButton(
-                                  compact: true,
-                                  label: TagLabel.text(
-                                    tag.value,
-                                    _displayName(tag.value, tag.displayName),
-                                  ),
-                                  labelWidget: TagLabel(
-                                    value: tag.value,
-                                    translation: _displayName(tag.value, tag.displayName),
-                                  ),
-                                  onPressed: () => _add(tag),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ],
-                      if (_commonBusy && _common.isEmpty)
-                        const LinearProgressIndicator(),
-                      if (_commonError != null)
-                        Align(
-                          alignment: AlignmentDirectional.centerStart,
-                          child: AppButton(
-                            label: t.discovery.retryTags,
-                            kind: AppButtonKind.ghost,
-                            onPressed: () => _loadCommon(refresh: true),
-                          ),
-                        ),
                     ],
-                  ),
+                    if (_commonBusy && _common.isEmpty)
+                      const LinearProgressIndicator(),
+                    if (_commonError != null)
+                      Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: AppButton(
+                          label: t.discovery.retryTags,
+                          kind: AppButtonKind.ghost,
+                          onPressed: () => _loadCommon(refresh: true),
+                        ),
+                      ),
+                  ],
                 ),
               ),
-            ],
-          );
-        },
-      ),
+            ),
+          ],
+        );
+      },
     ),
   );
 }

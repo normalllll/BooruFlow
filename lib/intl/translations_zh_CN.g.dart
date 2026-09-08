@@ -436,6 +436,8 @@ class Translations$discovery$zh_CN extends Translations$discovery$en {
   @override
   String get searchResults => '搜索结果';
   @override
+  String searchTermsTitle({required Object count}) => '搜索${count}个词条';
+  @override
   String get allAvailable => '全部可用内容';
   @override
   String get defaultRatingsHint => '分级偏好适用于所有图源。未选择分级时，显示当前图源和账号能访问的所有内容。';
@@ -1282,6 +1284,7 @@ extension on TranslationsZhCn {
       'settings.maxConcurrentDownloadsDialog.title' => '最大同时下载任务数',
       'settings.maxSegmentsPerTaskDialog.title' => '每个下载任务的最大分段数',
       'discovery.searchResults' => '搜索结果',
+      'discovery.searchTermsTitle' => ({required Object count}) => '搜索${count}个词条',
       'discovery.allAvailable' => '全部可用内容',
       'discovery.defaultRatingsHint' => '分级偏好适用于所有图源。未选择分级时，显示当前图源和账号能访问的所有内容。',
       'discovery.resetFilters' => '恢复默认',

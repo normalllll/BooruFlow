@@ -285,120 +285,147 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
   @override
   Widget build(BuildContext context) {
     final caps = source.capabilities.discovery;
-    return SafeArea(
-      child: Column(
-        children: [
-          if (widget.tags == null)
-            HomeHeader(
-              sourceId: sourceId,
-              kind: feed.kind,
-              modes: [
-                FeedKind.latest,
-                if (popularAvailable) FeedKind.recentPopular,
-                if (popularAvailable && caps.historicalRanges.isNotEmpty)
-                  FeedKind.historicalPopular,
-                ...caps.additionalFeeds,
-              ],
-              modeLabel: feedLabel,
-              onSource: _selectSource,
-              onMode: _selectMode,
-              onRetryProbe: _probeFailures.containsKey(_probeKey)
-                  ? () => _probe(refresh: true)
-                  : null,
-              details: feed.range == null
-                  ? null
-                  : Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        SizedBox(
-                          width: 180,
-                          child: AppSelect<PopularRange>(
-                            value: feed.range,
-                            items: [
-                              for (final range
-                                  in feed.kind == FeedKind.historicalPopular
-                                      ? caps.historicalRanges
-                                      : caps.popularRanges)
-                                AppSelectItem(
-                                  value: range,
-                                  label: feed.kind == FeedKind.historicalPopular
-                                      ? historicalRangeLabel(range)
-                                      : rangeLabel(range, caps.timeBasis),
-                                ),
+    final showBack = widget.tags != null && !shouldUseDesktopShell(context);
+    return PostCollectionView(
+      key: ValueKey(_controller),
+      controller: _controller,
+      columns: SettingsService.waterfallColumns,
+      onResetFilters: _resetFilters,
+      headerSliver: SliverAppBar(
+        floating: true,
+        snap: false,
+        automaticallyImplyLeading: false,
+        toolbarHeight:
+            appFieldHeight(context) + 20 + (widget.tags != null ? 48 : 0),
+        flexibleSpace: Padding(
+          padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.tags == null)
+                HomeHeader(
+                  sourceId: sourceId,
+                  kind: feed.kind,
+                  modes: [
+                    FeedKind.latest,
+                    if (popularAvailable) FeedKind.recentPopular,
+                    if (popularAvailable && caps.historicalRanges.isNotEmpty)
+                      FeedKind.historicalPopular,
+                    ...caps.additionalFeeds,
+                  ],
+                  modeLabel: feedLabel,
+                  onSource: _selectSource,
+                  onMode: _selectMode,
+                  onRetryProbe: _probeFailures.containsKey(_probeKey)
+                      ? () => _probe(refresh: true)
+                      : null,
+                  details: feed.range == null
+                      ? null
+                      : Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            SizedBox(
+                              width: 180,
+                              child: AppSelect<PopularRange>(
+                                value: feed.range,
+                                items: [
+                                  for (final range
+                                      in feed.kind == FeedKind.historicalPopular
+                                          ? caps.historicalRanges
+                                          : caps.popularRanges)
+                                    AppSelectItem(
+                                      value: range,
+                                      label:
+                                          feed.kind ==
+                                              FeedKind.historicalPopular
+                                          ? historicalRangeLabel(range)
+                                          : rangeLabel(range, caps.timeBasis),
+                                    ),
+                                ],
+                                onChanged: (range) {
+                                  _feeds[sourceId] = FeedCollectionRequest(
+                                    kind: feed.kind,
+                                    range: range,
+                                    date: feed.date,
+                                  );
+                                  _changed();
+                                },
+                              ),
+                            ),
+                            if (feed.kind == FeedKind.historicalPopular) ...[
+                              const SizedBox(width: 8),
+                              AppButton(
+                                label: feed.date!,
+                                compact: true,
+                                onPressed: _chooseDate,
+                              ),
                             ],
-                            onChanged: (range) {
-                              _feeds[sourceId] = FeedCollectionRequest(
-                                kind: feed.kind,
-                                range: range,
-                                date: feed.date,
-                              );
-                              _changed();
-                            },
-                          ),
+                          ],
                         ),
-                        if (feed.kind == FeedKind.historicalPopular) ...[
-                          const SizedBox(width: 8),
-                          AppButton(
-                            label: feed.date!,
-                            compact: true,
-                            onPressed: _chooseDate,
+                )
+              else ...[
+                SizedBox(
+                  height: 48,
+                  child: Row(
+                    children: [
+                      if (showBack)
+                        const BackButton()
+                      else
+                        const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          t.discovery.searchTermsTitle(
+                            count: widget.tags!.length,
                           ),
-                        ],
-                      ],
-                    ),
-            )
-          else ...[
-            DiscoveryToolbar(
-              sourceId: sourceId,
-              onSource: _selectSource,
-              query: AppTextField(
-                key: const ValueKey('search-result-query'),
-                height: appFieldHeight(context),
-                controller: _query,
-                readOnly: true,
-                hintText: t.discovery.queryHint,
-                onTap: _edit,
-                trailing: AppIconButton(
-                  constraints: const BoxConstraints.tightFor(
-                    width: 32,
-                    height: 32,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ),
+                    ],
                   ),
-                  padding: const EdgeInsets.all(6),
-                  tooltip: t.postSearch.title,
-                  icon: const Icon(Icons.search),
-                  onPressed: _edit,
                 ),
-              ),
-              action: AppIconButton(
-                tooltip: t.discovery.filters,
-                constraints: const BoxConstraints.tightFor(
-                  width: 32,
-                  height: 32,
+                DiscoveryToolbar(
+                  sourceId: sourceId,
+                  onSource: _selectSource,
+                  query: AppTextField(
+                    key: const ValueKey('search-result-query'),
+                    height: appFieldHeight(context),
+                    controller: _query,
+                    readOnly: true,
+                    hintText: t.discovery.queryHint,
+                    onTap: _edit,
+                    trailing: AppIconButton(
+                      constraints: const BoxConstraints.tightFor(
+                        width: 32,
+                        height: 32,
+                      ),
+                      padding: const EdgeInsets.all(6),
+                      tooltip: t.postSearch.title,
+                      icon: const Icon(Icons.search),
+                      onPressed: _edit,
+                    ),
+                  ),
+                  action: AppIconButton(
+                    tooltip: t.discovery.filters,
+                    constraints: const BoxConstraints.tightFor(
+                      width: 32,
+                      height: 32,
+                    ),
+                    padding: const EdgeInsets.all(6),
+                    selectedBackgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: .10),
+                    color: _controller.key.ratings.isNotEmpty
+                        ? Theme.of(context).colorScheme.primary
+                        : null,
+                    selected: _controller.key.ratings.isNotEmpty,
+                    icon: const Icon(Icons.tune),
+                    onPressed: _filters,
+                  ),
                 ),
-                padding: const EdgeInsets.all(6),
-                selectedBackgroundColor: Theme.of(
-                  context,
-                ).colorScheme.primary.withValues(alpha: .10),
-                color: _controller.key.ratings.isNotEmpty
-                    ? Theme.of(context).colorScheme.primary
-                    : null,
-                selected: _controller.key.ratings.isNotEmpty,
-                icon: const Icon(Icons.tune),
-                onPressed: _filters,
-              ),
-            ),
-            if (!shouldUseDesktopShell(context))
-              const Align(alignment: Alignment.centerLeft, child: BackButton()),
-          ],
-          Expanded(
-            child: PostCollectionView(
-              key: ValueKey(_controller),
-              controller: _controller,
-              columns: SettingsService.waterfallColumns,
-              onResetFilters: _resetFilters,
-            ),
+              ],
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

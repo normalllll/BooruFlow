@@ -19,9 +19,9 @@ class GroupedSettingsList extends StatelessWidget {
         return ListView.separated(
           padding: EdgeInsets.fromLTRB(
             contentInset + horizontalPadding,
-            topPadding,
+            topPadding + MediaQuery.paddingOf(context).top,
             contentInset + horizontalPadding,
-            28,
+            28 + MediaQuery.paddingOf(context).bottom,
           ),
           itemCount: groups.length,
           separatorBuilder: (_, _) => const SizedBox(height: 12),

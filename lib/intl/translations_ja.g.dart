@@ -440,6 +440,8 @@ class _Translations$discovery$ja extends Translations$discovery$en {
   @override
   String get searchResults => '検索結果';
   @override
+  String searchTermsTitle({required Object count}) => '${count}個のキーワードを検索';
+  @override
   String get allAvailable => '表示可能なすべてのコンテンツ';
   @override
   String get defaultRatingsHint => 'レーティング設定はすべての画像ソースに共通です。未選択時は、現在の画像ソースとアカウントで閲覧できるすべてのコンテンツを表示します。';
@@ -1283,6 +1285,7 @@ extension on TranslationsJa {
       'settings.maxConcurrentDownloadsDialog.title' => '最大同時ダウンロードタスク数',
       'settings.maxSegmentsPerTaskDialog.title' => '各ダウンロードタスクの最大セグメント数',
       'discovery.searchResults' => '検索結果',
+      'discovery.searchTermsTitle' => ({required Object count}) => '${count}個のキーワードを検索',
       'discovery.allAvailable' => '表示可能なすべてのコンテンツ',
       'discovery.defaultRatingsHint' => 'レーティング設定はすべての画像ソースに共通です。未選択時は、現在の画像ソースとアカウントで閲覧できるすべてのコンテンツを表示します。',
       'discovery.resetFilters' => '初期設定に戻す',

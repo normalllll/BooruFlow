@@ -1,3 +1,4 @@
+import 'package:booruflow/shared/widgets/immersive_system_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -60,10 +61,12 @@ class BooruFlowApp extends ConsumerWidget {
             },
             debugShowCheckedModeBanner: false,
             builder: (context, child) {
-              return DesktopWindowFrame(
-                child: GestureDetector(
-                  onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-                  child: child ?? const SizedBox.shrink(),
+              return ImmersiveSystemUi(
+                child: DesktopWindowFrame(
+                  child: GestureDetector(
+                    onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                    child: child ?? const SizedBox.shrink(),
+                  ),
                 ),
               );
             },

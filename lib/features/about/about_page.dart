@@ -60,6 +60,7 @@ class _AboutPageState extends State<AboutPage> {
   @override
   Widget build(BuildContext context) {
     return AutoScaffold(
+      showAppBar: false,
       verticalOnlyTitleWidget: Text(t.about.title),
       builder: (context, horizontal) {
         return GroupedSettingsList(

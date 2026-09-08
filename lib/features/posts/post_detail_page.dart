@@ -87,8 +87,8 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
           );
 
     return AutoScaffold(
+      showAppBar: false,
       titleWidget: Text(t.postDetail.titleWithId(id: selectedPost.id)),
-      topSafeArea: false,
       builder: (context, horizontal) {
         return LayoutBuilder(
           builder: (context, constraints) {
@@ -197,10 +197,15 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
     );
 
     return CustomScrollView(
-      physics: const BouncingScrollPhysics(
+      physics: const ClampingScrollPhysics(
         parent: AlwaysScrollableScrollPhysics(),
       ),
       slivers: [
+        SliverAppBar(
+          title: Text(t.postDetail.titleWithId(id: selectedPost.id)),
+          floating: true,
+          snap: false,
+        ),
         SliverToBoxAdapter(
           child: SizedBox(
             height: imageHeight,

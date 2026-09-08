@@ -287,6 +287,7 @@ settings:
 
 discovery:
   searchResults: "検索結果"
+  searchTermsTitle: "${count}個のキーワードを検索"
   allAvailable: "表示可能なすべてのコンテンツ"
   defaultRatingsHint: "レーティング設定はすべての画像ソースに共通です。未選択時は、現在の画像ソースとアカウントで閲覧できるすべてのコンテンツを表示します。"
   resetFilters: "初期設定に戻す"

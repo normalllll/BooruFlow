@@ -18,7 +18,7 @@ class AutoScaffold extends StatelessWidget {
 
   final Widget? floatingActionButton;
 
-  final bool? topSafeArea;
+  final bool showAppBar;
 
   const AutoScaffold({
     super.key,
@@ -27,7 +27,7 @@ class AutoScaffold extends StatelessWidget {
     this.titleWidget,
     this.builder,
     this.floatingActionButton,
-    this.topSafeArea,
+    this.showAppBar = true,
   });
 
   @override
@@ -43,12 +43,13 @@ class AutoScaffold extends StatelessWidget {
         titleWidget ??
         (isVertical ? verticalOnlyTitleWidget : horizontalOnlyTitleWidget);
 
+    final appBar = title != null && !useDesktopShell && showAppBar
+        ? AppBar(title: title, scrolledUnderElevation: 0)
+        : null;
     return Scaffold(
-      appBar: title != null && !useDesktopShell
-          ? AppBar(title: title, scrolledUnderElevation: 0)
-          : null,
+      appBar: appBar,
       resizeToAvoidBottomInset: true,
-      body: SafeArea(top: topSafeArea ?? true, child: child),
+      body: child,
       floatingActionButton: floatingActionButton,
     );
   }
