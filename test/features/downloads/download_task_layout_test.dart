@@ -1,8 +1,9 @@
 import 'package:booruflow/core/downloads/download_models.dart';
-import 'package:booruflow/features/downloads/booru_download_item.dart';
+import 'package:booruflow/features/downloads/models/booru_download_item.dart';
 import 'package:booruflow/features/downloads/widgets/download_task_widgets.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 DownloadTaskSnapshot snapshot(
@@ -53,31 +54,35 @@ void main() {
             var current = snapshot(states.first.$1, states.first.$2, 0);
             late StateSetter update;
             await tester.pumpWidget(
-              MaterialApp(
-                home: MediaQuery(
-                  data: MediaQueryData(textScaler: TextScaler.linear(scale)),
-                  child: Scaffold(
-                    body: Align(
-                      alignment: Alignment.topLeft,
-                      child: SizedBox(
-                        width: width,
-                        child: StatefulBuilder(
-                          builder: (context, setState) {
-                            update = setState;
-                            return Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                DownloadSummaryView(
-                                  summary: DownloadSummary.fromTasks([current]),
-                                  compact: true,
-                                ),
-                                DownloadTaskTile(
-                                  task: BooruDownloadItem(snapshot: current),
-                                  compact: true,
-                                ),
-                              ],
-                            );
-                          },
+              ProviderScope(
+                child: MaterialApp(
+                  home: MediaQuery(
+                    data: MediaQueryData(textScaler: TextScaler.linear(scale)),
+                    child: Scaffold(
+                      body: Align(
+                        alignment: Alignment.topLeft,
+                        child: SizedBox(
+                          width: width,
+                          child: StatefulBuilder(
+                            builder: (context, setState) {
+                              update = setState;
+                              return Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  DownloadSummaryView(
+                                    summary: DownloadSummary.fromTasks([
+                                      current,
+                                    ]),
+                                    compact: true,
+                                  ),
+                                  DownloadTaskTile(
+                                    task: BooruDownloadItem(snapshot: current),
+                                    compact: true,
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),

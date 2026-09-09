@@ -76,6 +76,7 @@ imageZoom:
   title: 缩放图片
 
 downloads:
+  viewLog: 查看日志
   title: 下载项
   tasksTitle: 下载任务
   noTasks: 暂无下载任务
@@ -377,3 +378,9 @@ webChallenge:
   cleanupFailed: 网页数据尚未清理完成，请稍后再次清空。
   operationSuperseded: 验证已被清空操作或网络设置变更取消。
   noCookies: 网页尚未提供可用的验证数据，请完成人机验证后再返回。
+
+nativeWindow:
+  minimize: 最小化
+  maximize: 最大化
+  restore: 还原
+  close: 关闭

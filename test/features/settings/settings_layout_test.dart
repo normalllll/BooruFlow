@@ -1,10 +1,11 @@
-import 'package:booruflow/core/settings_service.dart';
-import 'package:booruflow/features/booru/booru_service.dart';
+import 'package:booruflow/core/settings/settings_service.dart';
+import 'package:booruflow/features/booru/services/booru_service.dart';
 import 'package:booruflow/features/settings/settings_page.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../discovery/search_interaction_test.dart' show testSource;
@@ -34,7 +35,9 @@ void main() {
   testWidgets('default source is explicit and browsing does not overwrite it', (
     tester,
   ) async {
-    await tester.pumpWidget(const MaterialApp(home: SettingsPage()));
+    await tester.pumpWidget(
+      ProviderScope(child: const MaterialApp(home: SettingsPage())),
+    );
     await tester.pumpAndSettle();
     expect(find.text(t.settings.source.defaultSource), findsOneWidget);
     await tester.tap(find.text('yande'));
@@ -42,7 +45,7 @@ void main() {
     await tester.tap(find.text('danbooru'));
     await tester.pumpAndSettle();
     expect(SettingsService.defaultSourceId, 'danbooru');
-    expect(BooruService.instance.selectedSource.value, 'yande');
+    expect(BooruService.instance.selectedSourceId, 'yande');
     BooruService.instance.selectSource('wallhaven');
     expect(SettingsService.defaultSourceId, 'danbooru');
     await SettingsService.initialize(store: store);
@@ -60,13 +63,15 @@ void main() {
           addTearDown(tester.view.resetPhysicalSize);
           addTearDown(tester.view.resetDevicePixelRatio);
           await tester.pumpWidget(
-            MaterialApp(
-              home: MediaQuery(
-                data: MediaQueryData(
-                  size: Size(width, 900),
-                  textScaler: TextScaler.linear(scale),
+            ProviderScope(
+              child: MaterialApp(
+                home: MediaQuery(
+                  data: MediaQueryData(
+                    size: Size(width, 900),
+                    textScaler: TextScaler.linear(scale),
+                  ),
+                  child: const SettingsPage(section: SettingsSection.sources),
                 ),
-                child: const SettingsPage(section: SettingsSection.sources),
               ),
             ),
           );
@@ -113,7 +118,7 @@ void main() {
             isTrue,
           );
           expect(SettingsService.ratings, [ContentRating.explicit]);
-          expect(BooruService.instance.selectedSource.value, 'yande');
+          expect(BooruService.instance.selectedSourceId, 'yande');
           expect(SettingsService.defaultSourceId, 'yande');
           expect(find.byType(Card), findsNWidgets(2));
           expect(tester.takeException(), isNull);
@@ -126,7 +131,11 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      const MaterialApp(home: SettingsPage(section: SettingsSection.general)),
+      ProviderScope(
+        child: const MaterialApp(
+          home: SettingsPage(section: SettingsSection.general),
+        ),
+      ),
     );
     await tester.pumpAndSettle();
     expect(find.text(t.settings.theme), findsOneWidget);

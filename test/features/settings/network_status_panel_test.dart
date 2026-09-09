@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:booruflow/features/settings/network_settings_state.dart';
-import 'package:booruflow/features/settings/network_status_panel.dart';
+import 'package:booruflow/features/settings/network/network_logic.dart';
+import 'package:booruflow/features/settings/network/widgets/network_status_panel.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/material.dart';

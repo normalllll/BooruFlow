@@ -1,7 +1,7 @@
-import 'package:booruflow/core/settings_service.dart';
-import 'package:booruflow/features/booru/booru_service.dart';
+import 'package:booruflow/core/settings/settings_service.dart';
+import 'package:booruflow/features/booru/services/booru_service.dart';
+import 'package:booruflow/features/discovery/collection_logic.dart';
 import 'package:booruflow/features/discovery/discovery_page.dart';
-import 'package:booruflow/features/discovery/logic.dart';
 import 'package:booruflow/features/discovery/widgets/home_header.dart';
 import 'package:booruflow/features/discovery/widgets/post_collection_view.dart';
 import 'package:booruflow/features/discovery/widgets/source_picker.dart';
@@ -12,6 +12,7 @@ import 'package:booruflow/shared/widgets/interaction_controls.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'search_interaction_test.dart' show testSource;
@@ -52,13 +53,15 @@ void main() {
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.view.resetDevicePixelRatio);
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: DiscoveryPage(
-                tags: const ['hatsune_miku'],
-                sourceId: 'yande',
-                loader: (_, _) async =>
-                    const PostPage(items: [], exhausted: true),
+          ProviderScope(
+            child: MaterialApp(
+              home: Scaffold(
+                body: DiscoveryPage(
+                  tags: const ['hatsune_miku'],
+                  sourceId: 'yande',
+                  loader: (_, _) async =>
+                      const PostPage(items: [], exhausted: true),
+                ),
               ),
             ),
           ),
@@ -101,13 +104,15 @@ void main() {
     (tester) async {
       final calls = <CollectionKey>[];
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: HomePage(
-              loader: (key, _) async {
-                calls.add(key);
-                return const PostPage(items: [], exhausted: true);
-              },
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: HomePage(
+                loader: (key, _) async {
+                  calls.add(key);
+                  return const PostPage(items: [], exhausted: true);
+                },
+              ),
             ),
           ),
         ),
@@ -142,13 +147,15 @@ void main() {
     SettingsService.ratings = [ContentRating.general];
     final calls = <List<ContentRating>>[];
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: HomePage(
-            loader: (key, _) async {
-              calls.add(key.ratings);
-              return const PostPage(items: [], exhausted: true);
-            },
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: HomePage(
+              loader: (key, _) async {
+                calls.add(key.ratings);
+                return const PostPage(items: [], exhausted: true);
+              },
+            ),
           ),
         ),
       ),
@@ -167,13 +174,15 @@ void main() {
     (tester) async {
       SettingsService.ratings = [ContentRating.explicit];
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: DiscoveryPage(
-              tags: const ['sky'],
-              sourceId: 'yande',
-              loader: (_, _) async =>
-                  const PostPage(items: [], exhausted: true),
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: DiscoveryPage(
+                tags: const ['sky'],
+                sourceId: 'yande',
+                loader: (_, _) async =>
+                    const PostPage(items: [], exhausted: true),
+              ),
             ),
           ),
         ),
@@ -216,52 +225,60 @@ void main() {
           FeedKind.historicalPopular,
         ]) {
           await tester.pumpWidget(
-            MaterialApp(
-              home: MediaQuery(
-                data: MediaQueryData(
-                  size: Size(width, 800),
-                  textScaler: TextScaler.linear(scale),
-                ),
-                child: Scaffold(
-                  body: Column(
-                    children: [
-                      HomeHeader(
-                        sourceId: 'yande',
-                        kind: kind,
-                        modes: const [
-                          FeedKind.latest,
-                          FeedKind.recentPopular,
-                          FeedKind.historicalPopular,
-                        ],
-                        modeLabel: (mode) => mode.name,
-                        onSource: (_) {},
-                        onMode: (_) {},
-                        details: kind == FeedKind.latest
-                            ? null
-                            : Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  SizedBox(
-                                    width: 180,
-                                    child: AppSelect<int>(
-                                      value: 1,
-                                      items: const [
-                                        AppSelectItem(value: 1, label: 'Month'),
-                                      ],
-                                      onChanged: (_) {},
+            ProviderScope(
+              child: MaterialApp(
+                home: MediaQuery(
+                  data: MediaQueryData(
+                    size: Size(width, 800),
+                    textScaler: TextScaler.linear(scale),
+                  ),
+                  child: Scaffold(
+                    body: Column(
+                      children: [
+                        HomeHeader(
+                          sourceId: 'yande',
+                          kind: kind,
+                          modes: const [
+                            FeedKind.latest,
+                            FeedKind.recentPopular,
+                            FeedKind.historicalPopular,
+                          ],
+                          modeLabel: (mode) => mode.name,
+                          onSource: (_) {},
+                          onMode: (_) {},
+                          details: kind == FeedKind.latest
+                              ? null
+                              : Row(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    SizedBox(
+                                      width: 180,
+                                      child: AppSelect<int>(
+                                        value: 1,
+                                        items: const [
+                                          AppSelectItem(
+                                            value: 1,
+                                            label: 'Month',
+                                          ),
+                                        ],
+                                        onChanged: (_) {},
+                                      ),
                                     ),
-                                  ),
-                                  if (kind == FeedKind.historicalPopular)
-                                    AppButton(
-                                      label: '2026-09-05',
-                                      compact: true,
-                                      onPressed: () {},
-                                    ),
-                                ],
-                              ),
-                      ),
-                      const Expanded(child: SizedBox(key: ValueKey('gallery'))),
-                    ],
+                                    if (kind == FeedKind.historicalPopular)
+                                      AppButton(
+                                        label: '2026-09-05',
+                                        compact: true,
+                                        onPressed: () {},
+                                      ),
+                                  ],
+                                ),
+                        ),
+                        const Expanded(
+                          child: SizedBox(key: ValueKey('gallery')),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -300,16 +317,18 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(
-        MaterialApp(
-          home: MediaQuery(
-            data: MediaQueryData(
-              size: Size(width, 800),
-              textScaler: TextScaler.linear(2),
-            ),
-            child: Scaffold(
-              body: HomePage(
-                loader: (_, _) async =>
-                    const PostPage(items: [], exhausted: true),
+        ProviderScope(
+          child: MaterialApp(
+            home: MediaQuery(
+              data: MediaQueryData(
+                size: Size(width, 800),
+                textScaler: TextScaler.linear(2),
+              ),
+              child: Scaffold(
+                body: HomePage(
+                  loader: (_, _) async =>
+                      const PostPage(items: [], exhausted: true),
+                ),
               ),
             ),
           ),
@@ -329,18 +348,20 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: HomePage(
-            loader: (_, _) async {
-              throw const BooruError(
-                code: BooruErrorCode.sourceUnavailable,
-                sourceId: 'yande',
-                httpStatus: 503,
-                userMessageKey: 'booru.error.sourceUnavailable',
-                diagnosticId: 'home-test',
-              );
-            },
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: HomePage(
+              loader: (_, _) async {
+                throw const BooruError(
+                  code: BooruErrorCode.sourceUnavailable,
+                  sourceId: 'yande',
+                  httpStatus: 503,
+                  userMessageKey: 'booru.error.sourceUnavailable',
+                  diagnosticId: 'home-test',
+                );
+              },
+            ),
           ),
         ),
       ),

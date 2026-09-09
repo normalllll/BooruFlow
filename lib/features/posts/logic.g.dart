@@ -9,6 +9,80 @@ part of 'logic.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(postAttributionDetail)
+final postAttributionDetailProvider = PostAttributionDetailFamily._();
+
+final class PostAttributionDetailProvider
+    extends $FunctionalProvider<AsyncValue<Post>, Post, FutureOr<Post>>
+    with $FutureModifier<Post>, $FutureProvider<Post> {
+  PostAttributionDetailProvider._({
+    required PostAttributionDetailFamily super.from,
+    required ({String postId, String sourceId}) super.argument,
+  }) : super(
+         retry: null,
+         name: r'postAttributionDetailProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$postAttributionDetailHash();
+
+  @override
+  String toString() {
+    return r'postAttributionDetailProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<Post> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<Post> create(Ref ref) {
+    final argument = this.argument as ({String postId, String sourceId});
+    return postAttributionDetail(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is PostAttributionDetailProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$postAttributionDetailHash() =>
+    r'486aaf51bac793ae5a4e972cabc3eea7418cf029';
+
+final class PostAttributionDetailFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<Post>,
+          ({String postId, String sourceId})
+        > {
+  PostAttributionDetailFamily._()
+    : super(
+        retry: null,
+        name: r'postAttributionDetailProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  PostAttributionDetailProvider call(({String postId, String sourceId}) key) =>
+      PostAttributionDetailProvider._(argument: key, from: this);
+
+  @override
+  String toString() => r'postAttributionDetailProvider';
+}
+
 @ProviderFor(getSimilar)
 final getSimilarProvider = GetSimilarFamily._();
 
@@ -63,7 +137,7 @@ final class GetSimilarProvider
   }
 }
 
-String _$getSimilarHash() => r'6abad4976f31405cef28c905affc6a807f32917c';
+String _$getSimilarHash() => r'50038a9775bde188d6c5e6f7f5c2a54841a103b4';
 
 final class GetSimilarFamily extends $Family
     with

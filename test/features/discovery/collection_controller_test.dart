@@ -1,7 +1,8 @@
 import 'dart:async';
 
-import 'package:booruflow/features/discovery/logic.dart';
+import 'package:booruflow/features/discovery/collection_logic.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 CollectionKey key({
@@ -35,7 +36,7 @@ void main() {
 
   test('filtered empty pages retain cursor after bounded backfill', () async {
     final cursors = <String?>[];
-    final controller = PostCollectionController(
+    final controller = createController(
       key(),
       loader: (_, cursor) async {
         cursors.add(cursor);
@@ -47,12 +48,12 @@ void main() {
     expect(controller.cursor, '3');
     expect(controller.exhausted, isFalse);
     expect(controller.error, isNull);
-    controller.dispose();
+    disposeController(controller);
   });
 
   test('finite empty ranking stops without making another request', () async {
     var calls = 0;
-    final controller = PostCollectionController(
+    final controller = createController(
       key(),
       loader: (_, _) async {
         calls++;
@@ -63,7 +64,7 @@ void main() {
     await controller.load();
     expect(calls, 1);
     expect(controller.exhausted, isTrue);
-    controller.dispose();
+    disposeController(controller);
   });
 
   test(
@@ -71,7 +72,7 @@ void main() {
     () async {
       final old = Completer<PostPage>();
       var calls = 0;
-      final controller = PostCollectionController(
+      final controller = createController(
         key(),
         loader: (_, _) =>
             ++calls == 1 ? old.future : Future.value(page(exhausted: true)),
@@ -83,40 +84,46 @@ void main() {
       expect(controller.error, isNull);
       expect(controller.loading, isFalse);
       expect(controller.exhausted, isTrue);
-      controller.dispose();
+      disposeController(controller);
     },
   );
 
   test('dispose prevents pending request from publishing', () async {
     final response = Completer<PostPage>();
-    final controller = PostCollectionController(
+    final controller = createController(
       key(),
       loader: (_, _) => response.future,
     );
+    var published = controller.initialized;
+    final container = _containers[controller]!;
+    container.listen(
+      postCollectionProvider(controller.identity),
+      (_, next) => published = next.initialized,
+    );
     final pending = controller.load();
-    controller.dispose();
+    disposeController(controller);
     response.complete(page(exhausted: true));
     await pending;
-    expect(controller.initialized, isFalse);
+    expect(published, isFalse);
   });
 
   test(
     'non-advancing cursors become an error, never an infinite loop',
     () async {
-      final controller = PostCollectionController(
+      final controller = createController(
         key(),
         loader: (_, _) async => page(),
       );
       await controller.load();
       expect(controller.error, isNotNull);
       expect(controller.exhausted, isFalse);
-      controller.dispose();
+      disposeController(controller);
     },
   );
 
   test('no selected ratings still loads the default feed', () async {
     var calls = 0;
-    final controller = PostCollectionController(
+    final controller = createController(
       key(ratings: []),
       loader: (key, _) async {
         expect(key.ratings, isEmpty);
@@ -126,7 +133,7 @@ void main() {
     );
     await controller.load();
     expect(calls, 1);
-    controller.dispose();
+    disposeController(controller);
   });
 
   test(
@@ -157,7 +164,7 @@ void main() {
     for (final requestKey in [
       key(request: TagSearchCollectionRequest([' '])),
     ]) {
-      final controller = PostCollectionController(
+      final controller = createController(
         requestKey,
         loader: (_, _) async {
           calls++;
@@ -166,8 +173,24 @@ void main() {
       );
       await controller.load();
       expect(controller.items, isEmpty);
-      controller.dispose();
+      disposeController(controller);
     }
     expect(calls, 0);
   });
 }
+
+final _containers = <PostCollection, ProviderContainer>{};
+PostCollection createController(
+  CollectionKey key, {
+  required CollectionLoader loader,
+}) {
+  final container = ProviderContainer();
+  final provider = postCollectionProvider((key: key, loader: loader));
+  container.listen(provider, (_, _) {});
+  final controller = container.read(provider.notifier);
+  _containers[controller] = container;
+  return controller;
+}
+
+void disposeController(PostCollection controller) =>
+    _containers.remove(controller)!.dispose();

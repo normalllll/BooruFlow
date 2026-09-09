@@ -1,4 +1,4 @@
-import 'package:booruflow/features/discovery/logic.dart';
+import 'package:booruflow/features/discovery/collection_logic.dart';
 import 'package:booruflow/features/downloads/logic.dart';
 import 'package:booruflow/features/posts/widgets/post_preview_card.dart';
 import 'package:booruflow/features/posts/widgets/post_waterfall_skeleton.dart';
@@ -10,28 +10,30 @@ import 'package:booruflow/shared/widgets/loading_more_indicator.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_more_list/loading_more_list.dart';
 
-class PostCollectionView extends StatefulWidget {
+class PostCollectionView extends ConsumerStatefulWidget {
   const PostCollectionView({
     super.key,
-    required this.controller,
+    required this.collection,
     this.columns,
     this.onResetFilters,
     this.headerSliver,
   });
-  final PostCollectionController controller;
+  final CollectionIdentity collection;
   final int? columns;
   final VoidCallback? onResetFilters;
   final Widget? headerSliver;
   @override
-  State<PostCollectionView> createState() => _PostCollectionViewState();
+  ConsumerState<PostCollectionView> createState() => _PostCollectionViewState();
 }
 
-class _PostCollectionViewState extends State<PostCollectionView> {
+class _PostCollectionViewState extends ConsumerState<PostCollectionView> {
   late final ScrollController _scroll;
   int _lastPrefetchCount = 0;
-  PostCollectionController get state => widget.controller;
+  PostCollection get state =>
+      ref.read(postCollectionProvider(widget.collection).notifier);
   @override
   void initState() {
     super.initState();
@@ -63,9 +65,9 @@ class _PostCollectionViewState extends State<PostCollectionView> {
   }
 
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: state,
-    builder: (context, _) => LayoutBuilder(
+  Widget build(BuildContext context) {
+    ref.watch(postCollectionProvider(widget.collection));
+    return LayoutBuilder(
       builder: (context, constraints) {
         if (state.items.length > _lastPrefetchCount) {
           _lastPrefetchCount = state.items.length;
@@ -130,7 +132,7 @@ class _PostCollectionViewState extends State<PostCollectionView> {
                         onTap: () => context.pushPost(post),
                         onLongPress: () {
                           HapticFeedback.mediumImpact();
-                          BooruDownloads.instance.add(post);
+                          ref.read(booruDownloadsProvider).add(post);
                         },
                       );
                     }, childCount: state.items.length),
@@ -141,8 +143,8 @@ class _PostCollectionViewState extends State<PostCollectionView> {
           ),
         );
       },
-    ),
-  );
+    );
+  }
 
   Widget _status() {
     if (state.error is NoSupportedRatings) {

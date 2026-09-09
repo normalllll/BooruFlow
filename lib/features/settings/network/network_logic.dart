@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:booruflow/core/settings_service.dart';
+import 'package:booruflow/core/settings/settings_service.dart';
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
-import 'package:booruflow/features/booru/booru_service.dart';
+import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+part 'network_logic.g.dart';
 
 class NetworkProbeBackend {
   const NetworkProbeBackend({
@@ -24,8 +26,9 @@ class NetworkProbeBackend {
   final Future<void> Function(String) save;
 }
 
-final networkProbeBackendProvider = Provider<NetworkProbeBackend>((ref) {
-  final service = BooruService.instance;
+@Riverpod(keepAlive: true)
+NetworkProbeBackend networkProbeBackend(Ref ref) {
+  final service = ref.watch(booruServiceProvider);
   return NetworkProbeBackend(
     sources: service.sources,
     read: () => service.engine.routeCacheState(),
@@ -34,7 +37,9 @@ final networkProbeBackendProvider = Provider<NetworkProbeBackend>((ref) {
     load: () => SettingsService.savedNetworkChecks,
     save: SettingsService.saveNetworkChecks,
   );
-});
+}
+
+enum SourceCheckStatus { checking, available, partial, failed }
 
 class NetworkStatusState {
   const NetworkStatusState({
@@ -46,14 +51,14 @@ class NetworkStatusState {
     this.error,
   });
   final RouteCacheState? routes;
-  final Map<String, String> checks;
+  final Map<String, SourceCheckStatus> checks;
   final Map<String, SourceConnectionCheck> details;
   final Map<String, String> errors;
   final bool busy;
   final String? error;
   NetworkStatusState copyWith({
     RouteCacheState? routes,
-    Map<String, String>? checks,
+    Map<String, SourceCheckStatus>? checks,
     Map<String, SourceConnectionCheck>? details,
     Map<String, String>? errors,
     bool? busy,
@@ -70,12 +75,9 @@ class NetworkStatusState {
 }
 
 // Deliberately not auto-disposed: navigation must not discard completed probes.
-final networkStatusProvider =
-    NotifierProvider<NetworkStatusController, NetworkStatusState>(
-      NetworkStatusController.new,
-    );
 
-class NetworkStatusController extends Notifier<NetworkStatusState> {
+@Riverpod(keepAlive: true)
+class NetworkStatus extends _$NetworkStatus {
   Timer? _poll;
   int _listeners = 0;
   bool _reading = false;
@@ -86,7 +88,7 @@ class NetworkStatusController extends Notifier<NetworkStatusState> {
   @override
   NetworkStatusState build() {
     ref.onDispose(() => _poll?.cancel());
-    final checks = <String, String>{};
+    final checks = <String, SourceCheckStatus>{};
     final details = <String, SourceConnectionCheck>{};
     final errors = <String, String>{};
     try {
@@ -99,7 +101,9 @@ class NetworkStatusController extends Notifier<NetworkStatusState> {
             continue;
           }
           final id = source.sourceId;
-          checks[id] = entry['status'] as String;
+          checks[id] = SourceCheckStatus.values.byName(
+            entry['status'] as String,
+          );
           if (entry['api'] is bool && entry['media'] is bool) {
             details[id] = SourceConnectionCheck(
               sourceId: id,
@@ -167,7 +171,8 @@ class NetworkStatusController extends Notifier<NetworkStatusState> {
       busy: true,
       checks: {
         ...state.checks,
-        for (final source in sources) source.sourceId: 'checking',
+        for (final source in sources)
+          source.sourceId: SourceCheckStatus.checking,
       },
     );
     try {
@@ -190,9 +195,9 @@ class NetworkStatusController extends Notifier<NetworkStatusState> {
             result?.apiAvailable,
             result?.mediaAvailable,
           )) {
-            (true, true) => 'available',
-            (true, _) || (_, true) => 'partial',
-            _ => 'failed',
+            (true, true) => SourceCheckStatus.available,
+            (true, _) || (_, true) => SourceCheckStatus.partial,
+            _ => SourceCheckStatus.failed,
           };
           final details = {...state.details}..remove(id);
           if (result != null) details[id] = result;
@@ -204,7 +209,7 @@ class NetworkStatusController extends Notifier<NetworkStatusState> {
             errors: errors,
           );
           _saved[id] = {
-            'status': status,
+            'status': status.name,
             'api': result?.apiAvailable,
             'media': result?.mediaAvailable,
             'error': error,
@@ -242,12 +247,8 @@ class NetworkConfigState {
   final bool busy;
 }
 
-final networkConfigProvider =
-    NotifierProvider<NetworkConfigController, NetworkConfigState>(
-      NetworkConfigController.new,
-    );
-
-class NetworkConfigController extends Notifier<NetworkConfigState> {
+@Riverpod(keepAlive: true)
+class NetworkConfig extends _$NetworkConfig {
   @override
   NetworkConfigState build() => NetworkConfigState(
     mode: SettingsService.networkFallbackMode,
@@ -272,7 +273,7 @@ class NetworkConfigController extends Notifier<NetworkConfigState> {
       if (mode != null) SettingsService.networkFallbackMode = mode;
       if (dns != null) SettingsService.dnsProvider = dns;
       if (updateProxy) SettingsService.proxyUrl = proxy;
-      await BooruService.instance.reconfigureNetwork();
+      await ref.read(booruServiceProvider).reconfigureNetwork();
       state = build();
       unawaited(ref.read(networkStatusProvider.notifier).readRoutes());
       return true;

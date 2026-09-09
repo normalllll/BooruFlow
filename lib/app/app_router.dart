@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:booruflow/app/navigator_stack_observer.dart';
 import 'package:booruflow/features/about/about_page.dart';
-import 'package:booruflow/features/booru/booru_service.dart';
+import 'package:booruflow/features/booru/services/booru_service.dart';
 import 'package:booruflow/features/downloads/widgets/download_floating_window.dart';
 import 'package:booruflow/features/home/home_page.dart';
 import 'package:booruflow/features/image_viewer/image_zoom_page.dart';
@@ -159,7 +159,7 @@ class AppRouter {
             pageBuilder: (context, state) {
               final sourceId =
                   state.uri.queryParameters['source'] ??
-                  BooruService.instance.selectedSource.value;
+                  BooruService.instance.selectedSourceId;
               var tags = <String>[];
               var valid = BooruService.instance.sources.any(
                 (source) => source.sourceId == sourceId,

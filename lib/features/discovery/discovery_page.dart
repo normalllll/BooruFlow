@@ -1,9 +1,11 @@
 import 'dart:async';
 
-import 'package:booruflow/core/settings_service.dart';
-import 'package:booruflow/features/booru/booru_service.dart';
-import 'package:booruflow/features/discovery/availability.dart';
-import 'package:booruflow/features/discovery/logic.dart';
+import 'package:booruflow/core/settings/logic.dart';
+import 'package:booruflow/core/settings/settings_service.dart';
+import 'package:booruflow/features/booru/booru_logic.dart';
+import 'package:booruflow/features/booru/services/booru_service.dart';
+import 'package:booruflow/features/discovery/collection_logic.dart';
+import 'package:booruflow/features/discovery/discovery_logic.dart';
 import 'package:booruflow/features/discovery/widgets/discovery_toolbar.dart';
 import 'package:booruflow/features/discovery/widgets/home_header.dart';
 import 'package:booruflow/features/discovery/widgets/post_collection_view.dart';
@@ -17,134 +19,54 @@ import 'package:booruflow/shared/widgets/interaction_controls.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class DiscoveryPage extends StatefulWidget {
+class DiscoveryPage extends ConsumerStatefulWidget {
   const DiscoveryPage({super.key, this.tags, this.sourceId, this.loader});
   final CollectionLoader? loader;
   final List<String>? tags;
   final String? sourceId;
   @override
-  State<DiscoveryPage> createState() => _DiscoveryPageState();
+  ConsumerState<DiscoveryPage> createState() => _DiscoveryPageState();
 }
 
-class _DiscoveryPageState extends State<DiscoveryPage> {
-  static final _feeds = <String, FeedCollectionRequest>{};
-  final _probeSuccess = <String>{};
-  final _probePending = <String>{};
-  final _probeFailures = <String, DateTime>{};
-  late PostCollectionController _controller;
+class _DiscoveryPageState extends ConsumerState<DiscoveryPage> {
   late final _query = TextEditingController(text: widget.tags?.join(' ') ?? '');
-  BooruService get service => BooruService.instance;
-  String get sourceId => switch (widget.tags) {
-    null => service.selectedSource.value,
-    _ => widget.sourceId ?? service.selectedSource.value,
-  };
+  BooruService get service => ref.read(booruServiceProvider);
+  String get sourceId => widget.tags == null
+      ? ref.read(booruSessionProvider).sourceId
+      : widget.sourceId ?? ref.read(booruSessionProvider).sourceId;
   BooruSource get source => service.sourceById(sourceId);
   FeedCollectionRequest get feed =>
-      _feeds[sourceId] ?? const FeedCollectionRequest();
-  String get _probeKey => '$sourceId:${service.revision.value}';
+      ref.read(feedSelectionProvider)[sourceId] ??
+      const FeedCollectionRequest();
+  PopularProbeKey get _probeKey =>
+      (sourceId: sourceId, revision: ref.read(booruSessionProvider).revision);
   bool get popularAvailable =>
       source.capabilities.discovery.popular ==
           CapabilityAvailability.available ||
-      _probeSuccess.contains(_probeKey);
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = _acquire(_key());
-    service.selectedSource.addListener(_changed);
-    service.revision.addListener(_changed);
-    SettingsService.changes.addListener(_changed);
-    _probe();
-  }
-
-  PostCollectionController _acquire(CollectionKey key) =>
-      switch (widget.loader) {
-        null => CollectionCache.instance.acquire(key),
-        _ => PostCollectionController(key, loader: widget.loader),
-      };
-  void _release(PostCollectionController controller) {
-    if (widget.loader == null) {
-      CollectionCache.instance.release(controller.key);
-    } else {
-      controller.dispose();
-    }
-  }
-
+      (ref.read(popularProbeProvider(_probeKey)).value?.available ?? false);
+  Future<void> _probe({bool refresh = false}) =>
+      ref.read(popularProbeProvider(_probeKey).notifier).refresh();
   CollectionKey _key() => CollectionKey(
     sourceId: sourceId,
-    request: switch (widget.tags) {
-      null => feed,
-      _ => TagSearchCollectionRequest(widget.tags!),
-    },
-    ratings: SettingsService.ratings,
-    revision: service.revision.value,
+    request: widget.tags == null
+        ? feed
+        : TagSearchCollectionRequest(widget.tags!),
+    ratings: ref.read(settingsProvider).ratings,
+    revision: ref.read(booruSessionProvider).revision,
   );
-  void _changed() {
-    if (!mounted) return;
-    final key = _key();
-    if (_controller.key != key) {
-      final old = _controller;
-      _controller = _acquire(key);
-      _release(old);
-    }
-    setState(() {});
-    _probe();
-  }
 
   @override
   void didUpdateWidget(covariant DiscoveryPage oldWidget) {
     super.didUpdateWidget(oldWidget);
     _query.text = widget.tags?.join(' ') ?? '';
-    _changed();
   }
 
   @override
   void dispose() {
-    service.selectedSource.removeListener(_changed);
-    service.revision.removeListener(_changed);
-    SettingsService.changes.removeListener(_changed);
-    _release(_controller);
     _query.dispose();
     super.dispose();
-  }
-
-  Future<void> _probe({bool refresh = false}) async {
-    if (source.capabilities.discovery.popular !=
-        CapabilityAvailability.requiresProbe) {
-      return;
-    }
-    final key = _probeKey;
-    final lastFailure = _probeFailures[key];
-    if (!refresh && _probeSuccess.contains(key) ||
-        _probePending.contains(key) ||
-        !refresh &&
-            lastFailure != null &&
-            DateTime.now().difference(lastFailure) <
-                const Duration(minutes: 5)) {
-      return;
-    }
-    _probePending.add(key);
-    try {
-      final availability = await DiscoveryAvailability.instance.popular(
-        sourceId,
-        refresh: refresh,
-      );
-      if (mounted) {
-        setState(() {
-          if (availability == CapabilityAvailability.available) {
-            _probeSuccess.add(key);
-            _probeFailures.remove(key);
-          } else {
-            _probeFailures[key] = DateTime.now();
-          }
-        });
-      }
-    } catch (_) {
-      _probeFailures[key] = DateTime.now();
-    } finally {
-      _probePending.remove(key);
-    }
   }
 
   void _selectSource(String id) {
@@ -157,7 +79,7 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
             CapabilityAvailability.unsupported) {
       AppToast.show(t.discovery.latestFallback);
     }
-    service.selectSource(id);
+    ref.read(booruSessionProvider.notifier).selectSource(id);
   }
 
   Future<void> _edit([String? target]) async {
@@ -170,7 +92,7 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
         setEquals(result.tags.toSet(), widget.tags!.toSet())) {
       return;
     }
-    service.selectSource(result.sourceId);
+    ref.read(booruSessionProvider.notifier).selectSource(result.sourceId);
     context.replaceTaggedPosts(result.tags, sourceId: result.sourceId);
   }
 
@@ -179,8 +101,8 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (context) => StatefulBuilder(
-        builder: (context, update) => Padding(
+      builder: (context) => Consumer(
+        builder: (context, ref, _) => Padding(
           padding: const EdgeInsets.all(20),
           child: SingleChildScrollView(
             child: Column(
@@ -197,8 +119,7 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
                 AppButton(
                   label: t.discovery.allAvailable,
                   onPressed: () {
-                    SettingsService.ratings = [];
-                    update(() {});
+                    ref.read(settingsProvider.notifier).setRatings([]);
                   },
                 ),
                 const SizedBox(height: 12),
@@ -211,16 +132,20 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
                       vertical: 6,
                     ),
                     title: Text(rating.shortLabel),
-                    value: SettingsService.ratings.contains(rating),
+                    value: ref.watch(settingsProvider).ratings.contains(rating),
                     onChanged: (selected) {
-                      final ratings = SettingsService.ratings.toSet();
+                      final ratings = ref
+                          .read(settingsProvider)
+                          .ratings
+                          .toSet();
                       if (selected == true) {
                         ratings.add(rating);
                       } else {
                         ratings.remove(rating);
                       }
-                      SettingsService.ratings = ratings.toList();
-                      update(() {});
+                      ref
+                          .read(settingsProvider.notifier)
+                          .setRatings(ratings.toList());
                     },
                   ),
                 ],
@@ -230,7 +155,6 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
                   kind: AppButtonKind.ghost,
                   onPressed: () {
                     _resetFilters();
-                    update(() {});
                   },
                 ),
                 const SizedBox(height: 12),
@@ -247,29 +171,33 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
   }
 
   void _resetFilters() {
-    SettingsService.ratings = [];
+    ref.read(settingsProvider.notifier).setRatings([]);
   }
 
   void _selectMode(FeedKind kind) {
     final caps = source.capabilities.discovery;
-    _feeds[sourceId] = FeedCollectionRequest(
-      kind: kind,
-      range: switch (kind) {
-        FeedKind.recentPopular => caps.popularRanges.first,
-        FeedKind.historicalPopular => caps.historicalRanges.first,
-        _ => null,
-      },
-      date: switch (kind) {
-        FeedKind.historicalPopular =>
-          DateTime.now()
-              .toUtc()
-              .subtract(const Duration(days: 1))
-              .toIso8601String()
-              .substring(0, 10),
-        _ => null,
-      },
-    );
-    _changed();
+    ref
+        .read(feedSelectionProvider.notifier)
+        .select(
+          sourceId,
+          FeedCollectionRequest(
+            kind: kind,
+            range: switch (kind) {
+              FeedKind.recentPopular => caps.popularRanges.first,
+              FeedKind.historicalPopular => caps.historicalRanges.first,
+              _ => null,
+            },
+            date: switch (kind) {
+              FeedKind.historicalPopular =>
+                DateTime.now()
+                    .toUtc()
+                    .subtract(const Duration(days: 1))
+                    .toIso8601String()
+                    .substring(0, 10),
+              _ => null,
+            },
+          ),
+        );
   }
 
   Future<void> _chooseDate() async {
@@ -283,22 +211,31 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
       lastDate: DateTime(today.year, today.month, today.day),
     );
     if (!mounted || chosen == null || sourceId != id) return;
-    _feeds[id] = FeedCollectionRequest(
-      kind: FeedKind.historicalPopular,
-      range: current.range,
-      date: chosen.toIso8601String().substring(0, 10),
-    );
-    _changed();
+    ref
+        .read(feedSelectionProvider.notifier)
+        .select(
+          id,
+          FeedCollectionRequest(
+            kind: FeedKind.historicalPopular,
+            range: current.range,
+            date: chosen.toIso8601String().substring(0, 10),
+          ),
+        );
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(booruSessionProvider);
+    final settings = ref.watch(settingsProvider);
+    ref.watch(feedSelectionProvider);
+    final probe = ref.watch(popularProbeProvider(_probeKey));
+    final collectionKey = _key();
     final caps = source.capabilities.discovery;
     final showBack = widget.tags != null && !shouldUseDesktopShell(context);
     return PostCollectionView(
-      key: ValueKey(_controller),
-      controller: _controller,
-      columns: SettingsService.waterfallColumns,
+      key: ValueKey(collectionKey),
+      collection: (key: collectionKey, loader: widget.loader),
+      columns: settings.waterfallColumns,
       onResetFilters: _resetFilters,
       headerSliver: SliverAppBar(
         floating: true,
@@ -330,7 +267,7 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
                   modeLabel: feedLabel,
                   onSource: _selectSource,
                   onMode: _selectMode,
-                  onRetryProbe: _probeFailures.containsKey(_probeKey)
+                  onRetryProbe: probe.value?.failedAt != null
                       ? () => _probe(refresh: true)
                       : null,
                   details: switch (feed.range) {
@@ -358,12 +295,16 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
                                 ),
                             ],
                             onChanged: (range) {
-                              _feeds[sourceId] = FeedCollectionRequest(
-                                kind: feed.kind,
-                                range: range,
-                                date: feed.date,
-                              );
-                              _changed();
+                              ref
+                                  .read(feedSelectionProvider.notifier)
+                                  .select(
+                                    sourceId,
+                                    FeedCollectionRequest(
+                                      kind: feed.kind,
+                                      range: range,
+                                      date: feed.date,
+                                    ),
+                                  );
                             },
                           ),
                         ),
@@ -430,10 +371,10 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
                     selectedBackgroundColor: Theme.of(
                       context,
                     ).colorScheme.primary.withValues(alpha: .10),
-                    color: _controller.key.ratings.isNotEmpty
+                    color: collectionKey.ratings.isNotEmpty
                         ? Theme.of(context).colorScheme.primary
                         : null,
-                    selected: _controller.key.ratings.isNotEmpty,
+                    selected: collectionKey.ratings.isNotEmpty,
                     icon: const Icon(Icons.tune),
                     onPressed: _filters,
                   ),

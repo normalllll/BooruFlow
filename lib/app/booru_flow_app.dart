@@ -1,7 +1,6 @@
 import 'package:booruflow/app/app_router.dart';
 import 'package:booruflow/app/window/title_bar.dart';
-import 'package:booruflow/core/app_runtime.dart';
-import 'package:booruflow/core/settings_service.dart';
+import 'package:booruflow/core/settings/logic.dart';
 import 'package:booruflow/features/tags/tag_translations_service.dart';
 import 'package:booruflow/intl/locale_preferences.dart';
 import 'package:booruflow/intl/translations.g.dart';
@@ -20,56 +19,55 @@ class BooruFlowApp extends ConsumerWidget {
     const darkPrimaryColor = Color(0xFFFF79AD);
     const lightPrimaryColor = AppThemeTokens.brandPink;
 
+    final settings = ref.watch(settingsProvider);
+    final appLocale = appLocaleForLanguagePreference(settings.language);
+    ref.listen(settingsProvider.select((value) => value.language), (
+      _,
+      language,
+    ) {
+      final locale = applyLanguagePreference(language);
+      TagTranslationsService.update(
+        language ?? languagePreferenceForAppLocale(locale),
+      );
+    });
+    final locale = appLocale.flutterLocale;
     return AppToastWrapper(
-      child: ValueListenableBuilder<int>(
-        valueListenable: appSettingsRevision,
-        builder: (context, revision, child) {
-          final appLocale = appLocaleForLanguagePreference(
-            SettingsService.language,
-          );
-          final locale = appLocale.flutterLocale;
-          TagTranslationsService.update(
-            SettingsService.language ??
-                languagePreferenceForAppLocale(appLocale),
-          );
-          return MaterialApp.router(
-            title: 'BooruFlow',
-            routerConfig: AppRouter.router,
-            darkTheme: darkTheme(darkPrimaryColor),
-            theme: lightTheme(lightPrimaryColor),
-            themeMode: switch (SettingsService.themeMode) {
-              null => ThemeMode.system,
-              0 => ThemeMode.light,
-              1 => ThemeMode.dark,
-              _ => ThemeMode.system,
-            },
-            locale: locale,
-            localizationsDelegates: const [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: AppLocaleUtils.supportedLocales,
-            localeResolutionCallback: (locale, supportedLocales) {
-              for (final supportedLocale in supportedLocales) {
-                if (supportedLocale.languageCode == locale?.languageCode &&
-                    supportedLocale.countryCode == locale?.countryCode) {
-                  return supportedLocale;
-                }
-              }
-              return supportedLocales.first;
-            },
-            debugShowCheckedModeBanner: false,
-            builder: (context, child) {
-              return ImmersiveSystemUi(
-                child: DesktopWindowFrame(
-                  child: GestureDetector(
-                    onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-                    child: child ?? const SizedBox.shrink(),
-                  ),
-                ),
-              );
-            },
+      child: MaterialApp.router(
+        title: 'BooruFlow',
+        routerConfig: AppRouter.router,
+        darkTheme: darkTheme(darkPrimaryColor),
+        theme: lightTheme(lightPrimaryColor),
+        themeMode: switch (settings.themeMode) {
+          null => ThemeMode.system,
+          0 => ThemeMode.light,
+          1 => ThemeMode.dark,
+          _ => ThemeMode.system,
+        },
+        locale: locale,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: AppLocaleUtils.supportedLocales,
+        localeResolutionCallback: (locale, supportedLocales) {
+          for (final supportedLocale in supportedLocales) {
+            if (supportedLocale.languageCode == locale?.languageCode &&
+                supportedLocale.countryCode == locale?.countryCode) {
+              return supportedLocale;
+            }
+          }
+          return supportedLocales.first;
+        },
+        debugShowCheckedModeBanner: false,
+        builder: (context, child) {
+          return ImmersiveSystemUi(
+            child: DesktopWindowFrame(
+              child: GestureDetector(
+                onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                child: child ?? const SizedBox.shrink(),
+              ),
+            ),
           );
         },
       ),

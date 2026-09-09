@@ -2,14 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:booruflow/features/booru/models/web_challenge_failure.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/api/web_challenge.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-
-import 'web_challenge_failure.dart';
 
 const _nativeCookies = MethodChannel('booruflow/web_challenge');
 

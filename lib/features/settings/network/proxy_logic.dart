@@ -1,9 +1,10 @@
 import 'dart:async';
 
-import 'package:booruflow/core/settings_service.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:booruflow/core/settings/settings_service.dart';
+import 'package:booruflow/features/settings/network/services/proxy_connection.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'proxy_connection.dart';
+part 'proxy_logic.g.dart';
 
 class ProxySettingsState {
   const ProxySettingsState({
@@ -60,12 +61,8 @@ class ProxySettingsState {
   );
 }
 
-final proxySettingsProvider =
-    NotifierProvider<ProxySettingsController, ProxySettingsState>(
-      ProxySettingsController.new,
-    );
-
-class ProxySettingsController extends Notifier<ProxySettingsState> {
+@Riverpod(keepAlive: true)
+class ProxySettings extends _$ProxySettings {
   int _generation = 0;
   @override
   ProxySettingsState build() =>

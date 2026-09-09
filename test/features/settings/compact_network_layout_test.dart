@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import 'package:booruflow/features/settings/network_settings_state.dart';
-import 'package:booruflow/features/settings/network_status_panel.dart';
-import 'package:booruflow/features/settings/proxy_settings_panel.dart';
-import 'package:booruflow/features/settings/proxy_settings_state.dart';
-import 'package:booruflow/features/settings/web_challenge_data_panel.dart';
+import 'package:booruflow/features/booru/widgets/web_challenge_data_panel.dart';
+import 'package:booruflow/features/settings/network/network_logic.dart';
+import 'package:booruflow/features/settings/network/proxy_logic.dart';
+import 'package:booruflow/features/settings/network/widgets/network_status_panel.dart';
+import 'package:booruflow/features/settings/network/widgets/proxy_settings_panel.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_theme.dart';
 import 'package:booruflow/shared/widgets/form_controls.dart';
@@ -251,7 +251,7 @@ void main() {
   }
 }
 
-class PreviewProxyController extends ProxySettingsController {
+class PreviewProxyController extends ProxySettings {
   @override
   ProxySettingsState build() =>
       ProxySettingsState.fromUrl('http://127.0.0.1:7890');

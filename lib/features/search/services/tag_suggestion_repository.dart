@@ -1,10 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 
-import 'package:booruflow/features/booru/booru_service.dart';
+import 'package:booruflow/features/booru/services/booru_service.dart';
 import 'package:booruflow/features/tags/tag_translations_service.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
-import 'package:flutter/foundation.dart';
 import 'package:hive_ce/hive.dart';
 
 enum SuggestionOrigin { sourceApi, sourceCache, lexicon, userAlias, history }
@@ -74,7 +74,8 @@ class UserTagAlias {
 class TagSuggestionRepository {
   static final instance = TagSuggestionRepository();
   static const ttl = Duration(hours: 24);
-  final changes = ValueNotifier<int>(0);
+  final _changes = StreamController<void>.broadcast(sync: true);
+  Stream<void> get changes => _changes.stream;
   Box<dynamic>? _box;
   Future<void>? _initializing;
   final _cooldown = <String, DateTime>{};
@@ -127,7 +128,7 @@ class TagSuggestionRepository {
     await initialize();
     final list = aliases.where((a) => a.id != alias.id).toList()..add(alias);
     await _box!.put('aliases', list.map((a) => a.toJson()).toList());
-    changes.value++;
+    _changes.add(null);
   }
 
   Future<void> deleteAlias(String id) async {
@@ -136,7 +137,7 @@ class TagSuggestionRepository {
       'aliases',
       aliases.where((a) => a.id != id).map((a) => a.toJson()).toList(),
     );
-    changes.value++;
+    _changes.add(null);
   }
 
   String? displayName(String source, String locale, String value) {

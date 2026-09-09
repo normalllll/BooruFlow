@@ -1,15 +1,16 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:booruflow/core/downloads/download_manager.dart';
 import 'package:booruflow/core/downloads/download_models.dart';
-import 'package:booruflow/features/downloads/booru_download_item.dart';
+import 'package:booruflow/features/downloads/logic.dart';
+import 'package:booruflow/features/downloads/models/booru_download_item.dart';
 import 'package:booruflow/features/posts/widgets/booru_image.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class DownloadSummaryView extends StatelessWidget {
   const DownloadSummaryView({
@@ -346,7 +347,7 @@ class DownloadTaskTile extends StatelessWidget {
   }
 }
 
-class _DownloadTaskActions extends StatelessWidget {
+class _DownloadTaskActions extends ConsumerWidget {
   const _DownloadTaskActions({
     required this.task,
     required this.compact,
@@ -358,9 +359,13 @@ class _DownloadTaskActions extends StatelessWidget {
   final bool showTooltips;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final actionSize = compact ? 24.0 : 30.0;
-    final primaryAction = _primaryActionFor(task, showTooltips: showTooltips);
+    final primaryAction = _primaryActionFor(
+      ref,
+      task,
+      showTooltips: showTooltips,
+    );
 
     return SizedBox(
       width: actionSize,
@@ -385,12 +390,15 @@ class _DownloadTaskActions extends StatelessWidget {
           SizedBox(height: compact ? 2 : 4),
           SizedBox.square(
             dimension: actionSize,
-            child: _SmallActionIcon(
+            child: AppIconButton(
+              kind: AppIconButtonKind.compact,
               key: const ValueKey<String>('delete'),
               tooltip: showTooltips ? t.downloads.deleteTask : null,
               icon: const Icon(Icons.delete_outline),
               onPressed: () => unawaited(
-                _runAction(() => downloadManager.deleteTask(task.id)),
+                _runAction(
+                  () => ref.read(downloadManagerProvider).deleteTask(task.id),
+                ),
               ),
             ),
           ),
@@ -399,9 +407,10 @@ class _DownloadTaskActions extends StatelessWidget {
             SizedBox.square(
               dimension: actionSize,
               child: task.log != null && task.log!.isNotEmpty
-                  ? _SmallActionIcon(
+                  ? AppIconButton(
+                      kind: AppIconButtonKind.compact,
                       key: const ValueKey<String>('log'),
-                      tooltip: showTooltips ? 'View log' : null,
+                      tooltip: showTooltips ? t.downloads.viewLog : null,
                       icon: const Icon(Icons.article_outlined),
                       onPressed: () => _showTaskLog(context, task),
                     )
@@ -414,38 +423,45 @@ class _DownloadTaskActions extends StatelessWidget {
   }
 
   Widget? _primaryActionFor(
+    WidgetRef ref,
     DownloadTaskSnapshot task, {
     required bool showTooltips,
   }) {
     if (task.status == DownloadStatus.failed) {
-      return _SmallActionIcon(
+      return AppIconButton(
+        kind: AppIconButtonKind.compact,
         key: const ValueKey<String>('retry'),
         tooltip: showTooltips ? t.generic.retry : null,
         icon: const Icon(Icons.refresh_outlined),
-        onPressed: () =>
-            unawaited(_runAction(() => downloadManager.retry(task.id))),
+        onPressed: () => unawaited(
+          _runAction(() => ref.read(downloadManagerProvider).retry(task.id)),
+        ),
       );
     }
 
     if (task.status == DownloadStatus.downloaded &&
         task.saveState == SaveState.failed) {
-      return _SmallActionIcon(
+      return AppIconButton(
+        kind: AppIconButtonKind.compact,
         key: const ValueKey<String>('retry-save'),
         tooltip: showTooltips ? t.generic.retry : null,
         icon: const Icon(Icons.refresh_outlined),
-        onPressed: () =>
-            unawaited(_runAction(() => downloadManager.retry(task.id))),
+        onPressed: () => unawaited(
+          _runAction(() => ref.read(downloadManagerProvider).retry(task.id)),
+        ),
       );
     }
 
     if (task.status == DownloadStatus.running ||
         task.status == DownloadStatus.queued) {
-      return _SmallActionIcon(
+      return AppIconButton(
+        kind: AppIconButtonKind.compact,
         key: const ValueKey<String>('cancel'),
         tooltip: showTooltips ? t.downloads.cancel : null,
         icon: const Icon(Icons.close_outlined),
-        onPressed: () =>
-            unawaited(_runAction(() => downloadManager.cancel(task.id))),
+        onPressed: () => unawaited(
+          _runAction(() => ref.read(downloadManagerProvider).cancel(task.id)),
+        ),
       );
     }
 
@@ -530,39 +546,6 @@ void _showTaskLog(BuildContext context, DownloadTaskSnapshot task) {
       );
     },
   );
-}
-
-class _SmallActionIcon extends StatelessWidget {
-  const _SmallActionIcon({
-    required this.icon,
-    required this.onPressed,
-    this.tooltip,
-    super.key,
-  });
-
-  final Widget icon;
-  final VoidCallback onPressed;
-  final String? tooltip;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final child = InkResponse(
-      onTap: onPressed,
-      radius: 15,
-      containedInkWell: false,
-      child: IconTheme.merge(
-        data: IconThemeData(size: 18, color: colorScheme.onSurfaceVariant),
-        child: Center(child: icon),
-      ),
-    );
-
-    final tooltip = this.tooltip;
-    return switch (tooltip) {
-      null => child,
-      _ => Tooltip(message: tooltip, child: child),
-    };
-  }
 }
 
 class _AnimatedRoundedProgressIndicator extends StatelessWidget {

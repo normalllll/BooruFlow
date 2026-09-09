@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:booruflow/core/downloads/download_models.dart';
-import 'package:booruflow/core/settings_service.dart';
+import 'package:booruflow/core/settings/settings_service.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 

@@ -1,5 +1,5 @@
-import 'package:booruflow/features/search/common_tags_sheet.dart';
-import 'package:booruflow/features/search/tag_suggestion_repository.dart';
+import 'package:booruflow/features/search/services/tag_suggestion_repository.dart';
+import 'package:booruflow/features/search/widgets/common_tags_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

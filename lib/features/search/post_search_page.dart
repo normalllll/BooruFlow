@@ -2,25 +2,28 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
-import 'package:booruflow/features/booru/booru_service.dart';
 import 'package:booruflow/features/discovery/widgets/discovery_toolbar.dart';
-import 'package:booruflow/features/search/common_tags_sheet.dart';
+import 'package:booruflow/features/search/logic.dart';
 import 'package:booruflow/features/search/query.dart';
-import 'package:booruflow/features/search/tag_suggestion_repository.dart';
+import 'package:booruflow/features/search/services/tag_suggestion_repository.dart';
 import 'package:booruflow/features/search/user_tags_page.dart';
+import 'package:booruflow/features/search/widgets/common_tags_sheet.dart';
+import 'package:booruflow/features/search/widgets/search_tag_widgets.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_navigation.dart';
 import 'package:booruflow/shared/widgets/auto_scaffold.dart';
 import 'package:booruflow/shared/widgets/form_controls.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
 import 'package:booruflow/shared/widgets/tag_label.dart';
-import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 export 'package:booruflow/features/search/query.dart' show parseQueryInput;
+export 'package:booruflow/features/search/widgets/search_tag_widgets.dart'
+    show SelectedTags, compactCount, categoryLabel;
 
-class PostSearchPage extends StatefulWidget {
+class PostSearchPage extends ConsumerStatefulWidget {
   const PostSearchPage({
     super.key,
     this.sourceId,
@@ -39,222 +42,104 @@ class PostSearchPage extends StatefulWidget {
   final TagSuggestionRepository? repository;
   final bool invalidQuery;
   @override
-  State<PostSearchPage> createState() => _PostSearchPageState();
+  ConsumerState<PostSearchPage> createState() => _PostSearchPageState();
 }
 
-class _PostSearchPageState extends State<PostSearchPage> {
+class _PostSearchPageState extends ConsumerState<PostSearchPage> {
   final _input = TextEditingController();
   final _suggestionScroll = ScrollController();
   final _overlay = OverlayPortalController()..show();
-  final _selected = <String>[];
-  final _verified = <String>{};
-  final _labels = <String, String>{};
-  late final _repository =
-      widget.repository ?? TagSuggestionRepository.instance;
-  late String _source;
-  String _locale = '';
-  Timer? _debounce;
-  int _generation = 0;
-  int _commonGeneration = 0;
+  SearchSession? _session;
+  SearchState get _state => ref.read(searchProvider(_session!));
+  Search get _controller => ref.read(searchProvider(_session!).notifier);
+  TagSuggestionRepository get _repository => _controller.repository;
+  String get _source => _state.sourceId;
+  String get _locale => _state.locale;
+  List<String> get _selected => _state.selected;
+  Set<String> get _verified => _state.verified;
+  List<TagSuggestion> get _suggestions => _state.suggestions.value;
+  List<TagSuggestion> get _common => _state.common.value;
+  bool get _busy => _state.suggestions.isLoading;
+  bool get _commonBusy => _state.common.isLoading;
+  bool get _ready => _state.ready;
+  bool get _invalidSource => _state.invalidSource;
+  Object? get _error => _state.initialization.error ?? _state.suggestions.error;
+  Object? get _commonError => _state.common.error;
   int _highlight = -1;
-  bool _busy = false;
-  bool _commonBusy = false;
-  bool _ready = false;
   bool _dismissed = false;
-  bool _invalidSource = false;
-  Object? _error;
-  Object? _commonError;
-  List<TagSuggestion> _suggestions = [];
-  List<TagSuggestion> _common = [];
   bool get _composing =>
       _input.value.composing.isValid && !_input.value.composing.isCollapsed;
   bool get _canSubmit =>
       !_composing && (_selected.isNotEmpty || _input.text.trim().isNotEmpty);
+
   @override
   void initState() {
     super.initState();
-    _source = widget.sourceId ?? BooruService.instance.selectedSource.value;
-    if (!BooruService.instance.sources.any(
-      (source) => source.sourceId == _source,
-    )) {
-      _invalidSource = true;
-      _source = BooruService.instance.selectedSource.value;
-    }
-    _selected.addAll(widget.initialTags ?? []);
     final query = widget.initialQuery ?? '';
     _input.value = TextEditingValue(
       text: query,
       selection: TextSelection.collapsed(offset: query.length),
     );
     _input.addListener(_changed);
-    BooruService.instance.selectedSource.addListener(_globalSourceChanged);
-    BooruService.instance.revision.addListener(_networkChanged);
-    _initialize();
-  }
-
-  @override
-  void didUpdateWidget(covariant PostSearchPage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    final source = widget.sourceId;
-    if (source != oldWidget.sourceId &&
-        source != null &&
-        BooruService.instance.sources.any((item) => item.sourceId == source)) {
-      _switchSource(source);
-    }
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final locale = Localizations.localeOf(context).toLanguageTag();
-    if (_locale != locale) {
-      _locale = locale;
-      if (_ready) {
-        _changed();
-        _loadCommon();
-      }
-    }
-  }
-
-  Future<void> _initialize() async {
-    try {
-      await _repository.initialize();
-      if (!mounted) return;
-      _ready = true;
-      _changed();
-      _loadCommon();
-    } catch (e) {
-      if (mounted) setState(() => _error = e);
-    }
-  }
-
-  void _globalSourceChanged() {
-    if (widget.onSubmit == null) {
-      _switchSource(BooruService.instance.selectedSource.value);
-    }
-  }
-
-  void _networkChanged() {
-    _verified.clear();
-    _changed();
-    _loadCommon();
-  }
-
-  void _switchSource(String source) {
-    if (_source == source) return;
-    setState(() {
-      _source = source;
-      _verified.clear();
-      _suggestions = [];
-      _common = [];
-    });
-    if (widget.onSubmit == null) BooruService.instance.selectSource(source);
-    _changed();
-    _loadCommon();
-  }
-
-  void _changed() {
-    _debounce?.cancel();
-    final generation = ++_generation;
-    _highlight = -1;
-    _dismissed = false;
-    final term = QueryTerm.parse(parseQueryInput(_input.text).lastOrNull ?? '');
-    final text = term.value;
-    setState(() {
-      _error = null;
-      _busy = false;
-      _suggestions = !_ready || _composing || text.isEmpty
-          ? []
-          : _repository.local(_source, _locale, text);
-    });
-    if (!_ready || _composing || text.isEmpty) return;
-    final source = _source;
-    final locale = _locale;
-    _debounce = Timer(const Duration(milliseconds: 250), () async {
-      if (!mounted || generation != _generation) return;
-      setState(() => _busy = true);
-      try {
-        final remote = await _repository.remote(source, locale, text);
-        if (!mounted || generation != _generation) return;
-        setState(
-          () => _suggestions = _repository.merge(source, locale, text, [
-            ...remote,
-            ..._suggestions,
-          ]),
-        );
-      } catch (e) {
-        if (mounted && generation == _generation) setState(() => _error = e);
-      } finally {
-        if (mounted && generation == _generation) setState(() => _busy = false);
-      }
-    });
-  }
-
-  Future<void> _loadCommon({bool refresh = false}) async {
-    if (!_ready) return;
-    final generation = ++_commonGeneration;
-    setState(() {
-      _commonBusy = true;
-      _commonError = null;
-    });
-    try {
-      final values = await _repository.common(
-        _source,
-        _locale,
-        refresh: refresh,
+    if (_session == null) {
+      _session = SearchSession(
+        locale: locale,
+        followSource: widget.onSubmit == null,
+        sourceId: widget.sourceId,
+        initialTags: widget.initialTags ?? const [],
+        initialQuery: widget.initialQuery ?? '',
+        repository: widget.repository,
       );
-      if (mounted && generation == _commonGeneration) {
-        setState(() => _common = values);
-      }
-    } catch (e) {
-      if (mounted && generation == _commonGeneration) {
-        setState(() => _commonError = e);
-      }
-    } finally {
-      if (mounted && generation == _commonGeneration) {
-        setState(() => _commonBusy = false);
-      }
+    } else {
+      Future.microtask(() {
+        if (mounted) _controller.setLocale(locale);
+      });
     }
   }
 
-  String _displayName(String raw, [String? fallback]) =>
-      _repository.displayName(_source, _locale, QueryTerm.parse(raw).value) ??
-      _labels['$_source:$raw'] ??
-      fallback ??
-      raw;
+  @override
+  void didUpdateWidget(covariant PostSearchPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.sourceId case final source? when source != oldWidget.sourceId) {
+      Future.microtask(() {
+        if (mounted) _switchSource(source);
+      });
+    }
+  }
 
-  void _add(TagSuggestion tag, {bool replaceTerm = false}) {
-    final terms = parseQueryInput(_input.text);
-    final operator = replaceTerm && terms.isNotEmpty
-        ? QueryTerm.parse(terms.removeLast()).operator
-        : QueryOperator.include;
-    final value = QueryTerm(tag.value, switch (operator) {
-      QueryOperator.metatag => QueryOperator.include,
-      _ => operator,
-    }).raw;
+  void _switchSource(String source) => _controller.switchSource(source);
+  void _changed() {
+    if (_session == null) return;
     setState(() {
-      for (final term in [...terms, value]) {
-        if (!_selected.contains(term)) _selected.add(term);
-      }
-      if (tag.verified) _verified.add(value);
-      if (tag.displayName != null) {
-        _labels['$_source:$value'] = tag.displayName!;
-      }
+      _highlight = -1;
+      _dismissed = false;
     });
+    _controller.queryChanged(_input.text, composing: _composing);
+  }
+
+  Future<void> _loadCommon({bool refresh = false}) =>
+      _controller.loadCommon(refresh: refresh);
+  String _displayName(String raw, [String? fallback]) =>
+      _controller.displayName(raw, fallback);
+  void _add(TagSuggestion tag, {bool replaceTerm = false}) {
+    _controller.add(tag, _input.text, replaceTerm: replaceTerm);
     _input.clear();
   }
 
   void _submit() {
     if (!_canSubmit) return;
     _dismissSuggestions();
-    final tags = <String>{
-      ..._selected,
-      ...parseQueryInput(_input.text),
-    }.toList();
+    final tags = _controller.submittedTags(_input.text);
     if (tags.isEmpty) return;
-    unawaited(_repository.remember(_source, tags));
-    if (widget.onSubmit != null) {
-      widget.onSubmit!(_source, List.unmodifiable(tags));
+    unawaited(_controller.remember(tags));
+    if (widget.onSubmit case final submit?) {
+      submit(_source, List.unmodifiable(tags));
     } else {
       context.pushTaggedPosts(tags, sourceId: _source);
     }
@@ -313,11 +198,11 @@ class _PostSearchPageState extends State<PostSearchPage> {
     await showModalBottomSheet<void>(
       context: context,
       useSafeArea: true,
-      builder: (context) => StatefulBuilder(
-        builder: (context, update) => ListView(
+      builder: (context) => Consumer(
+        builder: (context, ref, _) => ListView(
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
           children: [
-            for (final tag in _selected)
+            for (final tag in ref.watch(searchProvider(_session!)).selected)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Align(
@@ -325,8 +210,7 @@ class _PostSearchPageState extends State<PostSearchPage> {
                   child: InputChip(
                     label: TagLabel(value: tag, translation: _displayName(tag)),
                     onDeleted: () {
-                      setState(() => _selected.remove(tag));
-                      update(() {});
+                      _controller.remove(tag);
                     },
                     deleteIcon: const Icon(Icons.close),
                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -376,14 +260,9 @@ class _PostSearchPageState extends State<PostSearchPage> {
 
   @override
   void dispose() {
-    _generation++;
-    _commonGeneration++;
-    _debounce?.cancel();
     _input.removeListener(_changed);
     _input.dispose();
     _suggestionScroll.dispose();
-    BooruService.instance.selectedSource.removeListener(_globalSourceChanged);
-    BooruService.instance.revision.removeListener(_networkChanged);
     super.dispose();
   }
 
@@ -554,279 +433,151 @@ class _PostSearchPageState extends State<PostSearchPage> {
   }
 
   @override
-  Widget build(BuildContext context) => Material(
-    child: LayoutBuilder(
-      builder: (context, constraints) {
-        final showBack =
-            widget.isQueryEditor && !shouldUseDesktopShell(context);
-        return CustomScrollView(
-          key: const ValueKey('search-tags-scroll'),
-          physics: const ClampingScrollPhysics(),
-          slivers: [
-            SliverAppBar(
-              floating: true,
-              snap: false,
-              automaticallyImplyLeading: false,
-              toolbarHeight: appFieldHeight(context) + 20 + (showBack ? 48 : 0),
-              flexibleSpace: Padding(
-                padding: EdgeInsets.only(
-                  top: MediaQuery.paddingOf(context).top,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextFieldTapRegion(
-                      child: DiscoveryToolbar(
-                        sourceId: _source,
-                        onSource: _switchSource,
-                        query: _queryField(),
+  Widget build(BuildContext context) {
+    ref.watch(searchProvider(_session!));
+    return Material(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final showBack =
+              widget.isQueryEditor && !shouldUseDesktopShell(context);
+          return CustomScrollView(
+            key: const ValueKey('search-tags-scroll'),
+            physics: const ClampingScrollPhysics(),
+            slivers: [
+              SliverAppBar(
+                floating: true,
+                snap: false,
+                automaticallyImplyLeading: false,
+                toolbarHeight:
+                    appFieldHeight(context) + 20 + (showBack ? 48 : 0),
+                flexibleSpace: Padding(
+                  padding: EdgeInsets.only(
+                    top: MediaQuery.paddingOf(context).top,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextFieldTapRegion(
+                        child: DiscoveryToolbar(
+                          sourceId: _source,
+                          onSource: _switchSource,
+                          query: _queryField(),
+                        ),
                       ),
-                    ),
-                    if (showBack)
-                      const Align(
-                        alignment: Alignment.centerLeft,
-                        child: BackButton(),
-                      ),
-                  ],
+                      if (showBack)
+                        const Align(
+                          alignment: Alignment.centerLeft,
+                          child: BackButton(),
+                        ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-              sliver: SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (widget.invalidQuery || _invalidSource)
-                      Text(t.booruError.invalidRequest),
-                    if (!_ready && _error != null)
-                      Text(describeBooruError(_error)),
-                    if (_selected.isNotEmpty) ...[
-                      SelectedTags(
-                        tags: _selected,
-                        displayName: _displayName,
-                        onRemove: (tag) =>
-                            setState(() => _selected.remove(tag)),
-                        onMore: _manageSelected,
-                      ),
-                      if (_selected.any((tag) => !_verified.contains(tag)))
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Text(
-                            t.discovery.unverifiedTag,
-                            style: Theme.of(context).textTheme.bodySmall,
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (widget.invalidQuery || _invalidSource)
+                        Text(t.booruError.invalidRequest),
+                      if (!_ready && _error != null)
+                        Text(describeBooruError(_error)),
+                      if (_selected.isNotEmpty) ...[
+                        SelectedTags(
+                          tags: _selected,
+                          displayName: _displayName,
+                          onRemove: (tag) => _controller.remove(tag),
+                          onMore: _manageSelected,
+                        ),
+                        if (_selected.any((tag) => !_verified.contains(tag)))
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Text(
+                              t.discovery.unverifiedTag,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
                           ),
-                        ),
-                      const SizedBox(height: 8),
-                    ],
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(
-                          t.discovery.commonTags,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        AppButton(
-                          label: t.discovery.manageTags,
-                          icon: Icons.sell_outlined,
-                          compact: true,
-                          kind: AppButtonKind.ghost,
-                          onPressed: _manageAliases,
-                        ),
-                        if (_common.isNotEmpty)
+                        const SizedBox(height: 8),
+                      ],
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(
+                            t.discovery.commonTags,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
                           AppButton(
-                            label: t.discovery.moreTags,
+                            label: t.discovery.manageTags,
+                            icon: Icons.sell_outlined,
                             compact: true,
                             kind: AppButtonKind.ghost,
-                            onPressed: _moreCommon,
+                            onPressed: _manageAliases,
                           ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    if (_common.isNotEmpty) ...[
-                      Wrap(
-                        key: const ValueKey('common-tags'),
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          for (final tag in _common.take(40))
-                            ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxWidth: math.min(
-                                  240,
-                                  constraints.maxWidth - 24,
-                                ),
-                              ),
-                              child: AppButton(
-                                compact: true,
-                                label: TagLabel.text(
-                                  tag.value,
-                                  _displayName(tag.value, tag.displayName),
-                                ),
-                                labelWidget: TagLabel(
-                                  value: tag.value,
-                                  translation: _displayName(
-                                    tag.value,
-                                    tag.displayName,
-                                  ),
-                                ),
-                                onPressed: () => _add(tag),
-                              ),
+                          if (_common.isNotEmpty)
+                            AppButton(
+                              label: t.discovery.moreTags,
+                              compact: true,
+                              kind: AppButtonKind.ghost,
+                              onPressed: _moreCommon,
                             ),
                         ],
                       ),
-                    ],
-                    if (_commonBusy && _common.isEmpty)
-                      const LinearProgressIndicator(),
-                    if (_commonError != null)
-                      Align(
-                        alignment: AlignmentDirectional.centerStart,
-                        child: AppButton(
-                          label: t.discovery.retryTags,
-                          kind: AppButtonKind.ghost,
-                          onPressed: () => _loadCommon(refresh: true),
+                      const SizedBox(height: 8),
+                      if (_common.isNotEmpty) ...[
+                        Wrap(
+                          key: const ValueKey('common-tags'),
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            for (final tag in _common.take(40))
+                              ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: math.min(
+                                    240,
+                                    constraints.maxWidth - 24,
+                                  ),
+                                ),
+                                child: AppButton(
+                                  compact: true,
+                                  label: TagLabel.text(
+                                    tag.value,
+                                    _displayName(tag.value, tag.displayName),
+                                  ),
+                                  labelWidget: TagLabel(
+                                    value: tag.value,
+                                    translation: _displayName(
+                                      tag.value,
+                                      tag.displayName,
+                                    ),
+                                  ),
+                                  onPressed: () => _add(tag),
+                                ),
+                              ),
+                          ],
                         ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    ),
-  );
-}
-
-String compactCount(String count) {
-  final number = int.tryParse(count);
-  if (number == null) return count;
-  if (number >= 1000000) return '${(number / 1000000).toStringAsFixed(1)}m';
-  if (number >= 1000) return '${(number / 1000).toStringAsFixed(1)}k';
-  return count;
-}
-
-String categoryLabel(TagCategory category) => switch (category) {
-  TagCategory.artist => t.discovery.artist,
-  TagCategory.character => t.discovery.character,
-  TagCategory.copyright => t.discovery.copyright,
-  TagCategory.meta => t.discovery.meta,
-  TagCategory.general => t.discovery.general,
-};
-
-class SelectedTags extends StatelessWidget {
-  const SelectedTags({
-    super.key,
-    required this.tags,
-    required this.displayName,
-    required this.onRemove,
-    required this.onMore,
-  });
-  final List<String> tags;
-  final String Function(String) displayName;
-  final ValueChanged<String> onRemove;
-  final VoidCallback onMore;
-  @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) {
-      final style = Theme.of(context).textTheme.labelLarge!;
-      double textWidth(String text) {
-        final painter = TextPainter(
-          text: TextSpan(text: text, style: style),
-          textDirection: Directionality.of(context),
-          textScaler: MediaQuery.textScalerOf(context),
-        )..layout();
-        final width = painter.width;
-        painter.dispose();
-        return width;
-      }
-
-      final widths = tags
-          .map(
-            (tag) => math.min(
-              math.min(240.0, constraints.maxWidth),
-              textWidth(TagLabel.text(tag, displayName(tag))) + 64,
-            ),
-          )
-          .toList();
-      final rows = <List<int>>[[], []];
-      final used = [0.0, 0.0];
-      var row = 0;
-      var visible = 0;
-      for (var i = 0; i < tags.length; i++) {
-        final gap = rows[row].isEmpty ? 0.0 : 8.0;
-        if (used[row] + gap + widths[i] > constraints.maxWidth &&
-            rows[row].isNotEmpty) {
-          row++;
-        }
-        if (row >= 2) break;
-        used[row] += (rows[row].isEmpty ? 0 : 8) + widths[i];
-        rows[row].add(i);
-        visible++;
-      }
-      final moreWidth = math.min(
-        constraints.maxWidth,
-        textWidth('+${tags.length}') + 48,
-      );
-      if (visible < tags.length) {
-        while (rows[1].isNotEmpty &&
-            used[1] + 8 + moreWidth > constraints.maxWidth) {
-          used[1] -= widths[rows[1].removeLast()] + (rows[1].isEmpty ? 0 : 8);
-          visible--;
-        }
-      }
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          for (var r = 0; r < 2; r++)
-            if (rows[r].isNotEmpty || r == 1 && visible < tags.length)
-              Padding(
-                padding: EdgeInsets.only(top: r == 0 ? 0 : 6),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    for (var i = 0; i < rows[r].length; i++) ...[
-                      if (i > 0) const SizedBox(width: 8),
-                      SizedBox(
-                        width: widths[rows[r][i]],
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: InputChip(
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                            label: TagLabel(
-                              value: tags[rows[r][i]],
-                              translation: displayName(tags[rows[r][i]]),
-                              style: style,
-                            ),
-                            onDeleted: () => onRemove(tags[rows[r][i]]),
-                            deleteButtonTooltipMessage: t.generic.clear,
+                      ],
+                      if (_commonBusy && _common.isEmpty)
+                        const LinearProgressIndicator(),
+                      if (_commonError != null)
+                        Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: AppButton(
+                            label: t.discovery.retryTags,
+                            kind: AppButtonKind.ghost,
+                            onPressed: () => _loadCommon(refresh: true),
                           ),
                         ),
-                      ),
                     ],
-                    if (r == 1 && visible < tags.length) ...[
-                      if (rows[r].isNotEmpty) const SizedBox(width: 8),
-                      SizedBox(
-                        width: moreWidth,
-                        child: ActionChip(
-                          label: Text(
-                            '+${tags.length - visible}',
-                            style: style,
-                            maxLines: 1,
-                          ),
-                          onPressed: onMore,
-                        ),
-                      ),
-                    ],
-                  ],
+                  ),
                 ),
               ),
-        ],
-      );
-    },
-  );
+            ],
+          );
+        },
+      ),
+    );
+  }
 }

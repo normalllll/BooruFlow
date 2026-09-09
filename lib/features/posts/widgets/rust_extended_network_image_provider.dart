@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
-import 'package:booruflow/features/booru/booru_service.dart';
+import 'package:booruflow/features/booru/services/booru_service.dart';
 import 'package:booruflow/src/rust/api/booru_download.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/booru/error.dart';

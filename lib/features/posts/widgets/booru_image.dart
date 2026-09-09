@@ -1,6 +1,6 @@
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
-import 'package:booruflow/features/booru/booru_service.dart';
-import 'package:booruflow/features/booru/web_challenge_button.dart';
+import 'package:booruflow/features/booru/booru_logic.dart';
+import 'package:booruflow/features/booru/widgets/web_challenge_button.dart';
 import 'package:booruflow/features/posts/widgets/rust_extended_network_image_provider.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
@@ -8,9 +8,10 @@ import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-class BooruImage extends StatefulWidget {
+class BooruImage extends ConsumerStatefulWidget {
   const BooruImage(
     this.url, {
     super.key,
@@ -45,10 +46,10 @@ class BooruImage extends StatefulWidget {
   final int refreshRevision;
 
   @override
-  State<BooruImage> createState() => _BooruImageState();
+  ConsumerState<BooruImage> createState() => _BooruImageState();
 }
 
-class _BooruImageState extends State<BooruImage> {
+class _BooruImageState extends ConsumerState<BooruImage> {
   Future<MediaRequest>? _request;
   bool _failed = false;
   bool _retrying = false;
@@ -60,14 +61,11 @@ class _BooruImageState extends State<BooruImage> {
   @override
   void initState() {
     super.initState();
-    BooruService.instance.revision.addListener(_handleEngineRevision);
+    ref.listenManual(
+      booruSessionProvider.select((value) => value.revision),
+      (_, _) => _handleEngineRevision(),
+    );
     _prepare();
-  }
-
-  @override
-  void dispose() {
-    BooruService.instance.revision.removeListener(_handleEngineRevision);
-    super.dispose();
   }
 
   void _handleEngineRevision() {
@@ -92,13 +90,16 @@ class _BooruImageState extends State<BooruImage> {
     _failed = false;
     _provider = null;
     _request = _usesRust
-        ? BooruService.instance.engine.prepareMediaUrl(
-            sourceId: widget.sourceId!,
-            postId: widget.postId!,
-            variant: widget.variant,
-            url: widget.url,
-            allowDiskCache: widget.allowDiskCache,
-          )
+        ? ref
+              .read(booruServiceProvider)
+              .engine
+              .prepareMediaUrl(
+                sourceId: widget.sourceId!,
+                postId: widget.postId!,
+                variant: widget.variant,
+                url: widget.url,
+                allowDiskCache: widget.allowDiskCache,
+              )
         : null;
   }
 

@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:booruflow/features/booru/web_challenge_controller.dart';
-import 'package:booruflow/features/booru/web_challenge_failure.dart';
+import 'package:booruflow/features/booru/models/web_challenge_failure.dart';
+import 'package:booruflow/features/booru/services/web_challenge_service.dart';
 import 'package:booruflow/src/rust/api/web_challenge.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -78,7 +78,7 @@ void main() {
       final backend = Backend();
       final changes = <String>[];
       var cleanups = 0;
-      final controller = WebChallengeController.forTesting(
+      final controller = WebChallengeService.forTesting(
         backendFactory: () => backend,
         collector: (_, _, _) async => candidate,
         changed: (ids) async => changes.addAll(ids),
@@ -90,7 +90,7 @@ void main() {
       expect(backend.completions, 1);
       expect(changes, ['konachan_com']);
       expect(cleanups, 1);
-      expect(controller.activity.value, isNull);
+      expect(controller.activity, isNull);
     },
   );
 
@@ -111,7 +111,7 @@ void main() {
     final backend = Backend();
     final capture = Completer<Object?>();
     final changes = <String>[];
-    final controller = WebChallengeController.forTesting(
+    final controller = WebChallengeService.forTesting(
       backendFactory: () => backend,
       collector: (_, _, _) => capture.future,
       changed: (ids) async => changes.addAll(ids),
@@ -129,8 +129,8 @@ void main() {
     expect(backend.completions, 0);
     expect(backend.cleared, ['konachan_com']);
     expect(changes, ['konachan_com']);
-    expect(controller.activity.value, isNull);
-    expect(controller.clearing.value, isFalse);
+    expect(controller.activity, isNull);
+    expect(controller.clearing, isFalse);
   });
 
   testWidgets('verification failure releases activity without publishing', (
@@ -150,7 +150,7 @@ void main() {
     final backend = Backend()
       ..failure = const WebChallengeFailure('verificationFailed');
     final changes = <String>[];
-    final controller = WebChallengeController.forTesting(
+    final controller = WebChallengeService.forTesting(
       backendFactory: () => backend,
       collector: (_, _, _) async => candidate,
       changed: (ids) async => changes.addAll(ids),
@@ -160,7 +160,7 @@ void main() {
       throwsA(isA<WebChallengeFailure>()),
     );
     expect(changes, isEmpty);
-    expect(controller.activity.value, isNull);
+    expect(controller.activity, isNull);
     backend.failure = null;
     expect(await controller.resolve(context, 'konachan_com'), isTrue);
   });

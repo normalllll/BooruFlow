@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:booruflow/core/settings_service.dart';
+import 'package:booruflow/core/settings/settings_service.dart';
 import 'package:booruflow/src/rust/api/booru_auth.dart';
 import 'package:booruflow/src/rust/api/booru_engine.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
@@ -8,14 +8,23 @@ import 'package:flutter/foundation.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:path_provider/path_provider.dart';
 
-final class BooruService {
-  BooruService._();
+class BooruService {
+  BooruService();
 
-  static final instance = BooruService._();
+  static final instance = BooruService();
   static const _credentialBoxName = 'booru_credentials';
 
-  final selectedSource = ValueNotifier<String>('yande');
-  final revision = ValueNotifier<int>(0);
+  String _selectedSourceId = 'yande';
+  String get selectedSourceId => _selectedSourceId;
+  int _revision = 0;
+  int get revision => _revision;
+  final _changes = StreamController<void>.broadcast(sync: true);
+  Stream<void> get changes => _changes.stream;
+  void notifyChanged() {
+    _revision++;
+    _changes.add(null);
+  }
+
   final _webChallengeRevisions = <String, String>{};
   late BooruEngine _engine;
   late List<BooruSource> _sources;
@@ -28,10 +37,10 @@ final class BooruService {
   @visibleForTesting
   void useSourcesForTesting(List<BooruSource> sources) {
     _sources = List.unmodifiable(sources);
-    selectedSource.value = sources.first.sourceId;
+    _selectedSourceId = sources.first.sourceId;
   }
 
-  BooruSource get currentSource => sourceById(selectedSource.value);
+  BooruSource get currentSource => sourceById(_selectedSourceId);
   String cacheRevision(String sourceId) {
     final stored = _storedRevision('$sourceId:revision', 'anonymous');
     final browser = _webChallengeRevisions[sourceId];
@@ -58,7 +67,7 @@ final class BooruService {
     _version = version;
     _supportDirectory = (await getApplicationSupportDirectory()).path;
     _credentials = await Hive.openBox<dynamic>(_credentialBoxName);
-    selectedSource.value = SettingsService.defaultSourceId;
+    _selectedSourceId = SettingsService.defaultSourceId;
     await _createEngine();
   }
 
@@ -68,7 +77,7 @@ final class BooruService {
       'networkRevision',
       DateTime.now().microsecondsSinceEpoch.toString(),
     );
-    revision.value++;
+    notifyChanged();
   }
 
   Future<RouteCacheState> refreshNetworkRoutes() async {
@@ -77,13 +86,15 @@ final class BooruService {
       'networkRevision',
       DateTime.now().microsecondsSinceEpoch.toString(),
     );
-    revision.value++;
+    notifyChanged();
     return state;
   }
 
   void selectSource(String sourceId) {
     if (!_sources.any((source) => source.sourceId == sourceId)) return;
-    selectedSource.value = sourceId;
+    if (_selectedSourceId == sourceId) return;
+    _selectedSourceId = sourceId;
+    _changes.add(null);
   }
 
   Future<void> _createEngine() async {
@@ -97,7 +108,7 @@ final class BooruService {
       ),
     );
     _sources = await _engine.listSources();
-    if (!_sources.any((source) => source.sourceId == selectedSource.value)) {
+    if (!_sources.any((source) => source.sourceId == _selectedSourceId)) {
       selectSource(_sources.first.sourceId);
     }
     await _restoreCredentials();
@@ -121,7 +132,7 @@ final class BooruService {
         /* Cache bookkeeping cannot undo a committed Rust session. */
       }
     }
-    revision.value++;
+    notifyChanged();
   }
 
   Future<AuthState> authState(String sourceId) =>
@@ -147,7 +158,7 @@ final class BooruService {
       '$sourceId:revision',
       DateTime.now().microsecondsSinceEpoch.toString(),
     );
-    revision.value++;
+    notifyChanged();
     return state;
   }
 
@@ -170,7 +181,7 @@ final class BooruService {
       '$sourceId:revision',
       DateTime.now().microsecondsSinceEpoch.toString(),
     );
-    revision.value++;
+    notifyChanged();
     return state;
   }
 
@@ -181,7 +192,7 @@ final class BooruService {
       '$sourceId:revision',
       DateTime.now().microsecondsSinceEpoch.toString(),
     );
-    revision.value++;
+    notifyChanged();
   }
 
   Map<String, String> savedAuth(String sourceId) {

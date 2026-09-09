@@ -76,6 +76,7 @@ imageZoom:
   title: 画像をズーム
 
 downloads:
+  viewLog: ログを表示
   title: ダウンロード
   tasksTitle: ダウンロードタスク
   noTasks: ダウンロードタスクはありません
@@ -377,3 +378,9 @@ webChallenge:
   cleanupFailed: ウェブデータの消去が完了していません。しばらくしてから再試行してください。
   operationSuperseded: データの消去またはネットワーク設定の変更により、認証をキャンセルしました。
   noCookies: 使用可能な認証データがありません。人間確認を完了してから戻ってください。
+
+nativeWindow:
+  minimize: 最小化
+  maximize: 最大化
+  restore: 元に戻す
+  close: 閉じる

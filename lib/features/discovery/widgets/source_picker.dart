@@ -1,9 +1,10 @@
-import 'package:booruflow/features/booru/booru_service.dart';
+import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/shared/app_theme.dart';
 import 'package:booruflow/shared/widgets/form_controls.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SourcePicker extends StatelessWidget {
+class SourcePicker extends ConsumerWidget {
   const SourcePicker({
     super.key,
     required this.sourceId,
@@ -15,8 +16,8 @@ class SourcePicker extends StatelessWidget {
   final ValueChanged<String> onChanged;
 
   @override
-  Widget build(BuildContext context) {
-    final sources = BooruService.instance.sources;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sources = ref.watch(booruSourcesProvider);
     final labelStyle = Theme.of(
       context,
     ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600);

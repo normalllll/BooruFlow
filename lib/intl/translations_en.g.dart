@@ -62,6 +62,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
   late final Translations$discovery$en discovery = Translations$discovery$en.internal(_root);
   late final Translations$mediaError$en mediaError = Translations$mediaError$en.internal(_root);
   late final Translations$webChallenge$en webChallenge = Translations$webChallenge$en.internal(_root);
+  late final Translations$nativeWindow$en nativeWindow = Translations$nativeWindow$en.internal(_root);
 }
 
 // Path: generic
@@ -328,6 +329,9 @@ class Translations$downloads$en {
   final Translations _root; // ignore: unused_field
 
   // Translations
+
+  /// en: 'View log'
+  String get viewLog => 'View log';
 
   /// en: 'Downloads'
   String get title => 'Downloads';
@@ -818,6 +822,27 @@ class Translations$webChallenge$en {
 
   /// en: 'The page has not provided usable verification data. Complete verification before returning.'
   String get noCookies => 'The page has not provided usable verification data. Complete verification before returning.';
+}
+
+// Path: nativeWindow
+class Translations$nativeWindow$en {
+  Translations$nativeWindow$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'Minimize'
+  String get minimize => 'Minimize';
+
+  /// en: 'Maximize'
+  String get maximize => 'Maximize';
+
+  /// en: 'Restore'
+  String get restore => 'Restore';
+
+  /// en: 'Close'
+  String get close => 'Close';
 }
 
 // Path: downloads.messages
@@ -1421,6 +1446,7 @@ extension on Translations {
       'postDetail.childPost' => 'Child post',
       'postSearch.title' => 'Search',
       'imageZoom.title' => 'Zoom Image',
+      'downloads.viewLog' => 'View log',
       'downloads.title' => 'Downloads',
       'downloads.tasksTitle' => 'Download tasks',
       'downloads.noTasks' => 'No download tasks',
@@ -1711,6 +1737,10 @@ extension on Translations {
       'webChallenge.operationSuperseded' => 'Verification was cancelled by a data clear or network settings change.',
       'webChallenge.noCookies' =>
         'The page has not provided usable verification data. Complete verification before returning.',
+      'nativeWindow.minimize' => 'Minimize',
+      'nativeWindow.maximize' => 'Maximize',
+      'nativeWindow.restore' => 'Restore',
+      'nativeWindow.close' => 'Close',
       _ => null,
     };
   }

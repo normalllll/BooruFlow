@@ -76,6 +76,7 @@ imageZoom:
   title: Zoom Image
 
 downloads:
+  viewLog: View log
   title: Downloads
   tasksTitle: Download tasks
   noTasks: No download tasks
@@ -377,3 +378,9 @@ webChallenge:
   cleanupFailed: Web data cleanup is incomplete. Try clearing it again shortly.
   operationSuperseded: Verification was cancelled by a data clear or network settings change.
   noCookies: The page has not provided usable verification data. Complete verification before returning.
+
+nativeWindow:
+  minimize: Minimize
+  maximize: Maximize
+  restore: Restore
+  close: Close

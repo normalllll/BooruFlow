@@ -1,10 +1,9 @@
+import 'package:booruflow/features/settings/network/network_logic.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'network_settings_state.dart';
 
 class NetworkStatusPanel extends ConsumerStatefulWidget {
   const NetworkStatusPanel({super.key});
@@ -13,12 +12,12 @@ class NetworkStatusPanel extends ConsumerStatefulWidget {
 }
 
 class _NetworkStatusPanelState extends ConsumerState<NetworkStatusPanel> {
-  late final NetworkStatusController _controller;
+  late final NetworkStatus _controller;
   List<BooruSource> get _sources =>
       ref.read(networkProbeBackendProvider).sources;
   NetworkStatusState get _status => ref.read(networkStatusProvider);
   RouteCacheState? get _state => _status.routes;
-  Map<String, String> get _checks => _status.checks;
+  Map<String, SourceCheckStatus> get _checks => _status.checks;
   Map<String, SourceConnectionCheck> get _details => _status.details;
   Map<String, String> get _errors => _status.errors;
   bool get _busy => _status.busy;
@@ -42,17 +41,17 @@ class _NetworkStatusPanelState extends ConsumerState<NetworkStatusPanel> {
       _controller.checkSources(sources);
   Future<void> _refresh() => _controller.refreshRoutes();
   String _label(String id) => switch (_checks[id]) {
-    'available' => t.settings.network.sourceAvailable,
-    'partial' => t.settings.network.sourcePartial,
-    'failed' => t.settings.network.sourceUnavailable,
-    'checking' => t.settings.network.checkingCompact,
+    SourceCheckStatus.available => t.settings.network.sourceAvailable,
+    SourceCheckStatus.partial => t.settings.network.sourcePartial,
+    SourceCheckStatus.failed => t.settings.network.sourceUnavailable,
+    SourceCheckStatus.checking => t.settings.network.checkingCompact,
     _ => t.settings.network.uncheckedCompact,
   };
   Color _color(String id) => switch (_checks[id]) {
-    'available' => Colors.greenAccent.shade400,
-    'partial' => Colors.amber,
-    'failed' => Colors.redAccent,
-    'checking' => Colors.blue,
+    SourceCheckStatus.available => Colors.greenAccent.shade400,
+    SourceCheckStatus.partial => Colors.amber,
+    SourceCheckStatus.failed => Colors.redAccent,
+    SourceCheckStatus.checking => Colors.blue,
     _ => Colors.grey,
   };
   @override
@@ -61,9 +60,14 @@ class _NetworkStatusPanelState extends ConsumerState<NetworkStatusPanel> {
     ref.watch(networkConfigProvider);
     final n = t.settings.network;
     if (_sources.isEmpty) return const SizedBox();
-    final available = _checks.values.where((s) => s == 'available').length;
+    final available = _checks.values
+        .where((s) => s == SourceCheckStatus.available)
+        .length;
     final issues = _checks.values
-        .where((s) => s == 'partial' || s == 'failed')
+        .where(
+          (s) =>
+              s == SourceCheckStatus.partial || s == SourceCheckStatus.failed,
+        )
         .length;
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -314,7 +318,7 @@ class _NetworkStatusPanelState extends ConsumerState<NetworkStatusPanel> {
               icon: Icons.refresh_rounded,
               compact: true,
               kind: AppButtonKind.ghost,
-              loading: _checks[source.sourceId] == 'checking',
+              loading: _checks[source.sourceId] == SourceCheckStatus.checking,
               onPressed: _busy || !_enabled
                   ? null
                   : () => _checkSources([source]),

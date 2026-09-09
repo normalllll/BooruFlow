@@ -1,15 +1,15 @@
 import 'dart:async';
 
+import 'package:booruflow/features/settings/network/proxy_logic.dart';
+import 'package:booruflow/features/settings/network/services/proxy_connection.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/widgets/form_controls.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'proxy_connection.dart';
-import 'proxy_settings_state.dart';
-
-export 'proxy_connection.dart' show proxyEndpoint, probeProxyConnectivity;
+export 'package:booruflow/features/settings/network/services/proxy_connection.dart'
+    show proxyEndpoint, probeProxyConnectivity;
 
 class ProxySettingsPanel extends ConsumerStatefulWidget {
   const ProxySettingsPanel({
@@ -31,8 +31,7 @@ class _ProxySettingsPanelState extends ConsumerState<ProxySettingsPanel> {
   late final TextEditingController _host;
   late final TextEditingController _port;
   ProxySettingsState get _form => ref.read(proxySettingsProvider);
-  ProxySettingsController get _controller =>
-      ref.read(proxySettingsProvider.notifier);
+  ProxySettings get _controller => ref.read(proxySettingsProvider.notifier);
   String get _protocol => _form.protocol;
   bool get _busy => _form.busy;
   bool get _probing => _form.probing;

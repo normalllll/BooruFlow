@@ -1,15 +1,16 @@
 import 'dart:async';
 
-import 'package:booruflow/features/booru/booru_service.dart';
+import 'package:booruflow/features/booru/services/booru_service.dart';
 import 'package:booruflow/features/discovery/widgets/source_picker.dart';
 import 'package:booruflow/features/search/post_search_page.dart';
-import 'package:booruflow/features/search/tag_suggestion_repository.dart';
+import 'package:booruflow/features/search/services/tag_suggestion_repository.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 BooruSource testSource(String id) => BooruSource(
@@ -105,11 +106,13 @@ void main() {
   });
   Future<void> mount(WidgetTester tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: PostSearchPage(
-          sourceId: 'first',
-          repository: repository,
-          onSubmit: (_, tags) => submissions.add(tags),
+      ProviderScope(
+        child: MaterialApp(
+          home: PostSearchPage(
+            sourceId: 'first',
+            repository: repository,
+            onSubmit: (_, tags) => submissions.add(tags),
+          ),
         ),
       ),
     );
@@ -270,12 +273,14 @@ void main() {
 
   testWidgets('tag modal content uses one shared left inset', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: PostSearchPage(
-          sourceId: 'first',
-          repository: repository,
-          initialTags: List.generate(30, (i) => 'selected_tag_$i'),
-          onSubmit: (_, _) {},
+      ProviderScope(
+        child: MaterialApp(
+          home: PostSearchPage(
+            sourceId: 'first',
+            repository: repository,
+            initialTags: List.generate(30, (i) => 'selected_tag_$i'),
+            onSubmit: (_, _) {},
+          ),
         ),
       ),
     );
@@ -427,20 +432,22 @@ void main() {
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.view.resetDevicePixelRatio);
         await tester.pumpWidget(
-          MaterialApp(
-            locale: locale.flutterLocale,
-            supportedLocales: AppLocaleUtils.supportedLocales,
-            localizationsDelegates: GlobalMaterialLocalizations.delegates,
-            home: MediaQuery(
-              data: MediaQueryData(
-                size: Size(width, 1000),
-                textScaler: const TextScaler.linear(2),
-              ),
-              child: PostSearchPage(
-                sourceId: 'first',
-                repository: repository,
-                initialTags: List.generate(20, (i) => '長い作品名_超长角色标签_$i'),
-                onSubmit: (_, _) {},
+          ProviderScope(
+            child: MaterialApp(
+              locale: locale.flutterLocale,
+              supportedLocales: AppLocaleUtils.supportedLocales,
+              localizationsDelegates: GlobalMaterialLocalizations.delegates,
+              home: MediaQuery(
+                data: MediaQueryData(
+                  size: Size(width, 1000),
+                  textScaler: const TextScaler.linear(2),
+                ),
+                child: PostSearchPage(
+                  sourceId: 'first',
+                  repository: repository,
+                  initialTags: List.generate(20, (i) => '長い作品名_超长角色标签_$i'),
+                  onSubmit: (_, _) {},
+                ),
               ),
             ),
           ),

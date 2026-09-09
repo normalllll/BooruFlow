@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:booruflow/features/search/tag_suggestion_repository.dart';
+import 'package:booruflow/features/search/services/tag_suggestion_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive.dart';
 

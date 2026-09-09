@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
-import 'package:booruflow/features/booru/web_challenge_button.dart';
+import 'package:booruflow/features/booru/widgets/web_challenge_button.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
 import 'package:booruflow/src/rust/booru/error.dart';

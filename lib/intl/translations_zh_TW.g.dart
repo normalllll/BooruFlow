@@ -73,6 +73,8 @@ class TranslationsZhTw extends Translations with BaseTranslations<AppLocale, Tra
   late final Translations$mediaError$zh_TW mediaError = Translations$mediaError$zh_TW.internal(_root);
   @override
   late final Translations$webChallenge$zh_TW webChallenge = Translations$webChallenge$zh_TW.internal(_root);
+  @override
+  late final Translations$nativeWindow$zh_TW nativeWindow = Translations$nativeWindow$zh_TW.internal(_root);
 }
 
 // Path: generic
@@ -271,6 +273,8 @@ class Translations$downloads$zh_TW extends Translations$downloads$en {
   final TranslationsZhTw _root; // ignore: unused_field
 
   // Translations
+  @override
+  String get viewLog => '檢視記錄';
   @override
   String get title => '下載項';
   @override
@@ -625,6 +629,23 @@ class Translations$webChallenge$zh_TW extends Translations$webChallenge$en {
   String get operationSuperseded => '驗證已因清空資料或變更網路設定而取消。';
   @override
   String get noCookies => '網頁尚未提供可用的驗證資料，請完成人機驗證後再返回。';
+}
+
+// Path: nativeWindow
+class Translations$nativeWindow$zh_TW extends Translations$nativeWindow$en {
+  Translations$nativeWindow$zh_TW.internal(TranslationsZhTw root) : this._root = root, super.internal(root);
+
+  final TranslationsZhTw _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get minimize => '最小化';
+  @override
+  String get maximize => '最大化';
+  @override
+  String get restore => '還原';
+  @override
+  String get close => '關閉';
 }
 
 // Path: downloads.messages
@@ -1100,6 +1121,7 @@ extension on TranslationsZhTw {
       'postDetail.childPost' => '子帖子',
       'postSearch.title' => '搜尋',
       'imageZoom.title' => '縮放圖片',
+      'downloads.viewLog' => '檢視記錄',
       'downloads.title' => '下載項',
       'downloads.tasksTitle' => '下載任務',
       'downloads.noTasks' => '尚無下載任務',
@@ -1370,6 +1392,10 @@ extension on TranslationsZhTw {
       'webChallenge.cleanupFailed' => '網頁資料尚未清理完成，請稍後再次清空。',
       'webChallenge.operationSuperseded' => '驗證已因清空資料或變更網路設定而取消。',
       'webChallenge.noCookies' => '網頁尚未提供可用的驗證資料，請完成人機驗證後再返回。',
+      'nativeWindow.minimize' => '最小化',
+      'nativeWindow.maximize' => '最大化',
+      'nativeWindow.restore' => '還原',
+      'nativeWindow.close' => '關閉',
       _ => null,
     };
   }

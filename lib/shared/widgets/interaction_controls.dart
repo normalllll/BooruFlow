@@ -120,11 +120,14 @@ class AppButton extends StatelessWidget {
   }
 }
 
+enum AppIconButtonKind { standard, surface, compact }
+
 class AppIconButton extends StatelessWidget {
   const AppIconButton({
     required this.icon,
     required this.onPressed,
     this.tooltip,
+    this.kind = AppIconButtonKind.standard,
     this.selected = false,
     this.selectedBackgroundColor,
     this.danger = false,
@@ -136,6 +139,7 @@ class AppIconButton extends StatelessWidget {
     super.key,
   });
 
+  final AppIconButtonKind kind;
   final Widget icon;
   final VoidCallback? onPressed;
   final String? tooltip;
@@ -163,14 +167,18 @@ class AppIconButton extends StatelessWidget {
       tooltip: tooltip,
       onPressed: onPressed,
       icon: icon,
-      iconSize: iconSize,
-      padding: padding,
-      constraints: constraints,
+      iconSize: kind == AppIconButtonKind.compact ? 18 : iconSize,
+      padding: kind == AppIconButtonKind.compact ? EdgeInsets.zero : padding,
+      constraints:
+          constraints ??
+          (kind == AppIconButtonKind.compact
+              ? const BoxConstraints.tightFor(width: 28, height: 28)
+              : null),
       visualDensity: visualDensity,
       style: ButtonStyle(
         minimumSize: WidgetStatePropertyAll(
           constraints?.constrain(const Size.square(40)) ??
-              const Size.square(40),
+              Size.square(kind == AppIconButtonKind.compact ? 28 : 40),
         ),
         foregroundColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.disabled)
@@ -178,15 +186,31 @@ class AppIconButton extends StatelessWidget {
               : foreground,
         ),
         backgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (kind == AppIconButtonKind.surface) {
+            return tokens.surfaceRaised.withValues(
+              alpha: states.contains(WidgetState.disabled) ? .55 : .92,
+            );
+          }
           if (selected) {
             return selectedBackgroundColor ?? colors.primaryContainer;
           }
           if (states.contains(WidgetState.hovered)) return tokens.surfaceMuted;
           return Colors.transparent;
         }),
+        tapTargetSize: kind == AppIconButtonKind.compact
+            ? MaterialTapTargetSize.shrinkWrap
+            : null,
+        elevation: WidgetStatePropertyAll(
+          kind == AppIconButtonKind.surface ? 2 : 0,
+        ),
+        shadowColor: WidgetStatePropertyAll(tokens.shadow),
         overlayColor: const WidgetStatePropertyAll(Colors.transparent),
         shape: WidgetStatePropertyAll(
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+              kind == AppIconButtonKind.surface ? 8 : 12,
+            ),
+          ),
         ),
       ),
     );

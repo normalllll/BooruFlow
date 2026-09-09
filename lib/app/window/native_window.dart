@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:booruflow/intl/translations.g.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -130,31 +131,14 @@ class NativeWindowLabels {
   final String close;
 
   factory NativeWindowLabels.forLocale(Locale locale) {
-    if (locale.languageCode == 'ja') {
-      return const NativeWindowLabels(
-        minimize: '最小化',
-        maximize: '最大化',
-        restore: '元に戻す',
-        close: '閉じる',
-      );
-    }
-    if (locale.languageCode == 'zh') {
-      final traditional =
-          locale.scriptCode == 'Hant' ||
-          locale.countryCode == 'TW' ||
-          locale.countryCode == 'HK';
-      return NativeWindowLabels(
-        minimize: '最小化',
-        maximize: '最大化',
-        restore: traditional ? '還原' : '还原',
-        close: traditional ? '關閉' : '关闭',
-      );
-    }
-    return const NativeWindowLabels(
-      minimize: 'Minimize',
-      maximize: 'Maximize',
-      restore: 'Restore',
-      close: 'Close',
+    final labels = AppLocaleUtils.parse(
+      locale.toLanguageTag(),
+    ).translations.nativeWindow;
+    return NativeWindowLabels(
+      minimize: labels.minimize,
+      maximize: labels.maximize,
+      restore: labels.restore,
+      close: labels.close,
     );
   }
 }

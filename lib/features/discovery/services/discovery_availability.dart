@@ -1,5 +1,5 @@
 import 'package:booruflow/core/app_runtime.dart';
-import 'package:booruflow/features/booru/booru_service.dart';
+import 'package:booruflow/features/booru/services/booru_service.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
 import 'package:hive_ce/hive.dart';
@@ -7,13 +7,15 @@ import 'package:hive_ce/hive.dart';
 /// Successful probes survive restarts; authentication, route configuration and
 /// app changes invalidate them without changing the adapter's static contract.
 class DiscoveryAvailability {
+  DiscoveryAvailability({this.service});
+  final BooruService? service;
   static final instance = DiscoveryAvailability();
   final _pending = <String, Future<CapabilityAvailability>>{};
   Future<CapabilityAvailability> popular(
     String source, {
     bool refresh = false,
   }) {
-    final service = BooruService.instance;
+    final service = this.service ?? BooruService.instance;
     final key =
         '$source:${AppInfo.version}:${service.cacheRevision(source)}:${service.networkCacheRevision}';
     return _pending.putIfAbsent(key, () async {

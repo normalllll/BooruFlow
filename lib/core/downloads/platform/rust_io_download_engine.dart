@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:booruflow/core/downloads/download_engine.dart';
 import 'package:booruflow/core/downloads/download_file_system.dart';
 import 'package:booruflow/core/downloads/download_models.dart';
-import 'package:booruflow/features/booru/booru_service.dart';
+import 'package:booruflow/features/booru/services/booru_service.dart';
 import 'package:booruflow/src/rust/api/booru_download.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:path/path.dart' as p;

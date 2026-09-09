@@ -1,7 +1,7 @@
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
-import 'package:booruflow/features/booru/booru_service.dart';
-import 'package:booruflow/features/booru/web_challenge_button.dart';
-import 'package:booruflow/features/booru/web_challenge_controller.dart';
+import 'package:booruflow/features/booru/services/web_challenge_service.dart';
+import 'package:booruflow/features/booru/web_challenge_logic.dart';
+import 'package:booruflow/features/booru/widgets/web_challenge_button.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
@@ -9,8 +9,6 @@ import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/api/web_challenge.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'web_challenge_data_state.dart';
 
 class WebChallengeDataPanel extends ConsumerStatefulWidget {
   const WebChallengeDataPanel({
@@ -22,7 +20,7 @@ class WebChallengeDataPanel extends ConsumerStatefulWidget {
   });
   final List<BooruSource> sources;
   final bool compact;
-  final WebChallengeController? controller;
+  final WebChallengeService? controller;
   final Future<WebChallengeState> Function(String)? readState;
   @override
   ConsumerState<WebChallengeDataPanel> createState() =>
@@ -31,11 +29,13 @@ class WebChallengeDataPanel extends ConsumerStatefulWidget {
 
 class _WebChallengeDataPanelState extends ConsumerState<WebChallengeDataPanel> {
   bool _expanded = false;
-  WebChallengeController get controller =>
-      widget.controller ?? WebChallengeController.instance;
+  WebChallengeService get controller =>
+      widget.controller ?? ref.read(webChallengeServiceProvider);
   Future<void> _clear(List<String> sources) async {
     try {
-      await controller.clearSources(sources);
+      await ref
+          .read(webChallengeSessionProvider(controller).notifier)
+          .clearSources(sources);
       if (mounted) {
         for (final source in sources) {
           ref.invalidate(
@@ -53,12 +53,9 @@ class _WebChallengeDataPanelState extends ConsumerState<WebChallengeDataPanel> {
   }
 
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: Listenable.merge([
-      BooruService.instance.revision,
-      controller.clearing,
-    ]),
-    builder: (context, _) => ExpansionTile(
+  Widget build(BuildContext context) {
+    final session = ref.watch(webChallengeSessionProvider(controller));
+    return ExpansionTile(
       leading: const Icon(Icons.verified_user_outlined),
       title: Text(t.webChallenge.title),
       subtitle: widget.compact ? null : Text(t.webChallenge.clearDescription),
@@ -72,8 +69,8 @@ class _WebChallengeDataPanelState extends ConsumerState<WebChallengeDataPanel> {
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                 leading: const Icon(Icons.delete_sweep_outlined),
                 title: Text(t.webChallenge.clearAll),
-                enabled: !controller.clearing.value,
-                onTap: controller.clearing.value
+                enabled: !session.clearing,
+                onTap: session.clearing
                     ? null
                     : () => _clear(
                         widget.sources.map((s) => s.sourceId).toList(),
@@ -145,7 +142,7 @@ class _WebChallengeDataPanelState extends ConsumerState<WebChallengeDataPanel> {
                           key: ValueKey('clear-web-data-${source.sourceId}'),
                           tooltip: t.webChallenge.clear,
                           icon: const Icon(Icons.delete_outline),
-                          onPressed: controller.clearing.value
+                          onPressed: session.clearing
                               ? null
                               : () => _clear([source.sourceId]),
                         ),
@@ -155,6 +152,6 @@ class _WebChallengeDataPanelState extends ConsumerState<WebChallengeDataPanel> {
                 ),
             ]
           : const [],
-    ),
-  );
+    );
+  }
 }

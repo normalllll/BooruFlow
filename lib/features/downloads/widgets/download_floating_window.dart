@@ -2,18 +2,18 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:booruflow/core/app_runtime.dart';
-import 'package:booruflow/core/downloads/download_manager.dart';
 import 'package:booruflow/core/downloads/download_models.dart';
-import 'package:booruflow/features/downloads/booru_download_item.dart';
 import 'package:booruflow/features/downloads/logic.dart';
+import 'package:booruflow/features/downloads/models/booru_download_item.dart';
 import 'package:booruflow/features/downloads/widgets/download_task_widgets.dart';
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/shared/widgets/interaction_controls.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class DownloadFloatingWindow extends StatefulWidget {
+class DownloadFloatingWindow extends ConsumerStatefulWidget {
   const DownloadFloatingWindow({
     required this.child,
     required this.onTaskTap,
@@ -24,10 +24,12 @@ class DownloadFloatingWindow extends StatefulWidget {
   final ValueChanged<Post> onTaskTap;
 
   @override
-  State<DownloadFloatingWindow> createState() => _DownloadFloatingWindowState();
+  ConsumerState<DownloadFloatingWindow> createState() =>
+      _DownloadFloatingWindowState();
 }
 
-class _DownloadFloatingWindowState extends State<DownloadFloatingWindow> {
+class _DownloadFloatingWindowState
+    extends ConsumerState<DownloadFloatingWindow> {
   static const _desktopRailWidth = 96.0;
   static const _desktopButtonSize = 52.0;
   static const _mobileButtonSize = 56.0;
@@ -38,8 +40,6 @@ class _DownloadFloatingWindowState extends State<DownloadFloatingWindow> {
   static const _desktopBottomOffset = 18.0;
   static const _mobileBottomNavigationReserve = 88.0;
 
-  final _sessionStartedAt = DateTime.now();
-  final _sessionTaskIds = <String>{};
   Offset? _mobilePosition;
   bool _expanded = false;
 
@@ -51,64 +51,52 @@ class _DownloadFloatingWindowState extends State<DownloadFloatingWindow> {
         Positioned.fill(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              return StreamBuilder<List<BooruDownloadItem>>(
-                stream: BooruDownloads.instance.watchItems,
-                builder: (context, snapshot) {
-                  final tasks =
-                      snapshot.data ?? BooruDownloads.instance.currentItems;
-                  _rememberSessionTasks(tasks);
-
-                  final panelTasks = [
-                    for (final task in tasks)
-                      if (_sessionTaskIds.contains(task.snapshot.id)) task,
-                  ];
-                  final Widget overlay;
-                  if (panelTasks.isEmpty) {
-                    overlay = const SizedBox.shrink(
-                      key: ValueKey<String>('download-overlay-empty'),
-                    );
-                  } else {
-                    final summary = DownloadSummary.fromTasks([
-                      for (final task in panelTasks) task.snapshot,
-                    ]);
-                    overlay = KeyedSubtree(
-                      key: const ValueKey<String>('download-overlay-visible'),
-                      child: _usesDesktopDock(constraints.biggest)
-                          ? _buildDesktopDock(
-                              constraints.biggest,
-                              summary,
-                              panelTasks,
-                            )
-                          : _buildMobileWindow(
-                              context,
-                              constraints,
-                              summary,
-                              panelTasks,
-                            ),
-                    );
-                  }
-
-                  return AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 240),
-                    reverseDuration: const Duration(milliseconds: 180),
-                    switchInCurve: Curves.easeOutBack,
-                    switchOutCurve: Curves.easeInCubic,
-                    transitionBuilder: (child, animation) {
-                      return FadeTransition(
-                        opacity: animation,
-                        child: ScaleTransition(
-                          scale: Tween<double>(
-                            begin: 0.82,
-                            end: 1,
-                          ).animate(animation),
-                          alignment: Alignment.bottomLeft,
-                          child: child,
+              final panelTasks = ref.watch(sessionDownloadsProvider);
+              final Widget overlay;
+              if (panelTasks.isEmpty) {
+                overlay = const SizedBox.shrink(
+                  key: ValueKey<String>('download-overlay-empty'),
+                );
+              } else {
+                final summary = DownloadSummary.fromTasks([
+                  for (final task in panelTasks) task.snapshot,
+                ]);
+                overlay = KeyedSubtree(
+                  key: const ValueKey<String>('download-overlay-visible'),
+                  child: _usesDesktopDock(constraints.biggest)
+                      ? _buildDesktopDock(
+                          constraints.biggest,
+                          summary,
+                          panelTasks,
+                        )
+                      : _buildMobileWindow(
+                          context,
+                          constraints,
+                          summary,
+                          panelTasks,
                         ),
-                      );
-                    },
-                    child: overlay,
+                );
+              }
+
+              return AnimatedSwitcher(
+                duration: const Duration(milliseconds: 240),
+                reverseDuration: const Duration(milliseconds: 180),
+                switchInCurve: Curves.easeOutBack,
+                switchOutCurve: Curves.easeInCubic,
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: ScaleTransition(
+                      scale: Tween<double>(
+                        begin: 0.82,
+                        end: 1,
+                      ).animate(animation),
+                      alignment: Alignment.bottomLeft,
+                      child: child,
+                    ),
                   );
                 },
+                child: overlay,
               );
             },
           ),
@@ -326,19 +314,9 @@ class _DownloadFloatingWindowState extends State<DownloadFloatingWindow> {
     });
   }
 
-  void _rememberSessionTasks(List<BooruDownloadItem> tasks) {
-    for (final item in tasks) {
-      final task = item.snapshot;
-      if (!task.createdAt.isBefore(_sessionStartedAt) ||
-          _isActiveOrNeedsAttention(task)) {
-        _sessionTaskIds.add(task.id);
-      }
-    }
-  }
-
   Future<void> _syncDownloads() async {
     try {
-      await downloadManager.sync();
+      await ref.read(downloadManagerProvider).sync();
     } catch (error) {
       AppToast.errorWithCause(t.downloads.syncFailed, error);
     }
@@ -815,13 +793,4 @@ class _DownloadBadgeView extends StatelessWidget {
       ),
     );
   }
-}
-
-bool _isActiveOrNeedsAttention(DownloadTaskSnapshot task) {
-  return task.status == DownloadStatus.queued ||
-      task.status == DownloadStatus.running ||
-      task.status == DownloadStatus.failed ||
-      task.saveState == SaveState.pending ||
-      task.saveState == SaveState.saving ||
-      task.saveState == SaveState.failed;
 }

@@ -73,6 +73,8 @@ class TranslationsJa extends Translations with BaseTranslations<AppLocale, Trans
   late final _Translations$mediaError$ja mediaError = _Translations$mediaError$ja._(_root);
   @override
   late final _Translations$webChallenge$ja webChallenge = _Translations$webChallenge$ja._(_root);
+  @override
+  late final _Translations$nativeWindow$ja nativeWindow = _Translations$nativeWindow$ja._(_root);
 }
 
 // Path: generic
@@ -272,6 +274,8 @@ class _Translations$downloads$ja extends Translations$downloads$en {
   final TranslationsJa _root; // ignore: unused_field
 
   // Translations
+  @override
+  String get viewLog => 'ログを表示';
   @override
   String get title => 'ダウンロード';
   @override
@@ -630,6 +634,23 @@ class _Translations$webChallenge$ja extends Translations$webChallenge$en {
   String get operationSuperseded => 'データの消去またはネットワーク設定の変更により、認証をキャンセルしました。';
   @override
   String get noCookies => '使用可能な認証データがありません。人間確認を完了してから戻ってください。';
+}
+
+// Path: nativeWindow
+class _Translations$nativeWindow$ja extends Translations$nativeWindow$en {
+  _Translations$nativeWindow$ja._(TranslationsJa root) : this._root = root, super.internal(root);
+
+  final TranslationsJa _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get minimize => '最小化';
+  @override
+  String get maximize => '最大化';
+  @override
+  String get restore => '元に戻す';
+  @override
+  String get close => '閉じる';
 }
 
 // Path: downloads.messages
@@ -1098,6 +1119,7 @@ extension on TranslationsJa {
       'postDetail.childPost' => '子投稿',
       'postSearch.title' => '検索',
       'imageZoom.title' => '画像をズーム',
+      'downloads.viewLog' => 'ログを表示',
       'downloads.title' => 'ダウンロード',
       'downloads.tasksTitle' => 'ダウンロードタスク',
       'downloads.noTasks' => 'ダウンロードタスクはありません',
@@ -1372,6 +1394,10 @@ extension on TranslationsJa {
       'webChallenge.cleanupFailed' => 'ウェブデータの消去が完了していません。しばらくしてから再試行してください。',
       'webChallenge.operationSuperseded' => 'データの消去またはネットワーク設定の変更により、認証をキャンセルしました。',
       'webChallenge.noCookies' => '使用可能な認証データがありません。人間確認を完了してから戻ってください。',
+      'nativeWindow.minimize' => '最小化',
+      'nativeWindow.maximize' => '最大化',
+      'nativeWindow.restore' => '元に戻す',
+      'nativeWindow.close' => '閉じる',
       _ => null,
     };
   }

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:booruflow/src/rust/api/booru_models.dart';
-import 'package:flutter/foundation.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 
 abstract interface class SettingsServiceStore {
@@ -43,7 +42,8 @@ final class HiveSettingsServiceStore implements SettingsServiceStore {
 }
 
 class SettingsService {
-  static final changes = ValueNotifier<int>(0);
+  static final _changes = StreamController<void>.broadcast(sync: true);
+  static Stream<void> get changes => _changes.stream;
   SettingsService._();
 
   static const _boxName = 'settings';
@@ -211,7 +211,7 @@ class SettingsService {
       _map[key] = value;
     }
     unawaited(store.write(key, value));
-    changes.value++;
+    _changes.add(null);
   }
 
   static Map<String, dynamic> _filterSettings(Map<String, dynamic> values) {

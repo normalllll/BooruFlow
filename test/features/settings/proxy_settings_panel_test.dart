@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:booruflow/core/settings_service.dart';
-import 'package:booruflow/features/settings/proxy_settings_panel.dart';
-import 'package:booruflow/features/settings/proxy_settings_state.dart';
+import 'package:booruflow/core/settings/settings_service.dart';
+import 'package:booruflow/features/settings/network/proxy_logic.dart';
+import 'package:booruflow/features/settings/network/widgets/proxy_settings_panel.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/material.dart';
@@ -135,7 +135,7 @@ void main() {
   );
 }
 
-class TestProxyController extends ProxySettingsController {
+class TestProxyController extends ProxySettings {
   @override
   ProxySettingsState build() =>
       ProxySettingsState.fromUrl('http://127.0.0.1:7890');

@@ -1,6 +1,6 @@
+import 'package:booruflow/features/booru/models/web_challenge_failure.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
-import 'web_challenge_failure.dart';
 
 String describeBooruError(Object? error) {
   final booruError = switch (error) {
