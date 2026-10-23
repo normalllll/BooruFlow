@@ -7,8 +7,7 @@ generic:
   disabled: 無効
   copiedWithValue: "$value をクリップボードにコピーしました"
   errorWithValue: "エラーが発生しました: $value"
-  errorWithCause: "$message: $cause"
-  loading: 読み込み中...
+  loading: 読み込み中
   loadFailed: 読み込みに失敗しました
   retry: 再試行
   noMoreData: これ以上データはありません
@@ -20,23 +19,23 @@ booruError:
   authenticationRequired: この画像ソースにログインしてから再試行してください。
   authenticationRejected: 画像ソースがアカウント認証情報を拒否しました。
   permissionDenied: 画像ソースがこのリソースへのアクセスを拒否しました。
-  rateLimited: 画像ソースのレート制限中です。しばらくしてから再試行してください。
+  rateLimited: "画像ソースが一時的にリクエストを制限しています。しばらくお待ちください。"
   challengeRequired: "画像ソースでブラウザによる確認が必要です。ブラウザで開いて確認を完了するか、別の画像ソースを選択してください。"
   routeUnavailable: "このドメインのルートがありません。ネットワーク設定で更新してください。システム DNS には切り替えません。"
   sourceUnavailable: 画像ソースは現在利用できません。
-  network: "ネットワークリクエストに失敗しました。インターネット接続を確認して再試行してください。問題が続く場合は、プロキシサーバーの利用を試すこともできます。"
+  network: "通信に失敗しました。接続を確認して再試行してください。"
   timeout: "リクエストがタイムアウトしました。インターネット接続を確認するか、しばらくしてから再試行してください。"
   invalidResponse: 画像ソースから無効なレスポンスが返されました。
   unsafeRedirect: 画像ソースから安全でないリダイレクトが返されました。
-  mediaValidationFailed: 画像レスポンスを検証またはデコードできませんでした。
+  mediaValidationFailed: "メディアの検証またはデコードに失敗しました。"
   cancelled: リクエストはキャンセルされました。
   internal: Booru エンジンの内部エラーが発生しました。
 
 update:
-  checkUpdateStart: アップデートを確認中…
+  checkUpdateStart: アップデートを確認中
   checkUpdateFailed: アップデートの確認に失敗しました。インターネット接続を確認してください。
   selectDownloadUrlFailed: ダウンロードURLが見つかりません。\nプロジェクトページにアクセスし、手動で更新するか、プロジェクトのIssueページでヘルプを求めてください。
-  newVersionFound: "新しいバージョンが見つかりました: $version。\n「ページについて」ページに移動し、「アップデートをダウンロード」をクリックしてください。"
+  newVersionFound: "新しいバージョン $version があります。「このアプリについて」から更新できます。"
   noNewVersionFound: 新しいバージョンが見つかりません。
 
 postList:
@@ -45,13 +44,34 @@ postList:
   titleWithTags: "タグ付き投稿: $tags"
 
 postDetail:
+  fullscreen: 全画面で表示
+  notFound: "作品が見つかりません"
+  parentCount: "$count 親作品"
+  childCount: "$count 子作品"
+  zoomIn: "拡大"
+  zoomOut: "縮小"
+  originalFailed: "元画像を読み込めませんでした"
+  previewShown: "プレビュー画像を表示しています。"
+  uploadedAt: "$date に投稿"
+  pixels: "ピクセル"
+  dimensions: "解像度"
+  searchTag: "このタグで検索"
+  addToSearch: "検索に追加"
+  excludeTag: "このタグを除外"
+  openSource: "出典を開く"
+  resetZoom: "ズームをリセット"
+  ratingGeneral: "一般"
+  ratingSensitive: "センシティブ"
+  ratingQuestionable: "疑わしい"
+  ratingExplicit: "成人向け"
+  ratingUnknown: "不明"
   titleWithId: "投稿: $id"
   tags: タグ
   details: 詳細
   actions: 操作
   rating: レーティング
   fileType: ファイル形式
-  viewOriginal: オリジナルを表示
+  viewOriginal: "オリジナル"
   download: ダウンロード
   relatedLoadFailed: 関連画像の読み込みに失敗しました。再試行できます。
   createdAt: 作成日時
@@ -65,7 +85,7 @@ postDetail:
   size: サイズ
   parent: 親ID
   hasChildren: 子投稿があります
-  similarPosts: 類似投稿
+  similarPosts: 関連画像
   parentPost: 親投稿
   childPost: 子投稿
 
@@ -76,7 +96,36 @@ imageZoom:
   title: 画像をズーム
 
 downloads:
-  viewLog: ログを表示
+  fileMissing: "ファイルは元の場所にありません"
+  locationMissing: "ファイルまたはフォルダーが見つかりません"
+  redownload: "再ダウンロード"
+  remove: 削除
+  activeTasks: "$count 件をダウンロード中"
+  failedTasks: "$count 件のダウンロードに失敗"
+  retryAll: "すべて再試行"
+  today: "今日"
+  yesterday: "昨日"
+  transferRate: "$value/秒"
+  remainingSeconds: "約 $count 秒"
+  remainingMinutes: "約 $count 分"
+  remainingHours: "約 $count 時間"
+  format: "形式"
+  startedAt: "開始日時"
+  browse: "閲覧する"
+  all: "すべて"
+  pause: "一時停止"
+  resume: "再開"
+  pauseAll: "すべて一時停止"
+  resumeAll: "すべて再開"
+  retryFailed: "失敗したタスクを再試行"
+  clearCompleted: "完了済みを削除"
+  openDirectory: "ダウンロード先を開く"
+  openPost: "作品を開く"
+  batch: "一括ダウンロード"
+  batchProgress: "$completed / $total"
+  path: "保存先"
+  taskDetails: "タスクの詳細"
+  viewLog: ログ
   title: ダウンロード
   tasksTitle: ダウンロードタスク
   noTasks: ダウンロードタスクはありません
@@ -122,13 +171,13 @@ downloads:
     saveFailedWith: "保存失敗: タスク $name"
 
 about:
-  title: について
+  title: "このアプリについて"
   projectUrl: プロジェクトURL
   publishPage: 公開ページ
   appVersion: アプリバージョン
   freepivPromotionTitle: freepiv をチェック
-  freepivPromotionSubtitle: モダンで快適なクロスプラットフォーム対応の Pixiv 非公式クライアントです。
-  discussion: 議論
+  freepivPromotionSubtitle: "快適に使えるクロスプラットフォームの Pixiv 非公式クライアント。"
+  discussion: "コミュニティ"
   downloadUpdate: アップデートをダウンロード
   downloadUpdateHint: お使いのデバイス用に最新バージョンをブラウザでダウンロードしてください。
 
@@ -137,15 +186,15 @@ settings:
   theme: テーマ
   language: 言語
   bypassSni: SNI をバイパス
-  downloadDirectory: ダウンロードディレクトリ
-  defaultToPlatformSettings: プラットフォームのデフォルトを使用
-  columnsPerRow: 各行の列数
-  maxConcurrentDownloads: 最大同時ダウンロードタスク数
-  maxSegmentsPerTask: 各ダウンロードタスクの最大セグメント数
-  platformDefault: プラットフォームのデフォルト
-  system: システム
-  light: ライト
-  dark: ダーク
+  downloadDirectory: "ダウンロード先"
+  defaultToPlatformSettings: "システムの既定値を使用"
+  columnsPerRow: "1 行の画像数"
+  maxConcurrentDownloads: "同時ダウンロード"
+  maxSegmentsPerTask: "タスクごとの分割数"
+  platformDefault: "システムの既定値"
+  system: "システム"
+  light: "ライト"
+  dark: "ダーク"
   auto: 自動
   downloadsOverview: 保存先と同時ダウンロード数
 
@@ -159,11 +208,11 @@ settings:
   source:
     defaultSource: 既定のサイト
     supportedRatings: 対応するレーティング
-    safetyRating: "全画像ソースのレーティング"
+    safetyRating: "レーティング"
 
   account:
     manageAllSubtitle: サイトのレーティングとアカウント設定
-    noAccountRequired: アカウント設定は不要です
+    noAccountRequired: "アカウント不要"
     openSignInPage: ログインページを開く
     cookieHeader: Cookie ヘッダー
     storedLocally: このデバイス内に保存
@@ -190,7 +239,7 @@ settings:
       rejected: 拒否されました
 
   network:
-    proxyCompact: "プロキシ"
+    proxyCompact: "カスタムプロキシ"
     checkCompact: "テスト"
     detailsCompact: "詳細"
     advancedCompact: "詳細設定"
@@ -199,8 +248,8 @@ settings:
     apiShort: "API"
     imagesShort: "画像"
     saveCompact: "保存"
-    proxyProtocol: "プロキシ方式"
-    proxyHost: "IP またはホスト名"
+    proxyProtocol: "方式"
+    proxyHost: "ホスト"
     proxyPort: "ポート"
     proxyReachable: 接続可能
     proxyUnreachable: 接続できません
@@ -209,7 +258,7 @@ settings:
     sourceAvailable: "利用可能"
     sourcePartial: "一部利用可能"
     sourceUnavailable: "利用不可"
-    checkAllSources: "すべてのサイトをテスト"
+    checkAllSources: "すべて確認"
     mediaAvailable: "画像：利用可能"
     mediaUnavailable: "画像：失敗またはテスト画像なし"
     dnsDetails: "DNS ルート詳細（可用性とは別）"
@@ -221,28 +270,28 @@ settings:
     noFallback: "DNS プロバイダーは下のルート更新に使用します。システム DNS モードはキャッシュ IP を使用しません。SNI 回避はキャッシュ IP を使用し、失敗時に自動で切り替えません。"
     checkProgress: "DNS $done/$total · API $checked/$sources"
     checkSummary: "API 利用可能 $available/$total · DNS 失敗 $failed 件"
-    loadingStatus: "キャッシュの状態を読み込み中…"
-    apiChecking: "API：確認中…"
+    loadingStatus: "キャッシュの状態を読み込み中"
+    apiChecking: "API：確認中"
     apiAvailable: "API：利用可能"
     apiFailed: "API：利用不可"
     apiUnchecked: "API：未確認"
     dnsPending: "未解決 · ルートを更新して IP を取得"
-    dnsResolving: "名前解決中…"
+    dnsResolving: "名前解決中"
     dnsResolved: "名前解決成功"
     dnsCached: "キャッシュ済み IP を使用 · 再確認していません"
     dnsFailed: "名前解決失敗 · 利用可能なルートなし"
-    dnsQueued: "名前解決を待機中…"
+    dnsQueued: "名前解決を待機中"
     ipCachedAt: "IP をキャッシュ済み · 更新日時 $time"
     ipNotCached: "IP 解決済み · まだ保存されていません"
     connectionMode: 接続モード
     proxyUrl: プロキシ URL
-    proxyTitle: カスタムネットワークプロキシ
+    proxyTitle: "カスタムプロキシ"
     proxyModeOverride: カスタムプロキシを優先し、通常の SNI と証明書検証を維持します。SNI 回避は併用しません。接続モードはカスタムプロキシを無効にした後に適用されます。
-    proxyApply: プロキシ設定を適用
-    proxyDisable: カスタムプロキシを無効化
+    proxyApply: "適用"
+    proxyDisable: "プロキシを無効にする"
     proxyActive: "適用済み：$endpoint（接続は未確認）"
-    proxyInactive: カスタムプロキシなし · 接続モードとシステムのプロキシ設定を使用
-    proxyPending: 変更は未適用です。「プロキシ設定を適用」を押してください。
+    proxyInactive: "未使用"
+    proxyPending: "変更は未適用です。「適用」を押してください。"
     proxyHelp: アドレスを入力して下のボタンを押してください。プロキシサービスの起動が必要です。画像一覧、画像、新しいダウンロード要求に適用されます。
     proxyCheckHelp: カスタムプロキシはキャッシュ IP ルートより優先されます。適用後は下の API チェックで接続を確認してください。DNS の成功はプロキシの動作確認にはなりません。
     proxyInvalid: 有効な IP またはホスト名とポート（1–65535）を別々に入力してください。アドレスに方式やパスを含めないでください。
@@ -257,7 +306,6 @@ settings:
     routeRefreshFailed: ルートの更新に失敗しました
     systemDns: システム DNS
     sniBypass: SNI バイパス
-    legacyIpUrl: 従来の IP URL
 
   languageDialog:
     title: 言語
@@ -266,11 +314,11 @@ settings:
     title: テーマモード
 
   downloadDirectoryDialog:
-    title: ダウンロードディレクトリ
-    pickerTitle: ディレクトリを選択
-    pick: ディレクトリを選択
+    title: "ダウンロード先"
+    pickerTitle: "フォルダーを選択"
+    pick: "フォルダーを選択"
     messages:
-      setToPlatformDefault: ダウンロードディレクトリはプラットフォームのデフォルトに設定されています。
+      setToPlatformDefault: "ダウンロード先をシステムの既定値に戻しました。"
       pathNotAbsolute: パスは絶対パスである必要があります。
       pathNotWritable: パスに書き込みできません。
 
@@ -278,22 +326,38 @@ settings:
     title: SNI をバイパス
 
   columnsPerRowDialog:
-    title: 各行の列数
-
-  maxConcurrentDownloadsDialog:
-    title: 最大同時ダウンロードタスク数
+    title: "1 行の画像数"
 
   maxSegmentsPerTaskDialog:
-    title: 各ダウンロードタスクの最大セグメント数
+    title: "タスクごとの最大分割数"
 
 discovery:
+  mode: "表示"
+  timeRange: "期間"
+  chooseDate: "日付を指定"
+  menuWeek: "今週"
+  menuMonth: "今月"
+  ratingsTitle: "レーティング"
+  ratingLabel: "レーティング"
+  ratingSeparator: "、"
+  calendarRanges: "暦の期間"
+  rollingRanges: "直近の期間"
+  tooManyRequests: "リクエストが多すぎます"
+  copyLink: "リンクをコピー"
+  copyQueryLink: "検索リンクをコピー"
+  copyImage: "画像をコピー"
+  searchAuthor: "この絵師を検索"
+  mediaAnimation: "アニメ"
+  mediaVideo: "動画"
+  mediaCollection: "関連画像"
+  retryIn: "$seconds 秒後に再試行"
   searchResults: "検索結果"
   searchTermsTitle: "${count}個のキーワードを検索"
   allAvailable: "表示可能なすべてのコンテンツ"
-  defaultRatingsHint: "レーティング設定はすべての画像ソースに共通です。未選択時は、現在の画像ソースとアカウントで閲覧できるすべてのコンテンツを表示します。"
+  defaultRatingsHint: "未選択なら現在の画像ソースで閲覧できるすべてのコンテンツを表示します。"
   resetFilters: "初期設定に戻す"
-  unsupportedRatings: "選択したレーティングはこの画像ソースで利用できません。初期設定に戻してください。"
-  noFilteredPosts: "現在の絞り込み条件に一致する投稿はありません。"
+  unsupportedRatings: "この画像ソースは選択したレーティングに対応していません。"
+  noFilteredPosts: "条件に一致する画像がありません"
   noSearchResults: "検索条件に一致する投稿はありません。"
   noFeedPosts: "この画像ソースには現在表示できる投稿がありません。"
   historicalPopular: "過去の人気"
@@ -316,21 +380,27 @@ discovery:
   latestFallback: "このサイトでは最新の投稿のみ利用できます。"
   filters: "絞り込み"
   loadMore: "さらに読み込む"
-  filteredContinue: "この範囲に該当する投稿はありません。続きを表示"
+  clearHistory: "消去"
+  recentSearches: "最近の検索"
+  noRecentSearches: "検索履歴はありません"
+  myTags: "自分のタグ"
   commonTags: "よく使われるタグ"
   moreTags: "もっと見る"
   tagSource: "対象サイト"
   allTagSources: "すべてのサイト"
   manageTags: "カスタムタグ"
+  manageTagsAction: "管理"
+  addTagAction: "追加"
+  deleteTag: "削除"
   addTag: "タグを追加"
   noCustomTags: "カスタムタグはまだありません"
-  customTagsHint: "タグに覚えやすい名前を付けると、検索で見つけやすくなります。"
+  customTagsHint: "よく使うタグに覚えやすい名前を付けると、検索で見つけやすくなります。"
   addCustomTag: "カスタムタグとして追加"
   editTag: "カスタムタグを編集"
   canonicalTag: "サイトのタグ"
   displayName: "表示名（任意）"
   invalidTag: "空白を含まないタグを1つ入力してください。"
-  queryHint: "タグやサイトの検索式を入力…"
+  queryHint: "タグを検索"
   unverifiedTag: "このサイトで未確認のタグがあります。そのまま検索できます。"
   verifiedTag: "このサイトで確認済み"
   noSuggestions: "候補がありません"
@@ -346,6 +416,10 @@ discovery:
   lifetimeFavorites: "累計お気に入り数"
 
 mediaError:
+  videoProxyBypassed: "動画では SOCKS プロキシを利用できないため、今回は直接接続しました。"
+  videoFailed: "動画の再生に失敗しました"
+  downloadOriginal: 元のファイルをダウンロード
+  previewUnsupported: プレビューできません
   title: 画像の読み込みに失敗しました
   details: エラーの詳細
   copyDetails: 詳細をコピー
@@ -353,22 +427,24 @@ mediaError:
 
 webChallenge:
   title: ウェブ認証
-  open: 認証ページを開く
+  open: ウェブ認証を開く
   windowTitle: "$source · 認証後にウィンドウを閉じてください"
   instructions: ページの人間確認を手動で完了してから、戻るかウィンドウを閉じてください。認証データを保存し、画像ソースを再読み込みします。
   finish: 完了して戻る
-  saving: ウェブセッションを読み取り、確認しています…
-  waiting: ウェブ認証を実行中…
-  clear: 認証データを消去
+  saving: ウェブセッションを読み取り、確認しています
+  waiting: ウェブ認証を実行中
+  clear: 消去
   clearAll: すべてのウェブ認証データを消去
-  clearDescription: Cookie、ブラウザー識別情報、ウェブキャッシュを消去し、進行中の認証を停止します。
+  clearDescription: Cookie、ブラウザー識別情報、ウェブキャッシュを消去します。
   cleared: ウェブ認証データを消去しました
   verified: 確認済み・アクセス可能
   saved: 保存済み・再確認待ち
   empty: 保存された認証データはありません
   failed: ウェブ認証が完了しませんでした。再試行してください。
   pageLoadFailed: ページを読み込めませんでした。認証ページを開き直すか、ネットワーク設定を確認してください。
-  webViewUnavailable: この環境ではウェブコンポーネントを使用できません。Windows では Microsoft Edge WebView2 Runtime をインストールまたは更新してください。
+  webViewUnavailable: この環境ではウェブコンポーネントを使用できません。
+  windowFailed: ウェブ認証を開けませんでした。
+  runtimeMissing: Microsoft Edge WebView2 Runtime が見つかりません。インストールまたは更新してから再試行してください。
   proxyUnsupported: 現在のプロキシ設定には対応していません。設定を変更して再試行してください。
   busy: 別のウェブ認証またはデータ消去を実行中です。
   cancelled: ウェブ認証をキャンセルしました。
@@ -384,3 +460,246 @@ nativeWindow:
   maximize: 最大化
   restore: 元に戻す
   close: 閉じる
+
+batchDownload:
+  title: 一括ダウンロード
+  close: 閉じる
+  limitTitle: 画像を何枚まで取得しますか？
+  limitHint: "現在の検索条件でページごとに取得し、上限に達したら停止します。"
+  limitLabel: 取得する画像の上限
+  positiveInteger: 1 以上の整数を入力してください。
+  start: 画像を取得
+  fetchLimit: "/ 最大 $count 枚"
+  fetching: 見つかった画像
+  progress: "$current / $total"
+  fetchProgress: "最大 $limit 枚のうち $current 枚を取得"
+  stopHint: "いつでも停止して、取得済みの画像を使用できます。"
+  stop: 取得を停止
+  found: "枚の画像をダウンロードできます"
+  limitReached: 取得上限に達しました。検索結果がまだ残っている可能性があります。
+  exhausted: 条件に一致するすべての結果を取得しました。
+  permissionDenied: ダウンロード権限がありません。システム設定でアプリの権限を確認してから再試行してください。
+  enqueueFailed: タスクを追加できませんでした。保存先と空き容量を確認してから再試行してください。
+  stopped: 取得を停止しました。見つかった画像をダウンロードできます。
+  empty: 条件に一致する画像が見つかりませんでした。
+  stalled: ページの取得が進まなくなりました。結果は保持されています。再試行するか取得済みの画像を使用してください。
+  sessionChanged: 配信元の設定が変更されました。閉じてから再度取得するか、取得済みの画像を使用してください。
+  fetchFailed: 取得を完了できませんでした。結果は保持されています。再試行するか取得済みの画像を使用してください。
+  countLabel: ダウンロード枚数
+  all: すべて
+  countRange: "1～$max を入力"
+  orderHint: 現在の検索順で先頭から N 枚をダウンロードします。
+  folderLabel: "フォルダー名"
+  folderHint: 例：9月のコレクション
+  folderPlaceholder: 保存フォルダー
+  invalidFolder: 1～100 文字で入力してください。パス区切り、予約名、前後の空白、末尾のピリオドは使用できません。
+  folderHelp: "同名フォルダーを再利用し、既存のファイルは上書きしません。"
+  locationFailed: 保存先を取得できませんでした。
+  photos: 写真ライブラリ
+  photosHint: iOS では配信元フォルダー内のアルバムに保存します。アルバムの再利用には写真へのフルアクセスが必要です。
+  enqueue: "キューに追加 · $count 枚"
+  enqueueing: ダウンロードキューに追加中
+  preparing: "$current / $total 枚を準備中"
+  added: ダウンロードキューに追加したタスク
+  backgroundHint: この画面を閉じてもアプリの実行中は追加を続けます。同じボタンから結果を確認できます。
+  queueHint: ダウンロードの進捗はダウンロード一覧で確認できます。
+  failedHint: "$count 枚を追加できませんでした。"
+  retryFailed: 失敗した画像を再試行
+  queued: "一括処理：$added 枚をキューに追加、$failed 枚の追加に失敗。"
+  completed: "一括ダウンロード終了：$saved 枚を保存、$failed 枚が失敗またはキャンセル。"
+  done: 完了
+  back: 戻る
+
+  first: "先頭 N 枚"
+
+  addedCount: "$count 枚を追加しました"
+
+  savedTo: "保存先「$folder」"
+
+  viewDownloads: "ダウンロードを表示"
+
+frost:
+  retry: "再試行"
+  error: "エラー"
+  errorDetails: "エラーの詳細"
+  copyDetails: "詳細をコピー"
+  copied: "コピーしました"
+  loading: "読み込み中"
+  actionSucceeded: "完了しました"
+  actionFailed: "失敗しました"
+  loadFailed: "読み込めませんでした"
+  noItems: "まだ項目がありません"
+  noMoreItems: "すべて表示しました"
+  pullToRefresh: "引っ張って更新"
+  releaseToRefresh: "離して更新"
+  refreshing: "更新中"
+  refreshComplete: "更新しました"
+  refreshFailed: "更新できませんでした"
+  previous: "前へ"
+  next: "次へ"
+  back: "戻る"
+  more: "その他"
+  expandNavigation: "サイドバーを開く"
+  collapseNavigation: "サイドバーを閉じる"
+  clearText: "入力を消去"
+  search: "検索"
+  noResults: "「$query」の結果はありません"
+  clearSearch: "検索を消去"
+  dismiss: "閉じる"
+  expandText: "もっと見る"
+  collapseText: "折りたたむ"
+  showAll: "すべて表示"
+  copy: "コピー"
+  clearAll: "すべて消去"
+  showPassword: "パスワードを表示"
+  hidePassword: "パスワードを隠す"
+  chooseDate: "日付を選択"
+  chooseTime: "時刻を選択"
+  increment: "増やす"
+  decrement: "減らす"
+  reorderHandle: "並べ替え"
+  sortAscending: "昇順"
+  sortDescending: "降順"
+  play: "再生"
+  pause: "一時停止"
+  loop: "ループ再生"
+  mute: "ミュート"
+  unmute: "ミュートを解除"
+  fullscreen: "全画面表示"
+  exitFullscreen: "全画面表示を終了"
+  reload: "再読み込み"
+  openInBrowser: "ブラウザーで開く"
+  minimize: "最小化"
+  maximize: "最大化"
+  restore: "元のサイズに戻す"
+  close: "閉じる"
+  cancel: "キャンセル"
+  apply: "適用"
+  clear: "消去"
+  choose: "選択"
+  showInFolder: "フォルダーで表示"
+  selectedCount: "$count件を選択中"
+  pageOf: "$totalページ中$pageページ"
+  selectAll: "すべて選択"
+  done: "完了"
+  itemPosition: "$total件中$position件目"
+  tableDimensions: "$rows行、$columns列"
+  taskQueued: "待機中"
+  taskRunning: "ダウンロード中"
+  taskPaused: "一時停止中"
+  taskCompleted: "完了"
+  taskFailed: "失敗"
+  taskCancelled: キャンセル済み
+  remove: "削除"
+  forward: "進む"
+  stop: "停止"
+  seek: "再生位置"
+  send: "送信"
+  attach: "添付"
+  readerSettings: "表示設定"
+  textSize: "文字サイズ"
+  lineSpacing: "行間"
+  readingProgress: "読書の進捗"
+  showReplies: "$count件の返信を表示"
+  characterCount: "$limit文字中$count文字"
+  moreMedia: "ほか$count枚"
+  navigationCount: "$count件"
+  navigationProgress: "進捗$progress%"
+  listSeparator: "、"
+
+navigation:
+  browse: "閲覧"
+  search: "検索"
+  downloads: "ダウンロード"
+  settings: "設定"
+  browseEmpty: "お気に入りのサイトを閲覧"
+  searchEmpty: "タグで作品を検索"
+  downloadsEmpty: "ダウンロードはここに表示されます"
+  settingsEmpty: "BooruFlowを使いやすく"
+
+settingsV2:
+  predictiveBack: "予測型「戻る」"
+  predictiveBackScope: "アプリ内の戻る動作をプレビューします。ホーム画面に戻るアニメーションはシステムが制御します。"
+  background: "背景"
+  ambientBlur: "環境ぼかし"
+  mica: "マイカ"
+  backgroundOff: "オフ"
+  backgroundIntensity: "強さ"
+  systemTransparencyReduced: "システムで透明度を下げています"
+  customColour: "カスタムカラー"
+  appearance: "外観"
+  browsing: "閲覧"
+  tone: "色調"
+  neutral: "標準"
+  cool: "寒色"
+  warm: "暖色"
+  accent: "アクセントカラー"
+  customAccent: "カスタムカラー"
+  customHex: "アクセントのHEX"
+  invalidHex: "6桁のHEXカラーを入力してください。"
+  accentRejected: "この色は現在の背景で読みづらいため使用できません。"
+  accentWarning: "この色はコントラストが低くなります。適用しますか？"
+  editAccount: "アカウントを編集"
+  signOutConfirm: "このソースの保存済み認証情報を削除しますか？"
+  licenses: "オープンソースライセンス"
+  checkUpdates: "更新を確認"
+  help: "ヘルプ"
+
+settingsDetails:
+  mode: "モード"
+  custom: "カスタム"
+  change: "変更"
+  routeCache: "ルートキャッシュ"
+  hostCount: "$count ホスト"
+  updatedAt: "更新 $time"
+  sourceStatus: "画像ソースの状態"
+  apiAndImages: "API と画像を利用可能"
+  apiOnly: "API 利用可能 · 画像に接続不可"
+  status: "状態"
+  content: "コンテンツ"
+  editSourceAccount: "$source のアカウントを編集"
+  proxyApplies: "画像ソース、画像、新しいダウンロードに適用します。"
+  version: "バージョン $version ($build)"
+  communityTelegram: "Telegram グループ"
+  communityDiscord: "Discord サーバー"
+  savedVerifications: "保存した認証"
+  systemDnsShort: "システム DNS"
+  refresh: "更新"
+  updateAvailable: "新しいバージョン $version があります"
+
+verificationPage:
+  instructions: "下のページで認証し、完了して戻るを選んでください。"
+  opening: "ページを開いています"
+  failed: "ページを読み込めませんでした"
+  closed: "認証ウィンドウを閉じました"
+  failureHelp: "もう一度開くか、ネットワーク設定を確認してください。"
+  reopen: "もう一度開く"
+  signOut: "$source からログアウトしますか？"
+  signOutHelp: "この端末からアカウント情報を削除します。"
+  downloadAdded: "ダウンロードに追加しました"
+  downloadFailed: "ダウンロード失敗"
+  linkCopied: "リンクをコピーしました"
+  view: "表示"
+  networkSettings: "ネットワーク設定"
+
+ugoira:
+  iosFilesDestination: "その他の形式：ファイル › BooruFlow"
+  iosFormatHelp: "アニメーション WebP と ZIP は「ファイル」に保存します。"
+  albumName: "アルバム名"
+  openSettings: "設定を開く"
+  androidDestination: "アルバムとダウンロード"
+  iosDestination: "写真に保存"
+  format: "うごイラの保存形式"
+  losslessWebp: "可逆圧縮のアニメーション WebP"
+  originalZip: "元の ZIP"
+  webpRecord: "WebP · アニメーション"
+  zipRecord: "ZIP · 元のフレーム"
+  ugoiraInvalidArchive: "アニメーションの ZIP ファイルが無効です。"
+  ugoiraMetadataMissing: "フレームの表示時間がありません。"
+  ugoiraInvalidMetadata: "フレームの表示時間が無効です。"
+  ugoiraFrameMissing: "アニメーションのフレームが見つかりません。"
+  ugoiraFrameCorrupt: "アニメーションのフレームが破損しています。"
+  ugoiraFrameSizeMismatch: "フレームのサイズが一致しません。"
+  ugoiraFrameTooLarge: "フレームがサイズの上限を超えています。"
+  ugoiraEncodeFailed: "アニメーションをエンコードできませんでした。"
+  ugoiraOutputTooLarge: "出力ファイルがサイズの上限を超えています。"

@@ -5,10 +5,9 @@ generic:
   confirm: 確認
   enabled: 啟用
   disabled: 停用
-  copiedWithValue: "已複製到剪貼簿: $value"
-  errorWithValue: "發生錯誤: $value"
-  errorWithCause: "$message：$cause"
-  loading: 載入中...
+  copiedWithValue: "已複製到剪貼簿： $value"
+  errorWithValue: "發生錯誤： $value"
+  loading: 載入中
   loadFailed: 載入失敗
   retry: 重試
   noMoreData: 沒有更多資料
@@ -20,36 +19,57 @@ booruError:
   authenticationRequired: 請登入目前圖源後重試。
   authenticationRejected: 圖源拒絕了帳號憑證。
   permissionDenied: 圖源拒絕存取此資源。
-  rateLimited: 請求受到圖源限流，請稍後重試。
+  rateLimited: "圖源暫時限制了請求，稍後會自動恢復。"
   challengeRequired: "圖源要求瀏覽器驗證。可嘗試在瀏覽器中開啟圖源完成驗證，或選擇其他圖源。"
   routeUnavailable: "目前網域沒有可用路由。請在網路設定中重新整理路由；不會改用系統 DNS。"
   sourceUnavailable: 目前圖源暫時無法使用。
-  network: "網路請求失敗。請檢查網路連線並重試。如果問題持續，可嘗試使用代理伺服器。"
+  network: "網路請求失敗。請檢查網路連線後重試。"
   timeout: "請求逾時。請檢查網路連線，或稍後重試。"
   invalidResponse: 圖源回傳了無法解析的回應。
   unsafeRedirect: 圖源回傳了不安全的重新導向。
-  mediaValidationFailed: 圖片回應驗證或解碼失敗。
+  mediaValidationFailed: "媒體回應驗證或解碼失敗。"
   cancelled: 請求已取消。
   internal: 圖源引擎發生內部錯誤。
 
 update:
-  checkUpdateStart: 正在檢查更新...
+  checkUpdateStart: 正在檢查更新
   checkUpdateFailed: 檢查更新失敗，請檢查您的網路連線。
-  selectDownloadUrlFailed: 找不到下載連結。\n請訪問專案頁面以手動更新或在專案Issue頁尋求幫助。
-  newVersionFound: "發現新版本: $version。請轉到「關於」頁面並點擊「下載更新」。"
+  selectDownloadUrlFailed: "找不到下載連結。請前往專案頁面手動更新，或到 Issue 頁面尋求協助。"
+  newVersionFound: "有新版本 $version。請前往「關於」下載更新。"
   noNewVersionFound: 沒有新版本。
 
 postList:
   short: "首頁"
   title: "首頁"
-  titleWithTags: "帶有標籤的帖子: $tags"
+  titleWithTags: "含有標籤的作品：$tags"
 
 postDetail:
-  titleWithId: "帖子: $id"
+  fullscreen: 全螢幕檢視
+  notFound: "找不到這個作品"
+  parentCount: "$count 個父作品"
+  childCount: "$count 個子作品"
+  zoomIn: "放大"
+  zoomOut: "縮小"
+  originalFailed: "原圖載入失敗"
+  previewShown: "目前顯示的是預覽圖。"
+  uploadedAt: "$date 上傳"
+  pixels: "像素"
+  dimensions: "尺寸"
+  searchTag: "搜尋此標籤"
+  addToSearch: "加入搜尋"
+  excludeTag: "排除此標籤"
+  openSource: "開啟來源"
+  resetZoom: "重設縮放"
+  ratingGeneral: "一般"
+  ratingSensitive: "敏感"
+  ratingQuestionable: "存疑"
+  ratingExplicit: "成人"
+  ratingUnknown: "未知"
+  titleWithId: "作品：$id"
   tags: 標籤
   details: 詳細資訊
   actions: 操作
-  rating: 安全評級
+  rating: 分級
   fileType: 檔案類型
   viewOriginal: 查看原圖
   download: 下載
@@ -63,11 +83,11 @@ postDetail:
   height: 高度
   score: 評分
   size: 大小
-  parent: 父ID
-  hasChildren: 有子帖子
-  similarPosts: 相似帖子
-  parentPost: 父帖子
-  childPost: 子帖子
+  parent: "父作品 ID"
+  hasChildren: "有子作品"
+  similarPosts: 相關圖片
+  parentPost: "父作品"
+  childPost: "子作品"
 
 postSearch:
   title: 搜尋
@@ -76,8 +96,37 @@ imageZoom:
   title: 縮放圖片
 
 downloads:
-  viewLog: 檢視記錄
-  title: 下載項
+  fileMissing: "檔案已不在原來的位置"
+  locationMissing: "找不到檔案或資料夾"
+  redownload: "重新下載"
+  remove: 刪除
+  activeTasks: "正在下載 $count 項"
+  failedTasks: "$count 項下載失敗"
+  retryAll: "全部重試"
+  today: "今天"
+  yesterday: "昨天"
+  transferRate: "$value/s"
+  remainingSeconds: "約 $count 秒"
+  remainingMinutes: "約 $count 分鐘"
+  remainingHours: "約 $count 小時"
+  format: "格式"
+  startedAt: "開始時間"
+  browse: "瀏覽"
+  all: "全部"
+  pause: "暫停"
+  resume: "繼續"
+  pauseAll: "全部暫停"
+  resumeAll: "全部繼續"
+  retryFailed: "重試失敗項目"
+  clearCompleted: "清除已完成"
+  openDirectory: "開啟下載資料夾"
+  openPost: "開啟作品"
+  batch: "批次下載"
+  batchProgress: "$completed / $total"
+  path: "儲存路徑"
+  taskDetails: "任務詳細資料"
+  viewLog: "記錄"
+  title: 下載
   tasksTitle: 下載任務
   noTasks: 尚無下載任務
   noTasksMessage: 下載的圖片會顯示在這裡。
@@ -106,20 +155,20 @@ downloads:
   expand: 展開
   collapse: 收合
   messages:
-    storagePermanentlyDenied: 您已永久拒絕存儲權限。\n請在設定中手動啟用存儲權限。  # Android
-    storageDenied: 您已拒絕存儲權限。  # Android
-    deviceInfoError: 無法解析設備資訊。
+    storagePermanentlyDenied: 您已永久拒絕儲存權限。\n請在設定中手動啟用儲存權限。  # Android
+    storageDenied: 您已拒絕儲存權限。  # Android
+    deviceInfoError: 無法解析裝置資訊。
     photosPermanentlyDenied: 您已永久拒絕照片權限。\n請在設定中手動啟用照片權限。  # iOS
     photosDenied: 您已拒絕照片權限。  # iOS
     downloadTaskExists: 下載任務已經存在。
     imageFileExists: 圖片檔案已經存在。
 
-    downloadRetryWith: "重試下載任務: $name"
-    downloadStartWith: "開始下載任務: $name"
+    downloadRetryWith: "重試下載任務： $name"
+    downloadStartWith: "開始下載任務： $name"
 
-    downloadCompletedWith: "下載任務完成: $name"
-    downloadFailedWith: "下載任務失敗: $name"
-    saveFailedWith: "儲存失敗: 任務 $name"
+    downloadCompletedWith: "下載任務完成： $name"
+    downloadFailedWith: "下載任務失敗： $name"
+    saveFailedWith: "儲存失敗： 任務 $name"
 
 about:
   title: 關於
@@ -127,7 +176,7 @@ about:
   publishPage: 發佈頁面
   appVersion: 應用程式版本
   freepivPromotionTitle: 試試 freepiv
-  freepivPromotionSubtitle: 現代、流暢的跨平台 Pixiv 第三方用戶端。
+  freepivPromotionSubtitle: "流暢的跨平台 Pixiv 瀏覽工具。"
   discussion: 討論
   downloadUpdate: 下載更新
   downloadUpdateHint: 透過瀏覽器下載適合您裝置的最新版本。
@@ -137,15 +186,15 @@ settings:
   theme: 主題
   language: 語言
   bypassSni: 略過 SNI
-  downloadDirectory: 下載目錄
+  downloadDirectory: 下載資料夾
   defaultToPlatformSettings: 使用系統預設
-  columnsPerRow: 每行列數
-  maxConcurrentDownloads: 最大同時下載任務數
-  maxSegmentsPerTask: 每個下載任務的最大分段數
-  platformDefault: 平台預設
-  system: 系統
-  light: 淺色模式
-  dark: 深色模式
+  columnsPerRow: "每列圖片數"
+  maxConcurrentDownloads: "同時下載"
+  maxSegmentsPerTask: "每個任務的分段數"
+  platformDefault: "系統預設"
+  system: "跟隨系統"
+  light: "淺色"
+  dark: "深色"
   auto: 自動
   downloadsOverview: 儲存位置與同時下載數
 
@@ -159,11 +208,11 @@ settings:
   source:
     defaultSource: 預設圖源
     supportedRatings: 支援的分級
-    safetyRating: "全域內容分級"
+    safetyRating: "內容分級"
 
   account:
     manageAllSubtitle: 圖源分級與帳號設定
-    noAccountRequired: 此圖源無需設定帳號
+    noAccountRequired: "不需帳號"
     openSignInPage: 開啟登入頁面
     cookieHeader: Cookie 標頭
     storedLocally: 僅儲存在此裝置
@@ -190,61 +239,61 @@ settings:
       rejected: 已被拒絕
 
   network:
-    proxyCompact: "代理"
-    checkCompact: "檢測"
-    detailsCompact: "詳情"
+    proxyCompact: "自訂代理"
+    checkCompact: "測試"
+    detailsCompact: "詳細"
     advancedCompact: "進階"
-    uncheckedCompact: "未檢測"
-    checkingCompact: "檢測中"
+    uncheckedCompact: "未測試"
+    checkingCompact: "測試中"
     apiShort: "API"
     imagesShort: "圖片"
     saveCompact: "儲存"
-    proxyProtocol: "代理協定"
-    proxyHost: "IP 或主機名稱"
+    proxyProtocol: "協定"
+    proxyHost: "主機"
     proxyPort: "連接埠"
     proxyReachable: 可連線
     proxyUnreachable: 無法連線
-    proxyProbe: "檢測代理可用性"
-    proxyProbeHint: "探測僅使用目前填寫的代理，不會儲存設定。每個圖源獨立檢測並顯示結果。"
+    proxyProbe: "測試代理連線"
+    proxyProbeHint: "使用目前填寫的代理測試各圖源，不會儲存設定。"
     sourceAvailable: "可用"
     sourcePartial: "部分可用"
     sourceUnavailable: "不可用"
-    checkAllSources: "檢測所有圖源"
+    checkAllSources: "測試全部"
     mediaAvailable: "圖片：可用"
-    mediaUnavailable: "圖片：未通過檢測或無測試圖片"
-    dnsDetails: "DNS 路由詳情（不參與可用性判定）"
-    sourceProbeHelp: "綠色：API 和圖片均可用；黃色：部分通過；紅色：檢測失敗。各圖源並行檢測，最多約 26 秒。"
+    mediaUnavailable: "圖片：未通過測試或無測試圖片"
+    dnsDetails: "DNS 路由詳細資料（不參與可用性判定）"
+    sourceProbeHelp: "綠色：API 與圖片可用；黃色：部分可用；紅色：測試失敗。各圖源同時測試，最多約 26 秒。"
     dnsProvider: "DNS 服務"
     sourceSummary: "$available 個可用 · $issues 個異常"
     servicesTitle: "全部圖源狀態"
-    servicesHint: "IP 解析與 API 可用性分別檢測；API 可用不代表所有圖片均可下載。"
-    noFallback: "DNS 提供商用於下方的路由重新整理。系統 DNS 模式不使用快取 IP；繞過 SNI 模式使用快取 IP，失敗時不自動切換。"
-    checkProgress: "DNS 已完成 $done/$total · API 已檢測 $checked/$sources"
+    servicesHint: "IP 解析與 API 可用性分別測試；API 可用不代表所有圖片均可下載。"
+    noFallback: "DNS 服務用於更新下方路由。系統 DNS 模式不使用快取 IP；略過 SNI 模式使用快取 IP，失敗時不自動切換。"
+    checkProgress: "DNS 已完成 $done/$total · API 已測試 $checked/$sources"
     checkSummary: "API 可用 $available/$total · DNS 失敗 $failed 項"
-    loadingStatus: "正在讀取快取狀態…"
-    apiChecking: "API：檢測中…"
+    loadingStatus: "正在讀取快取狀態"
+    apiChecking: "API：測試中"
     apiAvailable: "API：可用"
     apiFailed: "API：無法使用"
-    apiUnchecked: "API：尚未檢測"
+    apiUnchecked: "API：尚未測試"
     dnsPending: "尚未解析 · 點選重新整理路由取得 IP"
-    dnsResolving: "正在解析…"
+    dnsResolving: "正在解析"
     dnsResolved: "解析成功"
-    dnsCached: "使用已快取 IP · 尚未重新檢測"
+    dnsCached: "使用已快取 IP · 尚未重新測試"
     dnsFailed: "解析失敗 · 目前無可用路由"
-    dnsQueued: "等待解析…"
+    dnsQueued: "等待解析"
     ipCachedAt: "IP 已快取 · 更新於 $time"
     ipNotCached: "IP 已解析 · 尚未寫入快取"
     connectionMode: 連線模式
     proxyUrl: Proxy URL
-    proxyTitle: 自訂網路代理
-    proxyModeOverride: 目前使用自訂代理，保留正常 SNI 和憑證驗證，不疊加「繞過 SNI」。連線模式在停用自訂代理後生效。
-    proxyApply: 套用代理設定
-    proxyDisable: 停用自訂代理
+    proxyTitle: "自訂代理"
+    proxyModeOverride: 目前使用自訂代理，保留正常 SNI 和憑證驗證，不疊加「略過 SNI」。連線模式在停用自訂代理後生效。
+    proxyApply: "套用"
+    proxyDisable: "停用代理"
     proxyActive: "已套用：$endpoint（尚不代表連線成功）"
-    proxyInactive: 未使用自訂代理 · 依連線模式和系統代理設定連線
-    proxyPending: 修改尚未套用，請點擊「套用代理設定」。
-    proxyHelp: 輸入代理位址後點擊下方按鈕。代理服務需事先啟動；套用後用於圖源列表、圖片和新的下載請求。
-    proxyCheckHelp: 自訂代理優先於快取 IP 路由。套用後請用下方的圖源 API 檢測確認連線；DNS 解析成功不代表代理可用。
+    proxyInactive: "未使用"
+    proxyPending: "變更尚未套用，請按一下「套用」。"
+    proxyHelp: "輸入位址後按一下「套用」。代理服務必須先啟動；套用後用於圖源、圖片與新的下載請求。"
+    proxyCheckHelp: 自訂代理優先於快取 IP 路由。套用後請用下方的圖源 API 測試確認連線；DNS 解析成功不代表代理可用。
     proxyInvalid: 請分別填寫有效的 IP 或主機名稱和連接埠（1–65535），位址欄不需要填寫協定或路徑。
     proxyHint: 選填 · 例如 http://127.0.0.1:7890
     applyAndRouteCache: 套用與路由快取
@@ -257,7 +306,6 @@ settings:
     routeRefreshFailed: 路由重新整理失敗
     systemDns: 使用系統 DNS
     sniBypass: 略過 SNI
-    legacyIpUrl: 舊版 IP URL
 
   languageDialog:
     title: 語言
@@ -266,11 +314,11 @@ settings:
     title: 主題模式
 
   downloadDirectoryDialog:
-    title: 下載目錄
-    pickerTitle: 選擇目錄
-    pick: 選擇目錄
+    title: 下載資料夾
+    pickerTitle: 選擇資料夾
+    pick: 選擇資料夾
     messages:
-      setToPlatformDefault: 下載目錄已設為系統預設。
+      setToPlatformDefault: 下載資料夾已設為系統預設。
       pathNotAbsolute: 路徑必須是絕對路徑。
       pathNotWritable: 路徑不可寫入。
 
@@ -278,28 +326,44 @@ settings:
     title: 略過 SNI
 
   columnsPerRowDialog:
-    title: 每行列數
-
-  maxConcurrentDownloadsDialog:
-    title: 最大同時下載任務數
+    title: "每列圖片數"
 
   maxSegmentsPerTaskDialog:
     title: 每個下載任務的最大分段數
 
 discovery:
+  mode: "模式"
+  timeRange: "時間範圍"
+  chooseDate: "指定日期"
+  menuWeek: "本週"
+  menuMonth: "本月"
+  ratingsTitle: "內容分級"
+  ratingLabel: "分級"
+  ratingSeparator: "、"
+  calendarRanges: "日曆週期"
+  rollingRanges: "最近期間"
+  tooManyRequests: "請求過於頻繁"
+  copyLink: "複製連結"
+  copyQueryLink: "複製查詢連結"
+  copyImage: "複製圖片"
+  searchAuthor: "搜尋此繪師"
+  mediaAnimation: "動圖"
+  mediaVideo: "影片"
+  mediaCollection: "相關圖片"
+  retryIn: "$seconds 秒後重試"
   searchResults: "搜尋結果"
-  searchTermsTitle: "搜尋${count}個詞條"
+  searchTermsTitle: "搜尋 $count 個關鍵字"
   allAvailable: "全部可用內容"
-  defaultRatingsHint: "分級偏好適用於所有圖源。未選擇分級時，顯示目前圖源和帳號能存取的所有內容。"
-  resetFilters: "恢復預設"
-  unsupportedRatings: "目前圖源不支援所選分級，請恢復預設以瀏覽可用內容。"
-  noFilteredPosts: "沒有符合目前篩選條件的內容。"
+  defaultRatingsHint: "未選擇時顯示目前圖源能存取的全部內容。"
+  resetFilters: "還原預設"
+  unsupportedRatings: "目前圖源不支援所選分級。"
+  noFilteredPosts: "沒有符合篩選的內容"
   noSearchResults: "沒有找到符合此查詢的內容。"
   noFeedPosts: "目前圖源暫時沒有可展示的內容。"
   historicalPopular: "歷史熱門"
-  calendarDay: "自然日"
-  calendarWeek: "自然週"
-  calendarMonth: "自然月"
+  calendarDay: "每日"
+  calendarWeek: "每週"
+  calendarMonth: "每月"
   latest: "最新"
   popular: "熱門"
   today: "今日"
@@ -316,25 +380,31 @@ discovery:
   latestFallback: "此圖源僅支援最新貼文。"
   filters: "篩選"
   loadMore: "載入更多"
-  filteredContinue: "目前幾頁沒有符合篩選的貼文，繼續瀏覽"
+  clearHistory: "清空"
+  recentSearches: "最近搜尋"
+  noRecentSearches: "尚無最近搜尋"
+  myTags: "我的標籤"
   commonTags: "常用標籤"
   moreTags: "查看更多"
   tagSource: "適用圖源"
   allTagSources: "通用"
   manageTags: "標籤管理"
+  manageTagsAction: "管理"
+  addTagAction: "新增"
+  deleteTag: "刪除"
   addTag: "新增標籤"
   noCustomTags: "還沒有自訂標籤"
-  customTagsHint: "為常用標籤設定好記的名稱，搜尋時更容易找到。"
+  customTagsHint: "給常用標籤取個好記的名字，搜尋時更容易找到。"
   addCustomTag: "新增為自訂標籤"
   editTag: "編輯自訂標籤"
   canonicalTag: "圖源標籤"
   displayName: "顯示名稱（選填）"
   invalidTag: "請輸入一個非空且不含空格的標籤。"
-  queryHint: "輸入標籤或圖源查詢語句…"
+  queryHint: "搜尋標籤"
   unverifiedTag: "部分標籤尚未在目前圖源驗證，仍可提交搜尋。"
   verifiedTag: "已在目前圖源驗證"
   noSuggestions: "沒有建議"
-  localFallback: "線上補全暫時無法使用，仍可使用本機建議。"
+  localFallback: "暫時無法取得線上建議，仍可使用本機建議。"
   retryTags: "重試常用標籤"
   artist: "繪師"
   character: "角色"
@@ -346,9 +416,13 @@ discovery:
   lifetimeFavorites: "累計收藏數"
 
 mediaError:
+  videoProxyBypassed: "影片不支援目前的 SOCKS 代理，本次播放使用直接連線。"
+  videoFailed: "影片播放失敗"
+  downloadOriginal: 下載原檔案
+  previewUnsupported: 無法預覽
   title: 圖片載入失敗
-  details: 錯誤詳情
-  copyDetails: 複製詳情
+  details: "錯誤詳細資料"
+  copyDetails: "複製詳細資料"
   decodeFailed: 下載的圖片無法解碼。重試會清除這張圖片的快取並重新下載。
 
 webChallenge:
@@ -357,18 +431,20 @@ webChallenge:
   windowTitle: "$source · 完成驗證後關閉視窗"
   instructions: 請手動完成網頁中的人機驗證，完成後返回或關閉視窗。應用程式會儲存驗證資料並重新載入圖源。
   finish: 完成驗證並返回
-  saving: 正在讀取並驗證網頁工作階段…
-  waiting: 正在進行網頁驗證…
-  clear: 清空驗證資料
+  saving: 正在讀取並驗證網頁工作階段
+  waiting: 正在進行網頁驗證
+  clear: 清空
   clearAll: 清空所有網頁驗證資料
-  clearDescription: 清除 Cookie、瀏覽器識別資訊及網頁快取，並停止正在進行的驗證。
+  clearDescription: 清除 Cookie、瀏覽器識別資訊和網頁快取。
   cleared: 網頁驗證資料已清空
   verified: 已驗證，可以存取
   saved: 已儲存，等待重新驗證
   empty: 沒有已儲存的驗證資料
   failed: 網頁驗證未完成，請重試。
   pageLoadFailed: 網頁載入失敗，請重新開啟驗證視窗或檢查網路設定。
-  webViewUnavailable: 此平台的網頁元件無法使用。Windows 請安裝或更新 Microsoft Edge WebView2 Runtime。
+  webViewUnavailable: 此平台無法使用網頁元件。
+  windowFailed: 無法開啟網頁驗證。
+  runtimeMissing: 找不到 Microsoft Edge WebView2 Runtime，請安裝或更新後再試。
   proxyUnsupported: 網頁元件尚不支援目前的代理設定，請變更代理設定後重試。
   busy: 另一個網頁驗證或清理操作正在進行。
   cancelled: 已取消網頁驗證。
@@ -384,3 +460,246 @@ nativeWindow:
   maximize: 最大化
   restore: 還原
   close: 關閉
+
+batchDownload:
+  title: 批次下載
+  close: 關閉
+  limitTitle: 這次最多取得幾張？
+  limitHint: "依目前搜尋條件逐頁取得，達到上限後停止。"
+  limitLabel: 最多取得
+  positiveInteger: 請輸入大於 0 的整數。
+  start: 取得圖片
+  fetchLimit: "/ 最多 $count 張"
+  fetching: 已找到的圖片
+  progress: "$current / $total"
+  fetchProgress: "已取得 $current 張，最多 $limit 張"
+  stopHint: "隨時可以停止，並使用已找到的圖片。"
+  stop: 停止取得
+  found: "張圖片可以下載"
+  limitReached: 已達到取得上限，可能還有更多搜尋結果。
+  exhausted: 已取得全部符合條件的結果。
+  permissionDenied: 無法取得下載權限，請在系統設定中檢查應用程式權限後重試。
+  enqueueFailed: 無法加入下載任務，請檢查儲存位置及剩餘空間後重試。
+  stopped: 已停止取得，可以下載已找到的圖片。
+  empty: 沒有找到符合條件的圖片。
+  stalled: 來源分頁未能繼續推進。已保留結果，可重試或使用已有圖片。
+  sessionChanged: 來源設定已改變。請關閉視窗後重新取得，或使用已找到的圖片。
+  fetchFailed: 取得未完成。已保留結果，可重試或使用已有圖片。
+  countLabel: 下載數量
+  all: 全部
+  countRange: "請輸入 1～$max"
+  orderHint: 按目前搜尋結果順序下載前 N 張圖片。
+  folderLabel: "資料夾名稱"
+  folderHint: 例如：九月收藏
+  folderPlaceholder: 你的資料夾
+  invalidFolder: 請輸入 1～100 個字元，不含路徑分隔符號、保留名稱、前後空格或結尾句點。
+  folderHelp: "同名資料夾會直接沿用，已有檔案不會被覆寫。"
+  locationFailed: 無法取得儲存位置。
+  photos: 照片圖庫
+  photosHint: iOS 將本次圖片儲存為來源資料夾下的相簿，沿用相簿需要照片圖庫完整存取權限。
+  enqueue: "加入下載佇列 · $count 張"
+  enqueueing: 正在加入下載佇列
+  preparing: "正在準備 $current / $total 張圖片"
+  added: 個任務已加入下載佇列
+  backgroundHint: 可以關閉視窗。應用程式執行期間會繼續加入佇列，再次按一下此入口可查看結果。
+  queueHint: 圖片下載進度可在下載清單中查看。
+  failedHint: "$count 張未能加入佇列。"
+  retryFailed: 重試失敗項目
+  queued: "批次任務：已加入 $added 張，加入失敗 $failed 張。"
+  completed: "批次下載結束：已儲存 $saved 張，失敗或取消 $failed 張。"
+  done: 完成
+  back: 返回
+
+  first: "前 N 張"
+
+  addedCount: "已加入 $count 張"
+
+  savedTo: "儲存至「$folder」"
+
+  viewDownloads: "查看下載"
+
+frost:
+  retry: "重試"
+  error: "錯誤"
+  errorDetails: "錯誤詳細資料"
+  copyDetails: "複製詳細資料"
+  copied: "已複製"
+  loading: "載入中"
+  actionSucceeded: "操作成功"
+  actionFailed: "操作失敗"
+  loadFailed: "載入失敗"
+  noItems: "尚無內容"
+  noMoreItems: "沒有更多內容"
+  pullToRefresh: "下拉重新整理"
+  releaseToRefresh: "放開以重新整理"
+  refreshing: "重新整理中"
+  refreshComplete: "重新整理完成"
+  refreshFailed: "重新整理失敗"
+  previous: "上一個"
+  next: "下一個"
+  back: "返回"
+  more: "更多"
+  expandNavigation: "展開側欄"
+  collapseNavigation: "收合側欄"
+  clearText: "清除文字"
+  search: "搜尋"
+  noResults: "找不到「$query」的結果"
+  clearSearch: "清除搜尋"
+  dismiss: "關閉"
+  expandText: "展開"
+  collapseText: "收合"
+  showAll: "顯示全部"
+  copy: "複製"
+  clearAll: "全部清除"
+  showPassword: "顯示密碼"
+  hidePassword: "隱藏密碼"
+  chooseDate: "選擇日期"
+  chooseTime: "選擇時間"
+  increment: "增加"
+  decrement: "減少"
+  reorderHandle: "調整順序"
+  sortAscending: "遞增"
+  sortDescending: "遞減"
+  play: "播放"
+  pause: "暫停"
+  loop: "重複播放"
+  mute: "靜音"
+  unmute: "取消靜音"
+  fullscreen: "全螢幕"
+  exitFullscreen: "結束全螢幕"
+  reload: "重新載入"
+  openInBrowser: "在瀏覽器中開啟"
+  minimize: "最小化"
+  maximize: "最大化"
+  restore: "還原"
+  close: "關閉"
+  cancel: "取消"
+  apply: "套用"
+  clear: "清除"
+  choose: "選擇"
+  showInFolder: "在資料夾中顯示"
+  selectedCount: "已選取 $count 項"
+  pageOf: "第 $page 頁，共 $total 頁"
+  selectAll: "全選"
+  done: "完成"
+  itemPosition: "第 $position 項，共 $total 項"
+  tableDimensions: "$rows 列，$columns 欄"
+  taskQueued: "等待中"
+  taskRunning: "下載中"
+  taskPaused: "已暫停"
+  taskCompleted: "已完成"
+  taskFailed: "失敗"
+  taskCancelled: 已取消
+  remove: "移除"
+  forward: "前進"
+  stop: "停止"
+  seek: "播放位置"
+  send: "傳送"
+  attach: "加入附件"
+  readerSettings: "閱讀設定"
+  textSize: "文字大小"
+  lineSpacing: "行距"
+  readingProgress: "閱讀進度"
+  showReplies: "顯示 $count 則回覆"
+  characterCount: "$count / $limit 字"
+  moreMedia: "還有 $count 張圖片"
+  navigationCount: "$count 項"
+  navigationProgress: "已完成 $progress%"
+  listSeparator: "，"
+
+navigation:
+  browse: "瀏覽"
+  search: "搜尋"
+  downloads: "下載"
+  settings: "設定"
+  browseEmpty: "瀏覽喜愛的圖源"
+  searchEmpty: "用標籤尋找作品"
+  downloadsEmpty: "下載項目會顯示在這裡"
+  settingsEmpty: "依照喜好設定 BooruFlow"
+
+settingsV2:
+  predictiveBack: "預測返回"
+  predictiveBackScope: "預覽 App 內的返回動作；返回主畫面的動畫由系統控制。"
+  background: "背景材質"
+  ambientBlur: "環境模糊"
+  mica: "雲母"
+  backgroundOff: "關閉"
+  backgroundIntensity: "強度"
+  systemTransparencyReduced: "系統已降低透明度"
+  customColour: "自訂顏色"
+  appearance: "外觀"
+  browsing: "瀏覽"
+  tone: "色調"
+  neutral: "中性"
+  cool: "冷色"
+  warm: "暖色"
+  accent: "強調色"
+  customAccent: "自訂強調色"
+  customHex: "強調色 HEX"
+  invalidHex: "請輸入六位 HEX 顏色。"
+  accentRejected: "此強調色在目前表面上無法保持可讀。"
+  accentWarning: "此強調色對比度較低，仍要套用嗎？"
+  editAccount: "編輯帳號"
+  signOutConfirm: "移除此圖源已儲存的帳號憑證？"
+  licenses: "開放原始碼授權"
+  checkUpdates: "檢查更新"
+  help: "說明"
+
+settingsDetails:
+  mode: "模式"
+  custom: "自訂"
+  change: "更改"
+  routeCache: "路由快取"
+  hostCount: "$count 個主機"
+  updatedAt: "更新於 $time"
+  sourceStatus: "圖源狀態"
+  apiAndImages: "API 與圖片可用"
+  apiOnly: "API 可用 · 圖片未通過"
+  status: "狀態"
+  content: "內容"
+  editSourceAccount: "編輯 $source 帳號"
+  proxyApplies: "套用後用於圖源、圖片和新的下載。"
+  version: "版本 $version ($build)"
+  communityTelegram: "Telegram 群組"
+  communityDiscord: "Discord 伺服器"
+  savedVerifications: "已儲存的驗證"
+  systemDnsShort: "系統 DNS"
+  refresh: "重新整理"
+  updateAvailable: "有新版本 $version"
+
+verificationPage:
+  instructions: "在下方頁面完成驗證，再按一下「完成驗證並返回」。"
+  opening: "正在開啟網頁"
+  failed: "網頁載入失敗"
+  closed: "驗證視窗已關閉"
+  failureHelp: "可以重新開啟，或檢查網路設定。"
+  reopen: "重新開啟"
+  signOut: "登出 $source 帳號？"
+  signOutHelp: "帳號資訊將從此裝置移除。"
+  downloadAdded: "已加入下載"
+  downloadFailed: "下載失敗"
+  linkCopied: "已複製連結"
+  view: "查看"
+  networkSettings: "網路設定"
+
+ugoira:
+  iosFilesDestination: "其他格式儲存在「檔案」App › BooruFlow"
+  iosFormatHelp: "動態 WebP 與 ZIP 儲存到「檔案」。"
+  albumName: "相簿名稱"
+  openSettings: "前往設定"
+  androidDestination: "相簿與下載資料夾"
+  iosDestination: "儲存到照片"
+  format: "動態圖片儲存格式"
+  losslessWebp: "無損動態 WebP"
+  originalZip: "原始 ZIP"
+  webpRecord: "WebP · 動態圖片"
+  zipRecord: "ZIP · 原始影格"
+  ugoiraInvalidArchive: "動畫壓縮檔無效。"
+  ugoiraMetadataMissing: "動畫缺少影格時間資料。"
+  ugoiraInvalidMetadata: "動畫影格時間資料無效。"
+  ugoiraFrameMissing: "動畫中有影格遺失。"
+  ugoiraFrameCorrupt: "動畫中有影格損壞。"
+  ugoiraFrameSizeMismatch: "動畫的影格尺寸不一致。"
+  ugoiraFrameTooLarge: "動畫影格超過大小限制。"
+  ugoiraEncodeFailed: "動畫編碼失敗。"
+  ugoiraOutputTooLarge: "動畫編碼結果超過大小限制。"
