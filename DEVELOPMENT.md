@@ -6,8 +6,8 @@
 
 ### Toolchains
 
-- **Flutter 3.47.2 stable**, pinned in [the CI setup action](.github/actions/setup/action.yml).
-- **Rust 1.98.1** through rustup, pinned in [rust/rust-toolchain.toml](rust/rust-toolchain.toml). CI reads this file directly.
+- **Flutter 3.47.6 stable**, pinned in [the CI setup action](.github/actions/setup/action.yml).
+- **Rust 1.99.1** through rustup, pinned in [rust/rust-toolchain.toml](rust/rust-toolchain.toml). CI reads this file directly.
 - Platform tools: Visual Studio C++ desktop tools on Windows; Xcode on macOS for Apple builds; Android SDK and Java 21 for Android; Clang, CMake, Ninja, pkg-config, GTK 3, liblzma, libmpv, and libepoxy development headers on Linux.
 - Android builds use SDK 37 and NDK `28.2.13676358`, as configured in the Android project.
 
@@ -39,22 +39,37 @@ cargo install flutter_rust_bridge_codegen --version 2.13.0 --locked
 flutter_rust_bridge_codegen generate
 ```
 
+The UI depends on the shared `frost_ui` Git package. A local checkout can be used
+without changing the tracked dependency by creating an ignored `pubspec_overrides.yaml`:
+
+```yaml
+dependency_overrides:
+  frost_ui:
+    path: ../frost_ui/packages/frost_ui
+```
+
 For Dart models, providers, database code, or translations that use build_runner:
 
 ```bash
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 ```
+
+Slang uses its supported legacy writer because the current post-processing writer
+conflicts with existing generated outputs in build_runner 2.16. Both generation
+and CLI audits share the YAML-anchored options in `build.yaml`. Generated Dart
+uses the repository's default 80-column formatting.
 
 Run the project checks locally:
 
 ```bash
 flutter analyze
 flutter test
-cargo fmt --manifest-path rust/Cargo.toml -- --check
-cargo test --manifest-path rust/Cargo.toml --locked
+cargo +1.99.1 fmt --manifest-path rust/Cargo.toml -- --check
+cargo +1.99.1 test --manifest-path rust/Cargo.toml --locked
+dart run slang analyze --full --outdir=.dart_tool/i18n_audit
 ```
 
-Keep `pubspec.lock` and `rust/Cargo.lock` in version control. Flutter SDK upgrades may update SDK-pinned Pub dependencies; review and retain the resulting lockfile changes.
+Do not track lock files. Review dependency changes when upgrading the SDK.
 
 ## CI and releases
 
@@ -75,3 +90,11 @@ Ubuntu 24.04: `sudo apt install libgtk-3-0t64 libstdc++6 libmpv2 libepoxy0`.
 Flutter SDK, Pub packages, and Cargo downloads are cached separately. CI prefetches Rust dependencies for the requested target architectures with retries, so download failures are visible before the Native Assets hook buffers compiler output. Gradle uses `setup-gradle`; Rust compilation uses sccache because Native Assets chooses its own target directories. The workflow does not cache the entire `.dart_tool` directory or assume native builds write into `rust/target`.
 
 The job summary shows exact Flutter/Pub/Cargo cache hits; Gradle and sccache report their own statistics. A dependency cache hit does not mean every compiler invocation will be cached. GitHub isolates caches between different tags; tag builds can reuse caches from the default branch. Run a manual build on `main` after SDK/dependency upgrades to refresh those caches. The first build with new SDK versions is expected to have cold caches.
+
+### Background Flutter UI verification
+
+Use the installed `flutter-ui-automation` skill and the isolated
+[Driver/capture harness](tool/automation/README.md) for screenshots, recordings
+and runtime UI checks. It keeps automation out of the normal entrypoint and
+preserves the human foreground window. Native presentation failures must remain
+explicit; app PNGs do not substitute for native window evidence.
