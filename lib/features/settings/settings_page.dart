@@ -1,281 +1,491 @@
 import 'dart:io';
-
-import 'package:booruflow/core/app_runtime.dart';
+import 'package:booruflow/app/frost_config.dart';
+import 'package:booruflow/app/icons.g.dart';
 import 'package:booruflow/core/downloads/download_file_system.dart';
+import 'package:booruflow/core/downloads/download_platform.dart';
 import 'package:booruflow/core/settings/logic.dart';
 import 'package:booruflow/core/settings/settings_service.dart';
+import 'package:booruflow/features/about/about_page.dart';
 import 'package:booruflow/features/booru/booru_logic.dart';
-import 'package:booruflow/features/booru/services/booru_service.dart';
+import 'package:booruflow/features/booru/widgets/web_challenge_data_panel.dart';
+import 'package:booruflow/features/downloads/download_presentation.dart';
+import 'package:booruflow/features/downloads/logic.dart';
 import 'package:booruflow/features/posts/models/post.dart';
+import 'package:booruflow/features/settings/appearance_settings.dart';
+import 'package:booruflow/features/settings/logic.dart';
 import 'package:booruflow/features/settings/network/network_logic.dart';
 import 'package:booruflow/features/settings/network/network_settings_page.dart';
 import 'package:booruflow/features/settings/widgets/account_editor.dart';
+import 'package:booruflow/features/update/logic.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_navigation.dart';
 import 'package:booruflow/shared/app_toast.dart';
-import 'package:booruflow/shared/widgets/auto_scaffold.dart';
-import 'package:booruflow/shared/widgets/grouped_settings_list.dart';
-import 'package:booruflow/shared/widgets/interaction_controls.dart';
-import 'package:booruflow/shared/widgets/settings_select_tile.dart';
+import 'package:booruflow/src/rust/api/booru_auth.dart';
+import 'package:booruflow/src/rust/api/booru_download.dart' show UgoiraExport;
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as path;
 
 enum SettingsSection {
+  appearance('appearance'),
+  browsing('browsing'),
   sources('sources'),
   network('network'),
+  downloads('downloads'),
+  web('web'),
   general('general'),
-  downloads('downloads');
+  about('about');
 
   const SettingsSection(this.pathSegment);
-
   final String pathSegment;
-
   String get title => switch (this) {
-    SettingsSection.sources => t.settings.sections.sourcesAndAccounts,
-    SettingsSection.network => t.settings.sections.network,
-    SettingsSection.general => t.settings.sections.general,
-    SettingsSection.downloads => t.settings.sections.downloads,
+    appearance => t.settingsV2.appearance,
+    browsing => t.settingsV2.browsing,
+    sources => t.settings.sections.sourcesAndAccounts,
+    network => t.settings.sections.network,
+    downloads => t.settings.sections.downloads,
+    web => t.webChallenge.title,
+    general => t.settings.sections.general,
+    about => t.about.title,
   };
-
-  static SettingsSection? fromPath(String? value) {
-    for (final section in values) {
-      if (section.pathSegment == value) return section;
-    }
-    return null;
-  }
+  static SettingsSection? fromPath(String? value) =>
+      values.where((s) => s.pathSegment == value).firstOrNull;
 }
 
 class SettingsPage extends ConsumerStatefulWidget {
-  const SettingsPage({super.key, this.section});
-
+  const SettingsPage({this.section, this.sourceId, super.key});
   final SettingsSection? section;
-
+  final String? sourceId;
   @override
   ConsumerState<SettingsPage> createState() => _SettingsPageState();
 }
 
+String settingsLanguageLabel(int? value) => switch (value) {
+  null => t.settings.system,
+  0 => 'English',
+  1 => '日本語',
+  2 => '繁體中文',
+  _ => '简体中文',
+};
+
+FrostIconData _sectionIcon(SettingsSection section) => switch (section) {
+  SettingsSection.appearance => appIcons.eye,
+  SettingsSection.browsing => appIcons.multiPage,
+  SettingsSection.sources => appIcons.user,
+  SettingsSection.network => const FrostIconData.glyph(BooruFlowIcons.activity),
+  SettingsSection.downloads => appIcons.download,
+  SettingsSection.web => appIcons.success,
+  SettingsSection.general => appIcons.textFormat,
+  SettingsSection.about => appIcons.info,
+};
+
 class _SettingsPageState extends ConsumerState<SettingsPage> {
-  BooruService get service => ref.read(booruServiceProvider);
-  AppSettings get settings => ref.read(settingsProvider);
-  Settings get settingsController => ref.read(settingsProvider.notifier);
-  late String _accountSource;
-  final _visitedSources = <String>{};
-
+  late SettingsSection _selected = widget.section ?? SettingsSection.appearance;
+  late String? _sourceId = widget.sourceId;
   @override
-  void initState() {
-    super.initState();
-
-    _accountSource = ref.read(booruSessionProvider).sourceId;
-    _visitedSources.add(_accountSource);
+  void didUpdateWidget(SettingsPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.section != oldWidget.section ||
+        widget.sourceId != oldWidget.sourceId) {
+      _selected = widget.section ?? SettingsSection.appearance;
+      _sourceId = widget.sourceId;
+    }
   }
 
-  Future<void> _open(SettingsSection section) async {
-    await context.pushNamed<void>(
-      AppRoute.settingsSection.name,
-      pathParameters: {'section': section.pathSegment},
-    );
-  }
+  void _open(int index) => setState(() {
+    _selected = SettingsSection.values[index];
+    _sourceId = null;
+  });
+
+  void _navigate(int index) => context.pushNamed<void>(
+    AppRoute.settingsSection.name,
+    pathParameters: {'section': SettingsSection.values[index].pathSegment},
+  );
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(settingsProvider);
-    ref.watch(booruSessionProvider);
-    final section = widget.section;
-    if (section != null) {
-      return AutoScaffold(
-        titleWidget: Text(section.title),
-        builder: (_, _) => _sectionContent(section),
-      );
-    }
-    return AutoScaffold(
-      showAppBar: false,
-      verticalOnlyTitleWidget: Text(t.settings.title),
-      builder: (_, _) => GroupedSettingsList(
-        groups: [
-          [
-            SettingsSelectTile<String>.values(
-              icon: CupertinoIcons.square_stack_3d_up,
-              title: t.settings.source.defaultSource,
-              value: settings.defaultSourceId,
-              values: service.sources.map((item) => item.sourceId).toList(),
-              label: (id) => service.sourceById(id).displayName,
-              onChanged: settingsController.setDefaultSource,
-            ),
-            _category(
-              CupertinoIcons.photo_on_rectangle,
-              t.settings.sections.sourcesAndAccounts,
-              t.settings.account.manageAllSubtitle,
-              () => _open(SettingsSection.sources),
-            ),
-            _category(
-              Icons.sell_outlined,
-              t.discovery.manageTags,
-              t.discovery.displayName,
-              () => context.pushUserTags<void>(),
-            ),
-          ],
-          [
-            _category(
-              CupertinoIcons.globe,
-              t.settings.sections.network,
-              _networkMode(ref.watch(networkConfigProvider).mode),
-              () => _open(SettingsSection.network),
-            ),
-            _category(
-              CupertinoIcons.paintbrush,
-              t.settings.sections.general,
-              '${_theme(settings.themeMode)} · ${_language(settings.language)}',
-              () => _open(SettingsSection.general),
-            ),
-          ],
-          if (AppPlatform.isDesktop)
-            [
-              _category(
-                CupertinoIcons.arrow_down_to_line,
-                t.settings.sections.downloads,
-                t.settings.downloadsOverview,
-                () => _open(SettingsSection.downloads),
+    final t = Translations.of(context);
+    final source = ref
+        .watch(booruSourcesProvider)
+        .where((s) => s.sourceId == _sourceId)
+        .firstOrNull;
+    final title =
+        source?.displayName ?? widget.section?.title ?? t.settings.title;
+    final page = FrostWindowTitleContribution(
+      path: widget.section == null
+          ? AppRoute.settings.path
+          : '/settings/${widget.section!.pathSegment}',
+      page: FrostPageTitle(
+        id: (SettingsPage, widget.section, widget.sourceId),
+        title: title,
+      ),
+      child: FrostSettingsSections.builder(
+        header: FrostPageHeader(
+          title: FrostText(t.settings.title, role: FrostTextRole.headline),
+        ),
+        section: widget.section == null
+            ? null
+            : _SettingsScroll(
+                section: widget.section!,
+                source: source,
+                title: title,
               ),
-            ],
+        labels: [for (final section in SettingsSection.values) section.title],
+        icons: [
+          for (final section in SettingsSection.values) _sectionIcon(section),
         ],
+        selectedIndex: _selected.index,
+        onSelected: _open,
+        onNavigate: _navigate,
+        compactNavigationBuilder: (_) =>
+            _SettingsNavigation(onSelected: _navigate),
+        sectionBuilder: (_, index) => _SettingsScroll(
+          section: SettingsSection.values[index],
+          source: index == SettingsSection.sources.index ? source : null,
+          showsHeader: false,
+          onSourceSelected: (source) =>
+              setState(() => _sourceId = source.sourceId),
+          onSourceBack: () => setState(() => _sourceId = null),
+        ),
+      ),
+    );
+    return page;
+  }
+}
+
+class _SettingsNavigation extends ConsumerWidget {
+  const _SettingsNavigation({required this.onSelected});
+  final ValueChanged<int> onSelected;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = Translations.of(context);
+    final settings = ref.watch(settingsProvider);
+    final config = ref.watch(networkConfigProvider);
+    final sources = ref.watch(booruSourcesProvider);
+    final update = ref.watch(updateCheckProvider).result;
+    String? value(SettingsSection section) => switch (section) {
+      SettingsSection.appearance => switch (settings.appearance.mode) {
+        ThemeMode.light => t.settings.light,
+        ThemeMode.dark => t.settings.dark,
+        ThemeMode.system => t.settings.system,
+      },
+      SettingsSection.browsing =>
+        sources
+            .where((s) => s.sourceId == settings.defaultSourceId)
+            .firstOrNull
+            ?.displayName,
+      SettingsSection.network =>
+        config.proxy != null
+            ? t.settings.network.proxyCompact
+            : config.mode == NetworkFallbackMode.off
+            ? t.settingsDetails.systemDnsShort
+            : t.settings.network.sniBypass,
+      SettingsSection.general => settingsLanguageLabel(settings.language),
+      _ => null,
+    };
+    Widget row(SettingsSection section) => FrostListRow(
+      title: section == SettingsSection.general
+          ? t.settings.language
+          : section.title,
+      icon: _sectionIcon(section),
+      value: value(section),
+      trailing: section == SettingsSection.about && update != null
+          ? const FrostCountBadge(count: 1)
+          : null,
+      accessory: FrostRowAccessory.chevron,
+      onPressed: () => onSelected(section.index),
+    );
+    return SingleChildScrollView(
+      primary: false,
+      padding: const EdgeInsets.symmetric(vertical: FrostGap.inline),
+      child: FrostContentColumn(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            FrostGroupedSection(
+              children: [
+                row(SettingsSection.appearance),
+                row(SettingsSection.browsing),
+              ],
+            ),
+            const SizedBox(height: FrostGap.section),
+            FrostGroupedSection(
+              children: [
+                for (final section in [
+                  SettingsSection.sources,
+                  SettingsSection.network,
+                  SettingsSection.downloads,
+                  SettingsSection.web,
+                ])
+                  row(section),
+              ],
+            ),
+            const SizedBox(height: FrostGap.section),
+            FrostGroupedSection(
+              children: [
+                row(SettingsSection.general),
+                row(SettingsSection.about),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
+}
 
-  Widget _sectionContent(SettingsSection section) => switch (section) {
-    SettingsSection.sources => _sourceAccountPage(),
-    SettingsSection.network => const NetworkSettingsPage(),
-    SettingsSection.general => _generalPage(),
-    SettingsSection.downloads => _downloadsPage(),
-  };
-
-  Widget _category(
-    IconData icon,
-    String title,
-    String subtitle,
-    VoidCallback onTap,
-  ) => ListTile(
-    leading: Icon(icon),
-    title: Text(title),
-    subtitle: Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis),
-    trailing: const Icon(Icons.chevron_right_rounded, size: 20),
-    onTap: onTap,
-  );
-
-  Widget _generalPage() => GroupedSettingsList(
-    groups: [
-      [
-        SettingsSelectTile<String>.values(
-          icon: CupertinoIcons.circle_lefthalf_fill,
-          title: t.settings.theme,
-          value: settings.themeMode?.toString() ?? 'system',
-          values: const ['system', '0', '1'],
-          label: (value) => switch (value) {
-            'system' => t.settings.system,
-            '0' => t.settings.light,
-            _ => t.settings.dark,
-          },
-          onChanged: (value) {
-            settingsController.setThemeMode(
-              value == 'system' ? null : int.parse(value),
-            );
-          },
+class _SettingsScroll extends ConsumerWidget {
+  const _SettingsScroll({
+    required this.section,
+    this.source,
+    this.title,
+    this.showsHeader = true,
+    this.onSourceSelected,
+    this.onSourceBack,
+  });
+  final SettingsSection section;
+  final BooruSource? source;
+  final String? title;
+  final bool showsHeader;
+  final ValueChanged<BooruSource>? onSourceSelected;
+  final VoidCallback? onSourceBack;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = Translations.of(context);
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (!showsHeader) ...[
+          if (source != null)
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: FrostButton(
+                label: SettingsSection.sources.title,
+                edgeAlignment: FrostButtonEdgeAlignment.start,
+                icon: appIcons.chevronLeft,
+                variant: FrostButtonVariant.plain,
+                size: FrostControlSize.compact,
+                onPressed: onSourceBack,
+              ),
+            ),
+          if (section != SettingsSection.about || source != null) ...[
+            FrostText(
+              source?.displayName ?? section.title,
+              role: FrostTextRole.title2,
+            ),
+            const SizedBox(height: FrostGap.rowInset),
+          ],
+        ],
+        switch (section) {
+          SettingsSection.appearance => const AppearanceSettings(),
+          SettingsSection.browsing => const _BrowsingSettings(),
+          SettingsSection.sources =>
+            source == null
+                ? _SourcesSettings(onSelected: onSourceSelected)
+                : source!.capabilities.authKind == AuthKind.none
+                ? FrostGroupedSection(
+                    children: [
+                      FrostListRow(title: t.settings.account.noAccountRequired),
+                      FrostListRow(
+                        title: t.settings.source.supportedRatings,
+                        value: source!.capabilities.ratings
+                            .map((r) => r.displayLabel)
+                            .join(t.discovery.ratingSeparator),
+                      ),
+                    ],
+                  )
+                : AccountEditor(source: source!),
+          SettingsSection.network => const NetworkSettingsPage(),
+          SettingsSection.downloads => const _DownloadSettings(),
+          SettingsSection.web => WebChallengeDataPanel(
+            sources: ref.watch(booruSourcesProvider),
+            savedOnly: true,
+          ),
+          SettingsSection.general => const _GeneralSettings(),
+          SettingsSection.about => const AboutPage(),
+        },
+      ],
+    );
+    if (!showsHeader) {
+      return SingleChildScrollView(
+        primary: false,
+        // The pane passes a keyline budget; consume it inside this viewport.
+        // Preserve edge-button feedback in that margin during scrolling.
+        clipBehavior: Clip.none,
+        padding: const EdgeInsets.only(bottom: FrostGap.section),
+        child: FrostContentColumn(child: content),
+      );
+    }
+    return FrostCollectionLayout(
+      header: FrostPageHeader(
+        title: FrostText(title ?? section.title, role: FrostTextRole.headline),
+      ),
+      slivers: [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: FrostGap.inline),
+            child: content,
+          ),
         ),
-        SettingsSelectTile<String>.values(
-          icon: CupertinoIcons.globe,
+      ],
+    );
+  }
+}
+
+class _BrowsingSettings extends ConsumerWidget {
+  const _BrowsingSettings();
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = Translations.of(context);
+    final settings = ref.watch(settingsProvider),
+        update = ref.read(settingsProvider.notifier);
+    final sources = ref.watch(booruSourcesProvider);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        FrostGroupedSection(
+          children: [
+            FrostSettingsSelectTile<String>.values(
+              title: t.settings.source.defaultSource,
+              value: settings.defaultSourceId,
+              values: sources.map((s) => s.sourceId).toList(),
+              label: (v) =>
+                  sources
+                      .where((s) => s.sourceId == v)
+                      .firstOrNull
+                      ?.displayName ??
+                  v,
+              onChanged: update.setDefaultSource,
+            ),
+            FrostSettingsSelectTile<int>.values(
+              title: t.settings.columnsPerRow,
+              value: settings.waterfallColumns ?? 0,
+              values: const [0, 2, 3, 4, 5, 6, 7, 8],
+              label: (v) => v == 0 ? t.settings.auto : '$v',
+              onChanged: (v) => update.setColumns(v == 0 ? null : v),
+            ),
+          ],
+        ),
+        const SizedBox(height: FrostGap.section),
+        FrostGroupedSection(
+          header: t.settings.source.safetyRating,
+          footer: t.discovery.defaultRatingsHint,
+          children: [
+            for (final rating in SettingsService.configurableRatings)
+              FrostCheckboxRow(
+                title: switch (rating) {
+                  ContentRating.general => t.postDetail.ratingGeneral,
+                  ContentRating.sensitive => t.postDetail.ratingSensitive,
+                  ContentRating.questionable => t.postDetail.ratingQuestionable,
+                  ContentRating.explicit => t.postDetail.ratingExplicit,
+                  ContentRating.unknown => t.postDetail.ratingUnknown,
+                },
+                value: settings.ratings.contains(rating),
+                onChanged: (value) {
+                  final next = [...settings.ratings];
+                  if (value == true) {
+                    if (!next.contains(rating)) next.add(rating);
+                  } else {
+                    next.remove(rating);
+                  }
+                  update.setRatings(next);
+                },
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _SourcesSettings extends ConsumerWidget {
+  const _SourcesSettings({this.onSelected});
+  final ValueChanged<BooruSource>? onSelected;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = Translations.of(context);
+    return FrostGroupedSection(
+      children: [
+        for (final source in ref.watch(booruSourcesProvider))
+          Consumer(
+            key: ValueKey(source.sourceId),
+            builder: (context, ref, _) {
+              final auth = source.capabilities.authKind == AuthKind.none
+                  ? null
+                  : ref.watch(accountProvider(source.sourceId));
+              final state = auth?.value?.auth;
+              final label = source.capabilities.authKind == AuthKind.none
+                  ? t.settings.account.noAccountRequired
+                  : auth?.hasError == true
+                  ? t.generic.loadFailed
+                  : state == null
+                  ? t.generic.loading
+                  : authStatusLabel(state.status);
+              return FrostListRow(
+                title: source.displayName,
+                subtitle:
+                    state?.status == AuthStatus.verified &&
+                        state?.username?.trim().isNotEmpty == true
+                    ? [label, state!.username!].join(' · ')
+                    : label,
+                subtitleStatus: switch (state?.status) {
+                  AuthStatus.verified => FrostStatusTone.positive,
+                  AuthStatus.configuredUnverified => FrostStatusTone.caution,
+                  _ => null,
+                },
+                accessory: FrostRowAccessory.chevron,
+                onPressed: () => onSelected != null
+                    ? onSelected!(source)
+                    : context.pushNamed<void>(
+                        AppRoute.settingsSection.name,
+                        pathParameters: {
+                          'section': SettingsSection.sources.pathSegment,
+                        },
+                        queryParameters: {'source': source.sourceId},
+                      ),
+              );
+            },
+          ),
+      ],
+    );
+  }
+}
+
+class _GeneralSettings extends ConsumerWidget {
+  const _GeneralSettings();
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = Translations.of(context);
+    final settings = ref.watch(settingsProvider);
+    return FrostGroupedSection(
+      children: [
+        FrostSettingsSelectTile<int>.values(
           title: t.settings.language,
-          value: settings.language?.toString() ?? 'system',
-          values: const ['system', '0', '1', '2', '3'],
-          label: (value) =>
-              _language(value == 'system' ? null : int.parse(value)),
-          onChanged: (value) {
-            final language = value == 'system' ? null : int.parse(value);
-            settingsController.setLanguage(language);
-          },
+          value: settings.language ?? -1,
+          values: const [-1, 0, 1, 3, 2],
+          label: (v) => settingsLanguageLabel(v < 0 ? null : v),
+          onChanged: (v) =>
+              ref.read(settingsProvider.notifier).setLanguage(v < 0 ? null : v),
         ),
       ],
-      [
-        SettingsSelectTile<int>.values(
-          icon: CupertinoIcons.rectangle_grid_2x2,
-          title: t.settings.columnsPerRow,
-          value: settings.waterfallColumns ?? 0,
-          values: List.generate(13, (index) => index),
-          label: (value) => value == 0 ? t.settings.auto : '$value',
-          onChanged: (value) {
-            settingsController.setColumns(value == 0 ? null : value);
-          },
-        ),
-      ],
-    ],
-  );
+    );
+  }
+}
 
-  Widget _downloadsPage() => GroupedSettingsList(
-    groups: [
-      [
-        ListTile(
-          leading: const Icon(CupertinoIcons.folder),
-          title: Text(t.settings.downloadDirectory),
-          subtitle: Text(
-            settings.downloadPath ?? t.settings.platformDefault,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (settings.downloadPath != null)
-                AppIconButton(
-                  tooltip: t.settings.platformDefault,
-                  onPressed: () {
-                    settingsController.setDownloadPath(null);
-                  },
-                  icon: const Icon(CupertinoIcons.clear, size: 18),
-                ),
-              const Icon(Icons.chevron_right_rounded, size: 20),
-            ],
-          ),
-          onTap: () => _pickDirectory(),
-        ),
-      ],
-      [
-        _numberDropdown(
-          CupertinoIcons.arrow_down_circle,
-          t.settings.maxConcurrentDownloads,
-          settings.maxConcurrentDownloads,
-          settingsController.setConcurrency,
-        ),
-        _numberDropdown(
-          CupertinoIcons.square_split_2x1,
-          t.settings.maxSegmentsPerTask,
-          settings.maxSegmentsPerTask,
-          settingsController.setSegments,
-        ),
-      ],
-    ],
-  );
+class _DownloadSettings extends ConsumerStatefulWidget {
+  const _DownloadSettings();
+  @override
+  ConsumerState<_DownloadSettings> createState() => _DownloadSettingsState();
+}
 
-  Widget _numberDropdown(
-    IconData icon,
-    String title,
-    int value,
-    ValueChanged<int> update,
-  ) => SettingsSelectTile<int>.values(
-    icon: icon,
-    title: title,
-    value: value,
-    values: List.generate(8, (index) => index + 1),
-    label: (item) => '$item',
-    onChanged: (item) {
-      update(item);
-    },
-  );
-
-  Future<void> _pickDirectory() async {
+class _DownloadSettingsState extends ConsumerState<_DownloadSettings> {
+  Future<void> _choose() async {
+    if (!ref.read(downloadPlatformProvider).canChooseDirectory) return;
+    final settings = ref.read(settingsProvider);
     final selected = await FilePicker.getDirectoryPath(
       dialogTitle: t.settings.downloadDirectoryDialog.pickerTitle,
       initialDirectory: settings.downloadPath,
@@ -291,187 +501,120 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     }
     try {
       await ensureWritableDirectory(Directory(selected));
-      settingsController.setDownloadPath(selected);
-    } catch (_) {
-      AppToast.error(
-        t.settings.downloadDirectoryDialog.messages.pathNotWritable,
-      );
+      if (mounted) {
+        ref.read(settingsProvider.notifier).setDownloadPath(selected);
+      }
+    } catch (error) {
+      if (mounted) {
+        AppToast.errorWithCause(
+          t.settings.downloadDirectoryDialog.messages.pathNotWritable,
+          error,
+        );
+      }
     }
   }
 
-  Widget _sourceAccountPage() {
-    final sources = service.sources;
-    final activeIndex = sources.indexWhere(
-      (item) => item.sourceId == _accountSource,
-    );
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final padding = MediaQuery.sizeOf(context).width < 600 ? 16.0 : 24.0;
-        final contentInset =
-            (constraints.maxWidth - 760).clamp(0.0, double.infinity) / 2;
-        return SingleChildScrollView(
-          padding: EdgeInsets.symmetric(
-            horizontal: contentInset + padding,
-            vertical: padding,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Card(
-                margin: EdgeInsets.zero,
-                clipBehavior: Clip.antiAlias,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: _SafetyRatingTile(
-                    ratings: SettingsService.configurableRatings,
-                    selectedRatings: settings.ratings,
-                    onChanged: (rating) {
-                      final next = [...settings.ratings];
-                      if (next.contains(rating)) {
-                        next.remove(rating);
-                      } else {
-                        next.add(rating);
-                      }
-                      settingsController.setRatings(next);
-                    },
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              DefaultTabController(
-                length: sources.length,
-                initialIndex: activeIndex < 0 ? 0 : activeIndex,
-                child: TabBar(
-                  isScrollable: true,
-                  tabAlignment: TabAlignment.start,
-                  dividerColor: Colors.transparent,
-                  tabs: [
-                    for (final source in sources) Tab(text: source.displayName),
-                  ],
-                  onTap: (index) => setState(() {
-                    _accountSource = sources[index].sourceId;
-                    _visitedSources.add(_accountSource);
-                  }),
-                ),
-              ),
-              const SizedBox(height: 12),
-              for (final source in sources)
-                if (_visitedSources.contains(source.sourceId))
-                  Offstage(
-                    key: ValueKey('source-settings-${source.sourceId}'),
-                    offstage: source.sourceId != _accountSource,
-                    child: Card(
-                      margin: EdgeInsets.zero,
-                      clipBehavior: Clip.antiAlias,
-                      child: ListTileTheme.merge(
-                        tileColor: Colors.transparent,
-                        shape: const RoundedRectangleBorder(),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ListTile(
-                              leading: const Icon(CupertinoIcons.shield),
-                              title: Text(t.settings.source.supportedRatings),
-                              subtitle: Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: Wrap(
-                                  spacing: 12,
-                                  runSpacing: 8,
-                                  children: [
-                                    for (final rating
-                                        in source.capabilities.ratings)
-                                      Text(rating.shortLabel),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const Divider(height: 1, indent: 16, endIndent: 16),
-                            if (source.capabilities.authKind != AuthKind.none)
-                              AccountEditor(
-                                key: ValueKey(source.sourceId),
-                                source: source,
-                              )
-                            else
-                              ListTile(
-                                leading: const Icon(
-                                  CupertinoIcons.person_crop_circle,
-                                ),
-                                title: Text(
-                                  t.settings.account.noAccountRequired,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-            ],
+  @override
+  Widget build(BuildContext context) {
+    final t = Translations.of(context);
+    final settings = ref.watch(settingsProvider),
+        update = ref.read(settingsProvider.notifier);
+    final platform = ref.watch(downloadPlatformProvider);
+    Widget stepper(String title, int value, ValueChanged<int> onChanged) =>
+        FrostListRow(
+          title: title,
+          value: '$value',
+          trailing: FrostStepper(
+            value: value,
+            min: 1,
+            max: 8,
+            semanticLabel: title,
+            onChanged: (v) => onChanged(v.toInt()),
           ),
         );
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        FrostGroupedSection(
+          children: [
+            if (!platform.canChooseDirectory)
+              FrostListRow(
+                title: platform == DownloadPlatform.android
+                    ? t.ugoira.androidDestination
+                    : t.ugoira.iosDestination,
+                subtitle: platform == DownloadPlatform.android
+                    ? DownloadPlatform.androidDirectories
+                    : t.ugoira.iosFilesDestination,
+              )
+            else
+              FrostListRow(
+                title: t.settings.downloadDirectory,
+                subtitleKind: settings.downloadPath == null
+                    ? FrostRowSubtitleKind.text
+                    : FrostRowSubtitleKind.path,
+                subtitle: settings.downloadPath == null
+                    ? t.settings.platformDefault
+                    : settings.downloadPath!,
+                onPressed: _choose,
+                contextMenu: [
+                  if (settings.downloadPath != null) ...[
+                    FrostMenuAction(
+                      t.frost.showInFolder,
+                      icon: appIcons.folder,
+                      onSelected: () => revealDownloadPath(
+                        settings.downloadPath!,
+                        directory: true,
+                        revealer: ref.read(downloadPathRevealerProvider),
+                      ),
+                    ),
+                    FrostMenuAction(
+                      t.settings.platformDefault,
+                      onSelected: () => update.setDownloadPath(null),
+                    ),
+                  ],
+                ],
+                trailing: FrostButton(
+                  label: t.settingsDetails.change,
+                  size: FrostControlSize.compact,
+                  onPressed: _choose,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: FrostGap.section),
+        FrostGroupedSection(
+          children: [
+            FrostSettingsSelectTile<UgoiraExport>(
+              title: t.ugoira.format,
+              subtitle: platform == DownloadPlatform.ios
+                  ? t.ugoira.iosFormatHelp
+                  : null,
+              value: settings.ugoiraExport,
+              items: [
+                FrostPickerOption(
+                  value: UgoiraExport.losslessWebp,
+                  label: t.ugoira.losslessWebp,
+                ),
+                FrostPickerOption(
+                  value: UgoiraExport.originalZip,
+                  label: t.ugoira.originalZip,
+                ),
+              ],
+              onChanged: update.setUgoiraExport,
+            ),
+            stepper(
+              t.settings.maxConcurrentDownloads,
+              settings.maxConcurrentDownloads,
+              update.setConcurrency,
+            ),
+            stepper(
+              t.settings.maxSegmentsPerTask,
+              settings.maxSegmentsPerTask,
+              update.setSegments,
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
-
-class _SafetyRatingTile extends StatelessWidget {
-  const _SafetyRatingTile({
-    required this.ratings,
-    required this.selectedRatings,
-    required this.onChanged,
-  });
-
-  final List<ContentRating> ratings;
-  final List<ContentRating> selectedRatings;
-  final ValueChanged<ContentRating> onChanged;
-
-  @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      Text(
-        t.settings.source.safetyRating,
-        style: Theme.of(context).textTheme.titleMedium,
-      ),
-      const SizedBox(height: 12),
-      Row(
-        children: [
-          for (final rating in ratings)
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(right: rating == ratings.last ? 0 : 8),
-                child: AppChoiceToggle(
-                  label: rating.shortLabel,
-                  selected: selectedRatings.contains(rating),
-                  onPressed: () => onChanged(rating),
-                ),
-              ),
-            ),
-        ],
-      ),
-    ],
-  );
-}
-
-String _networkMode(NetworkFallbackMode value) => switch (value) {
-  NetworkFallbackMode.off => t.settings.network.systemDns,
-  NetworkFallbackMode.persistedIpOverride => t.settings.network.sniBypass,
-  NetworkFallbackMode.legacyIpUrl => t.settings.network.legacyIpUrl,
-};
-
-String _theme(int? value) => switch (value) {
-  null => t.settings.system,
-  0 => t.settings.light,
-  _ => t.settings.dark,
-};
-
-String _language(int? value) => switch (value) {
-  null => t.settings.system,
-  0 => 'English',
-  1 => '日本語',
-  2 => '繁體中文',
-  _ => '简体中文',
-};
