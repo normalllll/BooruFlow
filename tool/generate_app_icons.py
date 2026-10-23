@@ -5,6 +5,7 @@ The source artwork is preserved; only sizing, padding and platform backgrounds
 are applied. Windows intentionally contains only the requested 256px image.
 """
 
+import argparse
 import json
 from pathlib import Path
 
@@ -12,7 +13,7 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "assets/branding/app_icon_source.png"
+SOURCE = ROOT / "tool/branding/app_icon_source.png"
 BACKGROUND = (250, 248, 252, 255)
 RESAMPLE = Image.Resampling.LANCZOS
 DESKTOP_FRACTION = 0.96
@@ -118,5 +119,20 @@ def main():
     print("Exported Windows (256px only), Android, iOS, macOS and Linux icons.")
 
 
+def runtime_images():
+    # Largest in-app brand is 64 logical pixels. 4x exports cover high-DPR
+    # phones without bundling the 1024px editing masters. Do not crop artwork.
+    for name, target in [("app_icon_source.png", "app-icon.png"),
+                         ("freepiv-icon.png", "freepiv-icon.png")]:
+        image = Image.open(ROOT / "tool/branding" / name).convert("RGBA")
+        image.thumbnail((256, 256), RESAMPLE)
+        save(image, "assets/images/" + target)
+
+
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--runtime-only", action="store_true")
+    args = parser.parse_args()
+    runtime_images()
+    if not args.runtime_only:
+        main()

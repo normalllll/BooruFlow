@@ -27,3 +27,5 @@ occupancy is 96% for Windows/Linux, 90% for iOS and 82% for macOS (whose backgro
 keeps its original margin). Android scales to fit a central 72dp circular viewport
 with a 1dp inset; review manufacturer-specific masks when replacing the master.
 The source master remains unchanged.
+
+Use --runtime-only to export assets/images/app-icon.png and freepiv-icon.png at up to 256px. Editing masters and this README are not declared runtime assets.
