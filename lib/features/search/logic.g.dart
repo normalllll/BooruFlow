@@ -105,7 +105,7 @@ final class SearchProvider extends $NotifierProvider<Search, SearchState> {
   }
 }
 
-String _$searchHash() => r'9512a4896747941e61f75ebac1aec72f876fcc4d';
+String _$searchHash() => r'd372e6b9aacfefdc80ddda92df8ba66c3ddca4e4';
 
 final class SearchFamily extends $Family
     with
@@ -198,47 +198,39 @@ abstract class _$UserTags extends $AsyncNotifier<List<UserTagAlias>> {
   }
 }
 
-@ProviderFor(CommonTags)
-final commonTagsProvider = CommonTagsFamily._();
+@ProviderFor(SearchHistory)
+final searchHistoryProvider = SearchHistoryFamily._();
 
-final class CommonTagsProvider
-    extends $NotifierProvider<CommonTags, CommonTagsState> {
-  CommonTagsProvider._({
-    required CommonTagsFamily super.from,
-    required CommonTagsRequest super.argument,
+final class SearchHistoryProvider
+    extends $AsyncNotifierProvider<SearchHistory, List<String>> {
+  SearchHistoryProvider._({
+    required SearchHistoryFamily super.from,
+    required (TagSuggestionRepository, String) super.argument,
   }) : super(
          retry: null,
-         name: r'commonTagsProvider',
+         name: r'searchHistoryProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$commonTagsHash();
+  String debugGetCreateSourceHash() => _$searchHistoryHash();
 
   @override
   String toString() {
-    return r'commonTagsProvider'
+    return r'searchHistoryProvider'
         ''
-        '($argument)';
+        '$argument';
   }
 
   @$internal
   @override
-  CommonTags create() => CommonTags();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(CommonTagsState value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<CommonTagsState>(value),
-    );
-  }
+  SearchHistory create() => SearchHistory();
 
   @override
   bool operator ==(Object other) {
-    return other is CommonTagsProvider && other.argument == argument;
+    return other is SearchHistoryProvider && other.argument == argument;
   }
 
   @override
@@ -247,50 +239,56 @@ final class CommonTagsProvider
   }
 }
 
-String _$commonTagsHash() => r'62dc2261605a3caa6a6e90a8eccc12493389d2d1';
+String _$searchHistoryHash() => r'6440c7b7e1b3042364923f3fc2aa7f0a13f46c32';
 
-final class CommonTagsFamily extends $Family
+final class SearchHistoryFamily extends $Family
     with
         $ClassFamilyOverride<
-          CommonTags,
-          CommonTagsState,
-          CommonTagsState,
-          CommonTagsState,
-          CommonTagsRequest
+          SearchHistory,
+          AsyncValue<List<String>>,
+          List<String>,
+          FutureOr<List<String>>,
+          (TagSuggestionRepository, String)
         > {
-  CommonTagsFamily._()
+  SearchHistoryFamily._()
     : super(
         retry: null,
-        name: r'commonTagsProvider',
+        name: r'searchHistoryProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  CommonTagsProvider call(CommonTagsRequest request) =>
-      CommonTagsProvider._(argument: request, from: this);
+  SearchHistoryProvider call(
+    TagSuggestionRepository repository,
+    String source,
+  ) => SearchHistoryProvider._(argument: (repository, source), from: this);
 
   @override
-  String toString() => r'commonTagsProvider';
+  String toString() => r'searchHistoryProvider';
 }
 
-abstract class _$CommonTags extends $Notifier<CommonTagsState> {
-  late final _$args = ref.$arg as CommonTagsRequest;
-  CommonTagsRequest get request => _$args;
+abstract class _$SearchHistory extends $AsyncNotifier<List<String>> {
+  late final _$args = ref.$arg as (TagSuggestionRepository, String);
+  TagSuggestionRepository get repository => _$args.$1;
+  String get source => _$args.$2;
 
-  CommonTagsState build(CommonTagsRequest request);
+  FutureOr<List<String>> build(
+    TagSuggestionRepository repository,
+    String source,
+  );
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<CommonTagsState, CommonTagsState>;
+    final ref = this.ref as $Ref<AsyncValue<List<String>>, List<String>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<CommonTagsState, CommonTagsState>,
-              CommonTagsState,
+              AnyNotifier<AsyncValue<List<String>>, List<String>>,
+              AsyncValue<List<String>>,
               Object?,
               Object?
             >;
-    return element.handleCreate(ref, () => build(_$args));
+    return element.handleCreate(ref, () => build(_$args.$1, _$args.$2));
   }
 }

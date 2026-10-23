@@ -1,188 +1,185 @@
-import 'dart:math' as math;
-
+import 'package:booruflow/app/frost_config.dart';
+import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/features/search/logic.dart';
 import 'package:booruflow/features/search/services/tag_suggestion_repository.dart';
+import 'package:booruflow/features/search/widgets/search_tag_widgets.dart';
 import 'package:booruflow/intl/translations.g.dart';
-import 'package:booruflow/shared/widgets/auto_scaffold.dart'
-    show AutoScaffold, shouldUseDesktopShell;
-import 'package:booruflow/shared/widgets/form_controls.dart';
-import 'package:booruflow/shared/widgets/interaction_controls.dart';
-import 'package:booruflow/shared/widgets/rounded_surface.dart';
-import 'package:booruflow/shared/widgets/tag_label.dart';
-import 'package:flutter/material.dart';
+import 'package:booruflow/shared/app_navigation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frost_ui/frost_ui.dart';
 
-class UserTagsPage extends ConsumerStatefulWidget {
+class UserTagsPage extends ConsumerWidget {
   const UserTagsPage({super.key, this.sourceId});
   final String? sourceId;
   @override
-  ConsumerState<UserTagsPage> createState() => _UserTagsPageState();
-}
-
-class _UserTagsPageState extends ConsumerState<UserTagsPage> {
-  void _add() => editUserTag(
-    context,
-    source: widget.sourceId ?? UserTagAlias.allSources,
-    locale: Localizations.localeOf(context).toLanguageTag(),
-  );
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(userTagsProvider);
     final sources = ref.watch(booruSourcesProvider);
-    return AutoScaffold(
-      titleWidget: Text(t.discovery.manageTags),
-      builder: (context, _) {
-        if (state.hasError) {
-          return Center(
-            child: AppButton(
-              label: t.generic.retry,
-              onPressed: () => ref.invalidate(userTagsProvider),
+    void add() => editUserTag(
+      context,
+      source: sourceId ?? UserTagAlias.allSources,
+      locale: Localizations.localeOf(context).toLanguageTag(),
+    );
+    final text = TextPainter(
+      text: TextSpan(
+        text: t.discovery.addTagAction,
+        style: FrostTypography.of(context).style(FrostTextRole.callout),
+      ),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+    )..layout();
+    final addWidth =
+        text.width +
+        FrostControlSize.compact.iconSize +
+        FrostGap.related +
+        2 * FrostGap.group;
+    text.dispose();
+    final aliases = state.value;
+    return FrostWindowTitleContribution(
+      path: AppRoute.userTags.path,
+      page: FrostPageTitle(id: UserTagsPage, title: t.discovery.manageTags),
+      child: FrostPinnedChrome(
+        chrome: FrostContentColumn(
+          maxWidth: double.infinity,
+          child: FrostPageHeader(
+            title: FrostText(
+              t.discovery.manageTags,
+              role: FrostTextRole.headline,
             ),
-          );
-        }
-        final aliases = state.value;
-        if (aliases == null) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (aliases.isEmpty) {
-          return LayoutBuilder(
-            builder: (context, constraints) => SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: math.max(0, constraints.maxHeight - 48),
+            actions: [
+              FrostToolbarItem.custom(
+                minWidth: addWidth,
+                priority: FrostToolbarPriority.high,
+                overflowEntry: FrostMenuAction(
+                  t.discovery.addTagAction,
+                  icon: appIcons.add,
+                  onSelected: add,
                 ),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.sell_outlined,
-                        size: 48,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        t.discovery.noCustomTags,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        t.discovery.customTagsHint,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      const SizedBox(height: 20),
-                      AppButton(
-                        label: t.discovery.addTag,
-                        icon: Icons.add,
-                        kind: AppButtonKind.primary,
-                        onPressed: _add,
-                      ),
-                    ],
-                  ),
+                builder: (_) => FrostButton(
+                  label: t.discovery.addTagAction,
+                  icon: appIcons.add,
+                  variant: FrostButtonVariant.prominent,
+                  size: FrostControlSize.compact,
+                  onPressed: add,
                 ),
               ),
-            ),
-          );
-        }
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 88),
-          children: [
-            if (shouldUseDesktopShell(context))
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: AppIconButton(
-                    icon: const Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      size: 17,
-                    ),
-                    tooltip: MaterialLocalizations.of(
-                      context,
-                    ).backButtonTooltip,
-                    onPressed: () => Navigator.of(context).maybePop(),
-                  ),
-                ),
-              ),
-            ...aliases.map(
-              (alias) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: AppRoundedSurface(
-                  key: ValueKey('custom-tag-${alias.id}'),
-                  color: Theme.of(context).colorScheme.surfaceContainer,
-                  borderColor: Theme.of(context).colorScheme.outlineVariant,
-                  child: InkWell(
-                    onTap: () => editUserTag(
-                      context,
-                      source: alias.sourceId,
-                      locale: alias.locale,
-                      existing: alias,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                TagLabel(
-                                  value: alias.value,
-                                  translation: alias.displayName,
-                                  style: Theme.of(context).textTheme.titleSmall,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  alias.sourceId == UserTagAlias.allSources
-                                      ? t.discovery.allTagSources
-                                      : sources
-                                                .where(
-                                                  (source) =>
-                                                      source.sourceId ==
-                                                      alias.sourceId,
-                                                )
-                                                .firstOrNull
-                                                ?.displayName ??
-                                            alias.sourceId,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          AppIconButton(
-                            tooltip: t.generic.clear,
-                            icon: const Icon(Icons.delete_outline),
-                            onPressed: () => ref
+            ],
+          ),
+        ),
+        body: CustomScrollView(
+          key: const PageStorageKey('user-tags'),
+          slivers: [
+            const FrostChromeSpacer(),
+            FrostSliverContentColumn(
+              maxWidth: searchContentMaxWidth,
+              sliver: SliverMainAxisGroup(
+                slivers: [
+                  if (state.hasError)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: FrostEmptyState(
+                        icon: appIcons.error,
+                        title: t.generic.loadFailed,
+                        message: describeBooruError(state.error),
+                        actionLabel: t.generic.retry,
+                        onAction: () => ref.invalidate(userTagsProvider),
+                      ),
+                    )
+                  else if (aliases == null)
+                    SliverLayoutBuilder(
+                      builder: (context, constraints) => SliverList.builder(
+                        itemCount:
+                            (constraints.viewportMainAxisExtent /
+                                    FrostControlSize.regular.height(context))
+                                .ceil(),
+                        itemBuilder: (_, _) => FrostListRow.skeleton(
+                          title: t.discovery.manageTags,
+                          icon: false,
+                          subtitle: t.discovery.allTagSources,
+                          value: null,
+                        ),
+                      ),
+                    )
+                  else if (aliases.isEmpty)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: FrostEmptyState(
+                        icon: appIcons.edit,
+                        title: t.discovery.noCustomTags,
+                        message: t.discovery.customTagsHint,
+                      ),
+                    )
+                  else
+                    SliverList.separated(
+                      itemCount: aliases.length,
+                      separatorBuilder: (_, _) =>
+                          const FrostDivider(inset: FrostDividerInset.keyline),
+                      itemBuilder: (context, index) {
+                        final alias = aliases[index];
+                        final source = alias.sourceId == UserTagAlias.allSources
+                            ? t.discovery.allTagSources
+                            : sources
+                                      .where(
+                                        (s) => s.sourceId == alias.sourceId,
+                                      )
+                                      .firstOrNull
+                                      ?.displayName ??
+                                  alias.sourceId;
+                        void edit() => editUserTag(
+                          context,
+                          source: alias.sourceId,
+                          locale: alias.locale,
+                          existing: alias,
+                        );
+                        Future<void> remove() async {
+                          try {
+                            await ref
                                 .read(userTagsProvider.notifier)
-                                .delete(alias.id),
+                                .delete(alias.id);
+                          } catch (error) {
+                            if (context.mounted) {
+                              FrostToast.fromError(context, error);
+                            }
+                          }
+                        }
+
+                        final actions = <FrostMenuEntry>[
+                          FrostMenuAction(
+                            t.discovery.editTag,
+                            icon: appIcons.edit,
+                            onSelected: edit,
                           ),
-                        ],
-                      ),
+                          FrostMenuAction(
+                            t.discovery.deleteTag,
+                            icon: appIcons.delete,
+                            destructive: true,
+                            onSelected: remove,
+                          ),
+                        ];
+                        return FrostListRow(
+                          key: ValueKey('custom-tag-${alias.id}'),
+                          title: alias.displayName ?? alias.value,
+                          subtitle: alias.displayName == null
+                              ? null
+                              : alias.value,
+                          value: source,
+                          onPressed: edit,
+                          contextMenu: actions,
+                          accessory: FrostRowAccessory.chevron,
+                        );
+                      },
                     ),
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: FrostGap.section),
                   ),
-                ),
+                ],
               ),
             ),
-            if (aliases.isNotEmpty)
-              Align(
-                alignment: Alignment.centerLeft,
-                child: AppButton(
-                  label: t.discovery.addTag,
-                  icon: Icons.add,
-                  onPressed: _add,
-                ),
-              ),
           ],
-        );
-      },
+        ),
+      ),
     );
   }
 }
@@ -194,99 +191,141 @@ Future<UserTagAlias?> editUserTag(
   String value = '',
   UserTagAlias? existing,
 }) async {
-  final controller = ProviderScope.containerOf(
-    context,
-    listen: false,
-  ).read(userTagsProvider.notifier);
-  final raw = TextEditingController(text: existing?.value ?? value);
-  final display = TextEditingController(text: existing?.displayName ?? '');
-  String? error;
-  final result = await showDialog<UserTagAlias>(
+  final form = GlobalKey<_AliasFieldsState>();
+  UserTagAlias? result;
+  await showFrostFormDialog(
     context: context,
-    builder: (context) => StatefulBuilder(
-      builder: (context, update) {
-        Future<void> submit() async {
-          if (raw.text.trim().isEmpty ||
-              raw.text.trim().contains(RegExp(r'\s'))) {
-            update(() => error = t.discovery.invalidTag);
-            return;
-          }
-          final alias = UserTagAlias(
-            id:
-                existing?.id ??
-                DateTime.now().microsecondsSinceEpoch.toString(),
-            value: raw.text.trim(),
-            sourceId: source,
-            locale: switch (existing) {
-              null => locale,
-              _ => existing.locale,
-            },
-            displayName: display.text.trim().isEmpty
-                ? null
-                : display.text.trim(),
-          );
-          try {
-            await controller.save(alias);
-            if (context.mounted) Navigator.pop(context, alias);
-          } catch (_) {
-            if (context.mounted) update(() => error = t.generic.loadFailed);
-          }
-        }
-
-        return AlertDialog(
-          title: Text(switch (existing) {
-            null => t.discovery.addCustomTag,
-            _ => t.discovery.editTag,
-          }),
-          content: SizedBox(
-            width: 420,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (source == UserTagAlias.allSources) ...[
-                    Text(
-                      t.discovery.tagSource,
-                      style: Theme.of(context).textTheme.labelLarge,
-                    ),
-                    const SizedBox(height: 7),
-                    Text(
-                      t.discovery.allTagSources,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                  AppTextField(
-                    controller: raw,
-                    label: t.discovery.canonicalTag,
-                    errorText: error,
-                  ),
-                  const SizedBox(height: 12),
-                  AppTextField(
-                    controller: display,
-                    label: t.discovery.displayName,
-                    onSubmitted: (_) => submit(),
-                  ),
-                ],
-              ),
-            ),
+    title: existing == null ? t.discovery.addCustomTag : t.discovery.editTag,
+    showsCloseButton: true,
+    sections: [
+      _AliasFields(
+        key: form,
+        source: source,
+        locale: locale,
+        value: value,
+        existing: existing,
+      ),
+    ],
+    submitLabel: t.settings.account.save,
+    leadingAction: existing == null
+        ? null
+        : FrostDialogAction<bool>(
+            label: t.discovery.deleteTag,
+            role: FrostButtonRole.destructive,
+            value: false,
+            onPressed: () async => await form.currentState?.remove() ?? false,
           ),
-          actions: [
-            AppButton(
-              label: t.generic.cancel,
-              kind: AppButtonKind.ghost,
-              onPressed: () => Navigator.pop(context),
-            ),
-            AppButton(label: t.generic.confirm, onPressed: submit),
-          ],
-        );
-      },
-    ),
+    onSubmit: () async {
+      result = await form.currentState?.save();
+      return result != null;
+    },
   );
-  // Dialog reverse transition may still own the fields for one frame.
-  await Future<void>.delayed(const Duration(milliseconds: 250));
-  raw.dispose();
-  display.dispose();
   return result;
+}
+
+// Controllers belong to the mounted dialog fields, including its reverse
+// transition. No arbitrary delay is needed to keep editing resources alive.
+class _AliasFields extends ConsumerStatefulWidget {
+  const _AliasFields({
+    required this.source,
+    required this.locale,
+    required this.value,
+    required this.existing,
+    super.key,
+  });
+  final String source, locale, value;
+  final UserTagAlias? existing;
+  @override
+  ConsumerState<_AliasFields> createState() => _AliasFieldsState();
+}
+
+class _AliasFieldsState extends ConsumerState<_AliasFields> {
+  late final _raw = TextEditingController(
+    text: widget.existing?.value ?? widget.value,
+  );
+  late final _display = TextEditingController(
+    text: widget.existing?.displayName ?? '',
+  );
+  late String _source = widget.existing?.sourceId ?? widget.source;
+  String? _error;
+  Future<UserTagAlias?> save() async {
+    if (_raw.text.trim().isEmpty || _raw.text.trim().contains(RegExp(r'\s'))) {
+      setState(() => _error = t.discovery.invalidTag);
+      return null;
+    }
+    final alias = UserTagAlias(
+      id:
+          widget.existing?.id ??
+          DateTime.now().microsecondsSinceEpoch.toString(),
+      value: _raw.text.trim(),
+      sourceId: _source,
+      locale: widget.existing?.locale ?? widget.locale,
+      displayName: _display.text.trim().isEmpty ? null : _display.text.trim(),
+    );
+    try {
+      await ref.read(userTagsProvider.notifier).save(alias);
+      return mounted ? alias : null;
+    } catch (error) {
+      if (mounted) setState(() => _error = describeBooruError(error));
+      return null;
+    }
+  }
+
+  Future<bool> remove() async {
+    final alias = widget.existing;
+    if (alias == null) return false;
+    try {
+      await ref.read(userTagsProvider.notifier).delete(alias.id);
+      return mounted;
+    } catch (error) {
+      if (mounted) setState(() => _error = describeBooruError(error));
+      return false;
+    }
+  }
+
+  @override
+  void dispose() {
+    _raw.dispose();
+    _display.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final sources = ref.watch(booruSourcesProvider);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        FrostTextField(
+          controller: _raw,
+          label: t.discovery.canonicalTag,
+          error: _error,
+          autofocus: true,
+          onChanged: (_) {
+            if (_error != null) setState(() => _error = null);
+          },
+        ),
+        const SizedBox(height: FrostGap.group),
+        FrostTextField(controller: _display, label: t.discovery.displayName),
+        const SizedBox(height: FrostGap.group),
+        FrostPicker<String>.menu(
+          label: t.discovery.tagSource,
+          value: _source,
+          onChanged: (value) => setState(() => _source = value),
+          options: [
+            FrostPickerOption(
+              value: UserTagAlias.allSources,
+              label: t.discovery.allTagSources,
+            ),
+            for (final source in sources)
+              FrostPickerOption(
+                value: source.sourceId,
+                label: source.displayName,
+              ),
+          ],
+        ),
+      ],
+    );
+  }
 }

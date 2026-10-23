@@ -1,25 +1,25 @@
 import 'dart:async';
 
+import 'package:booruflow/app/frost_config.dart';
 import 'package:booruflow/core/settings/logic.dart';
-import 'package:booruflow/core/settings/settings_service.dart';
 import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/features/booru/services/booru_service.dart';
 import 'package:booruflow/features/discovery/collection_logic.dart';
 import 'package:booruflow/features/discovery/discovery_logic.dart';
-import 'package:booruflow/features/discovery/widgets/discovery_toolbar.dart';
-import 'package:booruflow/features/discovery/widgets/home_header.dart';
 import 'package:booruflow/features/discovery/widgets/post_collection_view.dart';
-import 'package:booruflow/features/posts/models/post.dart';
+import 'package:booruflow/features/discovery/widgets/rating_filter.dart';
+import 'package:booruflow/features/downloads/batch/batch_download_dialog.dart';
+import 'package:booruflow/features/downloads/batch/logic.dart';
+import 'package:booruflow/features/search/query.dart';
+import 'package:booruflow/features/search/user_tags_page.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_navigation.dart';
-import 'package:booruflow/shared/app_toast.dart';
-import 'package:booruflow/shared/widgets/auto_scaffold.dart';
-import 'package:booruflow/shared/widgets/form_controls.dart';
-import 'package:booruflow/shared/widgets/interaction_controls.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frost_ui/frost_ui.dart';
 
 class DiscoveryPage extends ConsumerStatefulWidget {
   const DiscoveryPage({super.key, this.tags, this.sourceId, this.loader});
@@ -31,7 +31,8 @@ class DiscoveryPage extends ConsumerStatefulWidget {
 }
 
 class _DiscoveryPageState extends ConsumerState<DiscoveryPage> {
-  late final _query = TextEditingController(text: widget.tags?.join(' ') ?? '');
+  BatchDownloadRequest? _batchRequest;
+  final _collection = GlobalKey<PostCollectionViewState>();
   BooruService get service => ref.read(booruServiceProvider);
   String get sourceId => widget.tags == null
       ? ref.read(booruSessionProvider).sourceId
@@ -46,8 +47,6 @@ class _DiscoveryPageState extends ConsumerState<DiscoveryPage> {
       source.capabilities.discovery.popular ==
           CapabilityAvailability.available ||
       (ref.read(popularProbeProvider(_probeKey)).value?.available ?? false);
-  Future<void> _probe({bool refresh = false}) =>
-      ref.read(popularProbeProvider(_probeKey).notifier).refresh();
   CollectionKey _key() => CollectionKey(
     sourceId: sourceId,
     request: widget.tags == null
@@ -57,18 +56,6 @@ class _DiscoveryPageState extends ConsumerState<DiscoveryPage> {
     revision: ref.read(booruSessionProvider).revision,
   );
 
-  @override
-  void didUpdateWidget(covariant DiscoveryPage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _query.text = widget.tags?.join(' ') ?? '';
-  }
-
-  @override
-  void dispose() {
-    _query.dispose();
-    super.dispose();
-  }
-
   void _selectSource(String id) {
     if (widget.tags != null) {
       _edit(id);
@@ -77,7 +64,7 @@ class _DiscoveryPageState extends ConsumerState<DiscoveryPage> {
     if (feed.kind != FeedKind.latest &&
         service.sourceById(id).capabilities.discovery.popular ==
             CapabilityAvailability.unsupported) {
-      AppToast.show(t.discovery.latestFallback);
+      FrostToast.info(t.discovery.latestFallback);
     }
     ref.read(booruSessionProvider.notifier).selectSource(id);
   }
@@ -96,82 +83,28 @@ class _DiscoveryPageState extends ConsumerState<DiscoveryPage> {
     context.replaceTaggedPosts(result.tags, sourceId: result.sourceId);
   }
 
-  Future<void> _filters() async {
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (context) => Consumer(
-        builder: (context, ref, _) => Padding(
-          padding: const EdgeInsets.all(20),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  t.discovery.filters,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 8),
-                Text(t.discovery.defaultRatingsHint),
-                const SizedBox(height: 16),
-                AppButton(
-                  label: t.discovery.allAvailable,
-                  onPressed: () {
-                    ref.read(settingsProvider.notifier).setRatings([]);
-                  },
-                ),
-                const SizedBox(height: 12),
-                for (final rating in SettingsService.configurableRatings) ...[
-                  if (rating != SettingsService.configurableRatings.first)
-                    const SizedBox(height: 10),
-                  CheckboxListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    title: Text(rating.shortLabel),
-                    value: ref.watch(settingsProvider).ratings.contains(rating),
-                    onChanged: (selected) {
-                      final ratings = ref
-                          .read(settingsProvider)
-                          .ratings
-                          .toSet();
-                      if (selected == true) {
-                        ratings.add(rating);
-                      } else {
-                        ratings.remove(rating);
-                      }
-                      ref
-                          .read(settingsProvider.notifier)
-                          .setRatings(ratings.toList());
-                    },
-                  ),
-                ],
-                const SizedBox(height: 16),
-                AppButton(
-                  label: t.discovery.resetFilters,
-                  kind: AppButtonKind.ghost,
-                  onPressed: () {
-                    _resetFilters();
-                  },
-                ),
-                const SizedBox(height: 12),
-                AppButton(
-                  label: t.generic.confirm,
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  Future<void> _filters() => showRatingFilterSheet(context);
 
-  void _resetFilters() {
-    ref.read(settingsProvider.notifier).setRatings([]);
+  Future<void> _openBatchDownload() async {
+    final request =
+        _batchRequest ??
+        BatchDownloadRequest(
+          key: _key(),
+          sourceName: source.displayName,
+          loader: widget.loader,
+        );
+    setState(() => _batchRequest = request);
+    final done = await showBatchDownloadDialog(context, request);
+    if (!mounted) return;
+    final state = ref.read(batchDownloadProvider(request));
+    if (state.phase == BatchPhase.enqueueing ||
+        (state.phase == BatchPhase.finished &&
+            state.failed.isNotEmpty &&
+            done != true)) {
+      return;
+    }
+    ref.read(batchDownloadProvider(request).notifier).stopFetching();
+    setState(() => _batchRequest = null);
   }
 
   void _selectMode(FeedKind kind) {
@@ -201,14 +134,61 @@ class _DiscoveryPageState extends ConsumerState<DiscoveryPage> {
   }
 
   Future<void> _chooseDate() async {
-    final id = sourceId;
-    final current = feed;
+    final id = sourceId, current = feed;
     final today = DateTime.now().toUtc();
-    final chosen = await showDatePicker(
+    var selected = DateTime.tryParse(current.date ?? '') ?? today;
+    final ranges = source.capabilities.discovery.historicalRanges;
+    var selectedRange = ranges.contains(current.range)
+        ? current.range!
+        : ranges.first;
+    final chosen = await showFrostDialog<(DateTime, PopularRange)>(
       context: context,
-      initialDate: DateTime.tryParse(current.date ?? '') ?? today,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(today.year, today.month, today.day),
+      builder: (context) => StatefulBuilder(
+        builder: (context, update) => FrostDialog(
+          title: t.discovery.historicalPopular,
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (ranges.length > 1) ...[
+                FrostPicker<PopularRange>(
+                  label: t.discovery.historicalPopular,
+                  value: selectedRange,
+                  options: [
+                    for (final range in ranges)
+                      FrostPickerOption(
+                        value: range,
+                        label: historicalRangeLabel(range),
+                      ),
+                  ],
+                  onChanged: (range) => update(() => selectedRange = range),
+                ),
+                const SizedBox(height: FrostGap.group),
+              ],
+              FrostDatePicker(
+                label: t.discovery.historicalPopular,
+                value: selected,
+                firstDate: DateTime(2000),
+                lastDate: DateTime(today.year, today.month, today.day),
+                onChanged: (date) {
+                  if (date != null) update(() => selected = date);
+                },
+              ),
+            ],
+          ),
+          actions: [
+            FrostDialogAction<(DateTime, PopularRange)>(
+              label: t.generic.cancel,
+              role: FrostButtonRole.cancel,
+            ),
+            FrostDialogAction<(DateTime, PopularRange)>(
+              label: t.generic.confirm,
+              isDefault: true,
+              value: (selected, selectedRange),
+            ),
+          ],
+        ),
+      ),
     );
     if (!mounted || chosen == null || sourceId != id) return;
     ref
@@ -217,172 +197,282 @@ class _DiscoveryPageState extends ConsumerState<DiscoveryPage> {
           id,
           FeedCollectionRequest(
             kind: FeedKind.historicalPopular,
-            range: current.range,
-            date: chosen.toIso8601String().substring(0, 10),
+            range: chosen.$2,
+            date: chosen.$1.toIso8601String().substring(0, 10),
           ),
         );
   }
 
+  void _setRange(FeedKind kind, PopularRange range) {
+    ref
+        .read(feedSelectionProvider.notifier)
+        .select(
+          sourceId,
+          FeedCollectionRequest(
+            kind: kind,
+            range: range,
+            date: kind == FeedKind.historicalPopular
+                ? feed.date ??
+                      DateTime.now().toUtc().toIso8601String().substring(0, 10)
+                : null,
+          ),
+        );
+  }
+
+  List<FrostMenuEntry> _ranges() {
+    final caps = source.capabilities.discovery;
+    return [
+      FrostMenuSection(
+        header: caps.timeBasis == PopularTimeBasis.calendarUploadPeriod
+            ? t.discovery.calendarRanges
+            : t.discovery.rollingRanges,
+        entries: [
+          for (final range in caps.popularRanges)
+            FrostMenuAction(
+              rangeLabel(range, caps.timeBasis),
+              checked:
+                  feed.kind == FeedKind.recentPopular && feed.range == range,
+              onSelected: () => _setRange(FeedKind.recentPopular, range),
+            ),
+        ],
+      ),
+      if (caps.historicalRanges.isNotEmpty)
+        FrostMenuAction(
+          t.discovery.historicalPopular,
+          icon: appIcons.calendar,
+          onSelected: _chooseDate,
+        ),
+    ];
+  }
+
+  Future<void> _saveTag() async {
+    final tags = widget.tags!;
+    // Aliases name one canonical source tag; a multi-term result offers its
+    // terms rather than storing an invalid space-separated alias.
+    final tag = tags.length == 1
+        ? tags.single
+        : await showFrostSheet<String>(
+            context: context,
+            title: t.discovery.addCustomTag,
+            detents: const [FrostSheetDetent.fitted],
+            builder: (context) => Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final tag in tags)
+                  FrostListRow(
+                    title: tag,
+                    onPressed: () => Navigator.of(context).pop(tag),
+                  ),
+              ],
+            ),
+          );
+    if (!mounted || tag == null) return;
+    await editUserTag(
+      context,
+      source: sourceId,
+      locale: Localizations.localeOf(context).toLanguageTag(),
+      value: QueryTerm.parse(tag).value,
+    );
+  }
+
+  Future<void> _copyQueryLink() async {
+    try {
+      final key = _key();
+      final ratings = ratingsForSource(key, source.capabilities.ratings);
+      final url = await switch (key.request) {
+        TagSearchCollectionRequest(:final tags) => service.engine.searchWebUrl(
+          request: SearchRequest(
+            sourceId: key.sourceId,
+            queryText: tags.join(' '),
+            ratings: ratings,
+            pageSize: 40,
+          ),
+        ),
+        FeedCollectionRequest(:final kind, :final range, :final date) =>
+          service.engine.feedWebUrl(
+            request: FeedRequest(
+              sourceId: key.sourceId,
+              kind: kind,
+              range: range,
+              date: date,
+              ratings: ratings,
+              pageSize: 40,
+            ),
+          ),
+      };
+      await Clipboard.setData(ClipboardData(text: url));
+      if (mounted) FrostToast.copied(t.verificationPage.linkCopied);
+    } catch (error) {
+      if (mounted) {
+        FrostToast.fromError(context, error);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_batchRequest case final request?) {
+      ref.watch(batchDownloadProvider(request));
+    }
     ref.watch(booruSessionProvider);
     final settings = ref.watch(settingsProvider);
     ref.watch(feedSelectionProvider);
     final probe = ref.watch(popularProbeProvider(_probeKey));
-    final collectionKey = _key();
     final caps = source.capabilities.discovery;
-    final showBack = widget.tags != null && !shouldUseDesktopShell(context);
-    return PostCollectionView(
-      key: ValueKey(collectionKey),
-      collection: (key: collectionKey, loader: widget.loader),
-      columns: settings.waterfallColumns,
-      onResetFilters: _resetFilters,
-      headerSliver: SliverAppBar(
-        floating: true,
-        snap: false,
-        automaticallyImplyLeading: false,
-        toolbarHeight:
-            appFieldHeight(context) +
-            20 +
-            (switch (widget.tags) {
-              null => 0,
-              _ => 48,
-            }),
-        flexibleSpace: Padding(
-          padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (widget.tags == null)
-                HomeHeader(
-                  sourceId: sourceId,
-                  kind: feed.kind,
-                  modes: [
-                    FeedKind.latest,
-                    if (popularAvailable) FeedKind.recentPopular,
-                    if (popularAvailable && caps.historicalRanges.isNotEmpty)
-                      FeedKind.historicalPopular,
-                    ...caps.additionalFeeds,
-                  ],
-                  modeLabel: feedLabel,
-                  onSource: _selectSource,
-                  onMode: _selectMode,
-                  onRetryProbe: probe.value?.failedAt != null
-                      ? () => _probe(refresh: true)
-                      : null,
-                  details: switch (feed.range) {
-                    null => null,
-                    _ => Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        SizedBox(
-                          width: 180,
-                          child: AppSelect<PopularRange>(
-                            value: feed.range,
-                            items: [
-                              for (final range in switch (feed.kind) {
-                                FeedKind.historicalPopular =>
-                                  caps.historicalRanges,
-                                _ => caps.popularRanges,
-                              })
-                                AppSelectItem(
-                                  value: range,
-                                  label: switch (feed.kind) {
-                                    FeedKind.historicalPopular =>
-                                      historicalRangeLabel(range),
-                                    _ => rangeLabel(range, caps.timeBasis),
-                                  },
-                                ),
-                            ],
-                            onChanged: (range) {
-                              ref
-                                  .read(feedSelectionProvider.notifier)
-                                  .select(
-                                    sourceId,
-                                    FeedCollectionRequest(
-                                      kind: feed.kind,
-                                      range: range,
-                                      date: feed.date,
-                                    ),
-                                  );
-                            },
-                          ),
-                        ),
-                        if (feed.kind == FeedKind.historicalPopular) ...[
-                          const SizedBox(width: 8),
-                          AppButton(
-                            label: feed.date!,
-                            compact: true,
-                            onPressed: _chooseDate,
-                          ),
-                        ],
-                      ],
-                    ),
-                  },
-                )
-              else ...[
-                SizedBox(
-                  height: 48,
-                  child: Row(
-                    children: [
-                      if (showBack)
-                        const BackButton()
-                      else
-                        const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          t.discovery.searchTermsTitle(
-                            count: widget.tags!.length,
-                          ),
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                DiscoveryToolbar(
-                  sourceId: sourceId,
-                  onSource: _selectSource,
-                  query: AppTextField(
-                    key: const ValueKey('search-result-query'),
-                    height: appFieldHeight(context),
-                    controller: _query,
-                    readOnly: true,
-                    hintText: t.discovery.queryHint,
-                    onTap: _edit,
-                    trailing: AppIconButton(
-                      constraints: const BoxConstraints.tightFor(
-                        width: 32,
-                        height: 32,
-                      ),
-                      padding: const EdgeInsets.all(6),
-                      tooltip: t.postSearch.title,
-                      icon: const Icon(Icons.search),
-                      onPressed: _edit,
-                    ),
-                  ),
-                  action: AppIconButton(
-                    tooltip: t.discovery.filters,
-                    constraints: const BoxConstraints.tightFor(
-                      width: 32,
-                      height: 32,
-                    ),
-                    padding: const EdgeInsets.all(6),
-                    selectedBackgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: .10),
-                    color: collectionKey.ratings.isNotEmpty
-                        ? Theme.of(context).colorScheme.primary
-                        : null,
-                    selected: collectionKey.ratings.isNotEmpty,
-                    icon: const Icon(Icons.tune),
-                    onPressed: _filters,
-                  ),
-                ),
-              ],
-            ],
-          ),
+    final modes = [
+      FeedKind.latest,
+      if (popularAvailable) FeedKind.recentPopular,
+      ...caps.additionalFeeds,
+    ];
+    final showsModes = modes.length > 1;
+    final selectedMode = feed.kind == FeedKind.historicalPopular
+        ? FeedKind.recentPopular
+        : feed.kind;
+    final range = feed.range;
+    final rangeText = range == null
+        ? null
+        : [
+            feed.kind == FeedKind.historicalPopular
+                ? historicalRangeLabel(range)
+                : rangeLabel(range, caps.timeBasis),
+            if (feed.date != null) feed.date!,
+          ].join(' · ');
+    final more = <FrostMenuEntry>[
+      if (probe.value?.failedAt != null)
+        FrostMenuAction(
+          t.generic.retry,
+          icon: appIcons.refresh,
+          onSelected: () =>
+              ref.read(popularProbeProvider(_probeKey).notifier).refresh(),
         ),
+      FrostMenuAction(
+        t.frost.reload,
+        icon: appIcons.refresh,
+        onSelected: () => _collection.currentState?.refresh(),
+      ),
+      FrostMenuAction(
+        t.discovery.copyQueryLink,
+        icon: appIcons.link,
+        onSelected: _copyQueryLink,
+      ),
+      if (widget.tags != null) ...[
+        FrostMenuAction(
+          t.discovery.addCustomTag,
+          icon: appIcons.add,
+          onSelected: _saveTag,
+        ),
+        FrostMenuAction(
+          t.postSearch.title,
+          icon: appIcons.edit,
+          onSelected: _edit,
+        ),
+        FrostMenuSubmenu(
+          t.discovery.tagSource,
+          entries: [
+            for (final source in ref.watch(booruSourcesProvider))
+              FrostMenuAction(
+                source.displayName,
+                checked: source.sourceId == sourceId,
+                onSelected: () => _selectSource(source.sourceId),
+              ),
+          ],
+        ),
+      ],
+    ];
+    final identity = (key: _key(), loader: widget.loader);
+    final iconWidth = FrostDensity.of(context).targetHeight;
+    final sourceMenu = FrostTitleMenu(
+      title: source.displayName,
+      entries: [
+        for (final item in ref.watch(booruSourcesProvider))
+          FrostMenuAction(
+            item.displayName,
+            checked: item.sourceId == sourceId,
+            onSelected: () => _selectSource(item.sourceId),
+          ),
+      ],
+    );
+    return PostCollectionView(
+      key: _collection,
+      collection: identity,
+      columns: settings.waterfallColumns,
+      filterBarBuilder: (_) => const RatingConditions(),
+      headerBuilder: (context, collection) => FrostPageHeader(
+        leading: widget.tags == null ? [sourceMenu] : const [],
+        title: widget.tags != null
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FrostText(
+                    widget.tags!.join(' · '),
+                    role: FrostTextRole.headline,
+                  ),
+                  FrostText(
+                    source.displayName,
+                    role: FrostTextRole.footnote,
+                    tone: FrostTextTone.secondary,
+                  ),
+                ],
+              )
+            : null,
+        controls: [
+          if (widget.tags == null && showsModes)
+            FrostToolbarItem.picker<FeedKind>(
+              value: selectedMode,
+              label: t.discovery.mode,
+              priority: FrostToolbarPriority.normal,
+              choices: [
+                for (final mode in modes)
+                  FrostPickerOption(value: mode, label: feedLabel(mode)),
+              ],
+              onChanged: _selectMode,
+            ),
+          if (widget.tags == null && rangeText != null)
+            FrostToolbarItem.menu(
+              label: t.discovery.timeRange,
+              valueLabel: rangeText,
+              entries: _ranges(),
+              priority: FrostToolbarPriority.low,
+            ),
+        ],
+        actions: [
+          FrostToolbarItem.custom(
+            minWidth: iconWidth,
+            priority: FrostToolbarPriority.high,
+            builder: (_) => const RatingFilterButton(),
+            overflowEntry: FrostMenuAction(
+              t.discovery.filters,
+              icon: appIcons.filter,
+              onSelected: _filters,
+            ),
+          ),
+          FrostToolbarItem.action(
+            icon: appIcons.download,
+            label: t.batchDownload.title,
+            onPressed:
+                collection.lastError == null || collection.items.isNotEmpty
+                ? _openBatchDownload
+                : null,
+          ),
+          FrostToolbarItem.custom(
+            minWidth: iconWidth,
+            priority: FrostToolbarPriority.low,
+            builder: (_) => FrostMenuAnchor(
+              entries: more,
+              builder: (context, focus, toggle) => Focus(
+                focusNode: focus,
+                child: FrostButton.icon(
+                  label: t.frost.more,
+                  icon: appIcons.more,
+                  size: FrostControlSize.compact,
+                  onPressed: toggle,
+                ),
+              ),
+            ),
+            overflowEntry: FrostMenuSection(entries: more),
+          ),
+        ],
       ),
     );
   }

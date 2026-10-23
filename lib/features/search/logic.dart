@@ -4,6 +4,7 @@ import 'package:booruflow/core/async_content.dart';
 import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/features/search/query.dart';
 import 'package:booruflow/features/search/services/tag_suggestion_repository.dart';
+import 'package:booruflow/features/tags/tag_translations_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'logic.g.dart';
@@ -17,14 +18,12 @@ class SearchSession {
     required this.locale,
     required this.followSource,
     this.sourceId,
-    this.initialTags = const [],
     this.initialQuery = '',
     this.repository,
   });
   final String locale, initialQuery;
   final String? sourceId;
   final bool followSource;
-  final List<String> initialTags;
   final TagSuggestionRepository? repository;
 }
 
@@ -36,17 +35,14 @@ class SearchState {
     this.initialization = const AsyncLoading<void>(),
     this.suggestions = const AsyncContent<List<TagSuggestion>>([]),
     this.common = const AsyncContent<List<TagSuggestion>>([]),
-    List<String> selected = const [],
     Set<String> verified = const {},
     Map<String, String> labels = const {},
-  }) : selected = List.unmodifiable(selected),
-       verified = Set.unmodifiable(verified),
+  }) : verified = Set.unmodifiable(verified),
        labels = Map.unmodifiable(labels);
   final String sourceId, locale;
   final bool invalidSource;
   final AsyncValue<void> initialization;
   final AsyncContent<List<TagSuggestion>> suggestions, common;
-  final List<String> selected;
   final Set<String> verified;
   final Map<String, String> labels;
   bool get ready => initialization is AsyncData<void>;
@@ -56,7 +52,6 @@ class SearchState {
     AsyncValue<void>? initialization,
     AsyncContent<List<TagSuggestion>>? suggestions,
     AsyncContent<List<TagSuggestion>>? common,
-    List<String>? selected,
     Set<String>? verified,
     Map<String, String>? labels,
   }) => SearchState(
@@ -66,7 +61,6 @@ class SearchState {
     initialization: initialization ?? this.initialization,
     suggestions: suggestions ?? this.suggestions,
     common: common ?? this.common,
-    selected: selected ?? this.selected,
     verified: verified ?? this.verified,
     labels: labels ?? this.labels,
   );
@@ -77,6 +71,9 @@ class Search extends _$Search {
   Timer? _debounce;
   int _generation = 0, _commonGeneration = 0;
   String _query = '';
+  int _caret = 0;
+  ({String source, String locale, String text, bool composing, bool ready})?
+  _suggestionRequest;
   bool _composing = false;
   TagSuggestionRepository get repository =>
       session.repository ?? ref.read(tagSuggestionRepositoryProvider);
@@ -86,6 +83,8 @@ class Search extends _$Search {
     final initial = session.sourceId ?? ref.read(booruSessionProvider).sourceId;
     final valid = service.sources.any((source) => source.sourceId == initial);
     _query = session.initialQuery;
+    _caret = _query.length;
+    _suggestionRequest = null;
     ref.onDispose(() {
       _generation++;
       _commonGeneration++;
@@ -97,13 +96,23 @@ class Search extends _$Search {
       }
       if (previous?.revision != next.revision) {
         state = state.copyWith(verified: {});
-        queryChanged(_query, composing: _composing);
+        queryChanged(
+          _query,
+          composing: _composing,
+          caretOffset: _caret,
+          refresh: true,
+        );
         loadCommon();
       }
     });
     final changes = repository.changes.listen((_) {
       if (!ref.mounted || !state.ready) return;
-      queryChanged(_query, composing: _composing);
+      queryChanged(
+        _query,
+        composing: _composing,
+        caretOffset: _caret,
+        refresh: true,
+      );
       loadCommon();
     });
     ref.onDispose(changes.cancel);
@@ -112,7 +121,6 @@ class Search extends _$Search {
       sourceId: valid ? initial : service.selectedSourceId,
       locale: session.locale,
       invalidSource: !valid,
-      selected: session.initialTags,
     );
   }
 
@@ -121,7 +129,12 @@ class Search extends _$Search {
       await repository.initialize();
       if (!ref.mounted) return;
       state = state.copyWith(initialization: const AsyncData<void>(null));
-      queryChanged(_query, composing: _composing);
+      queryChanged(
+        _query,
+        composing: _composing,
+        caretOffset: _caret,
+        refresh: true,
+      );
       loadCommon();
     } catch (error, stack) {
       if (ref.mounted) {
@@ -133,7 +146,7 @@ class Search extends _$Search {
   void setLocale(String locale) {
     if (state.locale == locale) return;
     state = state.copyWith(locale: locale);
-    queryChanged(_query, composing: _composing);
+    queryChanged(_query, composing: _composing, caretOffset: _caret);
     loadCommon();
   }
 
@@ -154,22 +167,48 @@ class Search extends _$Search {
     if (publish && session.followSource) {
       ref.read(booruSessionProvider.notifier).selectSource(source);
     }
-    queryChanged(_query, composing: _composing);
+    queryChanged(_query, composing: _composing, caretOffset: _caret);
     loadCommon();
   }
 
-  void queryChanged(String query, {required bool composing}) {
+  void queryChanged(
+    String query, {
+    required bool composing,
+    int? caretOffset,
+    bool refresh = false,
+  }) {
     _query = query;
+    _caret = (caretOffset ?? query.length).clamp(0, query.length);
     _composing = composing;
+    final span = querySpanAt(query, _caret);
+    final text = span == null
+        ? ''
+        : QueryTerm.parse(query.substring(span.start, _caret)).value;
+    final source = state.sourceId, locale = state.locale;
+    final request = (
+      source: source,
+      locale: locale,
+      text: text,
+      composing: composing,
+      ready: state.ready,
+    );
+    if (!refresh && _suggestionRequest == request) return;
+    _suggestionRequest = request;
     _debounce?.cancel();
     final generation = ++_generation;
-    final text = QueryTerm.parse(parseQueryInput(query).lastOrNull ?? '').value;
-    final source = state.sourceId, locale = state.locale;
     final local = state.ready && !composing && text.isNotEmpty
         ? repository.local(source, locale, text)
         : <TagSuggestion>[];
-    state = state.copyWith(suggestions: AsyncContent(local));
-    if (!state.ready || composing || text.isEmpty) return;
+    final eligible = state.ready && !composing && text.isNotEmpty;
+    state = state.copyWith(
+      suggestions: AsyncContent(
+        local,
+        operation: eligible
+            ? const AsyncLoading<void>()
+            : const AsyncData<void>(null),
+      ),
+    );
+    if (!eligible) return;
     _debounce = Timer(const Duration(milliseconds: 250), () async {
       if (!ref.mounted || generation != _generation) return;
       state = state.copyWith(suggestions: state.suggestions.loading());
@@ -209,36 +248,23 @@ class Search extends _$Search {
     }
   }
 
-  String displayName(String raw, [String? fallback]) =>
-      repository.displayName(
-        state.sourceId,
-        state.locale,
-        QueryTerm.parse(raw).value,
-      ) ??
-      state.labels['${state.sourceId}:$raw'] ??
-      fallback ??
-      raw;
-  void add(TagSuggestion tag, String input, {bool replaceTerm = false}) {
-    final terms = parseQueryInput(input);
-    final operator = replaceTerm && terms.isNotEmpty
-        ? QueryTerm.parse(terms.removeLast()).operator
-        : QueryOperator.include;
-    final value = QueryTerm(tag.value, switch (operator) {
-      QueryOperator.metatag => QueryOperator.include,
-      _ => operator,
-    }).raw;
-    state = state.copyWith(
-      selected: {...state.selected, ...terms, value}.toList(),
-      verified: {...state.verified, if (tag.verified) value},
-      labels: {...state.labels, '${state.sourceId}:$value': ?tag.displayName},
-    );
+  String displayName(String raw, [String? fallback]) {
+    final value = QueryTerm.parse(raw).value;
+    final candidate =
+        repository.displayName(state.sourceId, state.locale, value) ??
+        state.labels['${state.sourceId}:$raw'] ??
+        fallback;
+    return distinctTagTranslation(value, candidate) ?? raw;
   }
 
-  void remove(String tag) => state = state.copyWith(
-    selected: state.selected.where((value) => value != tag).toList(),
+  void recordTag(TagSuggestion tag) => state = state.copyWith(
+    verified: {...state.verified, if (tag.verified) tag.value},
+    labels: {
+      ...state.labels,
+      '${state.sourceId}:${tag.value}': ?tag.displayName,
+    },
   );
-  List<String> submittedTags(String input) =>
-      {...state.selected, ...parseQueryInput(input)}.toList();
+
   Future<void> remember(List<String> tags) =>
       repository.remember(state.sourceId, tags);
 }
@@ -260,73 +286,28 @@ class UserTags extends _$UserTags {
       ref.read(tagSuggestionRepositoryProvider).deleteAlias(id);
 }
 
-class CommonTagsRequest {
-  CommonTagsRequest({
-    required this.source,
-    required this.locale,
-    required this.repository,
-    required this.initialTags,
-  });
-  final String source, locale;
-  final TagSuggestionRepository repository;
-  final List<TagSuggestion> initialTags;
-}
-
-class CommonTagsState {
-  CommonTagsState({
-    required List<TagSuggestion> tags,
-    required this.page,
-    required this.hasMore,
-    this.loading = const AsyncData<void>(null),
-  }) : tags = List.unmodifiable(tags);
-  final List<TagSuggestion> tags;
-  final int page;
-  final bool hasMore;
-  final AsyncValue<void> loading;
-}
-
 @riverpod
-class CommonTags extends _$CommonTags {
+class SearchHistory extends _$SearchHistory {
   @override
-  CommonTagsState build(CommonTagsRequest request) => CommonTagsState(
-    tags: request.initialTags,
-    page: 1,
-    hasMore: request.initialTags.length == 50,
-  );
-  Future<void> loadMore() async {
-    if (state.loading.isLoading || !state.hasMore) return;
-    final previous = state;
-    state = CommonTagsState(
-      tags: previous.tags,
-      page: previous.page,
-      hasMore: previous.hasMore,
-      loading: const AsyncLoading(),
-    );
+  Future<List<String>> build(
+    TagSuggestionRepository repository,
+    String source,
+  ) => repository.recentSearches(source);
+  Future<void> removeQuery(String query) async {
     try {
-      final next = await request.repository.common(
-        request.source,
-        request.locale,
-        page: previous.page + 1,
-      );
-      if (!ref.mounted) return;
-      final seen = previous.tags.map((value) => value.value).toSet();
-      state = CommonTagsState(
-        tags: [
-          ...previous.tags,
-          ...next.where((value) => seen.add(value.value)),
-        ],
-        page: previous.page + 1,
-        hasMore: next.length == 50,
-      );
+      await repository.removeSearch(source, query);
+      if (ref.mounted) ref.invalidateSelf();
     } catch (error, stack) {
-      if (ref.mounted) {
-        state = CommonTagsState(
-          tags: previous.tags,
-          page: previous.page,
-          hasMore: previous.hasMore,
-          loading: AsyncError(error, stack),
-        );
-      }
+      if (ref.mounted) state = AsyncError(error, stack);
+    }
+  }
+
+  Future<void> clearQueries() async {
+    try {
+      await repository.clearSearches(source);
+      if (ref.mounted) ref.invalidateSelf();
+    } catch (error, stack) {
+      if (ref.mounted) state = AsyncError(error, stack);
     }
   }
 }

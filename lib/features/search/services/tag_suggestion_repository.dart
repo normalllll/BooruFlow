@@ -144,12 +144,15 @@ class TagSuggestionRepository {
     final matches = aliases.where(
       (a) => a.value == value && a.appliesTo(source) && a.locale == locale,
     );
-    return matches.where((a) => a.sourceId == source).lastOrNull?.displayName ??
-        matches
-            .where((a) => a.sourceId == UserTagAlias.allSources)
-            .lastOrNull
-            ?.displayName ??
-        TagTranslationsService.translate(value);
+    return distinctTagTranslation(
+      value,
+      matches.where((a) => a.sourceId == source).lastOrNull?.displayName ??
+          matches
+              .where((a) => a.sourceId == UserTagAlias.allSources)
+              .lastOrNull
+              ?.displayName ??
+          TagTranslationsService.translate(value),
+    );
   }
 
   String _scope(String source) =>
@@ -191,7 +194,11 @@ class TagSuggestionRepository {
       }
     }
     for (final value
-        in (_box?.get('history:$source') as List? ?? []).whereType<String>()) {
+        in (_box?.get('history:$source') as List? ?? [])
+            .whereType<String>()
+            .expand((query) => query.split(RegExp(r'\s+')))
+            .where((tag) => tag.isNotEmpty)
+            .toSet()) {
       final display = displayName(source, locale, value);
       if (matches(value, display)) {
         suggestions.add(
@@ -429,10 +436,33 @@ class TagSuggestionRepository {
     }
   }
 
+  Future<List<String>> recentSearches(String source) async {
+    await initialize();
+    return (_box!.get('history:$source') as List? ?? [])
+        .whereType<String>()
+        .toList(growable: false);
+  }
+
+  Future<void> removeSearch(String source, String query) async {
+    final recent = await recentSearches(source);
+    await _box!.put(
+      'history:$source',
+      recent.where((value) => value != query).toList(),
+    );
+  }
+
+  Future<void> clearSearches(String source) async {
+    await initialize();
+    await _box!.delete('history:$source');
+  }
+
   Future<void> remember(String source, List<String> tags) async {
     await initialize();
     final old = (_box!.get('history:$source') as List? ?? [])
         .whereType<String>();
-    await _box!.put('history:$source', {...tags, ...old}.take(200).toList());
+    await _box!.put(
+      'history:$source',
+      {tags.join(' '), ...old}.take(200).toList(),
+    );
   }
 }
