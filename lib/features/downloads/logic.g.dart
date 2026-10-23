@@ -9,6 +9,54 @@ part of 'logic.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(downloadPathRevealer)
+final downloadPathRevealerProvider = DownloadPathRevealerProvider._();
+
+final class DownloadPathRevealerProvider
+    extends
+        $FunctionalProvider<
+          DownloadPathRevealer,
+          DownloadPathRevealer,
+          DownloadPathRevealer
+        >
+    with $Provider<DownloadPathRevealer> {
+  DownloadPathRevealerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'downloadPathRevealerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$downloadPathRevealerHash();
+
+  @$internal
+  @override
+  $ProviderElement<DownloadPathRevealer> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  DownloadPathRevealer create(Ref ref) {
+    return downloadPathRevealer(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(DownloadPathRevealer value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<DownloadPathRevealer>(value),
+    );
+  }
+}
+
+String _$downloadPathRevealerHash() =>
+    r'3da5365bae51b46d401cb0e960dfe7b4cb3fa00b';
+
 @ProviderFor(booruDownloads)
 final booruDownloadsProvider = BooruDownloadsProvider._();
 
@@ -192,6 +240,123 @@ abstract class _$SessionDownloads extends $Notifier<List<BooruDownloadItem>> {
             as $ClassProviderElement<
               AnyNotifier<List<BooruDownloadItem>, List<BooruDownloadItem>>,
               List<BooruDownloadItem>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+/// Weighted determinate progress; unknown sizes keep the count but no ring.
+
+@ProviderFor(downloadActivity)
+final downloadActivityProvider = DownloadActivityProvider._();
+
+/// Weighted determinate progress; unknown sizes keep the count but no ring.
+
+final class DownloadActivityProvider
+    extends
+        $FunctionalProvider<
+          ({int count, double? progress}),
+          ({int count, double? progress}),
+          ({int count, double? progress})
+        >
+    with $Provider<({int count, double? progress})> {
+  /// Weighted determinate progress; unknown sizes keep the count but no ring.
+  DownloadActivityProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'downloadActivityProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$downloadActivityHash();
+
+  @$internal
+  @override
+  $ProviderElement<({int count, double? progress})> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  ({int count, double? progress}) create(Ref ref) {
+    return downloadActivity(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(({int count, double? progress}) value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<({int count, double? progress})>(
+        value,
+      ),
+    );
+  }
+}
+
+String _$downloadActivityHash() => r'e14a4b73e79b4be3922ac658512b780c9d721b44';
+
+/// Presentation rates come from consecutive engine snapshots, never an assumed
+/// connection speed. No persistence or competing task state is introduced.
+
+@ProviderFor(DownloadTransferRates)
+final downloadTransferRatesProvider = DownloadTransferRatesProvider._();
+
+/// Presentation rates come from consecutive engine snapshots, never an assumed
+/// connection speed. No persistence or competing task state is introduced.
+final class DownloadTransferRatesProvider
+    extends $NotifierProvider<DownloadTransferRates, Map<String, double>> {
+  /// Presentation rates come from consecutive engine snapshots, never an assumed
+  /// connection speed. No persistence or competing task state is introduced.
+  DownloadTransferRatesProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'downloadTransferRatesProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$downloadTransferRatesHash();
+
+  @$internal
+  @override
+  DownloadTransferRates create() => DownloadTransferRates();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Map<String, double> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Map<String, double>>(value),
+    );
+  }
+}
+
+String _$downloadTransferRatesHash() =>
+    r'2668dd74bac9b5721a3dc0fb7481f01b426c3018';
+
+/// Presentation rates come from consecutive engine snapshots, never an assumed
+/// connection speed. No persistence or competing task state is introduced.
+
+abstract class _$DownloadTransferRates extends $Notifier<Map<String, double>> {
+  Map<String, double> build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<Map<String, double>, Map<String, double>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<Map<String, double>, Map<String, double>>,
+              Map<String, double>,
               Object?,
               Object?
             >;

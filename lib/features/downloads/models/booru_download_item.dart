@@ -6,4 +6,12 @@ class BooruDownloadItem {
 
   final DownloadTaskSnapshot snapshot;
   final Post? post;
+  String? get sourceId => post?.sourceId ?? snapshot.sourceId;
+  String? get postId => post?.id ?? snapshot.postId;
+  bool get canOpenPost =>
+      sourceId != null &&
+      sourceId!.isNotEmpty &&
+      sourceId != 'direct' &&
+      postId != null &&
+      postId!.isNotEmpty;
 }
