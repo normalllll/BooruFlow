@@ -1,0 +1,1 @@
+"NSLocalNetworkUsageDescription" = "BooruFlow 用於連線至你設定的區域網路代理伺服器。開發版本也會使用此權限連線至 Flutter 偵錯工具。";

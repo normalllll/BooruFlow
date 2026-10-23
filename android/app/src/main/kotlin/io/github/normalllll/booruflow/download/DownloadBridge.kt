@@ -71,6 +71,13 @@ object DownloadBridge {
         val appContext = activity.applicationContext
         MethodChannel(messenger, METHOD_CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
+                "openAppSettings" -> {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.parse("package:${appContext.packageName}"))
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    appContext.startActivity(intent)
+                    result.success(true)
+                }
                 "initialize" -> result.success(null)
                 "prepareForDownload" -> prepareForDownload(result)
                 "start" -> {
@@ -633,16 +640,34 @@ object AndroidMediaSaver {
 
         val resolver = context.contentResolver
         val displayName = safeFilename(job.filename)
+        val subdirectory = job.subdirectory ?: job.sourceId
+        require(subdirectory.split('/').all { it.isNotBlank() && it != "." && it != ".." && safeFilename(it) == it }) {
+            "Invalid download subdirectory"
+        }
+        val mime = mimeTypeFor(job.filename)
+        val image = mime.startsWith("image/")
+        val video = mime.startsWith("video/")
+        val directoryType = when {
+            image -> Environment.DIRECTORY_PICTURES
+            video -> Environment.DIRECTORY_MOVIES
+            else -> Environment.DIRECTORY_DOWNLOADS
+        }
+        val collection = when {
+            image -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+            video -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> MediaStore.Downloads.EXTERNAL_CONTENT_URI
+            else -> MediaStore.Files.getContentUri("external")
+        }
         val values = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, displayName)
-            put(MediaStore.MediaColumns.MIME_TYPE, mimeTypeFor(job.filename))
+            put(MediaStore.MediaColumns.MIME_TYPE, mime)
             put(MediaStore.MediaColumns.SIZE, source.length())
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/BooruFlow/${job.sourceId}")
+                put(MediaStore.MediaColumns.RELATIVE_PATH, "$directoryType/BooruFlow/$subdirectory")
                 put(MediaStore.MediaColumns.IS_PENDING, 1)
             } else {
                 @Suppress("DEPRECATION")
-                val directory = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "BooruFlow/${job.sourceId}")
+                val directory = File(Environment.getExternalStoragePublicDirectory(directoryType), "BooruFlow/$subdirectory")
                 if (!directory.exists() && !directory.mkdirs()) {
                     throw IllegalStateException("Could not create download directory: ${directory.absolutePath}")
                 }
@@ -651,7 +676,7 @@ object AndroidMediaSaver {
             }
         }
 
-        val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values) ?: throw IllegalStateException("Could not create MediaStore item")
+        val uri = resolver.insert(collection, values) ?: throw IllegalStateException("Could not create MediaStore item")
         try {
             resolver.openOutputStream(uri)?.use { output ->
                 FileInputStream(source).use { input -> input.copyTo(output) }
@@ -686,7 +711,12 @@ object AndroidMediaSaver {
             "png" -> "image/png"
             "gif" -> "image/gif"
             "webp" -> "image/webp"
-            else -> "image/jpeg"
+            "avif" -> "image/avif"
+            "mp4" -> "video/mp4"
+            "webm" -> "video/webm"
+            "zip" -> "application/zip"
+            "swf" -> "application/x-shockwave-flash"
+            else -> "application/octet-stream"
         }
     }
 
@@ -712,6 +742,7 @@ data class NativeDownloadJob(
     val filename: String,
     val networkOptions: NativeNetworkOptions,
     val validation: NativeValidationOptions,
+    val subdirectory: String? = null,
 )
 
 data class NativeNetworkOptions(
@@ -784,6 +815,7 @@ private fun nativeJobFromMap(map: Map<String, Any?>?): NativeDownloadJob? {
         sourceId = map["sourceId"]?.toString()?.takeIf { it.isNotBlank() } ?: return null,
         url = url,
         filename = filename,
+        subdirectory = (map["saveTarget"] as? Map<*, *>)?.get("subdirectory") as? String,
         networkOptions = NativeNetworkOptions(
             headers = headers,
             proxyUrl = networkMap["proxyUrl"]?.toString()?.takeIf { it.isNotBlank() },

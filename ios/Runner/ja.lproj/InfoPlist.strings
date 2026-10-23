@@ -1,0 +1,3 @@
+"NSPhotoLibraryAddUsageDescription" = "ダウンロードした画像と動画を写真ライブラリに保存します。";
+"NSPhotoLibraryUsageDescription" = "一括ダウンロード用のアルバムを作成・使用するために写真へのアクセスが必要です。";
+"NSLocalNetworkUsageDescription" = "BooruFlow は、設定したローカルネットワークのプロキシに接続します。開発ビルドでは、Flutter のデバッグツールへの接続にも使用します。";

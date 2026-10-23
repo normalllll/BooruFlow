@@ -1,5 +1,4 @@
 #include "my_application.h"
-#include "desktop_window.h"
 
 #include <flutter_linux/flutter_linux.h>
 #ifdef GDK_WINDOWING_X11
@@ -58,7 +57,6 @@ static void my_application_activate(GApplication* application) {
   fl_dart_project_set_dart_entrypoint_arguments(project, self->dart_entrypoint_arguments);
 
   FlView* view = fl_view_new(project);
-  configure_desktop_window(window, fl_view_get_engine(view));
   gtk_widget_show(GTK_WIDGET(view));
   gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(view));
   g_signal_connect_swapped(view, "first-frame", G_CALLBACK(gtk_widget_show), window);

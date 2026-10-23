@@ -1,8 +1,14 @@
 targets:
   $default:
     builders:
-      slang_build_runner:
+      freezed:
         options:
+          format: true
+      # Use Slang's supported legacy writer with build_runner 2.16.
+      # Keep the same options visible to the Slang CLI audit commands.
+      slang_build_runner:
+        enabled: false
+        options: &slang_options
           base_locale: en
           input_directory: lib/intl
           input_file_pattern: .i18n.yaml
@@ -12,4 +18,7 @@ targets:
           lazy: false
           format:
             enabled: true
-            width: 120
+            width: 80
+      slang_build_runner:legacy:
+        enabled: true
+        options: *slang_options

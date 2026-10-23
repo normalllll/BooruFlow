@@ -9,7 +9,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
 
-    <application
+    <application android:enableOnBackInvokedCallback="true"
         android:label="BooruFlow"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">

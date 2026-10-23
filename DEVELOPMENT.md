@@ -8,7 +8,7 @@
 
 - **Flutter 3.47.2 stable**, pinned in [the CI setup action](.github/actions/setup/action.yml).
 - **Rust 1.98.1** through rustup, pinned in [rust/rust-toolchain.toml](rust/rust-toolchain.toml). CI reads this file directly.
-- Platform tools: Visual Studio C++ desktop tools on Windows; Xcode on macOS for Apple builds; Android SDK and Java 21 for Android; Clang, CMake, Ninja, pkg-config, GTK 3 development headers, and liblzma development headers on Linux.
+- Platform tools: Visual Studio C++ desktop tools on Windows; Xcode on macOS for Apple builds; Android SDK and Java 21 for Android; Clang, CMake, Ninja, pkg-config, GTK 3, liblzma, libmpv, and libepoxy development headers on Linux.
 - Android builds use SDK 37 and NDK `28.2.13676358`, as configured in the Android project.
 
 ```bash
@@ -20,6 +20,15 @@ flutter run
 ```
 
 Flutter Native Assets builds and bundles the Rust library automatically. After changing Rust APIs or generated bridge code, stop the app and rebuild it; hot reload cannot replace the native library.
+
+The shared `frost_window` plugin supports both Swift Package Manager and
+CocoaPods using one Swift source directory. Flutter can mix SPM plugins with
+CocoaPods-only media dependencies. Keep Xcode's default architecture selection;
+custom per-configuration `ARCHS` indirection can prevent CocoaPods from analyzing
+the Runner target. Debug still builds the active architecture, while Release
+keeps the standard architecture set. Before building on macOS, run
+`bash tool/ci/prepare_macos_media.sh` after `flutter pub get`; this retries native
+media downloads and reports setup failures before compiling Swift.
 
 ### Code generation and checks
 
@@ -49,6 +58,11 @@ Keep `pubspec.lock` and `rust/Cargo.lock` in version control. Flutter SDK upgrad
 
 ## CI and releases
 
+Linux DEB/RPM packages declare their system media libraries as dependencies.
+For the portable Linux tarball, install GTK 3, libstdc++, libmpv, and libepoxy
+through your distribution's package manager before launching the app. On
+Ubuntu 24.04: `sudo apt install libgtk-3-0t64 libstdc++6 libmpv2 libepoxy0`.
+
 [Flutter Build & Release](.github/workflows/main.yml) builds all five platforms and uploads artifacts. Each build uses read-only repository permissions; a separate job publishes after all platform builds succeed.
 
 - **Manual build:** Open Actions → Flutter Build & Release → Run workflow. Select `main` and leave `publish_release` unchecked to build artifacts and warm default-branch caches without creating a release. Artifacts are retained for 14 days.
@@ -58,6 +72,6 @@ Keep `pubspec.lock` and `rust/Cargo.lock` in version control. Flutter SDK upgrad
 
 ### Cache behavior
 
-Flutter SDK, Pub packages, and Cargo downloads are cached separately. Gradle uses `setup-gradle`; Rust compilation uses sccache because Native Assets chooses its own target directories. The workflow does not cache the entire `.dart_tool` directory or assume native builds write into `rust/target`.
+Flutter SDK, Pub packages, and Cargo downloads are cached separately. CI prefetches Rust dependencies for the requested target architectures with retries, so download failures are visible before the Native Assets hook buffers compiler output. Gradle uses `setup-gradle`; Rust compilation uses sccache because Native Assets chooses its own target directories. The workflow does not cache the entire `.dart_tool` directory or assume native builds write into `rust/target`.
 
 The job summary shows exact Flutter/Pub/Cargo cache hits; Gradle and sccache report their own statistics. A dependency cache hit does not mean every compiler invocation will be cached. GitHub isolates caches between different tags; tag builds can reuse caches from the default branch. Run a manual build on `main` after SDK/dependency upgrades to refresh those caches. The first build with new SDK versions is expected to have cold caches.

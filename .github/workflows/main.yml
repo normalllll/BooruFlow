@@ -192,6 +192,8 @@ jobs:
             pkg-config \
             libgtk-3-dev \
             liblzma-dev \
+            libmpv-dev \
+            libepoxy-dev \
             dpkg-dev \
             rpm \
             ruby \
@@ -291,7 +293,7 @@ jobs:
           Architecture: $APP_ARCH
           Maintainer: normalllll
           Homepage: $APP_URL
-          Depends: libgtk-3-0, libstdc++6
+          Depends: libgtk-3-0, libstdc++6, libmpv2, libepoxy0
           Description: $APP_DISPLAY_NAME desktop application
            $APP_DISPLAY_NAME desktop application built with Flutter.
           EOF
@@ -315,6 +317,8 @@ jobs:
             --category "Utility" \
             --depends gtk3 \
             --depends libstdc++ \
+            --depends mpv-libs \
+            --depends libepoxy \
             -C "$PACKAGE_ROOT" \
             -p "build/linux_amd64.rpm" \
             usr
@@ -344,7 +348,7 @@ jobs:
         uses: ./.github/actions/setup
         with:
           platform: ios
-          rust-targets: aarch64-apple-ios
+          rust-targets: aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios
 
       - name: Build iOS
         run: |
@@ -388,6 +392,12 @@ jobs:
         with:
           platform: macos-${{ matrix.arch }}
           rust-targets: ${{ matrix.rust-target }}
+
+      - name: Test macOS media preparation failures and retries
+        run: python3 tool/ci/test_prepare_macos_media.py
+
+      - name: Prepare macOS media dependencies with download retries
+        run: bash tool/ci/prepare_macos_media.sh
 
       - name: Select macOS architecture for all Xcode targets
         env:

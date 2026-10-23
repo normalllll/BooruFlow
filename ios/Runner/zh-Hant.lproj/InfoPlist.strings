@@ -1,0 +1,3 @@
+"NSPhotoLibraryAddUsageDescription" = "BooruFlow 需要加入照片的權限，才能儲存下載的圖片與影片。";
+"NSPhotoLibraryUsageDescription" = "BooruFlow 需要照片存取權限，才能建立及使用批次下載相簿。";
+"NSLocalNetworkUsageDescription" = "BooruFlow 用於連線至你設定的區域網路代理伺服器。開發版本也會使用此權限連線至 Flutter 偵錯工具。";

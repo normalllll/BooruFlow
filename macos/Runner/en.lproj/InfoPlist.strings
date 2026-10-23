@@ -1,0 +1,1 @@
+"NSLocalNetworkUsageDescription" = "BooruFlow connects to a local network proxy when you configure one. Development builds also use this access to connect Flutter debugging tools.";

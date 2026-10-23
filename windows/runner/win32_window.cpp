@@ -134,9 +134,20 @@ bool Win32Window::Create(const std::wstring& title,
   UINT dpi = FlutterDesktopGetDpiForMonitor(monitor);
   double scale_factor = dpi / 96.0;
 
-  HWND window = CreateWindow(
-      window_class, title.c_str(), WS_OVERLAPPEDWINDOW,
-      Scale(origin.x, scale_factor), Scale(origin.y, scale_factor),
+#ifdef BOORUFLOW_UI_AUTOMATION
+  const int x = origin.x, y = origin.y;  // Signed physical monitor coordinates.
+#else
+  const int x = Scale(origin.x, scale_factor), y = Scale(origin.y, scale_factor);
+#endif
+#ifdef BOORUFLOW_UI_AUTOMATION
+  // Owned capture windows must not activate even if Flutter requests focus
+  // while a test injects an internal pointer event. Normal builds keep 0.
+  constexpr DWORD capture_style = WS_EX_NOACTIVATE;
+#else
+  constexpr DWORD capture_style = 0;
+#endif
+  HWND window = CreateWindowEx(
+      capture_style, window_class, title.c_str(), WS_OVERLAPPEDWINDOW, x, y,
       Scale(size.width, scale_factor), Scale(size.height, scale_factor),
       nullptr, nullptr, GetModuleHandle(nullptr), this);
 
@@ -150,7 +161,12 @@ bool Win32Window::Create(const std::wstring& title,
 }
 
 bool Win32Window::Show() {
+#ifdef BOORUFLOW_UI_AUTOMATION
+  return SetWindowPos(window_handle_, HWND_BOTTOM, 0, 0, 0, 0,
+                      SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+#else
   return ShowWindow(window_handle_, SW_SHOWNORMAL);
+#endif
 }
 
 // static
@@ -246,7 +262,9 @@ void Win32Window::SetChildContent(HWND content) {
   MoveWindow(content, frame.left, frame.top, frame.right - frame.left,
              frame.bottom - frame.top, true);
 
+#ifndef BOORUFLOW_UI_AUTOMATION
   SetFocus(child_content_);
+#endif
 }
 
 RECT Win32Window::GetClientArea() {

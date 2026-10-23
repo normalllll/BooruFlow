@@ -1,0 +1,3 @@
+"NSPhotoLibraryAddUsageDescription" = "BooruFlow saves downloaded photos and videos to your library.";
+"NSPhotoLibraryUsageDescription" = "BooruFlow uses Photos access to create and reuse download albums.";
+"NSLocalNetworkUsageDescription" = "BooruFlow connects to a local network proxy when you configure one. Development builds also use this access to connect Flutter debugging tools.";

@@ -8,7 +8,6 @@ project(runner LANGUAGES CXX)
 # Any new source files that you add to the application should be added here.
 add_executable(${BINARY_NAME} WIN32
   "flutter_window.cpp"
-  "desktop_window.cpp"
   "main.cpp"
   "utils.cpp"
   "win32_window.cpp"
@@ -16,6 +15,13 @@ add_executable(${BINARY_NAME} WIN32
   "Runner.rc"
   "runner.exe.manifest"
 )
+
+# Test integration is absent from normal production builds.
+option(BOORUFLOW_UI_AUTOMATION "Build the isolated background UI test runner" OFF)
+if(BOORUFLOW_UI_AUTOMATION)
+  target_sources(${BINARY_NAME} PRIVATE "automation_window.cpp")
+  target_compile_definitions(${BINARY_NAME} PRIVATE BOORUFLOW_UI_AUTOMATION)
+endif()
 
 # Apply the standard set of build settings. This can be removed for applications
 # that need different build settings.
@@ -34,21 +40,8 @@ target_compile_definitions(${BINARY_NAME} PRIVATE "NOMINMAX")
 # Add dependency libraries and include directories. Add any application-specific
 # dependencies here.
 target_link_libraries(${BINARY_NAME} PRIVATE flutter flutter_wrapper_app)
-target_link_libraries(${BINARY_NAME} PRIVATE "dwmapi.lib" "comctl32.lib" "shell32.lib")
+target_link_libraries(${BINARY_NAME} PRIVATE "dwmapi.lib" "shell32.lib")
 target_include_directories(${BINARY_NAME} PRIVATE "${CMAKE_SOURCE_DIR}")
 
 # Run the Flutter tool portions of the build. This must not be removed.
 add_dependencies(${BINARY_NAME} flutter_assemble)
-
-# Optional hidden-window integration checks; no Flutter engine or visible UI.
-option(BUILD_DESKTOP_WINDOW_TESTS "Build native desktop window checks" OFF)
-if(BUILD_DESKTOP_WINDOW_TESTS)
-  add_executable(desktop_window_test EXCLUDE_FROM_ALL "tests/desktop_window_test.cpp" "desktop_window.cpp")
-  set_target_properties(desktop_window_test PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/tests/$<CONFIG>")
-  apply_standard_settings(desktop_window_test)
-  target_compile_definitions(desktop_window_test PRIVATE NOMINMAX)
-  target_include_directories(desktop_window_test PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-  target_link_libraries(desktop_window_test PRIVATE flutter flutter_wrapper_app
-    "dwmapi.lib" "comctl32.lib" "shell32.lib")
-endif()

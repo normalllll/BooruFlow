@@ -46,3 +46,14 @@ app.*.map.json
 /docs/
 
 pubspec.lock
+pubspec_overrides.yaml
+
+rust/Cargo.lock
+
+# Icon font generator environment (development only).
+/tool/icon_font/.venv/
+/tool/icon_font/__pycache__/
+
+# Native Apple dependency lock files are local build outputs.
+Podfile.lock
+Package.resolved
