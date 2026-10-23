@@ -39,6 +39,7 @@ class AboutPage extends ConsumerWidget {
   );
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = Translations.of(context);
     final check = ref.watch(updateCheckProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

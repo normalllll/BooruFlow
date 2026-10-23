@@ -9,8 +9,10 @@ class AccountData {
     required this.schema,
     required this.auth,
     this.operation = const AsyncData<void>(null),
+    this.credentialHints = const {},
   });
   final AsyncValue<void> operation;
+  final Map<AuthFieldKind, String> credentialHints;
   final AuthSchema schema;
   final AuthState auth;
 }
@@ -27,7 +29,20 @@ class Account extends _$Account {
     return AccountData(
       schema: values[0] as AuthSchema,
       auth: values[1] as AuthState,
+      credentialHints: _hints(values[0] as AuthSchema),
     );
+  }
+
+  // Keep only display-safe hints in shared state, never the full secret.
+  Map<AuthFieldKind, String> _hints(AuthSchema schema) {
+    final saved = ref.read(booruServiceProvider).savedAuth(sourceId);
+    return Map.unmodifiable({
+      for (final field in schema.fields)
+        if (saved[field.kind.name] case final value? when value.isNotEmpty)
+          field.kind: field.secret
+              ? '••••••••${value.length > 4 ? value.substring(value.length - 4) : ''}'
+              : value,
+    });
   }
 
   Future<bool> _run(Future<AuthState> Function() operation) async {
@@ -42,12 +57,19 @@ class Account extends _$Account {
         schema: previous.schema,
         auth: previous.auth,
         operation: const AsyncLoading<void>(),
+        credentialHints: previous.credentialHints,
       ),
     );
     try {
       final auth = await operation();
       if (ref.mounted) {
-        state = AsyncData(AccountData(schema: previous.schema, auth: auth));
+        state = AsyncData(
+          AccountData(
+            schema: previous.schema,
+            auth: auth,
+            credentialHints: _hints(previous.schema),
+          ),
+        );
       }
       return true;
     } catch (error, stack) {
@@ -57,6 +79,7 @@ class Account extends _$Account {
             schema: previous.schema,
             auth: previous.auth,
             operation: AsyncError<void>(error, stack),
+            credentialHints: previous.credentialHints,
           ),
         );
       }

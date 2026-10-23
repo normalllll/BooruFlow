@@ -77,6 +77,7 @@ class _WebChallengeDataPanelState extends ConsumerState<WebChallengeDataPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final t = Translations.of(context);
     final session = ref.watch(webChallengeSessionProvider(controller));
     final rows = <Widget>[];
     final failures = <String, Object>{};

@@ -6,6 +6,13 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'proxy_logic.g.dart';
 
+typedef ProxyConnectivityProbe =
+    Future<ProxyConnectivityResult> Function(String endpoint);
+
+@riverpod
+ProxyConnectivityProbe proxyConnectivityProbe(Ref ref) =>
+    probeProxyConnectivity;
+
 class ProxySettingsState {
   const ProxySettingsState({
     this.protocol = 'http',
@@ -17,6 +24,7 @@ class ProxySettingsState {
     this.invalid = false,
     this.dirty = false,
     this.reachable,
+    this.latencyMs,
   });
   factory ProxySettingsState.fromUrl(String? value) {
     final uri = Uri.tryParse(value ?? '');
@@ -30,6 +38,7 @@ class ProxySettingsState {
   final String protocol, host, port, userInfo;
   final bool busy, probing, invalid, dirty;
   final bool? reachable;
+  final int? latencyMs;
   String? get endpoint {
     final endpoint = proxyEndpoint(protocol, host, port);
     return switch (endpoint) {
@@ -47,6 +56,7 @@ class ProxySettingsState {
     bool? invalid,
     bool? dirty,
     bool? reachable,
+    int? latencyMs,
     bool clearReachable = false,
   }) => ProxySettingsState(
     protocol: protocol ?? this.protocol,
@@ -58,6 +68,7 @@ class ProxySettingsState {
     invalid: invalid ?? this.invalid,
     dirty: dirty ?? this.dirty,
     reachable: clearReachable ? null : reachable ?? this.reachable,
+    latencyMs: clearReachable ? null : latencyMs ?? this.latencyMs,
   );
 }
 
@@ -82,7 +93,7 @@ class ProxySettings extends _$ProxySettings {
 
   Future<void> apply(
     Future<bool> Function(String?) apply,
-    Future<bool> Function(String) check, {
+    ProxyConnectivityProbe check, {
     bool disable = false,
   }) async {
     if (state.busy) return;
@@ -103,7 +114,7 @@ class ProxySettings extends _$ProxySettings {
   }
 
   Future<void> probe(
-    Future<bool> Function(String) check, {
+    ProxyConnectivityProbe check, {
     bool restart = false,
   }) async {
     if (state.probing && !restart) return;
@@ -114,14 +125,18 @@ class ProxySettings extends _$ProxySettings {
     }
     final generation = ++_generation;
     state = state.copyWith(probing: true, clearReachable: true, invalid: false);
-    bool reachable;
+    ProxyConnectivityResult result;
     try {
-      reachable = await check(endpoint).timeout(const Duration(seconds: 6));
+      result = await check(endpoint).timeout(const Duration(seconds: 6));
     } catch (_) {
-      reachable = false;
+      result = const ProxyConnectivityResult(reachable: false);
     }
     if (ref.mounted && generation == _generation) {
-      state = state.copyWith(probing: false, reachable: reachable);
+      state = state.copyWith(
+        probing: false,
+        reachable: result.reachable,
+        latencyMs: result.latencyMs,
+      );
     }
   }
 }

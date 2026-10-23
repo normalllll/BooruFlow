@@ -9,6 +9,14 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'network_logic.g.dart';
 
+/// Official service names come from the protocol's provider values.
+extension RouteProviderName on RouteProvider {
+  String get displayName => switch (this) {
+    RouteProvider.uncensoredDns => 'UncensoredDNS',
+    RouteProvider.dohSb => 'doh.sb',
+  };
+}
+
 class NetworkProbeBackend {
   const NetworkProbeBackend({
     required this.sources,
