@@ -1,179 +1,27 @@
-import 'dart:async';
 import 'dart:io';
 
-import 'package:booruflow/core/downloads/download_engine.dart';
 import 'package:booruflow/core/downloads/download_file_system.dart';
 import 'package:booruflow/core/downloads/download_models.dart';
+import 'package:booruflow/core/downloads/download_platform.dart';
 import 'package:booruflow/core/downloads/media_saver.dart';
+import 'package:booruflow/src/rust/api/booru_download.dart' show UgoiraExport;
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
-final class NativeDownloadEngine implements DownloadEngine {
-  NativeDownloadEngine({
-    required this.type,
-    this.channelNamespace = 'booruflow',
-  });
-
-  final String channelNamespace;
-
-  late final _methodChannel = MethodChannel(
-    '$channelNamespace/download_engine',
-  );
-  late final _eventChannel = EventChannel(
-    '$channelNamespace/download_engine/events',
-  );
-
-  @override
-  final DownloadEngineType type;
-
-  @override
-  DownloadCapabilities get capabilities {
-    return DownloadCapabilities(
-      supportsBackground: true,
-      supportsCancel: true,
-      supportsPauseResume: false,
-      handlesSaving: true,
-      supportsHeaders: true,
-      supportsProxy: true,
-      supportsHostOverride: true,
-      supportsCertificateBypass: true,
-      supportsValidation: true,
-    );
-  }
-
-  late final Stream<DownloadEngineEvent> _events = _eventChannel
-      .receiveBroadcastStream()
-      .map(_eventFromNative)
-      .where((event) => event != null)
-      .cast<DownloadEngineEvent>()
-      .asBroadcastStream();
-
-  @override
-  Stream<DownloadEngineEvent> get events => _events;
-
-  @override
-  Future<void> initialize() async {
-    await _methodChannel.invokeMethod<void>('initialize');
-  }
-
-  @override
-  Future<void> start(List<DownloadJob> jobs) async {
-    await _methodChannel.invokeMethod<void>('start', {
-      'jobs': jobs.map((job) => job.toPlatformJson()).toList(growable: false),
-    });
-  }
-
-  @override
-  Future<void> pause(String jobId) {
-    throw UnsupportedError(
-      'Pause is not supported by the native download engine yet.',
-    );
-  }
-
-  @override
-  Future<void> resume(String jobId) {
-    throw UnsupportedError(
-      'Resume is not supported by the native download engine yet.',
-    );
-  }
-
-  @override
-  Future<void> cancel(String jobId) async {
-    await _methodChannel.invokeMethod<void>('cancel', {'jobId': jobId});
-  }
-
-  @override
-  Future<List<DownloadEngineSnapshot>> syncActiveTasks() async {
-    final response = await _methodChannel.invokeMethod<List<Object?>>('sync');
-    return [
-      for (final item in response ?? const <Object?>[])
-        if (item is Map) _snapshotFromNative(item.cast<String, Object?>()),
-    ];
-  }
-
-  @override
-  Future<void> acknowledge(Set<String> jobIds) async {
-    if (jobIds.isEmpty) {
-      return;
-    }
-    await _methodChannel.invokeMethod<void>('acknowledge', {
-      'jobIds': jobIds.toList(growable: false),
-    });
-  }
-
-  @override
-  Future<void> dispose() async {}
-
-  DownloadEngineEvent? _eventFromNative(Object? event) {
-    if (event is! Map) {
-      return null;
-    }
-    final map = event.cast<String, Object?>();
-    final type = map['type'] as String?;
-    final jobId = map['jobId'] as String?;
-    if (type == null || jobId == null) {
-      return null;
-    }
-
-    return switch (type) {
-      'progress' => EngineProgressEvent(
-        jobId: jobId,
-        receivedBytes: _intValue(map['receivedBytes']),
-        totalBytes: _nullableIntValue(map['totalBytes']),
-        progress: _doubleValue(map['progress']).clamp(0, 1),
-      ),
-      'completed' => EngineCompletedEvent(
-        jobId: jobId,
-        localPath: map['localPath'] as String? ?? '',
-        bytesWritten: _intValue(map['bytesWritten']),
-      ),
-      'failed' => EngineFailedEvent(
-        jobId: jobId,
-        error: map['error'] as String? ?? 'Download failed',
-      ),
-      'cancelled' => EngineCancelledEvent(jobId: jobId),
-      'saved' => EngineSaveCompletedEvent(
-        jobId: jobId,
-        path:
-            (map['path'] as String?) ??
-            (map['galleryAssetId'] as String?) ??
-            '',
-        galleryAssetId: map['galleryAssetId'] as String?,
-      ),
-      'saveFailed' => EngineSaveFailedEvent(
-        jobId: jobId,
-        error: map['error'] as String? ?? 'Save failed',
-        localPath: map['localPath'] as String?,
-      ),
-      _ => null,
-    };
-  }
-
-  DownloadEngineSnapshot _snapshotFromNative(Map<String, Object?> map) {
-    return DownloadEngineSnapshot(
-      jobId: map['jobId'] as String? ?? '',
-      status: _enumValue(
-        DownloadStatus.values,
-        map['status'] as String?,
-        DownloadStatus.failed,
-      ),
-      saveState: _enumValue(
-        SaveState.values,
-        map['saveState'] as String?,
-        SaveState.none,
-      ),
-      receivedBytes: _intValue(map['receivedBytes']),
-      totalBytes: _nullableIntValue(map['totalBytes']),
-      progress: _doubleValue(map['progress']).clamp(0, 1),
-      localPath: map['localPath'] as String?,
-      galleryAssetId: map['galleryAssetId'] as String?,
-      error: map['error'] as String?,
-    );
-  }
-}
+import 'desktop_media_saver.dart';
 
 final class NativeMediaSaver implements MediaSaver {
-  NativeMediaSaver({this.channelNamespace = 'booruflow'});
+  NativeMediaSaver({
+    this.channelNamespace = 'booruflow',
+    DownloadPlatform? platform,
+    Future<Directory> Function()? documentsDirectory,
+  }) : _platform = platform ?? DownloadPlatform.current,
+       _documentsDirectory =
+           documentsDirectory ?? getApplicationDocumentsDirectory;
+
+  final DownloadPlatform _platform;
+  final Future<Directory> Function() _documentsDirectory;
 
   final String channelNamespace;
 
@@ -186,12 +34,45 @@ final class NativeMediaSaver implements MediaSaver {
     required DownloadJob job,
     required DownloadedFile file,
   }) async {
-    final response = await _methodChannel
-        .invokeMethod<Map<Object?, Object?>>('saveFile', {
-          'job': job.toPlatformJson(),
-          'path': file.path,
-          'bytesWritten': file.bytesWritten,
-        });
+    // Rust verified the source before conversion. Its checksum/length describe
+    // the ZIP, so this local boundary validates the exported output length.
+    final saveJob = job.ugoiraExport == UgoiraExport.losslessWebp
+        ? job.copyWith(
+            validation: DownloadValidationOptions(
+              expectedBytes: file.bytesWritten,
+            ),
+          )
+        : job;
+    if (_platform.usesFiles(saveJob)) {
+      final documents = await _documentsDirectory();
+      return const DesktopMediaSaver().saveDownloadedFile(
+        job: saveJob.copyWith(
+          saveTarget: SaveTarget.downloadsFolder(
+            directory: p.join(documents.path, appDownloadDirectoryName),
+            subdirectory: saveJob.saveTarget.subdirectory,
+          ),
+        ),
+        file: file,
+      );
+    }
+    var prefersDefaultAlbum = false;
+    if (_platform == DownloadPlatform.ios && saveJob.batchId == null) {
+      final access = IosPhotosReadAccess.parse(
+        await _methodChannel.invokeMethod<String>('photosReadAccess'),
+      );
+      prefersDefaultAlbum = access.mayUseDefaultAlbum;
+    }
+    final response = await _methodChannel.invokeMethod<Map<Object?, Object?>>(
+      'saveFile',
+      {
+        'job': {
+          ...saveJob.toPlatformJson(),
+          'prefersDefaultAlbum': prefersDefaultAlbum,
+        },
+        'path': file.path,
+        'bytesWritten': file.bytesWritten,
+      },
+    );
     return _saveResultFromNative(response, fallbackBytes: file.bytesWritten);
   }
 
@@ -201,13 +82,13 @@ final class NativeMediaSaver implements MediaSaver {
     required Uint8List bytes,
   }) async {
     final tempFile = await _writeTempBytes(job, bytes);
-    final response = await _methodChannel
-        .invokeMethod<Map<Object?, Object?>>('saveFile', {
-          'job': job.toPlatformJson(),
-          'path': tempFile.path,
-          'bytesWritten': bytes.lengthInBytes,
-        });
-    return _saveResultFromNative(response, fallbackBytes: bytes.lengthInBytes);
+    return saveDownloadedFile(
+      job: job,
+      file: DownloadedFile(
+        path: tempFile.path,
+        bytesWritten: bytes.lengthInBytes,
+      ),
+    );
   }
 
   Future<File> _writeTempBytes(DownloadJob job, Uint8List bytes) async {
@@ -250,29 +131,4 @@ int _intValue(Object? value, {int fallback = 0}) {
     String value => int.tryParse(value) ?? fallback,
     _ => fallback,
   };
-}
-
-int? _nullableIntValue(Object? value) {
-  if (value == null) {
-    return null;
-  }
-  return _intValue(value);
-}
-
-double _doubleValue(Object? value, {double fallback = 0}) {
-  return switch (value) {
-    double value => value,
-    num value => value.toDouble(),
-    String value => double.tryParse(value) ?? fallback,
-    _ => fallback,
-  };
-}
-
-T _enumValue<T extends Enum>(List<T> values, String? name, T fallback) {
-  for (final value in values) {
-    if (value.name == name) {
-      return value;
-    }
-  }
-  return fallback;
 }

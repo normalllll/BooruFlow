@@ -2,7 +2,8 @@ use crate::api::booru_auth::{AuthState, AuthStatus};
 use crate::api::booru_models::{ContentRating, MediaType, MediaVariantKind, TagCategory};
 use crate::booru::adapter::{BooruAdapter, PreparedMedia, RequestContext};
 use crate::booru::adapters::common::{
-    media, parse_json, signed32, string, unsigned, unsigned32, username, validate_media_hosts,
+    md5_checksum, media, parse_json, signed32, source_time, string, unsigned, unsigned32, username,
+    validate_media_hosts,
 };
 use crate::booru::error::{BooruError, BooruErrorCode, BooruResult};
 use crate::booru::model::{Post, PostFlags, PostId, PostPage, SearchQuery, Tag};
@@ -108,11 +109,16 @@ impl AnimePicturesAdapter {
             .unwrap_or_default();
         Ok(Post {
             source_id: self.definition.id.to_owned(),
+            original_file_size: unsigned(value, "size"),
+            original_file_extension: extension.clone(),
+            original_checksum: md5_checksum(string(value, "md5")),
+            width,
+            height,
             id: PostId(id.clone()),
             web_url: Some(format!("{}/posts/{id}", self.definition.web_base)),
             rating: anime_rating(unsigned(value, "erotics")),
             score: signed32(value, "score"),
-            created_at_iso8601: string(value, "pubtime").map(normalize_time),
+            created_at_iso8601: source_time(string(value, "pubtime")),
             author: username(value, "/user/name").or_else(|| username(value, "/user_name")),
             source_url: string(value, "source"),
             tags,
@@ -242,7 +248,6 @@ impl BooruAdapter for AnimePicturesAdapter {
         Ok(PreparedMedia {
             headers: ctx.runtime.prepared_headers(&self.definition, &url)?,
             media,
-            allow_disk_cache: variant != MediaVariantKind::Original,
         })
     }
 
@@ -285,7 +290,16 @@ fn parse_tags(values: &[Value]) -> Vec<Tag> {
                 .or_else(|| string(tag_value, "name"))
                 .map(|name| Tag {
                     name,
-                    category: TagCategory::General,
+                    // Anime-Pictures supplies the category on the nested tag,
+                    // not the post-tag relation. IDs follow its public client
+                    // schema: character=1, work=3/5/6, artist=4, general=2/7.
+                    category: match unsigned(tag_value, "type").or_else(|| unsigned(value, "type"))
+                    {
+                        Some(1) => TagCategory::Character,
+                        Some(3 | 5 | 6) => TagCategory::Copyright,
+                        Some(4) => TagCategory::Artist,
+                        _ => TagCategory::General,
+                    },
                 })
         })
         .collect()
@@ -297,14 +311,6 @@ fn anime_rating(value: Option<u64>) -> ContentRating {
         1 => ContentRating::Sensitive,
         2 => ContentRating::Questionable,
         _ => ContentRating::Explicit,
-    }
-}
-
-fn normalize_time(value: String) -> String {
-    if value.contains('T') {
-        value
-    } else {
-        format!("{}Z", value.replace(' ', "T"))
     }
 }
 
@@ -336,6 +342,57 @@ mod tests {
         assert_eq!(pages, Some(2));
         assert_eq!(posts[0].rating, ContentRating::Sensitive);
         assert!(posts[0].media[0].url.contains("_cp.avif"));
+        let post = posts.into_iter().next().unwrap().into_api();
+        assert_eq!((post.width, post.height), (Some(1309), Some(2000)));
+        assert_eq!(post.original_file_size_decimal.as_deref(), Some("2397010"));
+        assert_eq!(post.original_file_extension.as_deref(), Some("png"));
+        assert_eq!(
+            post.original_checksum.as_ref().unwrap().value,
+            "abcdef0123456789abcdef0123456789"
+        );
+        // The API describes the artwork, not the resized AVIF files. Keeping
+        // those fields separate also avoids a detail request for each card.
+        assert!(post
+            .media
+            .iter()
+            .all(|media| media.width.is_none() && media.height.is_none()));
+        assert!(!post
+            .media
+            .iter()
+            .any(|media| media.kind == MediaVariantKind::Original));
+        let saved = serde_json::to_vec(&post).unwrap();
+        let restored: crate::api::booru_models::BooruPost = serde_json::from_slice(&saved).unwrap();
+        assert_eq!((restored.width, restored.height), (Some(1309), Some(2000)));
+        assert_eq!(
+            restored.original_file_size_decimal,
+            post.original_file_size_decimal
+        );
+        assert_eq!(
+            restored.original_file_extension,
+            post.original_file_extension
+        );
+        assert_eq!(restored.original_checksum, post.original_checksum);
+    }
+
+    #[test]
+    fn missing_and_zero_dimensions_remain_unknown() {
+        for fields in [
+            serde_json::json!({}),
+            serde_json::json!({"width":0,"height":0}),
+            serde_json::json!({"width":-1,"height":-1}),
+        ] {
+            let mut fixture = serde_json::json!({"id":1,"md5":"abcdef0123456789abcdef0123456789"});
+            fixture
+                .as_object_mut()
+                .unwrap()
+                .extend(fields.as_object().unwrap().clone());
+            let post = adapter().parse_post(&fixture, false).unwrap().into_api();
+            assert_eq!((post.width, post.height), (None, None));
+            assert!(post
+                .media
+                .iter()
+                .all(|media| media.width.is_none() && media.height.is_none()));
+        }
     }
 
     #[test]
@@ -348,10 +405,35 @@ mod tests {
             "ext": ".png",
             "md5": "abcdef0123456789abcdef0123456789",
             "file_url": "834153-image.png",
-            "tags": [{"tag": {"tag": "character"}}]
+            "tags": [
+                {"tag": {"tag": "illyasviel von einzbern", "type": 1}},
+                {"tag": {"tag": "fate (series)", "type": 3}},
+                {"tag": {"tag": "juu roku gen", "type": 4}},
+                {"tag": {"tag": "fate/kaleid liner prisma illya", "type": 5}},
+                {"tag": {"tag": "work alias", "type": 6}},
+                {"tag": {"tag": "bra", "type": 2}},
+                {"tag": {"tag": "long hair", "type": 7}},
+                {"tag": {"tag": "legacy"}},
+                {"name": "flat artist", "type": "4"}
+            ]
         });
         let post = adapter().parse_post(&fixture, true).unwrap();
-        assert_eq!(post.tags[0].name, "character");
+        assert_eq!((post.width, post.height), (Some(1309), Some(2000)));
+        assert_eq!(post.tags[0].name, "illyasviel von einzbern");
+        assert_eq!(
+            post.tags.iter().map(|tag| tag.category).collect::<Vec<_>>(),
+            vec![
+                TagCategory::Character,
+                TagCategory::Copyright,
+                TagCategory::Artist,
+                TagCategory::Copyright,
+                TagCategory::Copyright,
+                TagCategory::General,
+                TagCategory::General,
+                TagCategory::General,
+                TagCategory::Artist,
+            ]
+        );
         assert!(post
             .media
             .iter()

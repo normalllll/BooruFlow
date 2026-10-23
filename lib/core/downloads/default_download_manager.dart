@@ -12,6 +12,7 @@ import 'package:booruflow/core/downloads/download_manager_configuration.dart';
 import 'package:booruflow/core/downloads/download_manager_contract.dart';
 import 'package:booruflow/core/downloads/download_models.dart';
 import 'package:booruflow/core/downloads/download_permission_guard.dart';
+import 'package:booruflow/core/downloads/download_platform.dart';
 import 'package:booruflow/core/downloads/download_store.dart';
 import 'package:booruflow/core/downloads/download_validator.dart';
 import 'package:booruflow/core/downloads/media_saver.dart';
@@ -26,13 +27,16 @@ final class DefaultDownloadManager implements DownloadManager {
     DownloadEngine? engine,
     MediaSaver? mediaSaver,
     DownloadPermissionGuard? permissionGuard,
+    DownloadPlatform? platform,
   }) : _configuration = configuration,
        _store = store,
        _engine = engine,
        _mediaSaver = mediaSaver,
-       _permissionGuard = permissionGuard;
+       _permissionGuard = permissionGuard,
+       _platform = platform ?? DownloadPlatform.current;
 
   final DownloadManagerConfiguration _configuration;
+  final DownloadPlatform _platform;
   DownloadStore? _store;
   DownloadEngine? _engine;
   MediaSaver? _mediaSaver;
@@ -45,6 +49,7 @@ final class DefaultDownloadManager implements DownloadManager {
   bool _ownsStore = false;
   bool _disposed = false;
   final _jobs = <String, DownloadJob>{};
+  final _saves = <String, Future<void>>{};
   final _waiters = <String, Completer<DownloadedFile>>{};
 
   @override
@@ -112,7 +117,7 @@ final class DefaultDownloadManager implements DownloadManager {
     if (normalizedJobs.isEmpty) {
       return 0;
     }
-    await _activePermissionGuard.ensureReadyForDownload();
+    await _ensurePermission(normalizedJobs);
     var enqueued = 0;
     for (final job in normalizedJobs) {
       final activeTask = await _activeTaskForJob(job);
@@ -125,9 +130,7 @@ final class DefaultDownloadManager implements DownloadManager {
     }
 
     if (enqueued == 0) {
-      throw const DownloadException(
-        'This image is already queued or downloading.',
-      );
+      throw const DuplicateDownloadException();
     }
 
     await _pumpQueue();
@@ -192,7 +195,6 @@ final class DefaultDownloadManager implements DownloadManager {
     String? thumbnailUrl,
   }) async {
     await _ensureInitialized();
-    await _activePermissionGuard.ensureReadyForDownload();
     final job = DownloadJob.create(
       resourceId: resourceId,
       variantIndex: variantIndex,
@@ -209,11 +211,10 @@ final class DefaultDownloadManager implements DownloadManager {
       title: title,
       thumbnailUrl: thumbnailUrl,
     );
+    await _ensurePermission([job]);
     final activeTask = await _activeTaskForJob(job);
     if (activeTask != null) {
-      throw const DownloadException(
-        'This image is already queued or downloading.',
-      );
+      throw const DuplicateDownloadException();
     }
 
     _jobs[job.id] = job;
@@ -269,7 +270,20 @@ final class DefaultDownloadManager implements DownloadManager {
   @override
   Future<void> resume(String jobId) async {
     await _ensureInitialized();
-    await _activeEngine.resume(jobId);
+    final task = await _activeStore.getTask(jobId);
+    if (task?.status != DownloadStatus.paused) return;
+    final snapshots = await _activeEngine.syncActiveTasks();
+    if (!snapshots.any((item) => item.jobId == jobId)) {
+      // In-memory transfer state ends with the old process. A persisted paused
+      // task can still be resumed honestly by restarting, through the queue.
+      await _activeStore.updateProgress(jobId, receivedBytes: 0, progress: 0);
+      await _activeStore.appendLog(
+        jobId,
+        'Resume after process exit: restarted transfer.',
+      );
+    }
+    await _activeStore.updateStatus(jobId, DownloadStatus.queued);
+    await _pumpQueue();
   }
 
   @override
@@ -373,7 +387,7 @@ final class DefaultDownloadManager implements DownloadManager {
       );
     }
 
-    await _activePermissionGuard.ensureReadyForDownload();
+    await _ensurePermission([job]);
     await _activeStore.appendLog(
       jobId,
       'Retrying save only. path=$localPath target=${job.saveTarget.toJson()}',
@@ -536,6 +550,25 @@ final class DefaultDownloadManager implements DownloadManager {
         }
         await _activeStore.updateStatus(event.jobId, DownloadStatus.paused);
         await _pumpQueue();
+      case EngineResumedEvent():
+        final task = await _activeStore.getTask(event.jobId);
+        if (task == null ||
+            task.status == DownloadStatus.cancelled ||
+            task.status == DownloadStatus.downloaded) {
+          return;
+        }
+        await _activeStore.updateStatus(event.jobId, DownloadStatus.running);
+        if (event.restarted) {
+          await _activeStore.updateProgress(
+            event.jobId,
+            receivedBytes: 0,
+            progress: 0,
+          );
+          await _activeStore.appendLog(
+            event.jobId,
+            'Transfer resumed by restarting; partial representation could not be reused.',
+          );
+        }
       case EngineCancelledEvent():
         final task = await _activeStore.getTask(event.jobId);
         if (task == null ||
@@ -591,7 +624,16 @@ final class DefaultDownloadManager implements DownloadManager {
     }
   }
 
-  Future<void> _saveCompletedFile(DownloadJob job, DownloadedFile file) async {
+  Future<void> _saveCompletedFile(DownloadJob job, DownloadedFile file) =>
+      _saves.putIfAbsent(
+        job.id,
+        () =>
+            _saveFileOnce(job, file).whenComplete(() => _saves.remove(job.id)),
+      );
+
+  Future<void> _saveFileOnce(DownloadJob job, DownloadedFile file) async {
+    final current = await _activeStore.getTask(job.id);
+    if (current?.saveState == SaveState.saved) return;
     await _activeStore.updateSaveState(
       job.id,
       SaveState.saving,
@@ -642,7 +684,7 @@ final class DefaultDownloadManager implements DownloadManager {
   }) async {
     final pendingTasks = await _activeStore.listPendingSaveTasks();
     for (final task in pendingTasks) {
-      if (skipJobIds.contains(task.id)) {
+      if (skipJobIds.contains(task.id) || _saves.containsKey(task.id)) {
         continue;
       }
       final job = await _jobFor(task.id);
@@ -659,18 +701,8 @@ final class DefaultDownloadManager implements DownloadManager {
         );
         continue;
       }
-      if (!await File(localPath).exists()) {
-        await _activeStore.appendLog(
-          task.id,
-          'Pending save cannot resume because local file is missing. path=$localPath',
-        );
-        await _activeStore.updateSaveState(
-          task.id,
-          SaveState.failed,
-          error: 'Downloaded local file does not exist: $localPath',
-        );
-        continue;
-      }
+      // Validate the file inside the per-job save operation. A concurrent save
+      // may already have moved it and persisted success since this query ran.
       await _saveCompletedFile(
         job,
         DownloadedFile(path: localPath, bytesWritten: task.receivedBytes),
@@ -834,10 +866,10 @@ final class DefaultDownloadManager implements DownloadManager {
     if (requested != null && requested.type != SaveTargetType.downloadsFolder) {
       return requested;
     }
-    if (Platform.isAndroid) {
+    if (_platform == DownloadPlatform.android) {
       return SaveTarget.mediaStore(subdirectory: requested?.subdirectory);
     }
-    if (Platform.isIOS) {
+    if (_platform == DownloadPlatform.ios) {
       return SaveTarget.photos(subdirectory: requested?.subdirectory);
     }
     return requested ?? const SaveTarget.downloadsFolder();
@@ -846,6 +878,21 @@ final class DefaultDownloadManager implements DownloadManager {
   Future<void> _ensureInitialized() async {
     if (!_initialized) {
       await initialize();
+    }
+  }
+
+  Future<void> _ensurePermission(List<DownloadJob> jobs) async {
+    final guard = _activePermissionGuard;
+    final mediaJobs = _platform == DownloadPlatform.ios
+        ? jobs.where((job) => !DownloadPlatform.ios.usesFiles(job)).toList()
+        : jobs;
+    if (mediaJobs.isEmpty) return;
+    if (_platform == DownloadPlatform.ios &&
+        mediaJobs.any((job) => job.batchId != null) &&
+        guard is NativeDownloadPermissionGuard) {
+      await guard.ensureReadyForBatchDownload();
+    } else {
+      await guard.ensureReadyForDownload();
     }
   }
 

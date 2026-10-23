@@ -117,6 +117,12 @@ class EnginePausedEvent extends DownloadEngineEvent {
   const EnginePausedEvent({required String jobId}) : super(jobId);
 }
 
+class EngineResumedEvent extends DownloadEngineEvent {
+  const EngineResumedEvent({required String jobId, required this.restarted})
+    : super(jobId);
+  final bool restarted;
+}
+
 class EngineCancelledEvent extends DownloadEngineEvent {
   const EngineCancelledEvent({required String jobId}) : super(jobId);
 }

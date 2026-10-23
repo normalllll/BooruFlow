@@ -24,6 +24,13 @@ pub struct PostPage {
 #[derive(Debug, Clone)]
 pub struct Post {
     pub source_id: String,
+    /// Original artwork dimensions, independent of available preview files.
+    pub width: Option<u32>,
+    pub height: Option<u32>,
+    /// Original-file facts can arrive before an accessible original URL.
+    pub original_file_size: Option<u64>,
+    pub original_file_extension: Option<String>,
+    pub original_checksum: Option<Checksum>,
     pub author: Option<String>,
     pub id: PostId,
     pub web_url: Option<String>,
@@ -66,8 +73,25 @@ pub struct PostFlags {
 impl Post {
     pub fn into_api(self) -> BooruPost {
         let key = post_key(&self.source_id, &self.id.0);
+        let original = self
+            .media
+            .iter()
+            .find(|item| item.kind == MediaVariantKind::Original);
         BooruPost {
             source_id: self.source_id,
+            width: self.width.filter(|value| *value > 0),
+            height: self.height.filter(|value| *value > 0),
+            original_file_size_decimal: self
+                .original_file_size
+                .or_else(|| original.and_then(|item| item.byte_length))
+                .filter(|value| *value > 0)
+                .map(|value| value.to_string()),
+            original_file_extension: self
+                .original_file_extension
+                .or_else(|| original.and_then(|item| item.extension.clone())),
+            original_checksum: self
+                .original_checksum
+                .or_else(|| original.and_then(|item| item.checksum.clone())),
             author: self.author,
             post_id: self.id.0,
             post_key: key,

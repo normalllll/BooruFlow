@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:booruflow/app/app_router.dart';
 import 'package:booruflow/core/settings/settings_service.dart';
 import 'package:booruflow/features/booru/models/web_challenge_failure.dart';
 import 'package:booruflow/features/booru/services/booru_service.dart';
@@ -9,7 +10,7 @@ import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/api/booru_engine.dart';
 import 'package:booruflow/src/rust/api/web_challenge.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 enum WebChallengePhase { opening, waiting, verifying }
 
@@ -72,14 +73,9 @@ class WebChallengeService {
       _platformChecks = true,
       _nativeWindow = Platform.isWindows,
       _collector = ((context, operation, cancellation) =>
-          Navigator.of(context, rootNavigator: true).push<Object?>(
-            MaterialPageRoute<Object?>(
-              fullscreenDialog: true,
-              builder: (_) => WebChallengePage(
-                operation: operation,
-                cancellation: cancellation,
-              ),
-            ),
+          AppRouter.pushContent<Object?>(
+            context,
+            WebChallengePage(operation: operation, cancellation: cancellation),
           )),
       _changed = service.recordWebChallengeChanges,
       _cleanup = clearEmbeddedWebData;
@@ -110,6 +106,7 @@ class WebChallengeService {
   final Future<void> Function(List<String>) _changed;
   final Future<void> Function() _cleanup;
   final bool _nativeWindow;
+  bool get usesNativeWindow => _nativeWindow;
   final _changes = StreamController<WebChallengeSessionState>.broadcast(
     sync: true,
   );
@@ -196,6 +193,17 @@ class WebChallengeService {
       closed.complete();
       activity = null;
     }
+  }
+
+  /// Cancel only this browser session, without deleting saved verification data.
+  Future<void> cancelActive(String sourceId) async {
+    if (activity?.sourceId != sourceId) return;
+    final closed = _closed?.future;
+    _generation++;
+    _cancellation.value++;
+    final id = _operationId;
+    if (id != null) await _activeBackend?.cancel(id);
+    if (closed != null) await closed.timeout(const Duration(seconds: 30));
   }
 
   Future<void> clearSources(Iterable<String> sources) async {

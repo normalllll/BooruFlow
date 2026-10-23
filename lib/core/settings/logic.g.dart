@@ -8,6 +8,50 @@ part of 'logic.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Android exposes gesture progress through OnBackAnimationCallback from API 34.
+/// Read the real OS version, independently of theme platform or window size.
+/// Other OSes do not expose that Android system capability.
+
+@ProviderFor(predictiveBackAvailable)
+final predictiveBackAvailableProvider = PredictiveBackAvailableProvider._();
+
+/// Android exposes gesture progress through OnBackAnimationCallback from API 34.
+/// Read the real OS version, independently of theme platform or window size.
+/// Other OSes do not expose that Android system capability.
+
+final class PredictiveBackAvailableProvider
+    extends $FunctionalProvider<AsyncValue<bool>, bool, FutureOr<bool>>
+    with $FutureModifier<bool>, $FutureProvider<bool> {
+  /// Android exposes gesture progress through OnBackAnimationCallback from API 34.
+  /// Read the real OS version, independently of theme platform or window size.
+  /// Other OSes do not expose that Android system capability.
+  PredictiveBackAvailableProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'predictiveBackAvailableProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$predictiveBackAvailableHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<bool> create(Ref ref) {
+    return predictiveBackAvailable(ref);
+  }
+}
+
+String _$predictiveBackAvailableHash() =>
+    r'0a46dcbec202ebf1fdefc97d9670b33aa1d0c960';
 
 @ProviderFor(settingsRepository)
 final settingsRepositoryProvider = SettingsRepositoryProvider._();
@@ -88,7 +132,7 @@ final class SettingsProvider extends $NotifierProvider<Settings, AppSettings> {
   }
 }
 
-String _$settingsHash() => r'5b07998a8e315a54a54edaa2121d154f53af7e19';
+String _$settingsHash() => r'd07621646424cb4cec5257c1f7a5976bb0650821';
 
 abstract class _$Settings extends $Notifier<AppSettings> {
   AppSettings build();

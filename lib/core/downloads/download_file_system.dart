@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:booruflow/core/downloads/download_models.dart';
+import 'package:booruflow/core/file_paths.dart';
 import 'package:booruflow/core/settings/settings_service.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -69,7 +70,10 @@ Future<String> resolveDesktopDownloadDirectory({
 }) async {
   final customDirectory = explicitDirectory ?? SettingsService.downloadPath;
   if (customDirectory != null && customDirectory.isNotEmpty) {
-    return p.join(customDirectory, appDownloadDirectoryName);
+    return p.join(
+      normalizeLocalPath(customDirectory),
+      appDownloadDirectoryName,
+    );
   }
 
   final downloads = await getDownloadsDirectory();
@@ -90,7 +94,7 @@ Future<String> prepareDesktopCustomDownloadDirectory(
   String selectedDirectory,
 ) async {
   final directory = Directory(
-    p.join(selectedDirectory, appDownloadDirectoryName),
+    p.join(normalizeLocalPath(selectedDirectory), appDownloadDirectoryName),
   );
   await ensureWritableDirectory(directory);
   return directory.path;

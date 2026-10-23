@@ -168,6 +168,17 @@ pub fn parse_date(source: &str, value: &str) -> BooruResult<time::Date> {
     Ok(date)
 }
 
+pub fn wallhaven_purity_bits(ratings: &[ContentRating]) -> String {
+    if ratings.is_empty() {
+        return "110".to_owned();
+    }
+    let sfw = ratings.contains(&ContentRating::General);
+    let sketchy = ratings.contains(&ContentRating::Sensitive)
+        || ratings.contains(&ContentRating::Questionable);
+    let nsfw = ratings.contains(&ContentRating::Explicit);
+    format!("{}{}{}", u8::from(sfw), u8::from(sketchy), u8::from(nsfw))
+}
+
 pub fn period(range: PopularRange, wallhaven: bool) -> &'static str {
     match range {
         PopularRange::Day => "1d",

@@ -1,7 +1,8 @@
 import 'dart:convert';
-
+import 'package:booruflow/src/rust/api/booru_download.dart' show UgoiraExport;
 import 'package:drift/drift.dart';
-
+import 'package:path/path.dart' as p;
+import '../file_paths.dart';
 import 'download_database.dart' hide DownloadJob;
 import 'download_engine.dart';
 import 'download_models.dart';
@@ -80,6 +81,8 @@ class DriftDownloadStore implements DownloadStore {
           .insertOnConflictUpdate(
             DownloadJobsCompanion(
               id: Value(job.id),
+              batchId: Value(job.batchId),
+              ugoiraExport: Value(job.ugoiraExport?.name),
               resourceId: Value(job.resourceId),
               sourceId: Value(job.sourceId),
               postId: Value(job.postId),
@@ -176,7 +179,7 @@ class DriftDownloadStore implements DownloadStore {
         saveState: Value(state.name),
         localPath: switch (localPath) {
           null => const Value.absent(),
-          _ => Value(localPath),
+          _ => Value(normalizeLocalPath(localPath)),
         },
         galleryAssetId: switch (galleryAssetId) {
           null => const Value.absent(),
@@ -233,7 +236,7 @@ class DriftDownloadStore implements DownloadStore {
         progress: Value(snapshot.progress.clamp(0, 1)),
         localPath: switch (snapshot.localPath) {
           null => const Value.absent(),
-          _ => Value(snapshot.localPath),
+          _ => Value(normalizeLocalPath(snapshot.localPath!)),
         },
         galleryAssetId: switch (snapshot.galleryAssetId) {
           null => const Value.absent(),
@@ -265,6 +268,10 @@ class DriftDownloadStore implements DownloadStore {
     try {
       return DownloadJob(
         id: row.id,
+        batchId: row.batchId,
+        ugoiraExport: UgoiraExport.values
+            .where((v) => v.name == row.ugoiraExport)
+            .firstOrNull,
         resourceId: row.resourceId,
         sourceId: row.sourceId,
         postId: row.postId,
@@ -414,7 +421,12 @@ class DriftDownloadStore implements DownloadStore {
       '''
       SELECT
         j.id AS id,
+        j.batch_id AS batch_id,
+        j.ugoira_export AS ugoira_export,
+        j.save_target_json AS save_target_json,
         j.resource_id AS resource_id,
+        j.source_id AS source_id,
+        j.post_id AS post_id,
         j.variant_index AS variant_index,
         j.filename AS filename,
         j.title AS title,
@@ -440,6 +452,21 @@ class DriftDownloadStore implements DownloadStore {
     );
   }
 
+  String? _batchName(QueryRow row) {
+    if (row.readNullable<String>('batch_id') == null) return null;
+    try {
+      final target = _objectMapFromJson(row.read<String>('save_target_json'));
+      if (target['subdirectory'] case final String directory
+          when directory.isNotEmpty) {
+        final name = p.posix.basename(directory.replaceAll(r'\', '/'));
+        return name.isEmpty || name == '.' ? null : name;
+      }
+    } on FormatException {
+      // Missing/damaged optional metadata must not hide a historical task.
+    }
+    return null;
+  }
+
   DownloadTaskSnapshot? _snapshotFromRow(QueryRow row) {
     final status = DownloadStatus.values
         .where((value) => value.name == row.read<String>('status'))
@@ -451,10 +478,17 @@ class DriftDownloadStore implements DownloadStore {
     final filename = row.read<String>('filename');
     return DownloadTaskSnapshot(
       id: row.read<String>('id'),
+      batchId: row.readNullable<String>('batch_id'),
+      batchName: _batchName(row),
       resourceId: row.read<int>('resource_id'),
+      sourceId: row.readNullable<String>('source_id'),
+      postId: row.readNullable<String>('post_id'),
       variantIndex: row.read<int>('variant_index'),
       title: row.readNullable<String>('title') ?? filename,
       filename: filename,
+      ugoiraExport: UgoiraExport.values
+          .where((v) => v.name == row.readNullable<String>('ugoira_export'))
+          .firstOrNull,
       thumbnailUrl: row.readNullable<String>('thumbnail_url'),
       status: status,
       saveState: saveState,

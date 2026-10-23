@@ -9,6 +9,8 @@ final class WebChallengeFailure implements Exception {
 }
 
 String webChallengeMessage(String key) => switch (key) {
+  'windowFailed' => t.webChallenge.windowFailed,
+  'runtimeMissing' => t.webChallenge.runtimeMissing,
   'webViewUnavailable' => t.webChallenge.webViewUnavailable,
   'proxyUnsupported' => t.webChallenge.proxyUnsupported,
   'busy' => t.webChallenge.busy,

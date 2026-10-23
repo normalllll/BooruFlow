@@ -144,27 +144,7 @@ impl SessionStore {
     }
 
     pub fn web_snapshot(&self, source_id: &str) -> BooruResult<Option<WebSessionSnapshot>> {
-        self.snapshot_with_status(source_id, false)
-    }
-
-    fn snapshot_with_status(
-        &self,
-        source_id: &str,
-        require_verified: bool,
-    ) -> BooruResult<Option<WebSessionSnapshot>> {
         let inner = self.inner.read().map_err(|_| internal_error(source_id))?;
-        if require_verified
-            && inner
-                .sessions
-                .get(source_id)
-                .is_none_or(|session| session.status != AuthStatus::Verified)
-        {
-            return Err(BooruError::new(
-                crate::booru::error::BooruErrorCode::AuthenticationRejected,
-                Some(source_id),
-                "booru.error.authenticationRejected",
-            ));
-        }
         Ok(inner
             .sessions
             .get(source_id)

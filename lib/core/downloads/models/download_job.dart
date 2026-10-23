@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:booruflow/src/rust/api/booru_download.dart' show UgoiraExport;
 import 'download_request_options.dart';
 import 'save_target.dart';
 
@@ -18,6 +18,8 @@ class DownloadJob {
     required this.createdAt,
     this.thumbnailUrl,
     this.title,
+    this.batchId,
+    this.ugoiraExport,
   });
 
   factory DownloadJob.create({
@@ -32,6 +34,8 @@ class DownloadJob {
     DownloadValidationOptions validation = const DownloadValidationOptions(),
     String? thumbnailUrl,
     String? title,
+    String? batchId,
+    UgoiraExport? ugoiraExport,
   }) {
     final now = DateTime.now();
     return DownloadJob(
@@ -39,6 +43,8 @@ class DownloadJob {
         sourceId: sourceId,
         postId: postId ?? resourceId.toString(),
         variantIndex: variantIndex,
+        batchId: batchId,
+        ugoiraExport: ugoiraExport,
       ),
       resourceId: resourceId,
       sourceId: sourceId,
@@ -52,9 +58,13 @@ class DownloadJob {
       thumbnailUrl: thumbnailUrl,
       title: title,
       createdAt: now,
+      batchId: batchId,
+      ugoiraExport: ugoiraExport,
     );
   }
 
+  /// Fixed when queued; retries never silently adopt a changed preference.
+  final UgoiraExport? ugoiraExport;
   final String id;
   final int resourceId;
   final String sourceId;
@@ -67,6 +77,7 @@ class DownloadJob {
   final SaveTarget saveTarget;
   final String? thumbnailUrl;
   final String? title;
+  final String? batchId;
   final DateTime createdAt;
 
   DownloadJob copyWith({
@@ -86,6 +97,7 @@ class DownloadJob {
   }) {
     return DownloadJob(
       id: id ?? this.id,
+      ugoiraExport: ugoiraExport,
       resourceId: resourceId ?? this.resourceId,
       sourceId: sourceId ?? this.sourceId,
       postId: postId ?? this.postId,
@@ -98,6 +110,7 @@ class DownloadJob {
       thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
       title: title ?? this.title,
       createdAt: createdAt ?? this.createdAt,
+      batchId: batchId,
     );
   }
 
@@ -116,6 +129,8 @@ class DownloadJob {
       'thumbnailUrl': thumbnailUrl,
       'title': title,
       'createdAt': createdAt.millisecondsSinceEpoch,
+      'batchId': batchId,
+      'ugoiraExport': ugoiraExport?.name,
     };
   }
 }
@@ -124,8 +139,15 @@ String downloadJobId({
   required String sourceId,
   required String postId,
   required int variantIndex,
+  String? batchId,
+  UgoiraExport? ugoiraExport,
 }) {
   String encode(String value) =>
       base64Url.encode(utf8.encode(value)).replaceAll('=', '');
-  return 'booru_${encode(sourceId)}_${encode(postId)}_variant_$variantIndex';
+  final resource =
+      'booru_${encode(sourceId)}_${encode(postId)}_variant_$variantIndex';
+  final format = ugoiraExport == null
+      ? resource
+      : '${resource}_${ugoiraExport.name}';
+  return batchId == null ? format : '${format}_batch_${encode(batchId)}';
 }

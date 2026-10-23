@@ -27,8 +27,10 @@ pub fn rules(source: &str) -> BooruResult<Rules> {
             &["donmai.us", "danbooru.donmai.us", "cdn.donmai.us"],
             &["danbooru.donmai.us", "cdn.donmai.us"],
         ),
+        // WebView may issue CDN clearance for the parent domain. Accept its
+        // cookie material while keeping navigation and requests on exact hosts.
         "aibooru" => (
-            &["aibooru.online", "cdn.aibooru.download"],
+            &["aibooru.online", "aibooru.download", "cdn.aibooru.download"],
             &["aibooru.online", "cdn.aibooru.download"],
         ),
         "gelbooru" => (

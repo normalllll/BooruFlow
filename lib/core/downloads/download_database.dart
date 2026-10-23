@@ -5,10 +5,14 @@ import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../legacy_upgrade.dart';
+
 part 'download_database.g.dart';
 
 class DownloadJobs extends Table {
   TextColumn get id => text()();
+  TextColumn get ugoiraExport => text().nullable()();
+  TextColumn get batchId => text().nullable()();
   IntColumn get resourceId => integer()();
   TextColumn get sourceId => text()();
   TextColumn get postId => text()();
@@ -52,7 +56,13 @@ class DownloadDatabase extends _$DownloadDatabase {
     : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => legacyDownloadSchemaVersion;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: (migrator, from, to) =>
+        upgradeDownloadDatabase(this, migrator, from, to),
+  );
 }
 
 LazyDatabase _openConnection() {

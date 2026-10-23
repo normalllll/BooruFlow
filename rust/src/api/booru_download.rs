@@ -1,12 +1,19 @@
 use crate::api::booru_models::{Checksum, HttpHeader, MediaKind, MediaVariantKind};
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum UgoiraExport {
+    LosslessWebp,
+    OriginalZip,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DownloadRequest {
     pub source_id: String,
     pub post_id: String,
     pub variant: MediaVariantKind,
     pub download_root: String,
+    pub ugoira_export: Option<UgoiraExport>,
 }
 
 #[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -24,10 +31,21 @@ pub struct PreparedDownload {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum DownloadEvent {
+    Failed {
+        error: crate::booru::error::BooruError,
+    },
+    Paused,
+    Resumed {
+        restarted: bool,
+    },
     Progress {
         received_bytes_decimal: String,
         total_bytes_decimal: Option<String>,
         progress: f64,
+    },
+    Encoding {
+        completed_frames: u32,
+        total_frames: u32,
     },
     Done {
         path: String,

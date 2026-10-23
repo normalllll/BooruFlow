@@ -11,3 +11,4 @@ pub(crate) mod registry;
 pub(crate) mod source;
 pub(crate) mod user_agent;
 pub(crate) mod web_challenge;
+pub(crate) mod web_links;

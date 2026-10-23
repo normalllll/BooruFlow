@@ -21,6 +21,28 @@ mod tests {
     use reqwest::header::{HeaderValue, CONTENT_TYPE};
 
     #[test]
+    fn cloudflare_block_page_does_not_request_another_challenge() {
+        let mut headers = HeaderMap::new();
+        headers.insert("server", HeaderValue::from_static("cloudflare"));
+        headers.insert("cf-ray", HeaderValue::from_static("test-ray"));
+        headers.insert(
+            CONTENT_TYPE,
+            HeaderValue::from_static("text/html; charset=UTF-8"),
+        );
+        // Minimal public page markers observed for image 403 responses. A WAF
+        // block is not a challenge and must not send users into verification.
+        let block = br#"<!doctype html><title>Attention Required! | Cloudflare</title>
+            <div id="cf-error-details"><h1>Sorry, you have been blocked</h1>
+            <p>Please enable cookies.</p><h2>Why have I been blocked?</h2>
+            <p>Cloudflare Ray ID:</p></div>"#;
+        assert!(!looks_like_challenge(&headers, block, false));
+        assert!(!looks_like_challenge(&headers, block, true));
+        // Real challenge evidence still takes precedence over generic page text.
+        headers.insert("cf-mitigated", HeaderValue::from_static("challenge"));
+        assert!(looks_like_challenge(&headers, block, false));
+    }
+
+    #[test]
     fn detects_headers_and_html_for_json() {
         let mut headers = HeaderMap::new();
         headers.insert("cf-mitigated", HeaderValue::from_static("challenge"));

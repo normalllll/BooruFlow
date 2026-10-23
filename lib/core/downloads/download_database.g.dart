@@ -18,6 +18,28 @@ class $DownloadJobsTable extends DownloadJobs
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _ugoiraExportMeta = const VerificationMeta(
+    'ugoiraExport',
+  );
+  @override
+  late final GeneratedColumn<String> ugoiraExport = GeneratedColumn<String>(
+    'ugoira_export',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _batchIdMeta = const VerificationMeta(
+    'batchId',
+  );
+  @override
+  late final GeneratedColumn<String> batchId = GeneratedColumn<String>(
+    'batch_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _resourceIdMeta = const VerificationMeta(
     'resourceId',
   );
@@ -162,6 +184,8 @@ class $DownloadJobsTable extends DownloadJobs
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    ugoiraExport,
+    batchId,
     resourceId,
     sourceId,
     postId,
@@ -192,6 +216,21 @@ class $DownloadJobsTable extends DownloadJobs
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
       context.missing(_idMeta);
+    }
+    if (data.containsKey('ugoira_export')) {
+      context.handle(
+        _ugoiraExportMeta,
+        ugoiraExport.isAcceptableOrUnknown(
+          data['ugoira_export']!,
+          _ugoiraExportMeta,
+        ),
+      );
+    }
+    if (data.containsKey('batch_id')) {
+      context.handle(
+        _batchIdMeta,
+        batchId.isAcceptableOrUnknown(data['batch_id']!, _batchIdMeta),
+      );
     }
     if (data.containsKey('resource_id')) {
       context.handle(
@@ -313,6 +352,14 @@ class $DownloadJobsTable extends DownloadJobs
         DriftSqlType.string,
         data['${effectivePrefix}id'],
       )!,
+      ugoiraExport: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ugoira_export'],
+      ),
+      batchId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}batch_id'],
+      ),
       resourceId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}resource_id'],
@@ -376,6 +423,8 @@ class $DownloadJobsTable extends DownloadJobs
 
 class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   final String id;
+  final String? ugoiraExport;
+  final String? batchId;
   final int resourceId;
   final String sourceId;
   final String postId;
@@ -391,6 +440,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   final int updatedAt;
   const DownloadJob({
     required this.id,
+    this.ugoiraExport,
+    this.batchId,
     required this.resourceId,
     required this.sourceId,
     required this.postId,
@@ -409,6 +460,12 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
+    if (!nullToAbsent || ugoiraExport != null) {
+      map['ugoira_export'] = Variable<String>(ugoiraExport);
+    }
+    if (!nullToAbsent || batchId != null) {
+      map['batch_id'] = Variable<String>(batchId);
+    }
     map['resource_id'] = Variable<int>(resourceId);
     map['source_id'] = Variable<String>(sourceId);
     map['post_id'] = Variable<String>(postId);
@@ -432,6 +489,12 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   DownloadJobsCompanion toCompanion(bool nullToAbsent) {
     return DownloadJobsCompanion(
       id: Value(id),
+      ugoiraExport: ugoiraExport == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ugoiraExport),
+      batchId: batchId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(batchId),
       resourceId: Value(resourceId),
       sourceId: Value(sourceId),
       postId: Value(postId),
@@ -459,6 +522,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return DownloadJob(
       id: serializer.fromJson<String>(json['id']),
+      ugoiraExport: serializer.fromJson<String?>(json['ugoiraExport']),
+      batchId: serializer.fromJson<String?>(json['batchId']),
       resourceId: serializer.fromJson<int>(json['resourceId']),
       sourceId: serializer.fromJson<String>(json['sourceId']),
       postId: serializer.fromJson<String>(json['postId']),
@@ -481,6 +546,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
+      'ugoiraExport': serializer.toJson<String?>(ugoiraExport),
+      'batchId': serializer.toJson<String?>(batchId),
       'resourceId': serializer.toJson<int>(resourceId),
       'sourceId': serializer.toJson<String>(sourceId),
       'postId': serializer.toJson<String>(postId),
@@ -499,6 +566,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
 
   DownloadJob copyWith({
     String? id,
+    Value<String?> ugoiraExport = const Value.absent(),
+    Value<String?> batchId = const Value.absent(),
     int? resourceId,
     String? sourceId,
     String? postId,
@@ -514,6 +583,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     int? updatedAt,
   }) => DownloadJob(
     id: id ?? this.id,
+    ugoiraExport: ugoiraExport.present ? ugoiraExport.value : this.ugoiraExport,
+    batchId: batchId.present ? batchId.value : this.batchId,
     resourceId: resourceId ?? this.resourceId,
     sourceId: sourceId ?? this.sourceId,
     postId: postId ?? this.postId,
@@ -531,6 +602,10 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   DownloadJob copyWithCompanion(DownloadJobsCompanion data) {
     return DownloadJob(
       id: data.id.present ? data.id.value : this.id,
+      ugoiraExport: data.ugoiraExport.present
+          ? data.ugoiraExport.value
+          : this.ugoiraExport,
+      batchId: data.batchId.present ? data.batchId.value : this.batchId,
       resourceId: data.resourceId.present
           ? data.resourceId.value
           : this.resourceId,
@@ -563,6 +638,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   String toString() {
     return (StringBuffer('DownloadJob(')
           ..write('id: $id, ')
+          ..write('ugoiraExport: $ugoiraExport, ')
+          ..write('batchId: $batchId, ')
           ..write('resourceId: $resourceId, ')
           ..write('sourceId: $sourceId, ')
           ..write('postId: $postId, ')
@@ -583,6 +660,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   @override
   int get hashCode => Object.hash(
     id,
+    ugoiraExport,
+    batchId,
     resourceId,
     sourceId,
     postId,
@@ -602,6 +681,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
       identical(this, other) ||
       (other is DownloadJob &&
           other.id == this.id &&
+          other.ugoiraExport == this.ugoiraExport &&
+          other.batchId == this.batchId &&
           other.resourceId == this.resourceId &&
           other.sourceId == this.sourceId &&
           other.postId == this.postId &&
@@ -619,6 +700,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
 
 class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
   final Value<String> id;
+  final Value<String?> ugoiraExport;
+  final Value<String?> batchId;
   final Value<int> resourceId;
   final Value<String> sourceId;
   final Value<String> postId;
@@ -635,6 +718,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
   final Value<int> rowid;
   const DownloadJobsCompanion({
     this.id = const Value.absent(),
+    this.ugoiraExport = const Value.absent(),
+    this.batchId = const Value.absent(),
     this.resourceId = const Value.absent(),
     this.sourceId = const Value.absent(),
     this.postId = const Value.absent(),
@@ -652,6 +737,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
   });
   DownloadJobsCompanion.insert({
     required String id,
+    this.ugoiraExport = const Value.absent(),
+    this.batchId = const Value.absent(),
     required int resourceId,
     required String sourceId,
     required String postId,
@@ -676,6 +763,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
        updatedAt = Value(updatedAt);
   static Insertable<DownloadJob> custom({
     Expression<String>? id,
+    Expression<String>? ugoiraExport,
+    Expression<String>? batchId,
     Expression<int>? resourceId,
     Expression<String>? sourceId,
     Expression<String>? postId,
@@ -693,6 +782,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (ugoiraExport != null) 'ugoira_export': ugoiraExport,
+      if (batchId != null) 'batch_id': batchId,
       if (resourceId != null) 'resource_id': resourceId,
       if (sourceId != null) 'source_id': sourceId,
       if (postId != null) 'post_id': postId,
@@ -713,6 +804,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
 
   DownloadJobsCompanion copyWith({
     Value<String>? id,
+    Value<String?>? ugoiraExport,
+    Value<String?>? batchId,
     Value<int>? resourceId,
     Value<String>? sourceId,
     Value<String>? postId,
@@ -730,6 +823,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
   }) {
     return DownloadJobsCompanion(
       id: id ?? this.id,
+      ugoiraExport: ugoiraExport ?? this.ugoiraExport,
+      batchId: batchId ?? this.batchId,
       resourceId: resourceId ?? this.resourceId,
       sourceId: sourceId ?? this.sourceId,
       postId: postId ?? this.postId,
@@ -752,6 +847,12 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<String>(id.value);
+    }
+    if (ugoiraExport.present) {
+      map['ugoira_export'] = Variable<String>(ugoiraExport.value);
+    }
+    if (batchId.present) {
+      map['batch_id'] = Variable<String>(batchId.value);
     }
     if (resourceId.present) {
       map['resource_id'] = Variable<int>(resourceId.value);
@@ -802,6 +903,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
   String toString() {
     return (StringBuffer('DownloadJobsCompanion(')
           ..write('id: $id, ')
+          ..write('ugoiraExport: $ugoiraExport, ')
+          ..write('batchId: $batchId, ')
           ..write('resourceId: $resourceId, ')
           ..write('sourceId: $sourceId, ')
           ..write('postId: $postId, ')
@@ -1518,6 +1621,8 @@ abstract class _$DownloadDatabase extends GeneratedDatabase {
 typedef $$DownloadJobsTableCreateCompanionBuilder =
     DownloadJobsCompanion Function({
       required String id,
+      Value<String?> ugoiraExport,
+      Value<String?> batchId,
       required int resourceId,
       required String sourceId,
       required String postId,
@@ -1536,6 +1641,8 @@ typedef $$DownloadJobsTableCreateCompanionBuilder =
 typedef $$DownloadJobsTableUpdateCompanionBuilder =
     DownloadJobsCompanion Function({
       Value<String> id,
+      Value<String?> ugoiraExport,
+      Value<String?> batchId,
       Value<int> resourceId,
       Value<String> sourceId,
       Value<String> postId,
@@ -1588,6 +1695,16 @@ class $$DownloadJobsTableFilterComposer
   });
   ColumnFilters<String> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ugoiraExport => $composableBuilder(
+    column: $table.ugoiraExport,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get batchId => $composableBuilder(
+    column: $table.batchId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1696,6 +1813,16 @@ class $$DownloadJobsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get ugoiraExport => $composableBuilder(
+    column: $table.ugoiraExport,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get batchId => $composableBuilder(
+    column: $table.batchId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get resourceId => $composableBuilder(
     column: $table.resourceId,
     builder: (column) => ColumnOrderings(column),
@@ -1773,6 +1900,14 @@ class $$DownloadJobsTableAnnotationComposer
   });
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get ugoiraExport => $composableBuilder(
+    column: $table.ugoiraExport,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get batchId =>
+      $composableBuilder(column: $table.batchId, builder: (column) => column);
 
   GeneratedColumn<int> get resourceId => $composableBuilder(
     column: $table.resourceId,
@@ -1882,6 +2017,8 @@ class $$DownloadJobsTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
+                Value<String?> ugoiraExport = const Value.absent(),
+                Value<String?> batchId = const Value.absent(),
                 Value<int> resourceId = const Value.absent(),
                 Value<String> sourceId = const Value.absent(),
                 Value<String> postId = const Value.absent(),
@@ -1898,6 +2035,8 @@ class $$DownloadJobsTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => DownloadJobsCompanion(
                 id: id,
+                ugoiraExport: ugoiraExport,
+                batchId: batchId,
                 resourceId: resourceId,
                 sourceId: sourceId,
                 postId: postId,
@@ -1916,6 +2055,8 @@ class $$DownloadJobsTableTableManager
           createCompanionCallback:
               ({
                 required String id,
+                Value<String?> ugoiraExport = const Value.absent(),
+                Value<String?> batchId = const Value.absent(),
                 required int resourceId,
                 required String sourceId,
                 required String postId,
@@ -1932,6 +2073,8 @@ class $$DownloadJobsTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => DownloadJobsCompanion.insert(
                 id: id,
+                ugoiraExport: ugoiraExport,
+                batchId: batchId,
                 resourceId: resourceId,
                 sourceId: sourceId,
                 postId: postId,
@@ -1950,7 +2093,7 @@ class $$DownloadJobsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$DownloadJobsTable, DownloadJob>(table),
                   $$DownloadJobsTableReferences(db, table, e),
                 ),
               )
@@ -2389,7 +2532,7 @@ class $$DownloadStatesTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$DownloadStatesTable, DownloadState>(table),
                   $$DownloadStatesTableReferences(db, table, e),
                 ),
               )

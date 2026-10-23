@@ -1,7 +1,9 @@
+import 'package:booruflow/core/file_paths.dart';
+import 'package:path/path.dart' as p;
 import 'download_enums.dart';
 
 class SaveTarget {
-  const SaveTarget({required this.type, this.directory, this.subdirectory});
+  const SaveTarget({required this.type, this._directory, this._subdirectory});
 
   const SaveTarget.downloadsFolder({String? directory, String? subdirectory})
     : this(
@@ -17,8 +19,15 @@ class SaveTarget {
     : this(type: SaveTargetType.photos, subdirectory: subdirectory);
 
   final SaveTargetType type;
-  final String? directory;
-  final String? subdirectory;
+  final String? _directory, _subdirectory;
+  String? get directory =>
+      _directory == null ? null : normalizeLocalPath(_directory);
+  String? get subdirectory => _subdirectory == null
+      ? null
+      : normalizeLocalPath(
+          _subdirectory,
+          style: type == SaveTargetType.downloadsFolder ? null : p.Style.posix,
+        );
 
   Map<String, Object?> toJson() {
     return {
