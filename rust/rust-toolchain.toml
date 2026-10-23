@@ -1,6 +1,8 @@
 [toolchain]
 # native_toolchain_rust requires an exact channel version/date for reproducible builds.
-channel = "1.98.1"
+channel = "1.99.1"
+profile = "minimal"
+components = ["rustfmt", "clippy", "rust-src"]
 targets = [
   "aarch64-apple-darwin",
   "aarch64-apple-ios",
