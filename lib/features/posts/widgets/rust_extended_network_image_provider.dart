@@ -3,17 +3,20 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:booruflow/core/media/encoded_media_cache.dart';
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
-import 'package:booruflow/features/booru/services/booru_service.dart';
 import 'package:booruflow/src/rust/api/booru_download.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
-import 'package:extended_image/extended_image.dart'
-    show cacheImageFolderName, keyToMd5;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
-import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
+
+import 'jpeg_scan_buffer.dart';
+import 'progressive_image_stream.dart';
+
+/// Preview pixels use the shared LRU; full-resolution display pixels are live
+/// only, even when a source aliases its sample and original URLs.
+enum DecodedImageRetention { cached, liveOnly }
 
 @immutable
 final class RustExtendedNetworkImageProvider
@@ -24,7 +27,10 @@ final class RustExtendedNetworkImageProvider
     this.retries = 2,
     this.decodeWidth,
     this.reloadRevision = 0,
-    this.mediaStream,
+    this.firstFrameOnly = false,
+    this.progressive = false,
+    this.retention,
+    required this.mediaStream,
     this.cacheFile,
   }) : assert(retries >= 0),
        assert(decodeWidth == null || decodeWidth > 0);
@@ -34,8 +40,17 @@ final class RustExtendedNetworkImageProvider
   final int retries;
   final int? decodeWidth;
   final int reloadRevision;
-  @visibleForTesting
-  final Stream<MediaFetchEvent> Function(MediaRequest)? mediaStream;
+  final bool firstFrameOnly;
+  final bool progressive;
+  final DecodedImageRetention? retention;
+  DecodedImageRetention get decodedRetention =>
+      retention ??
+      (request.variant == MediaVariantKind.original
+          ? DecodedImageRetention.liveOnly
+          : DecodedImageRetention.cached);
+
+  /// Fetch with the same injected engine that prepared this request.
+  final Stream<MediaFetchEvent> Function(MediaRequest) mediaStream;
   @visibleForTesting
   final File? cacheFile;
 
@@ -55,35 +70,72 @@ final class RustExtendedNetworkImageProvider
     ImageDecoderCallback decode,
   ) {
     final chunks = StreamController<ImageChunkEvent>();
-    return MultiFrameImageStreamCompleter(
-      codec: _load(key, chunks, decode),
-      scale: scale,
-      chunkEvents: chunks.stream,
-      debugLabel:
-          '${request.sourceId}/${request.postId}/${request.variant.name}',
-      informationCollector: () => <DiagnosticsNode>[
-        DiagnosticsProperty<ImageProvider>('Image provider', this),
-        DiagnosticsProperty<String>('Source', request.sourceId),
-        DiagnosticsProperty<String>('Post', request.postId),
-      ],
-    );
+    final ImageStreamCompleter completer;
+    if (progressive && decodeWidth != null) {
+      completer = ProgressiveImageStreamCompleter(
+        load: (loading) => _load(key, chunks, decode, loading),
+        scale: scale,
+        chunkEvents: chunks.stream,
+        debugLabel:
+            '${request.sourceId}/${request.postId}/${request.variant.name}',
+        evictIncomplete: () {
+          final cache = PaintingBinding.instance.imageCache;
+          final status = cache.statusForKey(key);
+          // clear() removes pending listeners while iterating its pending map.
+          // Never re-enter that removal. Only completed preview entries need
+          // our eviction; Flutter already owns pending/live cleanup.
+          if (!status.pending && status.keepAlive) {
+            cache.evict(key, includeLive: false);
+          }
+        },
+      );
+    } else {
+      completer = MultiFrameImageStreamCompleter(
+        codec: _load(key, chunks, decode),
+        scale: scale,
+        chunkEvents: chunks.stream,
+        debugLabel:
+            '${request.sourceId}/${request.postId}/${request.variant.name}',
+        informationCollector: () => <DiagnosticsNode>[
+          DiagnosticsProperty<ImageProvider>('Image provider', this),
+          DiagnosticsProperty<String>('Source', request.sourceId),
+          DiagnosticsProperty<String>('Post', request.postId),
+        ],
+      );
+    }
+    if (decodedRetention == DecodedImageRetention.liveOnly) {
+      // Originals share their live completer across visible subscribers, but
+      // never retain decoded pixels after the final subscriber leaves. Encoded
+      // disk data remains available for export and the next display decode.
+      completer.addOnLastListenerRemovedCallback(() {
+        final cache = PaintingBinding.instance.imageCache;
+        if (!cache.statusForKey(key).pending) {
+          cache.evict(key, includeLive: false);
+        }
+      });
+    }
+    return completer;
   }
 
   Future<ui.Codec> _load(
     RustExtendedNetworkImageProvider key,
     StreamController<ImageChunkEvent> chunkEvents,
-    ImageDecoderCallback decode,
-  ) async {
+    ImageDecoderCallback decode, [
+    ProgressiveImageLoading? loading,
+  ]) async {
     try {
       final cached = await _readCache();
+      loading?.checkActive();
       if (cached != null) {
         try {
-          return await _decode(cached, decode, fromCache: true);
+          final codec = await _decode(cached, decode, fromCache: true);
+          return codec;
         } catch (_) {
           await _deleteCache();
         }
       }
-      final bytes = await _loadRust(chunkEvents);
+      final bytes = await _loadRust(chunkEvents, loading);
+      loading?.checkActive();
       // Codecs are lazy: creating one does not prove the first frame can decode.
       // Keep that frame for the image stream, and only cache validated bytes.
       final codec = await _decode(bytes, decode, fromCache: false);
@@ -91,8 +143,10 @@ final class RustExtendedNetworkImageProvider
         await _writeCache(bytes);
       }
       return codec;
+    } on ImageLoadCancelled {
+      rethrow;
     } catch (error, stack) {
-      scheduleMicrotask(() => PaintingBinding.instance.imageCache.evict(key));
+      PaintingBinding.instance.imageCache.evict(key);
       Error.throwWithStackTrace(switch (error) {
         MediaImageException() => error,
         _ => MediaImageException(
@@ -120,6 +174,11 @@ final class RustExtendedNetworkImageProvider
       fromCache: fromCache,
     );
     try {
+      // Engine JPEG decoding accepts an unfinished progressive scan. Such a
+      // preview is useful while downloading but cannot validate a cache file.
+      if (progressive && !_hasCompleteImageTrailer(bytes)) {
+        throw StateError('Incomplete image trailer');
+      }
       codec = await decode(
         await ui.ImmutableBuffer.fromUint8List(bytes),
         getTargetSize: switch (decodeWidth) {
@@ -134,7 +193,7 @@ final class RustExtendedNetworkImageProvider
         await _deleteCache();
         await evict();
         return failure(error);
-      });
+      }, firstFrameOnly: firstFrameOnly);
     } catch (error, stack) {
       codec?.dispose();
       Error.throwWithStackTrace(failure(error), stack);
@@ -143,40 +202,59 @@ final class RustExtendedNetworkImageProvider
 
   Future<Uint8List> _loadRust(
     StreamController<ImageChunkEvent> chunkEvents,
+    ProgressiveImageLoading? loading,
   ) async {
     Object? lastError;
     StackTrace? lastStack;
     for (var attempt = 0; attempt <= retries; attempt++) {
-      final builder = BytesBuilder(copy: false);
+      final builder = loading == null ? BytesBuilder(copy: false) : null;
+      var received = 0;
       try {
+        await loading?.begin(decodeWidth!);
         int? expectedBytes;
-        final stream =
-            mediaStream?.call(request) ??
-            BooruService.instance.engine.streamMedia(request: request);
-        await for (final event in stream.timeout(const Duration(seconds: 45))) {
-          switch (event) {
-            case MediaFetchEvent_Failed(:final error):
-              throw error;
-            case MediaFetchEvent_Chunk(
-              :final bytes,
-              :final receivedBytesDecimal,
-              :final totalBytesDecimal,
-            ):
-              builder.add(bytes);
-              expectedBytes =
-                  int.tryParse(totalBytesDecimal ?? '') ?? expectedBytes;
-              chunkEvents.add(
-                ImageChunkEvent(
-                  cumulativeBytesLoaded:
-                      int.tryParse(receivedBytesDecimal) ?? builder.length,
-                  expectedTotalBytes: int.tryParse(totalBytesDecimal ?? ''),
-                ),
-              );
+        final stream = mediaStream(request);
+        final iterator = StreamIterator(
+          stream.timeout(const Duration(seconds: 45)),
+        );
+        loading?.cancelStream = iterator.cancel;
+        loading?.checkActive();
+        try {
+          while (await iterator.moveNext()) {
+            loading?.checkActive();
+            final event = iterator.current;
+            switch (event) {
+              case MediaFetchEvent_Failed(:final error):
+                throw error;
+              case MediaFetchEvent_Chunk(
+                :final bytes,
+                :final receivedBytesDecimal,
+                :final totalBytesDecimal,
+              ):
+                received += bytes.length;
+                if (loading == null) {
+                  builder!.add(bytes);
+                } else {
+                  loading.add(bytes);
+                }
+                expectedBytes =
+                    int.tryParse(totalBytesDecimal ?? '') ?? expectedBytes;
+                chunkEvents.add(
+                  ImageChunkEvent(
+                    cumulativeBytesLoaded:
+                        int.tryParse(receivedBytesDecimal) ?? received,
+                    expectedTotalBytes: int.tryParse(totalBytesDecimal ?? ''),
+                  ),
+                );
+            }
           }
+        } finally {
+          await iterator.cancel();
+          loading?.cancelStream = null;
         }
-        final isEmpty = builder.isEmpty;
+        loading?.checkActive();
+        final isEmpty = received == 0;
         final isLengthMismatch =
-            expectedBytes != null && builder.length != expectedBytes;
+            expectedBytes != null && received != expectedBytes;
         if (isEmpty) {
           throw StateError(
             'Incomplete image: received 0 bytes, expected ${expectedBytes ?? "unknown"}',
@@ -187,11 +265,13 @@ final class RustExtendedNetworkImageProvider
           debugPrint(
             'Image download size mismatch. source=${request.sourceId} '
             'post=${request.postId} variant=${request.variant.name} '
-            'received=${builder.length} expected=$expected',
+            'received=$received expected=$expected',
           );
         }
-        return builder.takeBytes();
+        return loading == null ? builder!.takeBytes() : await loading.finish();
       } catch (error, stack) {
+        await loading?.endAttempt();
+        if (error is ImageLoadCancelled) rethrow;
         if (error is BooruError &&
             ![
               BooruErrorCode.network,
@@ -210,54 +290,16 @@ final class RustExtendedNetworkImageProvider
     Error.throwWithStackTrace(makeBooruErrorReadable(lastError!), lastStack!);
   }
 
-  Future<File> _cacheFile() async {
-    if (cacheFile != null) return cacheFile!;
-    final temp = await getTemporaryDirectory();
-    final directory = Directory(path.join(temp.path, cacheImageFolderName));
-    await directory.create(recursive: true);
-    return File(path.join(directory.path, keyToMd5(request.cacheKey)));
-  }
+  EncodedMediaCache get _cache => EncodedMediaCache(file: cacheFile);
+  Future<Uint8List?> _readCache() => _cache.read(request);
+  Future<void> _deleteCache() => _cache.remove(request);
+  Future<void> _writeCache(Uint8List bytes) => _cache.write(request, bytes);
 
-  Future<Uint8List?> _readCache() async {
-    if (!request.allowDiskCache) return null;
-    try {
-      final file = await _cacheFile();
-      return await file.exists() ? await file.readAsBytes() : null;
-    } on FileSystemException {
-      return null;
-    }
-  }
-
-  Future<void> _deleteCache() async {
-    if (!request.allowDiskCache) return;
-    try {
-      final file = await _cacheFile();
-      if (await file.exists()) await file.delete();
-    } on FileSystemException {
-      // Cache maintenance must not prevent an image retry.
-    }
-  }
-
-  Future<void> _writeCache(Uint8List bytes) async {
-    Directory? staging;
-    try {
-      final file = await _cacheFile();
-      staging = await file.parent.createTemp('.image-');
-      final temporary = File(path.join(staging.path, 'data'));
-      await temporary.writeAsBytes(bytes, flush: true);
-      await temporary.rename(file.path);
-    } on FileSystemException {
-      // A cache write failure must not discard a successfully decoded image.
-    } finally {
-      if (staging != null) {
-        try {
-          await staging.delete(recursive: true);
-        } on FileSystemException {
-          /* Best effort. */
-        }
-      }
-    }
-  }
+  /// Only a complete original PNG is eligible for direct clipboard bytes.
+  Future<Uint8List?> cachedOriginalPng() =>
+      request.variant == MediaVariantKind.original
+      ? _cache.readPng(request)
+      : Future.value(null);
 
   @override
   bool operator ==(Object other) =>
@@ -265,11 +307,19 @@ final class RustExtendedNetworkImageProvider
       other.request.cacheKey == request.cacheKey &&
       other.scale == scale &&
       other.decodeWidth == decodeWidth &&
-      other.reloadRevision == reloadRevision;
+      other.reloadRevision == reloadRevision &&
+      other.firstFrameOnly == firstFrameOnly &&
+      other.decodedRetention == decodedRetention;
 
   @override
-  int get hashCode =>
-      Object.hash(request.cacheKey, scale, decodeWidth, reloadRevision);
+  int get hashCode => Object.hash(
+    request.cacheKey,
+    scale,
+    decodeWidth,
+    reloadRevision,
+    firstFrameOnly,
+    decodedRetention,
+  );
 }
 
 final class MediaImageException implements Exception {
@@ -303,16 +353,35 @@ final class MediaImageException implements Exception {
   }
 }
 
+/// Keep decode/transport failures distinct without interpreting translated text.
+Object mediaImageCause(Object error) {
+  final cause = error is MediaImageException ? error.cause : error;
+  return cause is BooruReadableException ? cause.cause : cause;
+}
+
+bool isMediaImageDecodeFailure(Object error) {
+  final cause = mediaImageCause(error);
+  return error is MediaImageException && error.stage == 'decode' ||
+      cause is BooruError &&
+          cause.userMessageKey == 'booru.error.imageDecodeFailed';
+}
+
 /// Replays the validated first frame without losing animation timing/frames.
 final class _ValidatedCodec implements ui.Codec {
-  _ValidatedCodec(this.delegate, this.firstFrame, this.onError);
+  _ValidatedCodec(
+    this.delegate,
+    this.firstFrame,
+    this.onError, {
+    required this.firstFrameOnly,
+  });
+  final bool firstFrameOnly;
   final ui.Codec delegate;
   ui.FrameInfo? firstFrame;
   final Future<Object> Function(Object) onError;
   @override
-  int get frameCount => delegate.frameCount;
+  int get frameCount => firstFrameOnly ? 1 : delegate.frameCount;
   @override
-  int get repetitionCount => delegate.repetitionCount;
+  int get repetitionCount => firstFrameOnly ? 0 : delegate.repetitionCount;
   @override
   Future<ui.FrameInfo> getNextFrame() async {
     final frame = firstFrame;
@@ -333,4 +402,27 @@ final class _ValidatedCodec implements ui.Codec {
     firstFrame = null;
     delegate.dispose();
   }
+}
+
+// Only the unmodified transport bytes reach validation. Temporary JPEG EOI
+// markers live solely in the background JPEG scan accumulator.
+bool _hasCompleteImageTrailer(Uint8List bytes) {
+  if (bytes.length >= 3 &&
+      bytes[0] == 255 &&
+      bytes[1] == 216 &&
+      bytes[2] == 255) {
+    return bytes.length >= 4 &&
+        bytes[bytes.length - 2] == 255 &&
+        bytes.last == 217;
+  }
+  if (bytes.length >= 8 &&
+      bytes[0] == 137 &&
+      bytes[1] == 80 &&
+      bytes[2] == 78 &&
+      bytes[3] == 71) {
+    const end = [0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130];
+    return bytes.length >= end.length &&
+        listEquals(bytes.sublist(bytes.length - end.length), end);
+  }
+  return true;
 }

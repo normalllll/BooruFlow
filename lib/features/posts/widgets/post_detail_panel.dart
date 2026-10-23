@@ -1,494 +1,413 @@
+import 'package:booruflow/app/frost_config.dart';
+import 'package:booruflow/core/media/image_clipboard.dart';
+import 'package:booruflow/features/downloads/logic.dart';
 import 'package:booruflow/features/posts/models/post.dart';
-import 'package:booruflow/features/posts/post_attribution.dart';
-import 'package:booruflow/features/tags/translated_tag.dart';
+import 'package:booruflow/features/posts/post_actions.dart';
+import 'package:booruflow/features/search/logic.dart';
+import 'package:booruflow/features/search/user_tags_page.dart';
+import 'package:booruflow/features/search/widgets/search_tag_widgets.dart';
+import 'package:booruflow/features/tags/tag_presentation.dart';
+import 'package:booruflow/features/tags/tag_translations_service.dart';
+import 'package:booruflow/intl/number_format.dart';
 import 'package:booruflow/intl/translations.g.dart';
-import 'package:booruflow/shared/widgets/interaction_controls.dart';
+import 'package:booruflow/shared/app_navigation.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frost_ui/frost_ui.dart';
+import 'package:intl/intl.dart';
 
-class PostDetailPanel extends StatelessWidget {
-  const PostDetailPanel({
-    super.key,
+import '../displayed_media_frame.dart';
+import '../stage_image_presentation.dart';
+
+String postRatingLabel(ContentRating rating) => switch (rating) {
+  ContentRating.general => t.postDetail.ratingGeneral,
+  ContentRating.sensitive => t.postDetail.ratingSensitive,
+  ContentRating.questionable => t.postDetail.ratingQuestionable,
+  ContentRating.explicit => t.postDetail.ratingExplicit,
+  ContentRating.unknown => t.postDetail.ratingUnknown,
+};
+
+String postDate(Post post, {bool full = false}) {
+  final date = DateTime.tryParse(post.data.createdAtIso8601 ?? '')?.toLocal();
+  if (date == null) return t.generic.notFound;
+  final locale = LocaleSettings.currentLocale.languageTag;
+  final format = full
+      ? DateFormat.yMd(locale).add_jm()
+      : DateFormat.yMd(locale);
+  return format.format(date);
+}
+
+String postInformationTitle(WidgetRef ref, Post post) {
+  ref.watch(userTagsProvider);
+  final repository = ref.watch(tagSuggestionRepositoryProvider);
+  return postCreator(
+    post,
+    translate: (raw) => distinctTagTranslation(
+      raw,
+      repository.displayName(
+        post.sourceId,
+        LocaleSettings.currentLocale.languageTag,
+        raw,
+      ),
+    ),
+  );
+}
+
+class PostPrimaryInformation extends ConsumerWidget {
+  const PostPrimaryInformation({required this.post, super.key});
+  final Post post;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      FrostText(postInformationTitle(ref, post), role: FrostTextRole.title1),
+      if (post.createdAt != 0 || postCopyrightMetadata(post).isNotEmpty) ...[
+        const SizedBox(height: FrostGap.inline),
+        FrostMetaLine(
+          items: [
+            ...postCopyrightMetadata(post),
+            if (post.createdAt != 0)
+              t.postDetail.uploadedAt(date: postDate(post)),
+          ],
+        ),
+      ],
+    ],
+  );
+}
+
+class PostDetailActions extends ConsumerWidget {
+  const PostDetailActions({
     required this.post,
-    required this.scrollable,
-    required this.onOpenImage,
-    required this.onDownload,
-    required this.onOpenSource,
-    required this.onCopy,
-    required this.onTagTap,
+    required this.onOpen,
+    this.displayedFrame,
+    this.presentation,
+    super.key,
   });
-
   final Post post;
-  final bool scrollable;
-  final VoidCallback onOpenImage;
-  final VoidCallback onDownload;
-  final ValueChanged<String> onOpenSource;
-  final ValueChanged<String> onCopy;
-  final ValueChanged<String> onTagTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final tags = post.tags.split(' ').where((tag) => tag.isNotEmpty).toList()
-      ..sort((a, b) => a.length.compareTo(b.length));
-    final sourceIsUrl = _isUrl(post.source);
-    final content = <Widget>[
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Text(
-              '#${post.id}',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-            ),
-          ),
-          if (post.rating != ContentRating.general) ...[
-            const SizedBox(width: 8),
-            PostRatingBadge(rating: post.rating),
-          ],
-        ],
-      ),
-      const SizedBox(height: 6),
-      Row(
-        children: [
-          Icon(
-            Icons.person_outline,
-            size: 16,
-            color: colorScheme.onSurfaceVariant,
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              post.authorLabel,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 6),
-      Row(
-        children: [
-          Tooltip(
-            message: t.postDetail.imageSource,
-            child: Icon(
-              Icons.public,
-              size: 16,
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              post.sourceName,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-        ],
-      ),
-      if (post.source.trim().isNotEmpty)
-        _MetadataRow(
-          label: t.postDetail.source,
-          icon: Icons.link,
-          value: post.source,
-          onTap: sourceIsUrl ? () => onOpenSource(post.source) : null,
-          onCopy: () => onCopy(post.source),
-        ),
-      const SizedBox(height: 12),
-      _StatsStrip(post: post),
-      const SizedBox(height: 18),
-      _SectionTitle(title: t.postDetail.tags, icon: Icons.tag_outlined),
-      const SizedBox(height: 8),
-      if (tags.isEmpty)
-        Text(
-          t.generic.notFound,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
-        )
-      else
-        Wrap(
-          spacing: 6,
-          runSpacing: 6,
-          children: [
-            for (final tag in tags)
-              GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTap: () => onTagTap(tag),
-                onLongPress: () => onCopy(tag),
-                child: TranslatedTag(text: tag),
-              ),
-          ],
-        ),
-      const SizedBox(height: 18),
-      _SectionTitle(title: t.postDetail.details, icon: Icons.info_outline),
-      const SizedBox(height: 4),
-      _MetadataRow(label: 'ID', value: post.id, onCopy: () => onCopy(post.id)),
-      _MetadataRow(
-        label: t.postDetail.createdAt,
-        value: _formatDateTime(post.createdAt),
-      ),
-      _MetadataRow(label: t.postDetail.author, value: post.authorLabel),
-      _MetadataRow(label: t.postDetail.width, value: '${post.width} px'),
-      _MetadataRow(label: t.postDetail.height, value: '${post.height} px'),
-      _MetadataRow(
-        label: t.postDetail.fileType,
-        value: post.fileExt.toUpperCase(),
-      ),
-      _MetadataRow(
-        label: t.postDetail.rating,
-        value: _ratingLabel(post.rating),
-      ),
-      if (post.parentId != null)
-        _MetadataRow(label: t.postDetail.parent, value: '${post.parentId}'),
-      _MetadataRow(
-        label: t.postDetail.hasChildren,
-        value: '${post.hasChildren}',
-      ),
-      const SizedBox(height: 18),
-      _SectionTitle(
-        title: t.postDetail.actions,
-        icon: Icons.touch_app_outlined,
-      ),
-      const SizedBox(height: 8),
-      _ActionButtons(onDownload: onDownload, onOpenImage: onOpenImage),
-    ];
-
-    final body = scrollable
-        ? ListView(
-            padding: const EdgeInsets.fromLTRB(14, 14, 14, 24),
-            children: content,
-          )
-        : Padding(
-            padding: const EdgeInsets.fromLTRB(14, 16, 14, 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: content,
-            ),
-          );
-    return ColoredBox(color: colorScheme.surface, child: body);
-  }
-}
-
-class _StatsStrip extends StatelessWidget {
-  const _StatsStrip({required this.post});
-
-  final Post post;
-
-  @override
-  Widget build(BuildContext context) {
-    final dimensions = '${post.width}×${post.height}';
-
-    return Row(
-      children: [
-        Expanded(
-          child: _StatTile(
-            icon: Icons.aspect_ratio_outlined,
-            label: t.postDetail.size,
-            value: dimensions,
-          ),
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: _StatTile(
-            icon: Icons.favorite_border,
-            label: t.postDetail.score,
-            value: '${post.score}',
-          ),
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: _StatTile(
-            icon: Icons.data_usage_outlined,
-            label: t.postDetail.size,
-            value: '${(post.fileSize / 1024 / 1024).toStringAsFixed(1)} MB',
-          ),
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: _StatTile(
-            icon: Icons.insert_drive_file_outlined,
-            label: t.postDetail.fileType,
-            value: post.fileExt.toUpperCase(),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ActionButtons extends StatelessWidget {
-  const _ActionButtons({required this.onDownload, required this.onOpenImage});
-
-  final VoidCallback onDownload;
-  final VoidCallback onOpenImage;
-
-  @override
-  Widget build(BuildContext context) {
-    final downloadButton = AppButton(
-      label: t.postDetail.download,
-      kind: AppButtonKind.primary,
-      onPressed: onDownload,
-      icon: Icons.download_outlined,
-    );
-    final openButton = AppButton(
-      label: t.postDetail.viewOriginal,
-      onPressed: onOpenImage,
-      icon: Icons.zoom_out_map_outlined,
-    );
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth < 340) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [downloadButton, const SizedBox(height: 8), openButton],
-          );
-        }
-        return Row(
-          children: [
-            Expanded(child: downloadButton),
-            const SizedBox(width: 8),
-            Expanded(child: openButton),
-          ],
+  final VoidCallback onOpen;
+  final DisplayedMediaFrame? displayedFrame;
+  final StageImagePresentation? presentation;
+  Future<void> _copy(BuildContext context, WidgetRef ref) =>
+      performPostAction(context, () async {
+        await copyDisplayedPostImage(
+          context,
+          displayedFrame!,
+          post.postKey,
+          clipboard: ref.read(imageClipboardProvider),
         );
-      },
-    );
-  }
-}
-
-class _StatTile extends StatelessWidget {
-  const _StatTile({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Tooltip(
-      message: '$label: $value',
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: colorScheme.outlineVariant),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 7),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 14, color: colorScheme.onSurfaceVariant),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  height: 1,
-                ),
-              ),
-            ],
+      });
+  Widget _download(WidgetRef ref, {required bool text}) => text
+      ? FrostButton(
+          label: t.postDetail.download,
+          icon: appIcons.download,
+          variant: FrostButtonVariant.prominent,
+          onPressedAsync: () => ref.read(booruDownloadsProvider).add(post),
+        )
+      : FrostButton.icon(
+          label: t.postDetail.download,
+          icon: appIcons.download,
+          style: FrostIconButtonStyle.standard,
+          onPressedAsync: () => ref.read(booruDownloadsProvider).add(post),
+        );
+  Widget _actions(
+    BuildContext context,
+    WidgetRef ref, {
+    required bool downloadText,
+    required bool originalText,
+  }) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      _download(ref, text: downloadText),
+      const SizedBox(width: FrostGap.related),
+      if (presentation?.canUpgrade(post) ?? true) ...[
+        if (originalText)
+          FrostButton(
+            label: t.postDetail.viewOriginal,
+            icon: appIcons.fullscreen,
+            loading: presentation?.loadingOriginal(post) ?? false,
+            onPressed: onOpen,
+          )
+        else
+          FrostButton.icon(
+            label: t.postDetail.viewOriginal,
+            icon: appIcons.fullscreen,
+            style: FrostIconButtonStyle.standard,
+            loading: presentation?.loadingOriginal(post) ?? false,
+            onPressed: onOpen,
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _MetadataRow extends StatelessWidget {
-  const _MetadataRow({
-    required this.label,
-    required this.value,
-    this.icon,
-    this.onTap,
-    this.onCopy,
-  });
-
-  final String label;
-  final String value;
-  final IconData? icon;
-  final VoidCallback? onTap;
-  final VoidCallback? onCopy;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final valueWidget = Text(
-      value,
-      maxLines: 2,
-      overflow: TextOverflow.ellipsis,
-      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-        color: switch (onTap) {
-          null => colorScheme.onSurface,
-          _ => colorScheme.primary,
-        },
-        decoration: switch (onTap) {
-          null => null,
-          _ => TextDecoration.underline,
-        },
-        decorationColor: colorScheme.primary,
-      ),
-    );
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          if (icon != null) ...[
-            Tooltip(
-              message: label,
-              child: Icon(icon, size: 16, color: colorScheme.onSurfaceVariant),
-            ),
-            const SizedBox(width: 6),
-          ] else
-            SizedBox(
-              width: 94,
-              child: Text(
-                label,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-          Expanded(
-            child: switch (onTap) {
-              null => valueWidget,
-              _ => InkWell(onTap: onTap, child: valueWidget),
-            },
-          ),
-          if (onCopy != null) ...[
-            const SizedBox(width: 4),
-            AppIconButton(
-              visualDensity: VisualDensity.compact,
-              constraints: const BoxConstraints.tightFor(width: 32, height: 32),
-              padding: EdgeInsets.zero,
-              onPressed: onCopy,
-              icon: const Icon(Icons.content_copy_outlined, size: 16),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({required this.title, required this.icon});
-
-  final String title;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: colorScheme.onSurfaceVariant),
-        const SizedBox(width: 6),
-        Text(
-          title,
-          style: Theme.of(
-            context,
-          ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
-        ),
+        const SizedBox(width: FrostGap.related),
       ],
-    );
-  }
-}
-
-class PostRatingBadge extends StatelessWidget {
-  const PostRatingBadge({super.key, required this.rating});
-
-  final ContentRating rating;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isExplicit = rating == ContentRating.explicit;
-    final background = isExplicit
-        ? const Color(0xFFE53935)
-        : colorScheme.surfaceContainerHighest;
-    final foreground = isExplicit ? Colors.white : colorScheme.onSurfaceVariant;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(6),
-        border: isExplicit
+      FrostButton.icon(
+        label: t.discovery.copyImage,
+        tooltip: displayedFrame?.readyFor(post.postKey) == true
             ? null
-            : Border.all(color: colorScheme.outlineVariant),
-        boxShadow: isExplicit
-            ? const [
-                BoxShadow(
-                  color: Color(0x52000000),
-                  blurRadius: 8,
-                  offset: Offset(0, 2),
-                ),
-              ]
+            : t.generic.loading,
+        icon: appIcons.copy,
+        style: FrostIconButtonStyle.standard,
+        loading: displayedFrame?.copying ?? false,
+        onPressed:
+            ref.watch(imageClipboardProvider).supportsImages &&
+                displayedFrame?.readyFor(post.postKey) == true
+            ? () => _copy(context, ref)
             : null,
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isExplicit ? Icons.explicit_outlined : Icons.shield_outlined,
-              size: 14,
-              color: foreground,
-            ),
-            const SizedBox(width: 5),
-            Text(
-              _ratingLabel(rating),
-              style: TextStyle(
-                color: foreground,
-                fontWeight: FontWeight.w700,
-                height: 1,
-              ),
-            ),
-          ],
+    ],
+  );
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => ListenableBuilder(
+    listenable: Listenable.merge([displayedFrame, presentation]),
+    builder: (context, _) => FrostFit(
+      candidates: [
+        (_) => _actions(context, ref, downloadText: true, originalText: true),
+        (_) => _actions(context, ref, downloadText: true, originalText: false),
+        (_) => _actions(context, ref, downloadText: false, originalText: false),
+        (_) => SingleChildScrollView(
+          primary: false,
+          scrollDirection: Axis.horizontal,
+          child: _actions(
+            context,
+            ref,
+            downloadText: false,
+            originalText: false,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+List<FrostModuleGridItem> postInformationModules(Post post) {
+  final size = post.fileSize;
+  final dimensions = post.dimensions;
+  final unit = size >= 1024 * 1024 ? 'MB' : 'KB';
+  final amount = size / (size >= 1024 * 1024 ? 1024 * 1024 : 1024);
+  final fileSize = NumberFormat.decimalPatternDigits(
+    locale: LocaleSettings.currentLocale.languageTag,
+    decimalDigits: 1,
+  ).format(amount);
+  return [
+    if (dimensions case (final width, final height))
+      FrostModuleGridItem(
+        child: FrostModule(
+          key: const ValueKey('dimensions'),
+          title: t.postDetail.dimensions,
+          value: '${formatCount(width)} × ${formatCount(height)}',
         ),
       ),
+    if (size > 0)
+      FrostModuleGridItem(
+        child: FrostModule(
+          key: const ValueKey('file-size'),
+          title: t.postDetail.size,
+          value: '$fileSize $unit',
+        ),
+      ),
+    if (post.data.score != null)
+      FrostModuleGridItem(
+        child: FrostModule(
+          key: const ValueKey('score'),
+          title: t.postDetail.score,
+          value: formatCount(post.score),
+        ),
+      ),
+    if (post.rating != ContentRating.unknown)
+      FrostModuleGridItem(
+        child: FrostModule(
+          key: const ValueKey('rating'),
+          title: t.postDetail.rating,
+          value: postRatingLabel(post.rating),
+        ),
+      ),
+  ];
+}
+
+class PostTagsModule extends ConsumerWidget {
+  const PostTagsModule({required this.post, super.key});
+  final Post post;
+  Future<void> _addToQuery(BuildContext context, String tag) async {
+    final query = await context.editSearch(
+      [tag],
+      sourceId: post.sourceId,
+      autofocus: false,
+    );
+    if (context.mounted && query != null) {
+      await context.pushTaggedPosts(query.tags, sourceId: query.sourceId);
+    }
+  }
+
+  List<FrostMenuEntry> _entries(BuildContext context, String raw) => [
+    FrostMenuAction(
+      t.postDetail.searchTag,
+      icon: appIcons.search,
+      onSelected: () => context.pushTaggedPosts([raw], sourceId: post.sourceId),
+    ),
+    FrostMenuAction(
+      t.postDetail.addToSearch,
+      icon: appIcons.add,
+      onSelected: () => _addToQuery(context, raw),
+    ),
+    FrostMenuAction(
+      t.postDetail.excludeTag,
+      icon: appIcons.remove,
+      onSelected: () =>
+          context.pushTaggedPosts(['-$raw'], sourceId: post.sourceId),
+    ),
+    FrostMenuAction(
+      t.discovery.addCustomTag,
+      icon: appIcons.edit,
+      onSelected: () => editUserTag(
+        context,
+        source: post.sourceId,
+        locale: LocaleSettings.currentLocale.languageTag,
+        value: raw,
+      ),
+    ),
+    FrostMenuAction(
+      t.frost.copy,
+      icon: appIcons.copy,
+      onSelected: () =>
+          performPostAction(context, () => copyPostValue(context, raw)),
+    ),
+  ];
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(userTagsProvider);
+    final repository = ref.watch(tagSuggestionRepositoryProvider);
+    final groups = [
+      for (final category in [
+        TagCategory.artist,
+        TagCategory.character,
+        TagCategory.copyright,
+        TagCategory.general,
+        TagCategory.meta,
+      ])
+        (
+          category,
+          post.data.tags.where((tag) => tag.category == category).toList(),
+        ),
+    ].where((group) => group.$2.isNotEmpty).toList();
+    return FrostModule(
+      title: t.postDetail.tags,
+      content: groups.isEmpty
+          ? FrostText(t.generic.notFound, tone: FrostTextTone.secondary)
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (final (index, group) in groups.indexed) ...[
+                  if (index > 0) const SizedBox(height: FrostGap.group),
+                  // With no known categories a single general bucket conveys
+                  // no classification; do not present it as authoritative.
+                  if (groups.length > 1 || group.$1 != TagCategory.general) ...[
+                    FrostText(
+                      categoryLabel(group.$1),
+                      role: FrostTextRole.footnote,
+                      tone: FrostTextTone.tertiary,
+                    ),
+                    const SizedBox(height: FrostGap.inline),
+                  ],
+                  Wrap(
+                    spacing: FrostGap.inline,
+                    runSpacing: FrostGap.inline,
+                    children: [
+                      for (final tag in group.$2)
+                        Builder(
+                          builder: (context) {
+                            final entries = _entries(context, tag.name);
+                            return FrostMenuAnchor(
+                              entries: entries,
+                              builder: (context, focus, toggle) => Focus(
+                                focusNode: focus,
+                                canRequestFocus: false,
+                                child: FrostTag(
+                                  label: tag.name,
+                                  detail: distinctTagTranslation(
+                                    tag.name,
+                                    repository.displayName(
+                                      post.sourceId,
+                                      LocaleSettings.currentLocale.languageTag,
+                                      tag.name,
+                                    ),
+                                  ),
+                                  dataColor:
+                                      groups.length == 1 &&
+                                          group.$1 == TagCategory.general
+                                      ? null
+                                      : group.$1.colorIndex,
+                                  contextMenu: entries,
+                                  onPressed: toggle,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
     );
   }
 }
 
-String _formatDateTime(int timestamp) {
-  final value = DateTime.fromMillisecondsSinceEpoch(
-    timestamp * 1000,
-    isUtc: true,
-  ).toLocal();
-  String twoDigits(int value) => value.toString().padLeft(2, '0');
-  return '${value.year}-${twoDigits(value.month)}-${twoDigits(value.day)} ${twoDigits(value.hour)}:${twoDigits(value.minute)}';
+String postSourceDisplay(String source) {
+  final uri = Uri.tryParse(source);
+  if (uri == null || uri.host.isEmpty) return source;
+  final host = uri.host.replaceFirst(RegExp(r'^www\.'), '');
+  return '$host${uri.path}${uri.hasQuery ? '?${uri.query}' : ''}${uri.hasFragment ? '#${uri.fragment}' : ''}';
 }
 
-bool _isUrl(String value) {
-  final uri = Uri.tryParse(value);
-  return uri != null &&
-      (uri.scheme == 'http' || uri.scheme == 'https') &&
-      uri.host.isNotEmpty;
+class PostSourceRow extends StatelessWidget {
+  const PostSourceRow({required this.post, super.key});
+  final Post post;
+  @override
+  Widget build(BuildContext context) => FrostListRow(
+    title: postSourceDisplay(post.source),
+    subtitle: null,
+    icon: appIcons.link,
+    accessory: FrostRowAccessory.external,
+    onPressed: isPostWebUrl(post.source)
+        ? () => performPostAction(context, () async {
+            if (!await openPostUrl(post.source)) {
+              throw StateError(t.generic.loadFailed);
+            }
+          })
+        : null,
+  );
 }
 
-String _ratingLabel(ContentRating rating) {
-  return rating.shortLabel;
+class PostTechnicalInformation extends StatelessWidget {
+  const PostTechnicalInformation({required this.post, super.key});
+  final Post post;
+  @override
+  Widget build(BuildContext context) {
+    final details = [
+      'ID: ${post.id}',
+      if (post.createdAt != 0)
+        '${t.postDetail.createdAt}: ${postDate(post, full: true)}',
+    ].join('\n');
+    return Row(
+      children: [
+        Expanded(
+          child: FrostText(
+            [
+              if (post.createdAt != 0)
+                '${t.postDetail.createdAt} ${postDate(post, full: true)}',
+            ].join(' · '),
+            role: FrostTextRole.footnote,
+            tone: FrostTextTone.tertiary,
+            numeric: true,
+          ),
+        ),
+        FrostButton.icon(
+          label: t.frost.copyDetails,
+          edgeAlignment: FrostButtonEdgeAlignment.end,
+          icon: appIcons.copy,
+          size: FrostControlSize.compact,
+          onPressed: () =>
+              performPostAction(context, () => copyPostValue(context, details)),
+        ),
+      ],
+    );
+  }
 }
