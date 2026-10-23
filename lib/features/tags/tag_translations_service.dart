@@ -42,10 +42,10 @@ class TagTranslationsService {
     final Map<String, dynamic> jaMap = json.decode(jaJsonString);
     final Map<String, dynamic> zhTWMap = json.decode(zhTWJsonString);
     final Map<String, dynamic> zhCNMap = json.decode(zhCNJsonString);
-    _en = enMap.cast();
-    _ja = jaMap.cast();
-    _zhTW = zhTWMap.cast();
-    _zhCN = zhCNMap.cast();
+    _en = _validTranslations(enMap);
+    _ja = _validTranslations(jaMap);
+    _zhTW = _validTranslations(zhTWMap);
+    _zhCN = _validTranslations(zhCNMap);
   }
 
   static void update(int? index) {
@@ -60,4 +60,43 @@ class TagTranslationsService {
       [_en, _ja, _zhTW, _zhCN].any(
         (map) => map[tag]?.toLowerCase().contains(query.toLowerCase()) ?? false,
       );
+}
+
+// Reject damaged entries before they reach translated-query matching as well
+// as display. Unicode letters/numbers preserve CJK and other real translations.
+final _translationContent = RegExp(r'[\p{L}\p{N}]', unicode: true);
+final _translationPlaceholders = {
+  'null',
+  'undefined',
+  'unknown',
+  'n/a',
+  'todo',
+  'tbd',
+  'placeholder',
+};
+String? validTagTranslation(String? value) {
+  final text = value?.trim();
+  if (text == null ||
+      text.isEmpty ||
+      !_translationContent.hasMatch(text) ||
+      _translationPlaceholders.contains(text.toLowerCase())) {
+    return null;
+  }
+  return text;
+}
+
+Map<String, String> _validTranslations(Map<String, dynamic> values) => {
+  for (final entry in values.entries)
+    if (entry.value is String)
+      entry.key: ?validTagTranslation(entry.value as String),
+};
+
+/// Formatting-only differences do not add a second piece of tag information.
+String? distinctTagTranslation(String original, String? translation) {
+  String normalized(String value) =>
+      value.toLowerCase().replaceAll(RegExp(r'[_\s]+'), ' ').trim();
+  final valid = validTagTranslation(translation);
+  return valid == null || normalized(original) == normalized(valid)
+      ? null
+      : valid;
 }

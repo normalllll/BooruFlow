@@ -1,12 +1,18 @@
-import 'package:booruflow/features/search/logic.dart';
+import 'package:booruflow/app/frost_config.dart';
+import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/features/search/services/tag_suggestion_repository.dart';
+import 'package:booruflow/features/search/widgets/search_tag_widgets.dart';
+import 'package:booruflow/features/tags/tag_presentation.dart';
+import 'package:booruflow/features/tags/tag_translations_service.dart';
 import 'package:booruflow/intl/translations.g.dart';
-import 'package:booruflow/shared/widgets/tag_label.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:booruflow/src/rust/api/booru_models.dart' show TagCategory;
+import 'package:flutter/widgets.dart';
+import 'package:frost_ui/frost_ui.dart';
+import 'package:intl/intl.dart';
 
-/// The common tags and this paginated list share the same source tag cache.
-class CommonTagsSheet extends ConsumerStatefulWidget {
+/// Common tags share the source cache and pagination. The owning modal supplies
+/// the primary scroll controller; the category filter does not refetch pages.
+class CommonTagsSheet extends StatefulWidget {
   const CommonTagsSheet({
     super.key,
     required this.repository,
@@ -15,83 +21,170 @@ class CommonTagsSheet extends ConsumerStatefulWidget {
     required this.initialTags,
   });
   final TagSuggestionRepository repository;
-  final String source;
-  final String locale;
+  final String source, locale;
   final List<TagSuggestion> initialTags;
   @override
-  ConsumerState<CommonTagsSheet> createState() => _CommonTagsSheetState();
+  State<CommonTagsSheet> createState() => _CommonTagsSheetState();
 }
 
-class _CommonTagsSheetState extends ConsumerState<CommonTagsSheet> {
-  late final _request = CommonTagsRequest(
-    source: widget.source,
-    locale: widget.locale,
-    repository: widget.repository,
-    initialTags: widget.initialTags,
-  );
-  Future<void> _loadMore() =>
-      ref.read(commonTagsProvider(_request).notifier).loadMore();
+class _CommonTagsSheetState extends State<CommonTagsSheet> {
+  TagCategory? _category;
+  late final _CommonTagsSource _source;
+  @override
+  void initState() {
+    super.initState();
+    _source = _CommonTagsSource(
+      widget.repository,
+      widget.source,
+      widget.locale,
+      widget.initialTags,
+    );
+  }
+
+  @override
+  void dispose() {
+    _source.dispose();
+    super.dispose();
+  }
+
+  Widget _row(TagSuggestion tag, NumberFormat format) {
+    final translation = distinctTagTranslation(
+      tag.value,
+      widget.repository.displayName(widget.source, widget.locale, tag.value) ??
+          tag.displayName,
+    );
+    final count = int.tryParse(tag.count ?? '');
+    return FrostListRow(
+      title: tag.value,
+      subtitle: translation,
+      inlineSubtitle: true,
+      leading: FrostDataDot(tag.category.colorIndex),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (tag.count != null) ...[
+            FrostText(
+              count == null ? tag.count! : format.format(count),
+              role: FrostTextRole.footnote,
+              tone: FrostTextTone.tertiary,
+              numeric: true,
+            ),
+            const SizedBox(width: FrostGap.related),
+          ],
+          FrostButton.icon(
+            icon: appIcons.add,
+            label: t.discovery.addTag,
+            size: FrostControlSize.compact,
+            onPressed: () => Navigator.of(context).pop(tag),
+          ),
+        ],
+      ),
+      onPressed: () => Navigator.of(context).pop(tag),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(commonTagsProvider(_request));
-    final tags = state.tags;
-    return FractionallySizedBox(
-      heightFactor: .75,
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        itemCount: tags.length + 2,
-        itemBuilder: (context, index) {
-          final colors = Theme.of(context).colorScheme;
-          if (index == 0) {
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
-              child: Text(t.discovery.commonTags),
-            );
-          }
-          if (index == tags.length + 1) {
-            if (state.loading.isLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (!state.hasMore) return const SizedBox.shrink();
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(12, 6, 12, 12),
-              child: TextButton(
-                onPressed: _loadMore,
-                child: Text(
-                  state.loading.hasError
-                      ? t.generic.retry
-                      : t.discovery.loadMore,
-                ),
-              ),
-            );
-          }
-          final tag = tags[index - 1];
-          final odd = (index - 1).isOdd;
-          return Material(
-            color: odd ? colors.surfaceContainer : colors.surface,
-            child: InkWell(
-              onTap: () => Navigator.pop(context, tag),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
-                child: TagLabel(
-                  value: tag.value,
-                  translation:
-                      widget.repository.displayName(
-                        widget.source,
-                        widget.locale,
-                        tag.value,
-                      ) ??
-                      tag.displayName,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
+    final format = NumberFormat.decimalPattern(
+      Localizations.localeOf(context).toLanguageTag(),
     );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: FrostGap.related),
+          child: FrostPicker<TagCategory?>.segmented(
+            label: t.discovery.commonTags,
+            value: _category,
+            options: [
+              FrostPickerOption(value: null, label: t.downloads.all),
+              for (final category in [
+                TagCategory.artist,
+                TagCategory.character,
+                TagCategory.copyright,
+                TagCategory.general,
+              ])
+                FrostPickerOption(
+                  value: category,
+                  label: categoryLabel(category),
+                ),
+            ],
+            onChanged: (value) => setState(() => _category = value),
+          ),
+        ),
+        Expanded(
+          child: FrostLoadingScrollView(
+            slivers: [
+              FrostSliverDataList<TagSuggestion>(
+                source: _source,
+                firstLoadSkeleton: Column(
+                  children: [
+                    for (final title in ['landscape', 'scenery'])
+                      FrostListRow(
+                        title: title,
+                        leading: const FrostDataDot(0),
+                        value: '1,234,567',
+                      ).frostSkeleton(true),
+                  ],
+                ),
+                itemBuilder: (context, tag, index) =>
+                    _category == null || tag.category == _category
+                    ? _row(tag, format)
+                    : const SizedBox.shrink(),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The modal owns paging. The repository still owns its real first-page cache;
+/// changing the local category only changes row visibility, not the request.
+class _CommonTagsSource extends FrostListSource<TagSuggestion> {
+  _CommonTagsSource(this.repository, this.source, this.locale, this.seed);
+  final TagSuggestionRepository repository;
+  final String source, locale;
+  final List<TagSuggestion> seed;
+  int _page = 0;
+  bool _more = true;
+  bool _seedAvailable = true;
+  @override
+  Future<List<TagSuggestion>> initList() async {
+    if (_seedAvailable) {
+      _seedAvailable = false;
+      _page = 1;
+      _more = seed.length == 50;
+      return seed;
+    }
+    return _fetch(1);
+  }
+
+  @override
+  Future<List<TagSuggestion>> nextList() => _fetch(_page + 1);
+  @override
+  bool hasMoreByResult(List<TagSuggestion> items) => _more;
+  Future<List<TagSuggestion>> _fetch(int page) async {
+    try {
+      final tags = await repository.common(
+        source,
+        locale,
+        page: page,
+        refresh: page == 1,
+      );
+      final seen = page == 1
+          ? <String>{}
+          : items.map((tag) => tag.value).toSet();
+      final result = [
+        for (final tag in tags)
+          if (seen.add(tag.value)) tag,
+      ];
+      _page = page;
+      _more = tags.length == 50;
+      return result;
+    } catch (error) {
+      throw makeBooruErrorReadable(error);
+    }
   }
 }

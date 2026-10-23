@@ -24,35 +24,53 @@ class QueryTerm {
   };
 }
 
-/// Whitespace inside a quoted source expression remains part of that expression.
-List<String> parseQueryInput(String text) {
-  final result = <String>[];
-  var token = StringBuffer();
+/// A UTF-16 range, matching Flutter's editing selection offsets.
+class QuerySpan {
+  const QuerySpan(this.raw, this.start, this.end);
+  final String raw;
+  final int start, end;
+}
+
+/// Whitespace inside quoted or braced source expressions stays in the term.
+List<QuerySpan> querySpans(String text) {
+  final result = <QuerySpan>[];
+  int? start;
   String? quote;
   var braces = 0;
-  for (final rune in text.runes) {
-    final char = String.fromCharCode(rune);
+  for (var index = 0; index < text.length; index++) {
+    final char = text[index];
     if (quote != null) {
-      token.write(char);
       if (char == quote) quote = null;
     } else if (char == '"' || char == "'") {
       quote = char;
-      token.write(char);
+      start ??= index;
     } else if (char == '{') {
       braces++;
-      token.write(char);
+      start ??= index;
     } else if (char == '}') {
       if (braces > 0) braces--;
-      token.write(char);
+      start ??= index;
     } else if (char.trim().isEmpty && braces == 0) {
-      if (token.isNotEmpty) {
-        result.add(token.toString());
-        token = StringBuffer();
+      if (start != null) {
+        result.add(QuerySpan(text.substring(start, index), start, index));
       }
+      start = null;
     } else {
-      token.write(char);
+      start ??= index;
     }
   }
-  if (token.isNotEmpty) result.add(token.toString());
+  if (start != null) {
+    result.add(QuerySpan(text.substring(start), start, text.length));
+  }
   return result;
 }
+
+List<String> parseQueryInput(String text) => [
+  for (final span in querySpans(text)) span.raw,
+];
+
+/// Completed trailing whitespace has no active term. Editing an earlier term
+/// replaces only its range, preserving the rest of the query and its operators.
+QuerySpan? querySpanAt(String text, int offset) => querySpans(
+  text,
+).where((span) => offset >= span.start && offset <= span.end).firstOrNull;
