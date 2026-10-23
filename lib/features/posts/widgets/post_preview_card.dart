@@ -1,238 +1,161 @@
+import 'package:booruflow/app/frost_config.dart';
+import 'package:booruflow/features/downloads/logic.dart';
+import 'package:booruflow/features/posts/media_presentation.dart';
 import 'package:booruflow/features/posts/models/post.dart';
-import 'package:booruflow/features/posts/post_attribution.dart';
-import 'package:booruflow/features/posts/resolution.dart';
-import 'package:booruflow/features/posts/widgets/booru_image.dart';
-import 'package:booruflow/features/posts/widgets/post_preview_footer.dart';
-import 'package:booruflow/shared/app_theme.dart';
-import 'package:booruflow/src/rust/api/booru_models.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
+import 'package:booruflow/features/posts/post_actions.dart';
+import 'package:booruflow/features/posts/widgets/post_media.dart';
+import 'package:booruflow/intl/number_format.dart';
+import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/ui/custom/download_flight.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frost_ui/frost_ui.dart';
 
-class PostPreviewCard extends StatelessWidget {
+class PostPreviewCard extends ConsumerStatefulWidget {
   const PostPreviewCard({
     super.key,
     required this.post,
     required this.onTap,
-    required this.onLongPress,
     this.imageRefreshRevision = 0,
   });
-
   final Post post;
   final int imageRefreshRevision;
-  final VoidCallback onTap;
-  final VoidCallback onLongPress;
+  final void Function(FrostMediaHeroTag? tag, ImageProvider? preview) onTap;
+
+  @override
+  ConsumerState<PostPreviewCard> createState() => _PostPreviewCardState();
+}
+
+class _PostPreviewCardState extends ConsumerState<PostPreviewCard> {
+  bool _authenticationRequired = false;
+  ImageProvider? _decodedPreview;
+  FrostMediaHeroTag? _heroTag;
+  @override
+  void didUpdateWidget(PostPreviewCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.post.postKey != widget.post.postKey) {
+      _authenticationRequired = false;
+      _decodedPreview = null;
+      _heroTag = null;
+    }
+  }
+
+  void _authenticationChanged(bool value) {
+    if (mounted && value != _authenticationRequired) {
+      setState(() => _authenticationRequired = value);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final tokens = AppThemeTokens.of(context);
-    final radius = BorderRadius.circular(8);
+    final post = widget.post;
+    final imageRefreshRevision = widget.imageRefreshRevision;
+    final onTap = widget.onTap;
+    final labels = Translations.of(context);
+    final dimensions = post.dimensions;
+    Future<void> download() async {
+      final host = DownloadFlightHost.maybeOf(context);
+      final box = context.findRenderObject()! as RenderBox;
+      final source = box.localToGlobal(Offset.zero) & box.size;
+      final preview = _decodedPreview;
+      final added = await ref.read(booruDownloadsProvider).add(post);
+      if (mounted && added && preview != null) {
+        host?.fly(source: source, image: preview);
+      }
+    }
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: tokens.surfaceRaised,
-        gradient: LinearGradient(
-          begin: AlignmentDirectional.topStart,
-          end: AlignmentDirectional.bottomEnd,
-          colors: [
-            Color.alphaBlend(
-              tokens.brand.withValues(alpha: 0.018),
-              tokens.surfaceRaised,
+    final special = _authenticationRequired
+        ? (labels.booruError.authenticationRequired, appIcons.user)
+        : switch (postMediaFormat(post)) {
+            PostMediaFormat.animation => (
+              labels.discovery.mediaAnimation,
+              appIcons.play,
             ),
-            Color.alphaBlend(
-              tokens.surfaceTint.withValues(alpha: 0.20),
-              tokens.surfaceRaised,
+            PostMediaFormat.video => (
+              labels.discovery.mediaVideo,
+              appIcons.play,
             ),
-            tokens.surfaceRaised,
-          ],
-          stops: const [0, 0.62, 1],
-        ),
-        borderRadius: radius,
-        boxShadow: [
-          BoxShadow(
-            color: tokens.shadow,
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: radius,
-        child: Material(
-          type: MaterialType.transparency,
-          child: InkWell(
-            onTap: onTap,
-            onLongPress: onLongPress,
-            splashColor: tokens.brand.withValues(alpha: 0.06),
-            highlightColor: tokens.brand.withValues(alpha: 0.035),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _PostPreviewImage(
-                  post: post,
-                  refreshRevision: imageRefreshRevision,
+            _ when post.hasChildren || post.parentId != null => (
+              labels.discovery.mediaCollection,
+              appIcons.multiPage,
+            ),
+            _ => null,
+          };
+    final entries = postMenuEntries(
+      context: context,
+      post: post,
+      download: download,
+    );
+    Widget card(FrostMediaHeroTag? tag) => FrostMediaCard(
+      aspectRatio: post.width > 0 && post.height > 0
+          ? (post.width / post.height).clamp(.6, 1.6)
+          : 1,
+      media: LayoutBuilder(
+        builder: (context, constraints) => PostMedia(
+          post: post,
+          refreshRevision: imageRefreshRevision,
+          onAuthenticationRequired: _authenticationChanged,
+          onImageReady: (image) {
+            if (mounted && image != null && image != _decodedPreview) {
+              setState(() {
+                _decodedPreview = image;
+                _heroTag ??= FrostMediaHeroTag(
+                  image: image,
+                  aspectRatio: post.aspectRatio,
+                  sourceRadius: FrostRadius.borderRadius(FrostRadius.lg),
+                );
+              });
+            }
+          },
+          frameBuilder: (image) => tag == null
+              ? image
+              : FrostMediaHero(
+                  tag: tag,
+                  radius: FrostRadius.borderRadius(FrostRadius.lg),
+                  child: image,
                 ),
-                PostPreviewFooter(
-                  postId: post.id,
-                  author: post.authorLabel,
-                  score: post.score,
-                  accentColor: tokens.brand,
-                ),
-              ],
+          decodeWidth:
+              (constraints.maxWidth * MediaQuery.devicePixelRatioOf(context))
+                  .ceil()
+                  .clamp(1, 1536),
+        ),
+      ),
+      topStart: special == null
+          ? null
+          : FrostBadge(
+              label: special.$1,
+              icon: special.$2,
+              tone: FrostBadgeTone.onMedia,
             ),
+      topEnd: Builder(
+        builder: (context) => FrostPresence(
+          visible: FrostClickSurface.hoveredOf(context),
+          child: FrostButton.icon(
+            label: labels.postDetail.download,
+            icon: appIcons.download,
+            style: FrostIconButtonStyle.onMedia,
+            size: FrostControlSize.compact,
+            onPressed: download,
           ),
         ),
       ),
-    );
-  }
-}
-
-class _PostPreviewImage extends StatelessWidget {
-  const _PostPreviewImage({required this.post, required this.refreshRevision});
-
-  final Post post;
-  final int refreshRevision;
-
-  @override
-  Widget build(BuildContext context) {
-    final aspectRatio = post.width > 0 && post.height > 0
-        ? (post.width / post.height).clamp(0.6, 1.6).toDouble()
-        : 1.0;
-
-    return AspectRatio(
-      aspectRatio: aspectRatio,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          LayoutBuilder(
-            builder: (context, constraints) => BooruImage(
-              post.previewUrl,
-              refreshRevision: refreshRevision,
-              decodeWidth:
-                  (constraints.maxWidth *
-                          MediaQuery.devicePixelRatioOf(context))
-                      .ceil()
-                      .clamp(1, 1536),
-              sourceId: post.sourceId,
-              postId: post.id,
-              variant: post.displayMedia.kind,
-              fit: BoxFit.cover,
-              imageBuilder: (child) => child.animate().fade(duration: 250.ms),
-            ),
-          ),
-          if (post.rating != ContentRating.general)
-            PositionedDirectional(
-              top: 8,
-              end: 8,
-              child: _RatingBadge(rating: post.rating),
-            ),
-          if (post.parentId != null || post.hasChildren)
-            const PositionedDirectional(
-              top: 8,
-              start: 8,
-              child: _CollectionBadge(),
-            ),
-          if (Resolution.match(post.width * post.height).title
-              case final resolutionLabel when resolutionLabel.isNotEmpty)
-            PositionedDirectional(
-              end: 8,
-              bottom: 8,
-              child: _ResolutionBadge(label: resolutionLabel),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RatingBadge extends StatelessWidget {
-  const _RatingBadge({required this.rating});
-
-  final ContentRating rating;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isExplicit = rating == ContentRating.explicit;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: isExplicit
-            ? const Color(0xFFE53935)
-            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.88),
-        borderRadius: BorderRadius.circular(4),
-        border: isExplicit
-            ? null
-            : Border.all(
-                color: colorScheme.outlineVariant.withValues(alpha: 0.72),
-              ),
-        boxShadow: isExplicit
-            ? const [
-                BoxShadow(
-                  color: Color(0x66000000),
-                  blurRadius: 6,
-                  offset: Offset(0, 1),
-                ),
-              ]
-            : null,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-        child: Text(
-          rating.shortLabel,
-          style: TextStyle(
-            color: isExplicit ? Colors.white : colorScheme.onSurfaceVariant,
-            fontWeight: FontWeight.w700,
-            height: 1,
-          ),
+      bottomEnd: dimensions != null
+          ? FrostBadge(
+              label:
+                  '${formatCount(dimensions.$1)} × ${formatCount(dimensions.$2)}',
+              tone: FrostBadgeTone.onMedia,
+            )
+          : null,
+      contextMenu: [
+        FrostMenuSection(
+          header: '${post.sourceId} · #${post.id}',
+          entries: entries,
         ),
-      ),
+      ],
+      onPressed: () =>
+          onTap(_decodedPreview == null ? null : tag, _decodedPreview),
+      semanticLabel: '${post.sourceId} · #${post.id}',
     );
-  }
-}
-
-class _CollectionBadge extends StatelessWidget {
-  const _CollectionBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.52),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.28)),
-      ),
-      child: const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-        child: Icon(Icons.collections_outlined, size: 13, color: Colors.white),
-      ),
-    );
-  }
-}
-
-class _ResolutionBadge extends StatelessWidget {
-  const _ResolutionBadge({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.52),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.28)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-        child: Text(
-          label,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-            height: 1,
-          ),
-        ),
-      ),
-    );
+    return card(_heroTag);
   }
 }
