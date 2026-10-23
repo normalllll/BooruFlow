@@ -1,17 +1,20 @@
 import 'dart:async';
 
+import 'package:booruflow/app/frost_config.dart';
 import 'package:booruflow/features/booru/services/booru_service.dart';
-import 'package:booruflow/features/discovery/widgets/source_picker.dart';
+import 'package:booruflow/features/search/logic.dart';
 import 'package:booruflow/features/search/post_search_page.dart';
 import 'package:booruflow/features/search/services/tag_suggestion_repository.dart';
+import 'package:booruflow/features/search/widgets/common_tags_sheet.dart';
 import 'package:booruflow/intl/translations.g.dart';
-import 'package:booruflow/shared/widgets/interaction_controls.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frost_ui/frost_ui.dart';
+import 'package:frost_ui/src/overlays/_popover_surface.dart';
 
 BooruSource testSource(String id) => BooruSource(
   sourceId: id,
@@ -58,8 +61,20 @@ class SearchRepositoryFake extends TagSuggestionRepository {
   ) => values.toList();
   @override
   String? displayName(String source, String locale, String value) => null;
+  final history = <String, List<String>>{};
   @override
-  Future<void> remember(String source, List<String> tags) async {}
+  Future<List<String>> recentSearches(String source) async =>
+      List.of(history[source] ?? []);
+  @override
+  Future<void> removeSearch(String source, String query) async =>
+      history[source]?.remove(query);
+  @override
+  Future<void> clearSearches(String source) async => history[source] = [];
+  @override
+  Future<void> remember(String source, List<String> tags) async {
+    history[source] = {tags.join(' '), ...?history[source]}.toList();
+  }
+
   @override
   Future<List<TagSuggestion>> common(
     String source,
@@ -93,6 +108,46 @@ class SearchRepositoryFake extends TagSuggestionRepository {
   ]);
 }
 
+Widget searchTestApp(
+  Widget child, {
+  double scale = 1,
+  AppLocale locale = AppLocale.en,
+  TagSuggestionRepository? repository,
+}) => TranslationProvider(
+  child: ProviderScope(
+    overrides: [
+      if (repository != null)
+        tagSuggestionRepositoryProvider.overrideWithValue(repository),
+    ],
+    child: FrostScope(
+      config: appFrostConfig,
+      child: MaterialApp(
+        locale: locale.flutterLocale,
+        supportedLocales: AppLocaleUtils.supportedLocales,
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        theme: FrostTheme.build(
+          config: appFrostConfig,
+          brightness: Brightness.light,
+          platform: TargetPlatform.windows,
+          locale: locale.flutterLocale,
+        ),
+        home: Builder(
+          builder: (context) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: TextScaler.linear(scale)),
+            child: FrostLayoutScope(child: child),
+          ),
+        ),
+      ),
+    ),
+  ),
+);
+Finder suggestion(String label) =>
+    find.byWidgetPredicate((w) => w is FrostListRow && w.title == label);
+TextEditingController input(WidgetTester tester) =>
+    tester.widget<EditableText>(find.byType(EditableText)).controller;
+
 void main() {
   late SearchRepositoryFake repository;
   late List<List<String>> submissions;
@@ -106,13 +161,11 @@ void main() {
   });
   Future<void> mount(WidgetTester tester) async {
     await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp(
-          home: PostSearchPage(
-            sourceId: 'first',
-            repository: repository,
-            onSubmit: (_, tags) => submissions.add(tags),
-          ),
+      searchTestApp(
+        PostSearchPage(
+          sourceId: 'first',
+          repository: repository,
+          onSubmit: (_, tags) => submissions.add(tags),
         ),
       ),
     );
@@ -120,84 +173,61 @@ void main() {
   }
 
   for (final width in [320.0, 600.0, 1440.0]) {
-    testWidgets(
-      'tag manager sits beside common tags below the search row at $width',
-      (tester) async {
-        tester.view.physicalSize = Size(width, 800);
-        tester.view.devicePixelRatio = 1;
-        addTearDown(tester.view.resetPhysicalSize);
-        addTearDown(tester.view.resetDevicePixelRatio);
-        await mount(tester);
-        final source = find.byType(SourcePicker);
-        final manage = find.widgetWithText(AppButton, t.discovery.manageTags);
-        expect(
-          tester.getRect(manage).top,
-          greaterThan(tester.getRect(find.byType(TextField)).bottom),
+    testWidgets('source, token input and actions share one header at $width', (
+      tester,
+    ) async {
+      tester.view.physicalSize = Size(width, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await mount(tester);
+      final header = tester.getRect(find.byType(FrostPageHeader)),
+          field = tester.getRect(find.byType(FrostTokenField));
+      expect(header.height, width < 600 ? 48 : 52);
+      expect(field.center.dy, closeTo(header.center.dy, 1));
+      expect(field.width, greaterThan(0));
+      if (width >= 600) {
+        expect(find.byType(FrostTitleMenu), findsOneWidget);
+        expect(field.width, lessThanOrEqualTo(640));
+        final manager = find.byWidgetPredicate(
+          (w) => w is FrostTooltip && w.message == t.discovery.manageTags,
         );
-        final heading = tester.getRect(find.text(t.discovery.commonTags));
-        if (width >= 600) {
-          expect(tester.getCenter(manage).dy, closeTo(heading.center.dy, 1));
-        } else {
-          // Long localized labels can wrap beneath the section heading.
-          expect(
-            tester.getRect(manage).top - heading.bottom,
-            lessThanOrEqualTo(8),
-          );
-        }
-        expect(tester.getRect(source).top, 12);
-        expect(tester.getSize(source).height, 36);
-        expect(tester.getSize(find.byType(TextField)).height, 36);
-        if (width >= 720) {
-          expect(
-            tester.getCenter(source).dy,
-            closeTo(tester.getCenter(find.byType(TextField)).dy, 1),
-          );
-          expect(
-            tester.getRect(source).right,
-            lessThan(tester.getRect(find.byType(TextField)).left),
-          );
-          expect(tester.getRect(source).left, 12);
-          expect(tester.getRect(find.byType(TextField)).right, width - 12);
-        }
-        expect(tester.takeException(), isNull);
-      },
-    );
+        expect(
+          tester.getCenter(manager.hitTestable().first).dy,
+          closeTo(header.center.dy, 1),
+        );
+      } else {
+        expect(find.byType(FrostTitleMenu), findsOneWidget);
+        final source = find.byType(FrostTitleMenu);
+        expect(tester.getRect(source).right, lessThan(field.left));
+      }
+      expect(tester.takeException(), isNull);
+    });
   }
-
   testWidgets(
-    'suggestions float without shifting tags and stay anchored while tags scroll',
+    'suggestions float without shifting content and stay pinned during body scrolling',
     (tester) async {
       tester.view.physicalSize = const Size(1000, 600);
       tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.reset);
       repository.commonCount = 40;
       await mount(tester);
-      final common = find.byKey(const ValueKey('common-tags'));
-      final before = tester.getTopLeft(common);
-      await tester.enterText(find.byType(TextField), 'mi');
+      final common = find.byType(FrostTag).first,
+          before = tester.getTopLeft(find.byType(FrostTag).first);
+      await tester.enterText(find.byType(EditableText), 'mi');
       await tester.pump(const Duration(milliseconds: 300));
       repository.pending['first:mi']!.complete([
         const TagSuggestion(value: 'miku', origin: SuggestionOrigin.sourceApi),
         const TagSuggestion(value: 'mio', origin: SuggestionOrigin.sourceApi),
       ]);
-      await tester.pump();
-      final panel = find.byKey(const ValueKey('search-suggestions'));
-      final anchor = tester.getRect(panel);
+      await tester.pumpAndSettle();
+      final panel = find.byType(FrostPopoverSurface),
+          anchor = tester.getRect(find.byType(FrostPopoverSurface));
       expect(tester.getTopLeft(common), before);
-      expect(anchor.left, tester.getRect(find.byType(TextField)).left);
-      expect(anchor.top, tester.getRect(find.byType(TextField)).bottom + 4);
-      final first = tester.widget<Material>(
-        find.byKey(const ValueKey('suggestion-row-0')),
-      );
-      final second = tester.widget<Material>(
-        find.byKey(const ValueKey('suggestion-row-1')),
-      );
-      expect(first.color, isNot(second.color));
-      expect(first.borderRadius, isNull);
+      expect(anchor.left, tester.getRect(find.byType(FrostTokenField)).left);
+      expect(anchor.top, tester.getRect(find.byType(FrostTokenField)).bottom);
       final scroll = tester.state<ScrollableState>(
         find.descendant(
-          of: find.byKey(const ValueKey('search-tags-scroll')),
+          of: find.byKey(const PageStorageKey('search-content')),
           matching: find.byType(Scrollable),
         ),
       );
@@ -205,175 +235,124 @@ void main() {
       scroll.position.jumpTo(scroll.position.maxScrollExtent);
       await tester.pump();
       expect(tester.getRect(panel), anchor);
-      await tester.tap(find.text('#miku', findRichText: true));
-      await tester.pump();
-      expect(find.byType(InputChip), findsOneWidget);
+      await tester.tap(find.text('miku'));
+      await tester.pumpAndSettle();
+      expect(input(tester).text, 'miku ');
       expect(submissions, isEmpty);
       expect(panel, findsNothing);
       expect(tester.takeException(), isNull);
     },
   );
-
   testWidgets(
-    'common tags wrap and selected chip starts at the shared left edge',
+    'common tags wrap and append completed tokens without submitting',
     (tester) async {
       tester.view.physicalSize = const Size(360, 700);
       tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.reset);
       repository.commonCount = 20;
       await mount(tester);
-      final buttons = find.descendant(
-        of: find.byKey(const ValueKey('common-tags')),
-        matching: find.byType(AppButton),
-      );
-      expect(buttons, findsNWidgets(20));
+      final tags = find.byType(FrostTag);
+      expect(tags, findsNWidgets(20));
       expect(
-        tester.getTopLeft(buttons.last).dy,
-        greaterThan(tester.getTopLeft(buttons.first).dy),
+        tester.getTopLeft(tags.last).dy,
+        greaterThan(tester.getTopLeft(tags.first).dy),
       );
-      await tester.tap(find.text('#sky', findRichText: true));
-      await tester.pump();
-      final paintedChip = find
-          .descendant(
-            of: find.byType(InputChip),
-            matching: find.byType(Material),
-          )
-          .first;
-      expect(
-        tester.getRect(paintedChip).left,
-        tester.getRect(find.byType(SourcePicker)).left,
-      );
+      await tester.tap(find.text('sky'));
+      await tester.pumpAndSettle();
+      expect(input(tester).text, 'sky ');
+      expect(submissions, isEmpty);
       expect(tester.takeException(), isNull);
     },
   );
-
   testWidgets(
-    'suggestions fit above the mobile keyboard and dismiss on outside tap',
+    'compact body suggestions fit above keyboard and dismiss on outside tap',
     (tester) async {
       tester.view.physicalSize = const Size(360, 700);
       tester.view.devicePixelRatio = 1;
       tester.view.viewInsets = const FakeViewPadding(bottom: 320);
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      addTearDown(tester.view.resetViewInsets);
+      addTearDown(tester.view.reset);
       await mount(tester);
-      await tester.enterText(find.byType(TextField), 'mi');
+      await tester.enterText(find.byType(EditableText), 'mi');
       await tester.pump(const Duration(milliseconds: 300));
       repository.complete('first:mi', 'miku');
-      await tester.pump();
-      final panel = find.byKey(const ValueKey('search-suggestions'));
-      expect(tester.getRect(panel).bottom, lessThanOrEqualTo(380));
-      await tester.tapAt(const Offset(350, 370));
-      await tester.pump();
-      expect(panel, findsNothing);
+      await tester.pumpAndSettle();
+      final list = find.byWidgetPredicate((widget) => widget is FrostList);
+      expect(find.byType(FrostPopoverSurface), findsNothing);
+      expect(list, findsOneWidget);
+      expect(tester.getRect(list).bottom, lessThanOrEqualTo(380));
+      expect(tester.getSize(find.byType(FrostPageHeader)).height, 48);
+      await tester.tapAt(const Offset(350, 400));
+      await tester.pumpAndSettle();
+      expect(find.byType(FrostPopoverSurface), findsNothing);
+      expect(list, findsNothing);
       expect(tester.takeException(), isNull);
     },
   );
-
-  testWidgets('tag modal content uses one shared left inset', (tester) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp(
-          home: PostSearchPage(
-            sourceId: 'first',
-            repository: repository,
-            initialTags: List.generate(30, (i) => 'selected_tag_$i'),
-            onSubmit: (_, _) {},
-          ),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byType(ActionChip));
-    await tester.pumpAndSettle();
-    final sheet = find.byType(BottomSheet);
-    final tag = find.descendant(
-      of: sheet,
-      matching: find.text('#selected_tag_0', findRichText: true),
-    );
-    final chip = find
-        .descendant(of: sheet, matching: find.byType(InputChip))
-        .first;
-    final paintedChip = find
-        .descendant(of: chip, matching: find.byType(Material))
-        .first;
-    expect(
-      tester.getRect(paintedChip).left -
-          tester
-              .getRect(
-                find.descendant(of: sheet, matching: find.byType(ListView)),
-              )
-              .left,
-      12,
-    );
-    Navigator.of(tester.element(tag)).pop();
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(t.discovery.moreTags));
-    await tester.pumpAndSettle();
-    final heading = find.descendant(
-      of: sheet,
-      matching: find.text(t.discovery.commonTags),
-    );
-    final firstTag = find
-        .descendant(of: sheet, matching: find.text('#sky', findRichText: true))
-        .first;
-    expect(tester.getRect(firstTag).left, tester.getRect(heading).left);
-    expect(
-      tester.getRect(firstTag).left -
-          tester
-              .getRect(
-                find.descendant(of: sheet, matching: find.byType(ListView)),
-              )
-              .left,
-      12,
-    );
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('empty submit and candidate clicks never search automatically', (
-    tester,
-  ) async {
-    await mount(tester);
-    await tester.tap(find.byType(TextField));
-    await tester.testTextInput.receiveAction(TextInputAction.search);
-    expect(submissions, isEmpty);
-    expect(repository.calls, isEmpty);
-    await tester.tap(find.text('#sky', findRichText: true));
-    await tester.pump();
-    expect(submissions, isEmpty);
-    expect(repository.calls, isEmpty);
-    await tester.testTextInput.receiveAction(TextInputAction.search);
-    expect(submissions, [
-      ['sky'],
-    ]);
-  });
+  testWidgets(
+    'more common tags opens a shared lazy panel and selection returns to query',
+    (tester) async {
+      await mount(tester);
+      await tester.tap(find.text(t.discovery.moreTags));
+      await tester.pumpAndSettle();
+      expect(find.byType(CommonTagsSheet), findsOneWidget);
+      final row = find.descendant(
+        of: find.byType(CommonTagsSheet),
+        matching: suggestion('sky'),
+      );
+      expect(row, findsOneWidget);
+      await tester.tap(row);
+      await tester.pumpAndSettle();
+      expect(input(tester).text, 'sky ');
+      expect(submissions, isEmpty);
+      expect(find.byType(CommonTagsSheet), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets(
+    'empty submit and candidate clicks never search automatically; next Enter submits',
+    (tester) async {
+      await mount(tester);
+      await tester.tap(find.byType(EditableText));
+      await tester.testTextInput.receiveAction(TextInputAction.search);
+      expect(submissions, isEmpty);
+      expect(repository.calls, isEmpty);
+      await tester.tap(find.text('sky'));
+      await tester.pumpAndSettle();
+      expect(submissions, isEmpty);
+      expect(repository.calls, isEmpty);
+      await tester.testTextInput.receiveAction(TextInputAction.search);
+      expect(submissions, [
+        ['sky'],
+      ]);
+    },
+  );
   testWidgets('debounce and generation discard slow old responses', (
     tester,
   ) async {
     await mount(tester);
-    await tester.enterText(find.byType(TextField), 's');
+    await tester.enterText(find.byType(EditableText), 's');
     await tester.pump(const Duration(milliseconds: 100));
-    await tester.enterText(find.byType(TextField), 'sk');
+    await tester.enterText(find.byType(EditableText), 'sk');
     await tester.pump(const Duration(milliseconds: 251));
     expect(repository.calls, ['first:sk']);
-    await tester.enterText(find.byType(TextField), 'sky');
+    await tester.enterText(find.byType(EditableText), 'sky');
     await tester.pump(const Duration(milliseconds: 251));
     repository.complete('first:sky', 'new_result');
     await tester.pump();
     repository.complete('first:sk', 'stale_result');
-    await tester.pump();
-    expect(find.text('#new_result', findRichText: true), findsOneWidget);
-    expect(find.text('#stale_result', findRichText: true), findsNothing);
+    await tester.pumpAndSettle();
+    expect(suggestion('new_result'), findsOneWidget);
+    expect(suggestion('stale_result'), findsNothing);
   });
-  testWidgets('IME composition blocks autocomplete and submission', (
+  testWidgets('IME blocks autocomplete and submission until composing ends', (
     tester,
   ) async {
     await mount(tester);
-    await tester.tap(find.byType(TextField));
+    await tester.tap(find.byType(EditableText));
     tester.testTextInput.updateEditingValue(
       const TextEditingValue(
         text: '初音',
+        selection: TextSelection.collapsed(offset: 2),
         composing: TextRange(start: 0, end: 2),
       ),
     );
@@ -382,44 +361,58 @@ void main() {
     expect(repository.calls, isEmpty);
     expect(submissions, isEmpty);
     tester.testTextInput.updateEditingValue(
-      const TextEditingValue(text: '初音', composing: TextRange.empty),
+      const TextEditingValue(
+        text: '初音',
+        selection: TextSelection.collapsed(offset: 2),
+        composing: TextRange.empty,
+      ),
     );
     await tester.pump(const Duration(milliseconds: 300));
     expect(repository.calls, ['first:初音']);
     repository.complete('first:初音', 'hatsune_miku');
-    await tester.pump();
+    await tester.pumpAndSettle();
   });
-  testWidgets('keyboard accepts a suggestion without submitting', (
+  testWidgets(
+    'keyboard accepts one suggestion and second Enter submits complete query',
+    (tester) async {
+      await mount(tester);
+      await tester.enterText(find.byType(EditableText), 'mi');
+      await tester.pump(const Duration(milliseconds: 300));
+      repository.complete('first:mi', 'hatsune_miku');
+      await tester.pumpAndSettle();
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      expect(submissions, isEmpty);
+      expect(input(tester).text, 'hatsune_miku ');
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pump();
+      expect(submissions, [
+        ['hatsune_miku'],
+      ]);
+    },
+  );
+  testWidgets('source changes invalidate pending old source suggestions', (
     tester,
   ) async {
     await mount(tester);
-    await tester.enterText(find.byType(TextField), 'mi');
-    await tester.pump(const Duration(milliseconds: 300));
-    repository.complete('first:mi', 'hatsune_miku');
-    await tester.pump();
-    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
-    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await tester.pump();
-    expect(submissions, isEmpty);
-    expect(find.byType(InputChip), findsOneWidget);
-  });
-  testWidgets('changing source invalidates old suggestions', (tester) async {
-    await mount(tester);
-    await tester.enterText(find.byType(TextField), 'mi');
+    await tester.enterText(find.byType(EditableText), 'mi');
     await tester.pump(const Duration(milliseconds: 300));
     await tester.tap(find.text('first'));
     await tester.pump(const Duration(milliseconds: 200));
     await tester.tap(find.text('second'));
-    await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
     repository.complete('first:mi', 'stale_source');
     await tester.pump();
-    expect(find.text('#stale_source', findRichText: true), findsNothing);
+    expect(suggestion('stale_source'), findsNothing);
     repository.complete('second:mi', 'new_source');
     await tester.pump();
-    expect(find.text('#new_source', findRichText: true), findsOneWidget);
+    // Changing a source leaves focus on its trigger; focusing the input reveals its new results.
+    await tester.tap(find.byType(EditableText));
+    await tester.pumpAndSettle();
+    expect(suggestion('new_source'), findsOneWidget);
   });
-
   for (final locale in AppLocale.values) {
     for (final width in [320.0, 600.0, 1440.0]) {
       testWidgets('full editor $locale at $width and large text', (
@@ -429,31 +422,21 @@ void main() {
         addTearDown(() => LocaleSettings.setLocaleSync(AppLocale.en));
         tester.view.physicalSize = Size(width, 1000);
         tester.view.devicePixelRatio = 1;
-        addTearDown(tester.view.resetPhysicalSize);
-        addTearDown(tester.view.resetDevicePixelRatio);
+        addTearDown(tester.view.reset);
         await tester.pumpWidget(
-          ProviderScope(
-            child: MaterialApp(
-              locale: locale.flutterLocale,
-              supportedLocales: AppLocaleUtils.supportedLocales,
-              localizationsDelegates: GlobalMaterialLocalizations.delegates,
-              home: MediaQuery(
-                data: MediaQueryData(
-                  size: Size(width, 1000),
-                  textScaler: const TextScaler.linear(2),
-                ),
-                child: PostSearchPage(
-                  sourceId: 'first',
-                  repository: repository,
-                  initialTags: List.generate(20, (i) => '長い作品名_超长角色标签_$i'),
-                  onSubmit: (_, _) {},
-                ),
-              ),
+          searchTestApp(
+            PostSearchPage(
+              sourceId: 'first',
+              repository: repository,
+              initialTags: List.generate(20, (i) => '長い作品名_超长角色标签_$i'),
+              onSubmit: (_, _) {},
             ),
+            scale: 2,
+            locale: locale,
           ),
         );
         await tester.pumpAndSettle();
-        await tester.enterText(find.byType(TextField), 'long');
+        await tester.enterText(find.byType(EditableText), 'long');
         await tester.pump(const Duration(milliseconds: 300));
         repository.pending['first:long']!.complete([
           const TagSuggestion(
@@ -463,7 +446,7 @@ void main() {
             origin: SuggestionOrigin.sourceApi,
           ),
         ]);
-        await tester.pump();
+        await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
       });
     }

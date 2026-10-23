@@ -1,103 +1,122 @@
-import 'package:booruflow/shared/widgets/form_controls.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frost_ui/frost_ui.dart';
+import '../features/discovery/home_page_test.dart' show browseTestApp;
 
 void main() {
   for (final width in [320.0, 1440.0]) {
     for (final scale in [1.0, 2.0]) {
-      testWidgets('long source labels fit on one menu line at $width/$scale', (
-        tester,
-      ) async {
-        tester.view.physicalSize = Size(width, 800);
-        tester.view.devicePixelRatio = 1;
-        addTearDown(tester.view.resetPhysicalSize);
-        addTearDown(tester.view.resetDevicePixelRatio);
-        await tester.pumpWidget(
-          MaterialApp(
-            home: MediaQuery(
-              data: MediaQueryData(
-                size: Size(width, 800),
-                textScaler: TextScaler.linear(scale),
-              ),
-              child: Scaffold(
-                body: Align(
-                  alignment: Alignment.topLeft,
-                  child: SizedBox(
-                    width: 160,
-                    child: AppSelect<String>(
-                      value: 'short',
-                      items: const [
-                        AppSelectItem(value: 'short', label: 'yande.re'),
-                        AppSelectItem(value: 'long', label: 'Anime-Pictures'),
-                      ],
-                      onChanged: (_) {},
-                    ),
+      testWidgets(
+        'long source labels wrap fully within the value panel at $width/$scale',
+        (tester) async {
+          tester.view.physicalSize = Size(width, 800);
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.resetPhysicalSize);
+          addTearDown(tester.view.resetDevicePixelRatio);
+          String selected = 'short';
+          await tester.pumpWidget(
+            browseTestApp(
+              Align(
+                alignment: Alignment.topLeft,
+                child: SizedBox(
+                  width: 160,
+                  child: FrostPicker<String>.menu(
+                    value: 'short',
+                    label: 'Source',
+                    options: const [
+                      FrostPickerOption(value: 'short', label: 'yande.re'),
+                      FrostPickerOption(value: 'long', label: 'Anime-Pictures'),
+                    ],
+                    onChanged: (value) => selected = value,
                   ),
                 ),
               ),
+              scale: scale,
             ),
-          ),
-        );
-        await tester.tap(find.text('yande.re'));
-        await tester.pumpAndSettle();
-        final text = find
-            .descendant(
-              of: find.widgetWithText(MenuItemButton, 'Anime-Pictures'),
-              matching: find.byType(RichText),
-            )
-            .first;
-        final paragraph = tester.renderObject<RenderParagraph>(text);
-        expect(paragraph.maxLines, 1);
-        if (scale == 1 || width >= 600) {
+          );
+          await tester.tap(find.text('yande.re'));
+          await tester.pumpAndSettle();
+          final label = find.text('Anime-Pictures');
+          final paragraph = tester.renderObject<RenderParagraph>(label);
           expect(paragraph.didExceedMaxLines, isFalse);
-        }
-        final shortRow = find.widgetWithText(MenuItemButton, 'yande.re');
-        final longRow = find.widgetWithText(MenuItemButton, 'Anime-Pictures');
-        expect(tester.getSize(longRow).height, tester.getSize(shortRow).height);
-        expect(tester.getRect(longRow).right, lessThanOrEqualTo(width));
-        expect(tester.takeException(), isNull);
-      });
+          expect(tester.getRect(label).left, greaterThanOrEqualTo(0));
+          expect(tester.getRect(label).right, lessThanOrEqualTo(width));
+          expect(
+            find.byWidgetPredicate(
+              (w) => w is FrostSurface && w.role == FrostSurfaceRole.sheet,
+            ),
+            width < 600 ? findsOneWidget : findsNothing,
+          );
+          await tester.tap(label);
+          await tester.pumpAndSettle();
+          expect(selected, 'long');
+          expect(tester.takeException(), isNull);
+        },
+      );
     }
   }
-
   testWidgets(
-    'compact selector keeps menu bounded and later options reachable',
+    'compact picker keeps fitted sheet bounded and later lazy options reachable',
     (tester) async {
+      tester.view.physicalSize = const Size(390, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       int selected = 0;
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Align(
-              alignment: Alignment.topLeft,
-              child: SizedBox(
-                width: 180,
-                child: AppSelect<int>(
-                  value: 0,
-                  items: List.generate(
-                    30,
-                    (i) => AppSelectItem(value: i, label: 'Option $i'),
-                  ),
-                  onChanged: (value) => selected = value,
+        browseTestApp(
+          Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: 180,
+              child: FrostPicker<int>.menu(
+                value: 0,
+                label: 'Option',
+                options: List.generate(
+                  30,
+                  (i) => FrostPickerOption(value: i, label: 'Option $i'),
                 ),
+                onChanged: (value) => selected = value,
               ),
             ),
           ),
         ),
       );
-      expect(tester.getSize(find.byType(AppSelect<int>)).height, 36);
       await tester.tap(find.text('Option 0'));
       await tester.pumpAndSettle();
       expect(
-        tester.widget<MenuAnchor>(find.byType(MenuAnchor)).clipBehavior,
-        Clip.antiAlias,
+        tester
+            .getRect(
+              find.byWidgetPredicate(
+                (w) => w is FrostSurface && w.role == FrostSurfaceRole.sheet,
+              ),
+            )
+            .bottom,
+        lessThanOrEqualTo(800),
       );
-      final option = find.widgetWithText(MenuItemButton, 'Option 29');
-      await tester.ensureVisible(option);
-      await tester.pumpAndSettle();
-      await tester.tap(option);
+      final list = find
+          .descendant(
+            of: find.byWidgetPredicate(
+              (w) => w is FrostSurface && w.role == FrostSurfaceRole.sheet,
+            ),
+            matching: find.byType(Scrollable),
+          )
+          .last;
+      await tester.scrollUntilVisible(
+        find.text('Option 29'),
+        240,
+        scrollable: list,
+      );
+      await tester.tap(find.text('Option 29'));
       await tester.pumpAndSettle();
       expect(selected, 29);
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is FrostSurface && w.role == FrostSurfaceRole.sheet,
+        ),
+        findsNothing,
+      );
       expect(tester.takeException(), isNull);
     },
   );

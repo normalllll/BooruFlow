@@ -1,10 +1,16 @@
 import 'package:booruflow/core/downloads/download_models.dart';
+import 'package:booruflow/features/downloads/download_presentation.dart';
+import 'package:booruflow/features/downloads/logic.dart';
 import 'package:booruflow/features/downloads/models/booru_download_item.dart';
 import 'package:booruflow/features/downloads/widgets/download_task_widgets.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frost_ui/frost_ui.dart';
+
+import '../discovery/home_page_test.dart' show browseTestApp;
+import 'support.dart';
 
 DownloadTaskSnapshot snapshot(
   DownloadStatus status,
@@ -43,7 +49,7 @@ void main() {
     for (final width in [260.0, 372.0]) {
       for (final scale in [1.0, 2.0]) {
         testWidgets(
-          'floating download height stays stable: $locale/$width/$scale',
+          'shared download rows wrap all states: $locale/$width/$scale',
           (tester) async {
             LocaleSettings.setLocaleSync(locale);
             addTearDown(() => LocaleSettings.setLocaleSync(AppLocale.en));
@@ -55,46 +61,36 @@ void main() {
             late StateSetter update;
             await tester.pumpWidget(
               ProviderScope(
-                child: MaterialApp(
-                  home: MediaQuery(
-                    data: MediaQueryData(textScaler: TextScaler.linear(scale)),
-                    child: Scaffold(
-                      body: Align(
-                        alignment: Alignment.topLeft,
-                        child: SizedBox(
-                          width: width,
-                          child: StatefulBuilder(
-                            builder: (context, setState) {
-                              update = setState;
-                              return Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  DownloadSummaryView(
-                                    summary: DownloadSummary.fromTasks([
-                                      current,
-                                    ]),
-                                    compact: true,
-                                  ),
-                                  DownloadTaskTile(
-                                    task: BooruDownloadItem(snapshot: current),
-                                    compact: true,
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                        ),
+                overrides: [
+                  downloadManagerProvider.overrideWithValue(
+                    TestDownloadManager(),
+                  ),
+                ],
+                child: browseTestApp(
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: SizedBox(
+                      width: width,
+                      child: StatefulBuilder(
+                        builder: (context, setState) {
+                          update = setState;
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              DownloadTaskTile(
+                                task: BooruDownloadItem(snapshot: current),
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ),
                   ),
+                  scale: scale,
                 ),
               ),
             );
             await tester.pump(const Duration(milliseconds: 400));
-            final tileSize = tester.getSize(find.byType(DownloadTaskTile));
-            final summarySize = tester.getSize(
-              find.byType(DownloadSummaryView),
-            );
 
             for (var index = 0; index < states.length; index++) {
               update(
@@ -107,19 +103,32 @@ void main() {
               await tester.pump();
               for (final elapsed in [80, 400]) {
                 await tester.pump(Duration(milliseconds: elapsed));
+                if (downloadCompleted(current)) {
+                  final row = tester.widget<FrostListRow>(
+                    find.byType(FrostListRow),
+                  );
+                  expect(row.title, current.filename);
+                  expect(find.byType(FrostTaskRow), findsNothing);
+                } else {
+                  final row = tester.widget<FrostTaskRow>(
+                    find.byType(FrostTaskRow),
+                  );
+                  expect(row.title, current.filename);
+                  expect(row.status, downloadTaskStatus(current));
+                }
                 expect(
-                  tester.getSize(find.byType(DownloadTaskTile)),
-                  tileSize,
-                  reason:
-                      'Task changed size for ${states[index]} after $elapsed ms',
+                  tester.getSize(find.byType(DownloadTaskTile)).height,
+                  greaterThanOrEqualTo(40),
                 );
                 expect(
-                  tester.getSize(find.byType(DownloadSummaryView)),
-                  summarySize,
-                  reason:
-                      'Summary changed size for ${states[index]} after $elapsed ms',
+                  tester.getSize(find.byType(DownloadTaskTile)).width,
+                  lessThanOrEqualTo(width),
                 );
-                expect(tester.takeException(), isNull);
+                expect(
+                  tester.takeException(),
+                  isNull,
+                  reason: "${current.status}/${current.saveState}",
+                );
               }
             }
             await tester.pumpWidget(const SizedBox.shrink());
