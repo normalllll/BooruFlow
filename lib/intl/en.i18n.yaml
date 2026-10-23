@@ -7,11 +7,10 @@ generic:
   disabled: Disabled
   copiedWithValue: "Copied to clipboard: $value"
   errorWithValue: "An error occurred: $value"
-  errorWithCause: "$message: $cause"
-  loading: Loading...
+  loading: Loading
   loadFailed: Load failed
   retry: Retry
-  noMoreData: No more data
+  noMoreData: "No more items"
   notFound: Not found
 
 booruError:
@@ -20,23 +19,23 @@ booruError:
   authenticationRequired: Sign in to this source and try again.
   authenticationRejected: The source rejected the account credentials.
   permissionDenied: The source denied access to this resource.
-  rateLimited: The source is rate limiting requests. Try again later.
+  rateLimited: "The source is limiting requests. Access will resume shortly."
   challengeRequired: "The source requires browser verification. Try opening it in a browser to complete verification, or choose another source."
   routeUnavailable: "No route is available for this domain. Refresh routes in Network settings; system DNS fallback is disabled."
   sourceUnavailable: The source is currently unavailable.
-  network: "The network request failed. Check your internet connection and try again. If the issue persists, you can try using a proxy server."
+  network: "Network request failed. Check your connection and retry."
   timeout: "The request timed out. Check your internet connection or try again later."
   invalidResponse: The source returned an invalid response.
   unsafeRedirect: The source returned an unsafe redirect.
-  mediaValidationFailed: The image response could not be validated or decoded.
+  mediaValidationFailed: "The media response could not be validated or decoded."
   cancelled: The request was cancelled.
   internal: An internal booru engine error occurred.
 
 update:
-  checkUpdateStart: Checking for updates...
-  checkUpdateFailed: Failed to check for updates. Please check your Internet connection.
-  selectDownloadUrlFailed: Unable to find download URL.\nPlease visit the project page to manually update or seek help on the project Issue page.
-  newVersionFound: "New version found: $version.\nPlease go to the About page and click Download update."
+  checkUpdateStart: Checking for updates
+  checkUpdateFailed: Failed to check for updates. Please check your internet connection.
+  selectDownloadUrlFailed: Unable to find download URL.\nPlease visit the project page to manually update or seek help on the project issue page.
+  newVersionFound: "Version $version is available. Open About to download the update."
   noNewVersionFound: No new version found.
 
 postList:
@@ -45,6 +44,27 @@ postList:
   titleWithTags: "Posts with tags: $tags"
 
 postDetail:
+  fullscreen: View fullscreen
+  notFound: "Post not found"
+  parentCount: "$count parent"
+  childCount: "$count children"
+  zoomIn: "Zoom in"
+  zoomOut: "Zoom out"
+  originalFailed: "Original image failed to load"
+  previewShown: "Showing the preview image."
+  uploadedAt: "Uploaded $date"
+  pixels: "pixels"
+  dimensions: "Dimensions"
+  searchTag: "Search this tag"
+  addToSearch: "Add to search"
+  excludeTag: "Exclude this tag"
+  openSource: "Open source"
+  resetZoom: "Reset zoom"
+  ratingGeneral: "General"
+  ratingSensitive: "Sensitive"
+  ratingQuestionable: "Questionable"
+  ratingExplicit: "Explicit"
+  ratingUnknown: "Unknown"
   titleWithId: "Post: $id"
   tags: Tags
   details: Details
@@ -65,7 +85,7 @@ postDetail:
   size: Size
   parent: Parent ID
   hasChildren: Has child posts
-  similarPosts: Similar posts
+  similarPosts: Related images
   parentPost: Parent post
   childPost: Child post
 
@@ -73,10 +93,39 @@ postSearch:
   title: Search
 
 imageZoom:
-  title: Zoom Image
+  title: Zoom image
 
 downloads:
-  viewLog: View log
+  fileMissing: "File is no longer in its original location"
+  locationMissing: "File or folder not found"
+  redownload: "Download again"
+  remove: Delete
+  activeTasks: "Downloading $count items"
+  failedTasks: "$count downloads failed"
+  retryAll: "Retry all"
+  today: "Today"
+  yesterday: "Yesterday"
+  transferRate: "$value/s"
+  remainingSeconds: "About $count s"
+  remainingMinutes: "About $count min"
+  remainingHours: "About $count h"
+  format: "Format"
+  startedAt: "Started"
+  browse: "Browse"
+  all: "All"
+  pause: "Pause"
+  resume: "Resume"
+  pauseAll: "Pause all"
+  resumeAll: "Resume all"
+  retryFailed: "Retry failed tasks"
+  clearCompleted: "Clear completed"
+  openDirectory: "Open download directory"
+  openPost: "Open post"
+  batch: "Batch download"
+  batchProgress: "$completed / $total"
+  path: "Save path"
+  taskDetails: "Task details"
+  viewLog: Logs
   title: Downloads
   tasksTitle: Download tasks
   noTasks: No download tasks
@@ -128,7 +177,7 @@ about:
   appVersion: App version
   freepivPromotionTitle: Discover freepiv
   freepivPromotionSubtitle: A modern, smooth, cross-platform third-party Pixiv client.
-  discussion: Discussion
+  discussion: "Community"
   downloadUpdate: Download update
   downloadUpdateHint: Download the latest version for your device via your browser.
 
@@ -137,15 +186,15 @@ settings:
   theme: Theme
   language: Language
   bypassSni: Bypass SNI
-  downloadDirectory: Download Directory
-  defaultToPlatformSettings: Default to Platform Settings
-  columnsPerRow: Columns per Row
-  maxConcurrentDownloads: Max Concurrent Download Tasks
-  maxSegmentsPerTask: Max Segments per Download Task
+  downloadDirectory: Download directory
+  defaultToPlatformSettings: Default to platform settings
+  columnsPerRow: "Images per row"
+  maxConcurrentDownloads: "Concurrent downloads"
+  maxSegmentsPerTask: "Segments per task"
   platformDefault: Platform default
-  system: System
-  light: Light
-  dark: Dark
+  system: "System"
+  light: "Light"
+  dark: "Dark"
   auto: Auto
   downloadsOverview: Save location and download concurrency
 
@@ -159,11 +208,11 @@ settings:
   source:
     defaultSource: Default source
     supportedRatings: Supported ratings
-    safetyRating: "Global content ratings"
+    safetyRating: "Content rating"
 
   account:
     manageAllSubtitle: Source ratings and account settings
-    noAccountRequired: No account configuration needed
+    noAccountRequired: "No account needed"
     openSignInPage: Open sign-in page
     cookieHeader: Cookie header
     storedLocally: Stored locally on this device
@@ -190,7 +239,7 @@ settings:
       rejected: Rejected
 
   network:
-    proxyCompact: "Proxy"
+    proxyCompact: "Custom proxy"
     checkCompact: "Test"
     detailsCompact: "Details"
     advancedCompact: "Advanced"
@@ -199,8 +248,8 @@ settings:
     apiShort: "API"
     imagesShort: "Images"
     saveCompact: "Save"
-    proxyProtocol: "Proxy protocol"
-    proxyHost: "IP or hostname"
+    proxyProtocol: "Protocol"
+    proxyHost: "Host"
     proxyPort: "Port"
     proxyReachable: Reachable
     proxyUnreachable: Unreachable
@@ -209,7 +258,7 @@ settings:
     sourceAvailable: "Available"
     sourcePartial: "Partially available"
     sourceUnavailable: "Unavailable"
-    checkAllSources: "Check all sources"
+    checkAllSources: "Check all"
     mediaAvailable: "Images: available"
     mediaUnavailable: "Images: failed or no test image"
     dnsDetails: "DNS route details (separate from availability)"
@@ -221,28 +270,28 @@ settings:
     noFallback: "The DNS provider is used for route refresh below. System DNS mode does not use cached IPs. SNI bypass uses cached IPs without automatic fallback."
     checkProgress: "DNS $done/$total · API $checked/$sources"
     checkSummary: "API available: $available/$total · DNS failures: $failed"
-    loadingStatus: "Reading saved status…"
-    apiChecking: "API: checking…"
+    loadingStatus: "Reading saved status"
+    apiChecking: "API: checking"
     apiAvailable: "API: available"
     apiFailed: "API: unavailable"
     apiUnchecked: "API: not checked"
     dnsPending: "Not resolved · refresh routes to obtain IPs"
-    dnsResolving: "Resolving…"
+    dnsResolving: "Resolving"
     dnsResolved: "Resolved"
-    dnsCached: "Using cached IPs · Not rechecked"
+    dnsCached: "Using cached IPs · not rechecked"
     dnsFailed: "Resolution failed · no active route"
-    dnsQueued: "Waiting to resolve…"
-    ipCachedAt: "IP cached · Updated at $time"
+    dnsQueued: "Waiting to resolve"
+    ipCachedAt: "IP cached · updated at $time"
     ipNotCached: "IP resolved · not yet saved"
     connectionMode: Connection mode
     proxyUrl: Proxy URL
-    proxyTitle: Custom network proxy
+    proxyTitle: "Custom proxy"
     proxyModeOverride: The custom proxy takes priority and keeps normal SNI and certificate verification. SNI bypass is not combined with a proxy. The connection mode takes effect after disabling the custom proxy.
-    proxyApply: Apply proxy settings
-    proxyDisable: Disable custom proxy
+    proxyApply: "Apply"
+    proxyDisable: "Disable proxy"
     proxyActive: "Applied: $endpoint (connection not confirmed)"
-    proxyInactive: No custom proxy · Uses the connection mode and system proxy settings
-    proxyPending: Changes are pending. Click Apply proxy settings.
+    proxyInactive: "Not in use"
+    proxyPending: "Changes are not applied. Choose Apply to save them."
     proxyHelp: Enter a proxy address and click the button below. Start the proxy service first. Applies to source lists, images and new download requests.
     proxyCheckHelp: A custom proxy takes priority over cached IP routes. Use the source API checks below to confirm connectivity; successful DNS resolution does not test the proxy.
     proxyInvalid: Enter a valid IP or hostname and a port from 1–65535 in separate fields. Omit the protocol and path from the address.
@@ -257,18 +306,17 @@ settings:
     routeRefreshFailed: Route refresh failed
     systemDns: Use system DNS
     sniBypass: SNI bypass
-    legacyIpUrl: Legacy IP URL
 
   languageDialog:
     title: Language
 
   themeModeDialog:
-    title: Theme Mode
+    title: Theme mode
 
   downloadDirectoryDialog:
-    title: Download Directory
-    pickerTitle: Choose Directory
-    pick: Choose Directory
+    title: Download directory
+    pickerTitle: Choose directory
+    pick: Choose directory
     messages:
       setToPlatformDefault: Directory set to platform default.
       pathNotAbsolute: Directory path must be absolute.
@@ -278,25 +326,41 @@ settings:
     title: Bypass SNI
 
   columnsPerRowDialog:
-    title: Columns per Row
-
-  maxConcurrentDownloadsDialog:
-    title: Max Concurrent Download Tasks
+    title: "Images per row"
 
   maxSegmentsPerTaskDialog:
-    title: Max Segments per Download Task
+    title: Max segments per download task
 
 discovery:
+  mode: "Mode"
+  timeRange: "Time range"
+  chooseDate: "Choose date"
+  menuWeek: "Week"
+  menuMonth: "Month"
+  ratingsTitle: "Content rating"
+  ratingLabel: "Rating"
+  ratingSeparator: ", "
+  calendarRanges: "Calendar periods"
+  rollingRanges: "Rolling periods"
+  tooManyRequests: "Too many requests"
+  copyLink: "Copy link"
+  copyQueryLink: "Copy query link"
+  copyImage: "Copy image"
+  searchAuthor: "Search this artist"
+  mediaAnimation: "Animated"
+  mediaVideo: "Video"
+  mediaCollection: "Related images"
+  retryIn: "Retry in $seconds s"
   searchResults: "Search results"
   searchTermsTitle: "Search ${count} terms"
   allAvailable: "All available"
-  defaultRatingsHint: "Ratings apply across all sources. With none selected, show everything the current source and account can access."
+  defaultRatingsHint: "Leave all unchecked to show all content available from the current source."
   resetFilters: "Restore defaults"
-  unsupportedRatings: "This source does not support the selected ratings. Restore defaults to browse available posts."
-  noFilteredPosts: "No posts match the current filters."
+  unsupportedRatings: "This source does not support the selected ratings."
+  noFilteredPosts: "No matching images"
   noSearchResults: "No posts match this search."
   noFeedPosts: "This source currently has no posts to display."
-  historicalPopular: "Historical popular"
+  historicalPopular: "Popular by date"
   calendarDay: "Day"
   calendarWeek: "Week"
   calendarMonth: "Month"
@@ -316,21 +380,27 @@ discovery:
   latestFallback: "This source supports latest posts only."
   filters: "Filters"
   loadMore: "Load more"
-  filteredContinue: "No matching posts on these pages. Continue browsing"
+  clearHistory: "Clear"
+  recentSearches: "Recent searches"
+  noRecentSearches: "No recent searches"
+  myTags: "My tags"
   commonTags: "Common tags"
   moreTags: "Show more"
   tagSource: "Source"
   allTagSources: "All sources"
   manageTags: "Custom tags"
+  manageTagsAction: "Manage"
+  addTagAction: "Add"
+  deleteTag: "Delete"
   addTag: "Add tag"
   noCustomTags: "No custom tags yet"
-  customTagsHint: "Give tags memorable names to find them more easily in search."
+  customTagsHint: "Give frequently used tags a memorable name to find them more easily in search."
   addCustomTag: "Add as a custom tag"
   editTag: "Edit custom tag"
   canonicalTag: "Source tag"
   displayName: "Display name (optional)"
   invalidTag: "Enter one nonempty tag without spaces."
-  queryHint: "Enter tags or a source query…"
+  queryHint: "Search tags"
   unverifiedTag: "Some tags are not verified for this source. You can still search."
   verifiedTag: "Verified for this source"
   noSuggestions: "No suggestions"
@@ -346,6 +416,10 @@ discovery:
   lifetimeFavorites: "Lifetime favorites"
 
 mediaError:
+  videoProxyBypassed: "The selected SOCKS proxy is not supported for video; this playback attempted a direct connection."
+  videoFailed: "Video playback failed"
+  downloadOriginal: Download original file
+  previewUnsupported: Preview unavailable
   title: Image failed to load
   details: Error details
   copyDetails: Copy details
@@ -353,22 +427,24 @@ mediaError:
 
 webChallenge:
   title: Web verification
-  open: Open verification page
+  open: Open web verification
   windowTitle: "$source · Close this window after verification"
   instructions: Complete the page's verification manually, then go back or close the window. The app will save the verification data and reload the source.
   finish: Finish and return
-  saving: Reading and verifying the web session…
-  waiting: Web verification in progress…
-  clear: Clear verification data
+  saving: Reading and verifying the web session
+  waiting: Web verification in progress
+  clear: Clear
   clearAll: Clear all web verification data
-  clearDescription: Remove cookies, browser identity and web cache, and stop pending verification.
+  clearDescription: Remove cookies, browser identity and web cache.
   cleared: Web verification data cleared
   verified: Verified and accessible
   saved: Saved; awaiting verification
   empty: No saved verification data
   failed: Web verification did not complete. Please retry.
   pageLoadFailed: The page failed to load. Reopen verification or check network settings.
-  webViewUnavailable: The web component is unavailable on this platform. On Windows, install or update Microsoft Edge WebView2 Runtime.
+  webViewUnavailable: The web component is unavailable on this platform.
+  windowFailed: Could not open web verification.
+  runtimeMissing: Microsoft Edge WebView2 Runtime was not found. Install or update it and try again.
   proxyUnsupported: The web component does not support the current proxy settings. Change them and retry.
   busy: Another web verification or cleanup is in progress.
   cancelled: Web verification cancelled.
@@ -384,3 +460,246 @@ nativeWindow:
   maximize: Maximize
   restore: Restore
   close: Close
+
+batchDownload:
+  title: Batch download
+  close: Close
+  limitTitle: How many images should we look for?
+  limitHint: "Fetch matching results page by page until this limit is reached."
+  limitLabel: Maximum images to fetch
+  positiveInteger: Enter a positive whole number.
+  start: Fetch images
+  fetchLimit: "/ up to $count images"
+  fetching: Images found so far
+  progress: "$current / $total"
+  fetchProgress: "Fetched $current of at most $limit images"
+  stopHint: "Stop at any time and use the images already found."
+  stop: Stop fetching
+  found: "images available to download"
+  limitReached: Fetch limit reached. More matching images may be available.
+  exhausted: All matching results have been fetched.
+  permissionDenied: Download permission is unavailable. Check the app's permissions in system settings and retry.
+  enqueueFailed: Could not add tasks. Check the save location and available storage, then retry.
+  stopped: Fetching stopped. You can download the images already found.
+  empty: No matching images were found.
+  stalled: The source stopped making progress. Results have been kept; retry or use them below.
+  sessionChanged: Source settings changed. Close this window and start again, or use the results already found.
+  fetchFailed: Could not finish fetching. Results have been kept; retry or use them below.
+  countLabel: Images to download
+  all: All
+  countRange: "Enter 1–$max"
+  orderHint: Downloads the first N images in the current search order.
+  folderLabel: "Folder name"
+  folderHint: e.g. September collection
+  folderPlaceholder: Your folder
+  invalidFolder: Use 1–100 characters without path separators, reserved names, leading/trailing spaces or trailing dots.
+  folderHelp: "Existing folders are reused; existing files are never overwritten."
+  locationFailed: Could not resolve the save location.
+  photos: Photos
+  photosHint: On iOS, the batch is saved in an album inside the source folder. Full Photos access is needed to reuse albums.
+  enqueue: "Add to queue · $count"
+  enqueueing: Adding download tasks
+  preparing: "Preparing $current / $total images"
+  added: Tasks added to the download queue
+  backgroundHint: You can close this window. Submission continues while the app is running; reopen here to see its result.
+  queueHint: Follow download progress in the download list.
+  failedHint: "$count images could not be added."
+  retryFailed: Retry failed items
+  queued: "Batch: $added added to queue, $failed failed to add."
+  completed: "Batch finished: $saved saved, $failed failed or cancelled."
+  done: Done
+  back: Back
+
+  first: "First N"
+
+  addedCount: "$count images added"
+
+  savedTo: "Save to “$folder”"
+
+  viewDownloads: "View downloads"
+
+frost:
+  retry: "Retry"
+  error: "Error"
+  errorDetails: "Error details"
+  copyDetails: "Copy details"
+  copied: "Copied"
+  loading: "Loading"
+  actionSucceeded: "Action succeeded"
+  actionFailed: "Action failed"
+  loadFailed: "Couldn't load"
+  noItems: "No items"
+  noMoreItems: "No more items"
+  pullToRefresh: "Pull to refresh"
+  releaseToRefresh: "Release to refresh"
+  refreshing: "Refreshing"
+  refreshComplete: "Refresh complete"
+  refreshFailed: "Refresh failed"
+  previous: "Previous"
+  next: "Next"
+  back: "Back"
+  more: "More"
+  expandNavigation: "Expand sidebar"
+  collapseNavigation: "Collapse sidebar"
+  clearText: "Clear text"
+  search: "Search"
+  noResults: "No results for “$query”"
+  clearSearch: "Clear search"
+  dismiss: "Dismiss"
+  expandText: "Show more"
+  collapseText: "Show less"
+  showAll: "Show all"
+  copy: "Copy"
+  clearAll: "Clear all"
+  showPassword: "Show password"
+  hidePassword: "Hide password"
+  chooseDate: "Choose date"
+  chooseTime: "Choose time"
+  increment: "Increase"
+  decrement: "Decrease"
+  reorderHandle: "Reorder"
+  sortAscending: "Ascending"
+  sortDescending: "Descending"
+  play: "Play"
+  pause: "Pause"
+  loop: "Loop"
+  mute: "Mute"
+  unmute: "Unmute"
+  fullscreen: "Full screen"
+  exitFullscreen: "Exit full screen"
+  reload: "Reload"
+  openInBrowser: "Open in browser"
+  minimize: "Minimize"
+  maximize: "Maximize"
+  restore: "Restore"
+  close: "Close"
+  cancel: "Cancel"
+  apply: "Apply"
+  clear: "Clear"
+  choose: "Choose"
+  showInFolder: "Show in folder"
+  selectedCount: "$count selected"
+  pageOf: "Page $page of $total"
+  selectAll: "Select all"
+  done: "Done"
+  itemPosition: "$position of $total"
+  tableDimensions: "$rows rows, $columns columns"
+  taskQueued: "Queued"
+  taskRunning: "Downloading"
+  taskPaused: "Paused"
+  taskCompleted: "Completed"
+  taskFailed: "Failed"
+  taskCancelled: Cancelled
+  remove: "Remove"
+  forward: "Forward"
+  stop: "Stop"
+  seek: "Playback position"
+  send: "Send"
+  attach: "Attach"
+  readerSettings: "Reading settings"
+  textSize: "Text size"
+  lineSpacing: "Line spacing"
+  readingProgress: "Reading progress"
+  showReplies: "Show $count replies"
+  characterCount: "$count of $limit characters"
+  moreMedia: "$count more images"
+  navigationCount: "$count items"
+  navigationProgress: "$progress% complete"
+  listSeparator: ", "
+
+navigation:
+  browse: "Browse"
+  search: "Search"
+  downloads: "Downloads"
+  settings: "Settings"
+  browseEmpty: "Browse your favorite sources"
+  searchEmpty: "Find posts by tags"
+  downloadsEmpty: "Your downloads appear here"
+  settingsEmpty: "Make BooruFlow yours"
+
+settingsV2:
+  predictiveBack: "Predictive back"
+  predictiveBackScope: "Previews returns within the app. Returning to the home screen uses the system animation."
+  background: "Background"
+  ambientBlur: "Blur"
+  mica: "Mica"
+  backgroundOff: "Off"
+  backgroundIntensity: "Intensity"
+  systemTransparencyReduced: "System transparency is reduced"
+  customColour: "Custom colour"
+  appearance: "Appearance"
+  browsing: "Browsing"
+  tone: "Tone"
+  neutral: "Neutral"
+  cool: "Cool"
+  warm: "Warm"
+  accent: "Accent colour"
+  customAccent: "Custom accent"
+  customHex: "Accent HEX"
+  invalidHex: "Enter a six-digit HEX colour."
+  accentRejected: "This accent is not readable on the current surfaces."
+  accentWarning: "This accent has low contrast. Apply it anyway?"
+  editAccount: "Edit account"
+  signOutConfirm: "Remove the saved credentials for this source?"
+  licenses: "Open-source licences"
+  checkUpdates: "Check for updates"
+  help: "Help"
+
+settingsDetails:
+  mode: "Mode"
+  custom: "Custom"
+  change: "Change"
+  routeCache: "Route cache"
+  hostCount: "$count hosts"
+  updatedAt: "Updated $time"
+  sourceStatus: "Source status"
+  apiAndImages: "API and images available"
+  apiOnly: "API available · images failed"
+  status: "Status"
+  content: "Content"
+  editSourceAccount: "Edit $source account"
+  proxyApplies: "Applies to sources, images and new downloads."
+  version: "Version $version ($build)"
+  communityTelegram: "Telegram group"
+  communityDiscord: "Discord server"
+  savedVerifications: "Saved verifications"
+  systemDnsShort: "System DNS"
+  refresh: "Refresh"
+  updateAvailable: "New version $version is available"
+
+verificationPage:
+  instructions: "Complete the verification below, then choose Finish and return."
+  opening: "Opening webpage"
+  failed: "Webpage failed to load"
+  closed: "Verification window closed"
+  failureHelp: "Reopen it, or check network settings."
+  reopen: "Reopen"
+  signOut: "Sign out of $source?"
+  signOutHelp: "Account information will be removed from this device."
+  downloadAdded: "Added to downloads"
+  downloadFailed: "Download failed"
+  linkCopied: "Copied link"
+  view: "View"
+  networkSettings: "Network settings"
+
+ugoira:
+  iosFilesDestination: "Other formats: Files › BooruFlow"
+  iosFormatHelp: "Animated WebP and ZIP are saved to Files."
+  albumName: "Album name"
+  openSettings: "Open settings"
+  androidDestination: "Albums and Downloads"
+  iosDestination: "Save to Photos"
+  format: "Ugoira export"
+  losslessWebp: "Lossless animated WebP"
+  originalZip: "Original ZIP"
+  webpRecord: "WebP · animation"
+  zipRecord: "ZIP · original frames"
+  ugoiraInvalidArchive: "The animation archive is invalid."
+  ugoiraMetadataMissing: "The animation has no frame timing metadata."
+  ugoiraInvalidMetadata: "The animation timing metadata is invalid."
+  ugoiraFrameMissing: "An animation frame is missing."
+  ugoiraFrameCorrupt: "An animation frame is damaged."
+  ugoiraFrameSizeMismatch: "Animation frame dimensions do not match."
+  ugoiraFrameTooLarge: "An animation frame exceeds the size limit."
+  ugoiraEncodeFailed: "The animation could not be encoded."
+  ugoiraOutputTooLarge: "The encoded animation exceeds the size limit."

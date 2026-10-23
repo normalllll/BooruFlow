@@ -7,8 +7,7 @@ generic:
   disabled: 停用
   copiedWithValue: "已复制到剪贴板: $value"
   errorWithValue: "发生错误: $value"
-  errorWithCause: "$message：$cause"
-  loading: 正在加载...
+  loading: 正在加载
   loadFailed: 加载失败
   retry: 重试
   noMoreData: 没有更多数据
@@ -20,20 +19,20 @@ booruError:
   authenticationRequired: 请登录当前图源后重试。
   authenticationRejected: 图源拒绝了账号凭据。
   permissionDenied: 图源拒绝访问此资源。
-  rateLimited: 请求受到图源限流，请稍后重试。
+  rateLimited: "图源暂时限制了请求，稍后会自动恢复。"
   challengeRequired: "图源要求浏览器验证。可尝试在浏览器中打开图源完成验证，或选择其他图源。"
   routeUnavailable: "当前域名没有可用路由。请在网络设置中刷新路由；不会回退到系统 DNS。"
   sourceUnavailable: 当前图源暂时不可用。
-  network: "网络请求失败。请检查网络连接并重试。如果问题持续，可尝试使用代理服务器。"
+  network: "网络请求失败。请检查网络连接后重试。"
   timeout: "请求超时。请检查网络连接，或稍后重试。"
   invalidResponse: 图源返回了无法解析的响应。
   unsafeRedirect: 图源返回了不安全的重定向。
-  mediaValidationFailed: 图片响应校验或解码失败。
+  mediaValidationFailed: "媒体验证或解码失败。"
   cancelled: 请求已取消。
   internal: 图源引擎发生内部错误。
 
 update:
-  checkUpdateStart: 正在检查更新...
+  checkUpdateStart: 正在检查更新
   checkUpdateFailed: 检查更新失败，请检查你的网络连接。
   selectDownloadUrlFailed: 找不到下载链接。\n请访问项目页面手动更新，或在项目 Issue 页面寻求帮助。
   newVersionFound: "发现新版本: $version。请转到“关于”页面并点击“下载更新”。"
@@ -45,16 +44,37 @@ postList:
   titleWithTags: "带有标签的帖子: $tags"
 
 postDetail:
+  fullscreen: 全屏查看
+  notFound: "找不到这个作品"
+  parentCount: "$count 个父作品"
+  childCount: "$count 个子作品"
+  zoomIn: "放大"
+  zoomOut: "缩小"
+  originalFailed: "原图加载失败"
+  previewShown: "现在显示的是预览图。"
+  uploadedAt: "$date 上传"
+  pixels: "像素"
+  dimensions: "尺寸"
+  searchTag: "搜索此标签"
+  addToSearch: "添加到搜索"
+  excludeTag: "排除此标签"
+  openSource: "打开来源"
+  resetZoom: "重置缩放"
+  ratingGeneral: "一般"
+  ratingSensitive: "敏感"
+  ratingQuestionable: "可疑"
+  ratingExplicit: "成人"
+  ratingUnknown: "未知"
   titleWithId: "帖子: $id"
   tags: 标签
   details: 详细信息
   actions: 操作
-  rating: 安全评级
+  rating: 分级
   fileType: 文件类型
   viewOriginal: 查看原图
   download: 下载
   relatedLoadFailed: 关联图片加载失败，可以重试。
-  createdAt: 创建时间
+  createdAt: 创建于
   author: 作者
   unknownAuthor: 未知
   imageSource: 图源
@@ -65,7 +85,7 @@ postDetail:
   size: 大小
   parent: 父 ID
   hasChildren: 有子帖子
-  similarPosts: 相似帖子
+  similarPosts: 相关图片
   parentPost: 父帖子
   childPost: 子帖子
 
@@ -76,8 +96,37 @@ imageZoom:
   title: 缩放图片
 
 downloads:
-  viewLog: 查看日志
-  title: 下载项
+  fileMissing: "文件已不在原位置"
+  locationMissing: "找不到文件或文件夹"
+  redownload: "重新下载"
+  remove: 删除
+  activeTasks: "正在下载 $count 项"
+  failedTasks: "$count 项下载失败"
+  retryAll: "全部重试"
+  today: "今天"
+  yesterday: "昨天"
+  transferRate: "$value/s"
+  remainingSeconds: "约 $count 秒"
+  remainingMinutes: "约 $count 分钟"
+  remainingHours: "约 $count 小时"
+  format: "格式"
+  startedAt: "开始于"
+  browse: "去浏览"
+  all: "全部"
+  pause: "暂停"
+  resume: "继续"
+  pauseAll: "全部暂停"
+  resumeAll: "全部继续"
+  retryFailed: "重试失败项"
+  clearCompleted: "清除已完成"
+  openDirectory: "打开下载目录"
+  openPost: "打开作品"
+  batch: "批量下载"
+  batchProgress: "$completed / $total"
+  path: "保存路径"
+  taskDetails: "任务详情"
+  viewLog: 日志
+  title: 下载
   tasksTitle: 下载任务
   noTasks: 暂无下载任务
   noTasksMessage: 下载的图片会显示在这里。
@@ -140,12 +189,12 @@ settings:
   downloadDirectory: 下载目录
   defaultToPlatformSettings: 使用平台默认设置
   columnsPerRow: 每行列数
-  maxConcurrentDownloads: 最大同时下载任务数
-  maxSegmentsPerTask: 每个下载任务的最大分段数
+  maxConcurrentDownloads: "同时下载"
+  maxSegmentsPerTask: "每个任务的分段数"
   platformDefault: 平台默认
-  system: 系统
-  light: 浅色模式
-  dark: 深色模式
+  system: "跟随系统"
+  light: "浅色"
+  dark: "深色"
   auto: 自动
   downloadsOverview: 保存位置与下载并发
 
@@ -159,11 +208,11 @@ settings:
   source:
     defaultSource: 默认图源
     supportedRatings: 支持的分级
-    safetyRating: "全局内容分级"
+    safetyRating: "内容分级"
 
   account:
     manageAllSubtitle: 图源分级与账号配置
-    noAccountRequired: 此图源无需配置账号
+    noAccountRequired: "无需账号"
     openSignInPage: 打开登录页面
     cookieHeader: Cookie 请求头
     storedLocally: 仅保存在此设备
@@ -190,7 +239,7 @@ settings:
       rejected: 已被拒绝
 
   network:
-    proxyCompact: "代理"
+    proxyCompact: "自定义代理"
     checkCompact: "检测"
     detailsCompact: "详情"
     advancedCompact: "高级"
@@ -199,8 +248,8 @@ settings:
     apiShort: "API"
     imagesShort: "图片"
     saveCompact: "保存"
-    proxyProtocol: "代理协议"
-    proxyHost: "IP 或主机名"
+    proxyProtocol: "协议"
+    proxyHost: "主机"
     proxyPort: "端口"
     proxyReachable: 可连接
     proxyUnreachable: 无法连接
@@ -209,7 +258,7 @@ settings:
     sourceAvailable: "可用"
     sourcePartial: "部分可用"
     sourceUnavailable: "不可用"
-    checkAllSources: "检测所有图源"
+    checkAllSources: "检测全部"
     mediaAvailable: "图片：可用"
     mediaUnavailable: "图片：未通过检测或无测试图片"
     dnsDetails: "DNS 路由详情（不参与可用性判定）"
@@ -221,27 +270,27 @@ settings:
     noFallback: "DNS 提供商用于下方的路由刷新。系统 DNS 模式不使用缓存 IP；绕过 SNI 模式使用缓存 IP，失败时不自动切换。"
     checkProgress: "DNS 已完成 $done/$total · API 已检测 $checked/$sources"
     checkSummary: "API 可用 $available/$total · DNS 失败 $failed 项"
-    loadingStatus: "正在读取缓存状态…"
-    apiChecking: "API：检测中…"
+    loadingStatus: "正在读取缓存状态"
+    apiChecking: "API：检测中"
     apiAvailable: "API：可用"
     apiFailed: "API：不可用"
     apiUnchecked: "API：尚未检测"
     dnsPending: "尚未解析 · 点击刷新路由获取 IP"
-    dnsResolving: "正在解析…"
+    dnsResolving: "正在解析"
     dnsResolved: "解析成功"
     dnsCached: "使用已缓存 IP · 尚未重新检测"
     dnsFailed: "解析失败 · 当前无可用路由"
-    dnsQueued: "等待解析…"
+    dnsQueued: "等待解析"
     ipCachedAt: "IP 已缓存 · 更新于 $time"
     ipNotCached: "IP 已解析 · 尚未写入缓存"
     connectionMode: 连接模式
     proxyUrl: 代理 URL
-    proxyTitle: 自定义网络代理
+    proxyTitle: "自定义代理"
     proxyModeOverride: 当前使用自定义代理，保留正常 SNI 和证书校验，不叠加“绕过 SNI”。连接模式在停用自定义代理后生效。
-    proxyApply: 应用代理设置
-    proxyDisable: 停用自定义代理
+    proxyApply: "应用"
+    proxyDisable: "停用代理"
     proxyActive: "已应用：$endpoint（尚不代表连接成功）"
-    proxyInactive: 未使用自定义代理 · 按连接模式和系统代理设置连接
+    proxyInactive: "未使用"
     proxyPending: 修改尚未应用，请点击“应用代理设置”。
     proxyHelp: 输入代理地址后点击下方按钮。代理服务需要事先启动；应用后用于图源列表、图片和新的下载请求。
     proxyCheckHelp: 自定义代理优先于缓存 IP 路由。应用后请用下方的图源 API 检测确认连接；DNS 解析成功不代表代理可用。
@@ -257,7 +306,6 @@ settings:
     routeRefreshFailed: 路由刷新失败
     systemDns: 使用系统 DNS
     sniBypass: 绕过 SNI
-    legacyIpUrl: 旧版 IP URL
 
   languageDialog:
     title: 语言
@@ -280,20 +328,36 @@ settings:
   columnsPerRowDialog:
     title: 每行列数
 
-  maxConcurrentDownloadsDialog:
-    title: 最大同时下载任务数
-
   maxSegmentsPerTaskDialog:
     title: 每个下载任务的最大分段数
 
 discovery:
+  mode: "模式"
+  timeRange: "时间范围"
+  chooseDate: "指定日期"
+  menuWeek: "本周"
+  menuMonth: "本月"
+  ratingsTitle: "内容分级"
+  ratingLabel: "分级"
+  ratingSeparator: "、"
+  calendarRanges: "自然周期"
+  rollingRanges: "滚动区间"
+  tooManyRequests: "请求太频繁"
+  copyLink: "复制链接"
+  copyQueryLink: "复制查询链接"
+  copyImage: "复制图片"
+  searchAuthor: "搜索此画师"
+  mediaAnimation: "动图"
+  mediaVideo: "视频"
+  mediaCollection: "关联图片"
+  retryIn: "$seconds 秒后重试"
   searchResults: "搜索结果"
   searchTermsTitle: "搜索${count}个词条"
   allAvailable: "全部可用内容"
-  defaultRatingsHint: "分级偏好适用于所有图源。未选择分级时，显示当前图源和账号能访问的所有内容。"
+  defaultRatingsHint: "不选时显示当前图源能访问的全部内容。"
   resetFilters: "恢复默认"
-  unsupportedRatings: "当前图源不支持所选分级，请恢复默认以浏览可用内容。"
-  noFilteredPosts: "没有符合当前筛选条件的内容。"
+  unsupportedRatings: "当前图源不支持所选分级。"
+  noFilteredPosts: "没有符合筛选的内容"
   noSearchResults: "没有找到符合此查询的内容。"
   noFeedPosts: "当前图源暂时没有可展示的内容。"
   historicalPopular: "历史热门"
@@ -316,21 +380,27 @@ discovery:
   latestFallback: "此图源仅支持最新帖子。"
   filters: "筛选"
   loadMore: "加载更多"
-  filteredContinue: "当前几页没有符合筛选的帖子，继续浏览"
+  clearHistory: "清空"
+  recentSearches: "最近搜索"
+  noRecentSearches: "暂无最近搜索"
+  myTags: "我的标签"
   commonTags: "常用标签"
   moreTags: "查看更多"
   tagSource: "适用图源"
   allTagSources: "通用"
   manageTags: "标签管理"
+  manageTagsAction: "管理"
+  addTagAction: "添加"
+  deleteTag: "删除"
   addTag: "添加标签"
   noCustomTags: "还没有自定义标签"
-  customTagsHint: "为常用标签设置易记的名称，搜索时更容易找到。"
+  customTagsHint: "给常用标签起个好记的名字，搜索时更容易找到。"
   addCustomTag: "添加为自定义标签"
   editTag: "编辑自定义标签"
   canonicalTag: "图源标签"
   displayName: "显示名称（可选）"
   invalidTag: "请输入一个非空且不含空格的标签。"
-  queryHint: "输入标签或图源查询语句…"
+  queryHint: "搜索标签"
   unverifiedTag: "部分标签尚未在当前图源验证，仍可提交搜索。"
   verifiedTag: "已在当前图源验证"
   noSuggestions: "没有建议"
@@ -346,6 +416,10 @@ discovery:
   lifetimeFavorites: "累计收藏数"
 
 mediaError:
+  videoProxyBypassed: "视频不支持当前的 SOCKS 代理，本次播放使用了直连。"
+  videoFailed: "视频播放失败"
+  downloadOriginal: 下载原文件
+  previewUnsupported: 无法预览
   title: 图片加载失败
   details: 错误详情
   copyDetails: 复制详情
@@ -357,18 +431,20 @@ webChallenge:
   windowTitle: "$source · 完成验证后关闭窗口"
   instructions: 请手动完成网页中的人机验证，完成后返回或关闭窗口。应用会保存验证数据并重新加载图源。
   finish: 完成验证并返回
-  saving: 正在读取并验证网页会话…
-  waiting: 正在进行网页验证…
-  clear: 清空验证数据
+  saving: 正在读取并验证网页会话
+  waiting: 正在进行网页验证
+  clear: 清空
   clearAll: 清空全部网页验证数据
-  clearDescription: 清除 Cookie、浏览器标识及网页缓存，并停止正在进行的验证。
+  clearDescription: 清除 Cookie、浏览器标识和网页缓存。
   cleared: 网页验证数据已清空
   verified: 已验证，可访问
   saved: 已保存，等待重新验证
   empty: 没有已保存的验证数据
   failed: 网页验证未完成，请重试。
   pageLoadFailed: 网页加载失败，可重新打开验证窗口或检查网络设置。
-  webViewUnavailable: 当前平台的网页组件不可用。Windows 请安装或更新 Microsoft Edge WebView2 Runtime。
+  webViewUnavailable: 当前平台无法使用网页组件。
+  windowFailed: 无法打开网页验证。
+  runtimeMissing: 找不到 Microsoft Edge WebView2 Runtime，请安装或更新后重试。
   proxyUnsupported: 网页组件暂不支持当前代理设置，请更换代理配置后重试。
   busy: 另一个网页验证或清理操作正在进行。
   cancelled: 已取消网页验证。
@@ -384,3 +460,246 @@ nativeWindow:
   maximize: 最大化
   restore: 还原
   close: 关闭
+
+batchDownload:
+  title: 批量下载
+  close: 关闭
+  limitTitle: 这次最多获取多少张？
+  limitHint: "按当前搜索条件逐页获取，达到上限后停止。"
+  limitLabel: 最多获取
+  positiveInteger: 请输入大于 0 的整数。
+  start: 获取图片
+  fetchLimit: "/ 最多 $count 张"
+  fetching: 已找到的图片
+  progress: "$current / $total"
+  fetchProgress: "已获取 $current 张，最多 $limit 张"
+  stopHint: "随时可以停止，并使用已找到的图片。"
+  stop: 停止获取
+  found: "张图片可以下载"
+  limitReached: 已达到获取上限，可能还有更多搜索结果。
+  exhausted: 已获取全部匹配结果。
+  permissionDenied: 下载权限不可用，请在系统设置中检查应用权限后重试。
+  enqueueFailed: 无法加入下载任务，请检查保存位置及剩余空间后重试。
+  stopped: 已停止获取，可以下载已找到的图片。
+  empty: 没有找到符合条件的图片。
+  stalled: 源站分页未能继续推进。已保留结果，可重试或使用已有图片。
+  sessionChanged: 源站设置已改变。请关闭窗口后重新获取，或使用已找到的图片。
+  fetchFailed: 获取未完成。已保留结果，可重试或使用已有图片。
+  countLabel: 下载数量
+  all: 全部
+  countRange: "请输入 1～$max"
+  orderHint: 按当前搜索结果顺序下载前 N 张图片。
+  folderLabel: "文件夹名"
+  folderHint: 例如：九月收藏
+  folderPlaceholder: 你的文件夹
+  invalidFolder: 请输入 1～100 个字符，不含路径分隔符、保留名称、首尾空格或末尾句点。
+  folderHelp: "同名文件夹会直接沿用，已有文件不会被覆盖。"
+  locationFailed: 无法获取保存位置。
+  photos: 照片库
+  photosHint: iOS 将本次图片保存为源站文件夹下的相册，复用相册需要照片库完整访问权限。
+  enqueue: "加入下载队列 · $count 张"
+  enqueueing: 正在加入下载队列
+  preparing: "正在准备 $current / $total 张图片"
+  added: 个任务已加入下载队列
+  backgroundHint: 可以关闭窗口。应用运行期间会继续入队，再次点击此入口可查看结果。
+  queueHint: 图片下载进度可在下载列表中查看。
+  failedHint: "$count 张未能加入队列。"
+  retryFailed: 重试失败项
+  queued: "批量任务：已加入 $added 张，入队失败 $failed 张。"
+  completed: "批量下载结束：已保存 $saved 张，失败或取消 $failed 张。"
+  done: 完成
+  back: 返回
+
+  first: "前 N 张"
+
+  addedCount: "已加入 $count 张"
+
+  savedTo: "保存到“$folder”"
+
+  viewDownloads: "查看下载"
+
+frost:
+  retry: "重试"
+  error: "错误"
+  errorDetails: "错误详情"
+  copyDetails: "复制详情"
+  copied: "已复制"
+  loading: "正在加载"
+  actionSucceeded: "操作成功"
+  actionFailed: "操作失败"
+  loadFailed: "加载失败"
+  noItems: "暂无内容"
+  noMoreItems: "没有更多内容"
+  pullToRefresh: "下拉刷新"
+  releaseToRefresh: "松开刷新"
+  refreshing: "正在刷新"
+  refreshComplete: "刷新完成"
+  refreshFailed: "刷新失败"
+  previous: "上一个"
+  next: "下一个"
+  back: "返回"
+  more: "更多"
+  expandNavigation: "展开侧栏"
+  collapseNavigation: "收起侧栏"
+  clearText: "清除文字"
+  search: "搜索"
+  noResults: "未找到“$query”的结果"
+  clearSearch: "清除搜索"
+  dismiss: "关闭"
+  expandText: "展开"
+  collapseText: "收起"
+  showAll: "显示全部"
+  copy: "复制"
+  clearAll: "全部清除"
+  showPassword: "显示密码"
+  hidePassword: "隐藏密码"
+  chooseDate: "选择日期"
+  chooseTime: "选择时间"
+  increment: "增加"
+  decrement: "减少"
+  reorderHandle: "调整顺序"
+  sortAscending: "升序"
+  sortDescending: "降序"
+  play: "播放"
+  pause: "暂停"
+  loop: "循环"
+  mute: "静音"
+  unmute: "取消静音"
+  fullscreen: "全屏"
+  exitFullscreen: "退出全屏"
+  reload: "重新加载"
+  openInBrowser: "在浏览器中打开"
+  minimize: "最小化"
+  maximize: "最大化"
+  restore: "还原"
+  close: "关闭"
+  cancel: "取消"
+  apply: "应用"
+  clear: "清除"
+  choose: "选择"
+  showInFolder: "在文件夹中显示"
+  selectedCount: "已选 $count 项"
+  pageOf: "第 $page 页，共 $total 页"
+  selectAll: "全选"
+  done: "完成"
+  itemPosition: "第 $position 项，共 $total 项"
+  tableDimensions: "$rows 行，$columns 列"
+  taskQueued: "等待中"
+  taskRunning: "下载中"
+  taskPaused: "已暂停"
+  taskCompleted: "已完成"
+  taskFailed: "失败"
+  taskCancelled: 已取消
+  remove: "移除"
+  forward: "前进"
+  stop: "停止"
+  seek: "播放位置"
+  send: "发送"
+  attach: "添加附件"
+  readerSettings: "阅读设置"
+  textSize: "字号"
+  lineSpacing: "行距"
+  readingProgress: "阅读进度"
+  showReplies: "显示 $count 条回复"
+  characterCount: "$count / $limit 字"
+  moreMedia: "还有 $count 张图片"
+  navigationCount: "$count 项"
+  navigationProgress: "已完成 $progress%"
+  listSeparator: "，"
+
+navigation:
+  browse: "浏览"
+  search: "搜索"
+  downloads: "下载"
+  settings: "设置"
+  browseEmpty: "浏览喜欢的图源"
+  searchEmpty: "通过标签查找作品"
+  downloadsEmpty: "下载任务将显示在这里"
+  settingsEmpty: "按喜好设置 BooruFlow"
+
+settingsV2:
+  predictiveBack: "预测性返回"
+  predictiveBackScope: "预览 App 内的返回动作；返回桌面的动画由系统控制。"
+  background: "背景材质"
+  ambientBlur: "环境模糊"
+  mica: "云母"
+  backgroundOff: "关闭"
+  backgroundIntensity: "强度"
+  systemTransparencyReduced: "系统已降低透明度"
+  customColour: "自定义颜色"
+  appearance: "外观"
+  browsing: "浏览"
+  tone: "色调"
+  neutral: "中性"
+  cool: "冷色"
+  warm: "暖色"
+  accent: "强调色"
+  customAccent: "自定义强调色"
+  customHex: "强调色 HEX"
+  invalidHex: "请输入六位 HEX 颜色。"
+  accentRejected: "此强调色在当前表面上无法保持可读。"
+  accentWarning: "此强调色对比度较低，仍要应用吗？"
+  editAccount: "编辑账号"
+  signOutConfirm: "移除此图源已保存的账号凭据？"
+  licenses: "开源许可"
+  checkUpdates: "检查更新"
+  help: "帮助"
+
+settingsDetails:
+  mode: "模式"
+  custom: "自定义"
+  change: "更改"
+  routeCache: "路由缓存"
+  hostCount: "$count 个主机"
+  updatedAt: "更新于 $time"
+  sourceStatus: "图源状态"
+  apiAndImages: "API 与图片可用"
+  apiOnly: "API 可用 · 图片未通过"
+  status: "状态"
+  content: "内容"
+  editSourceAccount: "编辑 $source 账号"
+  proxyApplies: "应用后用于图源、图片和新的下载。"
+  version: "版本 $version ($build)"
+  communityTelegram: "Telegram 群组"
+  communityDiscord: "Discord 服务器"
+  savedVerifications: "已保存的验证"
+  systemDnsShort: "系统 DNS"
+  refresh: "刷新"
+  updateAvailable: "有新版本 $version"
+
+verificationPage:
+  instructions: "在下方页面完成人机验证，然后点“完成验证并返回”。"
+  opening: "正在打开网页"
+  failed: "网页加载失败"
+  closed: "验证窗口已关闭"
+  failureHelp: "可以重新打开，或检查网络设置。"
+  reopen: "重新打开"
+  signOut: "退出 $source 账号？"
+  signOutHelp: "账号信息会从此设备移除。"
+  downloadAdded: "已加入下载"
+  downloadFailed: "下载失败"
+  linkCopied: "已复制链接"
+  view: "查看"
+  networkSettings: "网络设置"
+
+ugoira:
+  iosFilesDestination: "其他格式保存在“文件”App › BooruFlow"
+  iosFormatHelp: "动态 WebP 和 ZIP 保存到“文件”。"
+  albumName: "相簿名"
+  openSettings: "前往设置"
+  androidDestination: "相册与下载文件夹"
+  iosDestination: "保存到照片"
+  format: "动图保存格式"
+  losslessWebp: "无损动态 WebP"
+  originalZip: "原始 ZIP"
+  webpRecord: "WebP · 动图"
+  zipRecord: "ZIP · 原始帧"
+  ugoiraInvalidArchive: "动画压缩包无效。"
+  ugoiraMetadataMissing: "动画缺少帧时长元数据。"
+  ugoiraInvalidMetadata: "动画帧时长元数据无效。"
+  ugoiraFrameMissing: "动画中有帧缺失。"
+  ugoiraFrameCorrupt: "动画中有帧损坏。"
+  ugoiraFrameSizeMismatch: "动画的帧尺寸不一致。"
+  ugoiraFrameTooLarge: "动画帧超过大小限制。"
+  ugoiraEncodeFailed: "动画编码失败。"
+  ugoiraOutputTooLarge: "动画编码结果超过大小限制。"

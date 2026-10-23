@@ -7,20 +7,28 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 class UpdaterService {
   UpdaterService._();
-
   static Future<Map<String, dynamic>> _fetchLatestRelease() async {
     HttpClient client = HttpClient();
-    final request = await client.getUrl(
-      Uri.parse(
-        'https://api.github.com/repos/normalllll/BooruFlow/releases/latest',
-      ),
-    );
-    final response = await request.close();
-    if (response.statusCode == 200) {
-      final body = await response.transform(utf8.decoder).join();
-      return jsonDecode(body);
+    try {
+      final request = await client.getUrl(
+        Uri.parse(
+          'https://api.github.com/repos/normalllll/BooruFlow/releases/latest',
+        ),
+      );
+      final response = await request.close();
+      if (response.statusCode == 200) {
+        final body = await response.transform(utf8.decoder).join();
+        return jsonDecode(body);
+      }
+      throw HttpException(
+        'Failed to fetch latest release',
+        uri: Uri.parse(
+          'https://api.github.com/repos/normalllll/BooruFlow/releases/latest',
+        ),
+      );
+    } finally {
+      client.close();
     }
-    throw Exception('Failed to fetch latest release');
   }
 
   static Future<(String, int, List<dynamic>)?> checkForUpdate() async {

@@ -1,14 +1,17 @@
 import 'dart:convert';
-
+import 'package:booruflow/app/icons.g.dart';
 import 'package:booruflow/features/posts/models/post.dart';
+import 'package:booruflow/features/posts/stage_image_presentation.dart';
 import 'package:booruflow/intl/translations.g.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 
 enum AppRoute {
   posts('/'),
   search('/search'),
   about('/about'),
+  downloads('/downloads'),
   settings('/settings'),
   settingsSection('/settings/:section'),
   userTags('/settings/custom-tags'),
@@ -23,55 +26,49 @@ enum AppRoute {
 }
 
 class AppDestination {
-  const AppDestination({
-    required this.route,
-    required this.icon,
-    required this.selectedIcon,
-  });
-
+  const AppDestination({required this.route, required this.icon});
   final AppRoute route;
-  final IconData icon;
-  final IconData selectedIcon;
+  final FrostIconData icon;
 }
 
 const appDestinations = <AppDestination>[
   AppDestination(
     route: AppRoute.posts,
-    icon: Icons.home_outlined,
-    selectedIcon: Icons.home,
+    icon: FrostIconData.glyph(BooruFlowIcons.compass),
   ),
   AppDestination(
     route: AppRoute.search,
-    icon: Icons.search_outlined,
-    selectedIcon: Icons.search,
+    icon: FrostIconData.glyph(BooruFlowIcons.search),
   ),
   AppDestination(
-    route: AppRoute.about,
-    icon: Icons.info_outline,
-    selectedIcon: Icons.info,
+    route: AppRoute.downloads,
+    icon: FrostIconData.glyph(BooruFlowIcons.download),
   ),
   AppDestination(
     route: AppRoute.settings,
-    icon: Icons.settings_outlined,
-    selectedIcon: Icons.settings,
+    icon: FrostIconData.glyph(BooruFlowIcons.settings),
   ),
 ];
 
-String appDestinationLabel(AppDestination destination) {
-  return switch (destination.route) {
-    AppRoute.posts => t.postList.short,
-    AppRoute.search => t.postSearch.title,
-    AppRoute.about => t.about.title,
-    AppRoute.settings => t.settings.title,
-    _ => '',
-  };
-}
+String appDestinationLabel(AppDestination destination) =>
+    switch (destination.route) {
+      AppRoute.posts => t.navigation.browse,
+      AppRoute.search => t.navigation.search,
+      AppRoute.downloads => t.navigation.downloads,
+      AppRoute.settings => t.navigation.settings,
+      _ => '',
+    };
 
 int? appDestinationIndexForPath(String path) {
   for (var index = 0; index < appDestinations.length; index++) {
     if (appDestinations[index].route.path == path) return index;
   }
-  if (path.startsWith('${AppRoute.settings.path}/')) {
+  if (path.startsWith('/posts/')) return 0;
+  if (path == AppRoute.userTags.path) return 1;
+  if (path.startsWith('${AppRoute.search.path}/')) return 1;
+  if (path.startsWith('${AppRoute.downloads.path}/')) return 2;
+  if (path == AppRoute.about.path ||
+      path.startsWith('${AppRoute.settings.path}/')) {
     return appDestinations.indexWhere(
       (destination) => destination.route == AppRoute.settings,
     );
@@ -83,20 +80,45 @@ bool isPrimaryNavigationPath(String path) {
   return appDestinations.any((destination) => destination.route.path == path);
 }
 
-class ImageViewerRouteArgs {
-  const ImageViewerRouteArgs({
-    required this.url,
-    required this.width,
-    required this.height,
-    required this.sourceId,
-    required this.postId,
-  });
+/// One opened card occurrence and a snapshot of the collection it came from.
+class PostDetailRouteArgs {
+  PostDetailRouteArgs({
+    required Post post,
+    List<Post>? collection,
+    this.initialIndex = 0,
+    this.heroTag,
+    this.preview,
+  }) : collection = List.unmodifiable(collection ?? [post]) {
+    assert(initialIndex >= 0 && initialIndex < this.collection.length);
+    assert(this.collection[initialIndex].postKey == post.postKey);
+  }
+  final List<Post> collection;
+  final int initialIndex;
+  final FrostMediaHeroTag? heroTag;
+  final ImageProvider? preview;
+  Post get post => collection[initialIndex];
+}
 
-  final String url;
-  final double width;
-  final double height;
-  final String sourceId;
-  final String postId;
+class ImageViewerRouteArgs {
+  ImageViewerRouteArgs({
+    required List<Post> collection,
+    required this.initialIndex,
+    this.preview,
+    this.presentation,
+    this.onIndexChanged,
+    this.videoPosition,
+    this.videoMuted = false,
+  }) : collection = List.unmodifiable(collection) {
+    assert(collection.isNotEmpty);
+    assert(initialIndex >= 0 && initialIndex < collection.length);
+  }
+  final List<Post> collection;
+  final int initialIndex;
+  final ImageProvider? preview;
+  final StageImagePresentation? presentation;
+  final ValueChanged<int>? onIndexChanged;
+  final Duration? videoPosition;
+  final bool videoMuted;
 }
 
 class SearchQuery {
@@ -110,9 +132,14 @@ extension AppNavigation on BuildContext {
   Future<SearchQuery?> editSearch(
     List<String> tags, {
     required String sourceId,
+    bool autofocus = true,
   }) => pushNamed<SearchQuery>(
     AppRoute.searchEditor.name,
-    queryParameters: {'source': sourceId, 'tags': jsonEncode(tags)},
+    queryParameters: {
+      'source': sourceId,
+      'tags': jsonEncode(tags),
+      if (!autofocus) 'focus': 'false',
+    },
   );
 
   Future<T?> pushUserTags<T>({String? sourceId}) => pushNamed<T>(
@@ -120,13 +147,24 @@ extension AppNavigation on BuildContext {
     queryParameters: {'source': ?sourceId},
   );
 
-  Future<T?> pushPost<T>(Post post) {
-    return pushNamed<T>(
-      AppRoute.postDetail.name,
-      pathParameters: {'id': post.id},
-      extra: post,
-    );
-  }
+  Future<T?> pushPost<T>(
+    Post post, {
+    List<Post>? collection,
+    int initialIndex = 0,
+    FrostMediaHeroTag? heroTag,
+    ImageProvider? preview,
+  }) => pushNamed<T>(
+    AppRoute.postDetail.name,
+    pathParameters: {'id': post.id},
+    queryParameters: {'source': post.sourceId},
+    extra: PostDetailRouteArgs(
+      post: post,
+      collection: collection,
+      initialIndex: initialIndex,
+      heroTag: heroTag,
+      preview: preview,
+    ),
+  );
 
   Future<T?> pushTaggedPosts<T>(List<String> tags, {required String sourceId}) {
     return pushNamed<T>(
@@ -145,22 +183,6 @@ extension AppNavigation on BuildContext {
   Future<T?> pushSearch<T>({required String sourceId}) =>
       pushNamed<T>(AppRoute.search.name, queryParameters: {'source': sourceId});
 
-  Future<T?> pushImageViewer<T>({
-    required String url,
-    required double width,
-    required double height,
-    required String sourceId,
-    required String postId,
-  }) {
-    return pushNamed<T>(
-      AppRoute.imageViewer.name,
-      extra: ImageViewerRouteArgs(
-        url: url,
-        width: width,
-        height: height,
-        sourceId: sourceId,
-        postId: postId,
-      ),
-    );
-  }
+  Future<T?> pushImageViewer<T>(ImageViewerRouteArgs args) =>
+      pushNamed<T>(AppRoute.imageViewer.name, extra: args);
 }
