@@ -2,9 +2,10 @@ use crate::api::booru_auth::{AuthState, AuthStatus};
 use crate::api::booru_models::{ContentRating, MediaType, MediaVariantKind, TagCategory};
 use crate::booru::adapter::{BooruAdapter, RequestContext};
 use crate::booru::adapters::common::{
-    media, parse_json, rating, signed32, string, tag_list, unsigned, unsigned32, username,
-    validate_media_hosts,
+    media, parse_json, rating, signed32, source_time, string, tag_list, unsigned, unsigned32,
+    username, validate_media_hosts,
 };
+use crate::booru::discovery::wallhaven_purity_bits;
 use crate::booru::error::{BooruError, BooruErrorCode, BooruResult};
 use crate::booru::model::{Post, PostFlags, PostId, PostPage, SearchQuery, Tag};
 use crate::booru::network::{RequestSpec, ResponseKind};
@@ -98,12 +99,17 @@ impl WallhavenAdapter {
             });
         Ok(Post {
             source_id: self.definition.id.to_owned(),
+            original_file_size: unsigned(value, "file_size"),
+            original_file_extension: string(value, "file_ext"),
+            original_checksum: None,
+            width,
+            height,
             id: PostId(id.clone()),
             web_url: string(value, "url")
                 .or_else(|| Some(format!("{}/w/{id}", self.definition.web_base))),
             rating: rating(string(value, "purity").as_deref()),
             score: signed32(value, "favorites"),
-            created_at_iso8601: normalize_time(string(value, "created_at")),
+            created_at_iso8601: source_time(string(value, "created_at")),
             author: username(value, "/uploader/username"),
             source_url: string(value, "source"),
             tags,
@@ -157,7 +163,7 @@ impl BooruAdapter for WallhavenAdapter {
             ("order".to_owned(), "desc".to_owned()),
             ("q".to_owned(), query.text.trim().to_owned()),
             ("categories".to_owned(), "010".to_owned()),
-            ("purity".to_owned(), purity_bits(&query.ratings)),
+            ("purity".to_owned(), wallhaven_purity_bits(&query.ratings)),
             ("page".to_owned(), page.to_string()),
         ];
         if let Some(seed) = seed {
@@ -208,7 +214,7 @@ impl BooruAdapter for WallhavenAdapter {
             ("sorting".into(), sorting.into()),
             ("order".into(), "desc".into()),
             ("categories".into(), "010".into()),
-            ("purity".into(), purity_bits(&request.ratings)),
+            ("purity".into(), wallhaven_purity_bits(&request.ratings)),
             ("page".into(), page.to_string()),
         ];
         if let Some(range) = request.range {
@@ -282,17 +288,6 @@ impl BooruAdapter for WallhavenAdapter {
     }
 }
 
-fn purity_bits(ratings: &[ContentRating]) -> String {
-    if ratings.is_empty() {
-        return "110".to_owned();
-    }
-    let sfw = ratings.contains(&ContentRating::General);
-    let sketchy = ratings.contains(&ContentRating::Sensitive)
-        || ratings.contains(&ContentRating::Questionable);
-    let nsfw = ratings.contains(&ContentRating::Explicit);
-    format!("{}{}{}", u8::from(sfw), u8::from(sketchy), u8::from(nsfw))
-}
-
 fn parse_cursor(cursor: Option<&str>) -> BooruResult<(u32, Option<String>)> {
     let Some(cursor) = cursor else {
         return Ok((1, None));
@@ -323,16 +318,6 @@ fn format_cursor(page: u32, seed: Option<&str>) -> String {
     }
 }
 
-fn normalize_time(value: Option<String>) -> Option<String> {
-    value.map(|value| {
-        if value.contains('T') {
-            value
-        } else {
-            format!("{}Z", value.replace(' ', "T"))
-        }
-    })
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -361,13 +346,19 @@ mod tests {
         assert_eq!(posts[0].id.0, "94x38z");
         assert_eq!(posts[0].rating, ContentRating::Sensitive);
         assert_eq!((current, last, seed.as_deref()), (1, 2, Some("abc123")));
+        let post = posts.into_iter().next().unwrap().into_api();
+        assert_eq!((post.width, post.height), (Some(1920), Some(1080)));
+        assert_eq!(post.original_file_size_decimal.as_deref(), Some("123"));
+        assert_eq!(post.original_file_extension.as_deref(), Some("jpg"));
+        assert_eq!(post.media[0].width, None);
+        assert_eq!(post.media[1].media_type, Some(MediaType::Jpeg));
     }
 
     #[test]
     fn purity_mapping_combines_sensitive_and_questionable() {
-        assert_eq!(purity_bits(&[]), "110");
+        assert_eq!(wallhaven_purity_bits(&[]), "110");
         assert_eq!(
-            purity_bits(&[ContentRating::Questionable, ContentRating::Explicit]),
+            wallhaven_purity_bits(&[ContentRating::Questionable, ContentRating::Explicit]),
             "011"
         );
     }

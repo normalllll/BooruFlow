@@ -1,6 +1,6 @@
 use crate::api::booru_auth::{AuthSchema, AuthState, SourceCredentials, WebCookie};
 use crate::api::booru_download::{
-    DownloadEvent, DownloadRequest, MediaFetchEvent, PreparedDownload,
+    DownloadEvent, DownloadRequest, MediaFetchEvent, PreparedDownload, UgoiraExport,
 };
 use crate::api::booru_models::{
     BooruEngineConfig, BooruPost, BooruSource, BooruTagSuggestion, MediaRequest, MediaVariantKind,
@@ -16,9 +16,8 @@ use crate::booru::adapters::wallhaven::WallhavenAdapter;
 use crate::booru::auth::credential::auth_schema;
 use crate::booru::auth::SessionStore;
 use crate::booru::error::{BooruError, BooruErrorCode, BooruResult};
-use crate::booru::media::download::{
-    download_to_path, open_prepared_unthrottled, DownloadProgress,
-};
+use crate::booru::media::download::open_prepared_unthrottled;
+use crate::booru::media::download_control::{cancelled, DownloadControl};
 use crate::booru::media::request::prepared_download;
 use crate::booru::media::transcode::avif_to_png;
 use crate::booru::model::{PostId, SearchQuery};
@@ -28,7 +27,7 @@ use crate::booru::source::{builtin_sources, ProtocolFamily};
 use crate::booru::web_challenge::{self, ChallengeCoordinator};
 use crate::frb_generated::StreamSink;
 use futures_util::StreamExt;
-use std::collections::BTreeSet;
+use std::collections::BTreeMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
@@ -38,7 +37,7 @@ pub struct BooruEngine {
     runtime: Arc<NetworkRuntime>,
     challenges: Arc<ChallengeCoordinator>,
     challenge_generation: u64,
-    active_downloads: Mutex<BTreeSet<String>>,
+    active_downloads: Mutex<BTreeMap<String, Arc<DownloadControl>>>,
 }
 
 impl BooruEngine {
@@ -68,7 +67,7 @@ impl BooruEngine {
             runtime,
             challenges,
             challenge_generation,
-            active_downloads: Mutex::new(BTreeSet::new()),
+            active_downloads: Mutex::new(BTreeMap::new()),
         })
     }
 
@@ -77,6 +76,24 @@ impl BooruEngine {
             .all()
             .map(|adapter| adapter.definition().to_api())
             .collect()
+    }
+
+    /// The source website's first search page. App-only rating filters and the
+    /// website's own account preferences may differ; credentials and API cursors
+    /// are never included in this shareable URL.
+    pub fn search_web_url(&self, request: SearchRequest) -> BooruResult<String> {
+        let adapter = self.registry.get(&request.source_id)?;
+        crate::booru::web_links::search_url(adapter.definition(), &request)
+    }
+
+    /// The website equivalent of a discovery feed, including its range/date.
+    /// API pagination is deliberately omitted so the link opens at the start.
+    pub fn feed_web_url(
+        &self,
+        request: crate::api::booru_models::FeedRequest,
+    ) -> BooruResult<String> {
+        let adapter = self.registry.get(&request.source_id)?;
+        crate::booru::web_links::feed_url(adapter.definition(), &request)
     }
 
     pub fn web_challenge_state(&self, source_id: String) -> BooruResult<WebChallengeState> {
@@ -467,36 +484,6 @@ impl BooruEngine {
         self.runtime.invalidate_source(&source_id)
     }
 
-    pub async fn prepare_media(
-        &self,
-        source_id: String,
-        post_id: String,
-        variant: MediaVariantKind,
-    ) -> BooruResult<MediaRequest> {
-        let adapter = self.registry.get(&source_id)?;
-        let prepared = adapter
-            .prepare_media(&self.context(), &PostId(post_id.clone()), variant)
-            .await?;
-        let auth_revision = self.sessions.revision(&source_id);
-        let route_revision = self.runtime.route_revision();
-        Ok(MediaRequest {
-            source_id: source_id.clone(),
-            post_id,
-            variant: prepared.media.kind,
-            url: prepared.media.url.clone(),
-            // Authentication material stays in Rust and is resolved at send time.
-            headers: Vec::new(),
-            route_key: format!("{source_id}:{route_revision}"),
-            cache_key: format!(
-                "{source_id}:{}:{auth_revision}:{route_revision}",
-                prepared.media.url
-            ),
-            auth_revision,
-            route_revision,
-            allow_disk_cache: prepared.allow_disk_cache,
-        })
-    }
-
     pub fn prepare_media_url(
         &self,
         source_id: String,
@@ -541,6 +528,28 @@ impl BooruEngine {
         Ok(prepared)
     }
 
+    /// Resolve credentials only for the native video decoder. Image requests keep
+    /// their headers private in Rust. Callers must not log or persist this result.
+    pub fn prepare_video_request(&self, mut request: MediaRequest) -> BooruResult<MediaRequest> {
+        let adapter = self.registry.get(&request.source_id)?;
+        if request.auth_revision != self.sessions.revision(&request.source_id)
+            || request.route_revision != self.runtime.route_revision()
+        {
+            return Err(BooruError::new(
+                BooruErrorCode::Cancelled,
+                Some(&request.source_id),
+                "booru.error.cancelled",
+            ));
+        }
+        let url = reqwest::Url::parse(&request.url)
+            .map_err(|_| BooruError::invalid_request(Some(&request.source_id)))?;
+        // Discard supplied headers; a serialized request cannot replay old or
+        // forged credentials. This also validates the source's allowed hosts.
+        request.headers = self.runtime.prepared_headers(adapter.definition(), &url)?;
+        request.allow_disk_cache = false;
+        Ok(request)
+    }
+
     pub async fn stream_media(&self, request: MediaRequest, sink: StreamSink<MediaFetchEvent>) {
         // FRB exposes the sink as a Dart stream; a returned Result belongs to a
         // separate, unawaited Future. Deliver failures on the same event stream.
@@ -569,6 +578,13 @@ impl BooruEngine {
         };
         let response =
             open_prepared_unthrottled(&self.runtime, adapter.definition(), &prepared).await?;
+        crate::booru::media::validation::validate_image_preview_content_type(
+            &request.source_id,
+            response
+                .headers()
+                .get(reqwest::header::CONTENT_TYPE)
+                .and_then(|value| value.to_str().ok()),
+        )?;
         let total = response.content_length();
         let transcode_avif = prepared
             .url
@@ -649,17 +665,65 @@ impl BooruEngine {
         Ok(())
     }
 
+    /// Stops both the HTTP transfer and frame encoding for this resource.
+    pub fn cancel_download(
+        &self,
+        source_id: String,
+        post_id: String,
+        variant: MediaVariantKind,
+        ugoira_export: Option<UgoiraExport>,
+    ) {
+        let key = format!("{source_id}:{post_id}:{variant:?}:{ugoira_export:?}");
+        if let Ok(active) = self.active_downloads.lock() {
+            if let Some(token) = active.get(&key) {
+                token.cancel.cancel();
+            }
+        }
+    }
+
+    /// Pause closes the connection, retaining a validated partial for Range.
+    pub fn pause_download(
+        &self,
+        source_id: String,
+        post_id: String,
+        variant: MediaVariantKind,
+        ugoira_export: Option<UgoiraExport>,
+    ) {
+        let key = format!("{source_id}:{post_id}:{variant:?}:{ugoira_export:?}");
+        if let Ok(active) = self.active_downloads.lock() {
+            if let Some(control) = active.get(&key) {
+                control.pause();
+            }
+        }
+    }
+    pub fn resume_download(
+        &self,
+        source_id: String,
+        post_id: String,
+        variant: MediaVariantKind,
+        ugoira_export: Option<UgoiraExport>,
+    ) {
+        let key = format!("{source_id}:{post_id}:{variant:?}:{ugoira_export:?}");
+        if let Ok(active) = self.active_downloads.lock() {
+            if let Some(control) = active.get(&key) {
+                control.resume();
+            }
+        }
+    }
+
     pub async fn download_to_file_stream(
         &self,
         request: DownloadRequest,
         sink: StreamSink<DownloadEvent>,
-    ) -> BooruResult<()> {
-        self.download_to_file(request, |event| {
-            sink.add(event).map_err(|_| {
-                BooruError::new(BooruErrorCode::Cancelled, None, "booru.error.cancelled")
-            })
-        })
-        .await
+    ) {
+        // FRB's generated Stream wrapper leaves the function Future unawaited.
+        // Deliver all errors on the subscribed stream, including cancellation.
+        if let Err(error) = self
+            .download_to_file(request, |event| sink.add(event).map_err(|_| cancelled()))
+            .await
+        {
+            let _ = sink.add(DownloadEvent::Failed { error });
+        }
     }
 
     pub async fn download_to_file<F>(
@@ -674,9 +738,11 @@ impl BooruEngine {
             return Err(BooruError::invalid_request(Some(&request.source_id)));
         }
         let job_key = format!(
-            "{}:{}:{:?}",
-            request.source_id, request.post_id, request.variant
+            "{}:{}:{:?}:{:?}",
+            request.source_id, request.post_id, request.variant, request.ugoira_export
         );
+        let control = Arc::new(DownloadControl::new());
+        let token = control.cancel.clone();
         {
             let mut active = self.active_downloads.lock().map_err(|_| {
                 BooruError::new(
@@ -685,23 +751,35 @@ impl BooruEngine {
                     "booru.error.internal",
                 )
             })?;
-            if !active.insert(job_key.clone()) {
+            if active.contains_key(&job_key) {
                 return Err(BooruError::new(
                     BooruErrorCode::InvalidRequest,
                     Some(&request.source_id),
                     "booru.error.downloadAlreadyActive",
                 ));
             }
+            active.insert(job_key.clone(), control.clone());
         }
         let result = async {
+            // Acknowledges registration before metadata/network work. The Dart
+            // owner waits for the first event before sending an early pause.
+            on_event(DownloadEvent::Progress { received_bytes_decimal: "0".into(), total_bytes_decimal: None, progress: 0.0 })?;
             let adapter = self.registry.get(&request.source_id)?;
-            let prepared_media = adapter
-                .prepare_media(
-                    &self.context(),
-                    &PostId(request.post_id.clone()),
-                    request.variant,
-                )
-                .await?;
+            let context = self.context();
+            let post_id = PostId(request.post_id.clone());
+            let prepared_media = loop {
+                if control.is_paused() {
+                    on_event(DownloadEvent::Paused)?;
+                    control.running().await?;
+                    on_event(DownloadEvent::Resumed { restarted: false })?;
+                }
+                if token.is_cancelled() { return Err(cancelled()); }
+                tokio::select! {
+                    biased;
+                    _ = control.interrupted() => continue,
+                    result = adapter.prepare_media(&context, &post_id, request.variant) => break result?,
+                }
+            };
             let prepared = prepared_download(
                 &request.source_id,
                 &request.post_id,
@@ -711,20 +789,29 @@ impl BooruEngine {
             let destination = PathBuf::from(&request.download_root)
                 .join(&request.source_id)
                 .join(&prepared.filename);
-            let completed_path = download_to_path(
-                &self.runtime,
-                adapter.definition(),
-                &prepared,
-                &destination,
-                |event: DownloadProgress| {
-                    on_event(DownloadEvent::Progress {
-                        received_bytes_decimal: event.received.to_string(),
-                        total_bytes_decimal: event.total.map(|value| value.to_string()),
-                        progress: event.progress,
-                    })
-                },
-            )
-            .await?;
+            let completed_path = crate::booru::media::resumable_download::download(
+                &self.runtime, adapter.definition(), &prepared, &destination, &control, &mut on_event,
+            ).await?;
+            let completed_path = if request.variant == MediaVariantKind::Original
+                && completed_path
+                    .extension()
+                    .is_some_and(|e| e.eq_ignore_ascii_case("zip"))
+                && request.ugoira_export == Some(UgoiraExport::LosslessWebp)
+            {
+                crate::booru::media::resumable_download::encode(
+                    &completed_path, &control, &mut on_event,
+                ).await?
+            } else {
+                completed_path
+            };
+            if token.is_cancelled() {
+                let _ = tokio::fs::remove_file(&completed_path).await;
+                return Err(BooruError::new(
+                    BooruErrorCode::Cancelled,
+                    None,
+                    "booru.error.cancelled",
+                ));
+            }
             on_event(DownloadEvent::Done {
                 path: completed_path.to_string_lossy().into_owned(),
             })?;
@@ -735,32 +822,6 @@ impl BooruEngine {
             active.remove(&job_key);
         }
         result
-    }
-
-    /// Check an actual API response using the active network configuration.
-    pub async fn check_source(&self, source_id: String) -> BooruResult<()> {
-        let adapter = self.registry.get(&source_id)?;
-        tokio::time::timeout(
-            std::time::Duration::from_secs(20),
-            adapter.search(
-                &self.context(),
-                SearchQuery {
-                    text: "rating:safe".into(),
-                    ratings: vec![crate::api::booru_models::ContentRating::General],
-                    page_size: 1,
-                    cursor: None,
-                },
-            ),
-        )
-        .await
-        .map_err(|_| {
-            BooruError::new(
-                BooruErrorCode::Timeout,
-                Some(&source_id),
-                "booru.error.timeout",
-            )
-        })??;
-        Ok(())
     }
 
     /// Probe a draft proxy without replacing the engine or saved settings.
@@ -906,6 +967,7 @@ fn unsupported(source_id: &str) -> BooruError {
 mod tests {
     use super::*;
     use crate::api::booru_models::{ContentRating, NetworkFallbackMode};
+    use std::collections::BTreeSet;
 
     #[tokio::test]
     async fn empty_search_and_autocomplete_do_not_reach_network() {
@@ -1116,6 +1178,58 @@ mod tests {
         }
     }
 
+    #[tokio::test]
+    #[ignore = "R7 explicitly authorized public sample download acceptance"]
+    async fn r7_public_ugoira_download_formats() {
+        let root = std::path::PathBuf::from(std::env::var("R7_NETWORK_OUTPUT").unwrap());
+        let engine = engine();
+        for format in [UgoiraExport::LosslessWebp, UgoiraExport::OriginalZip] {
+            let folder = root.join(format!("{format:?}"));
+            let mut result = None;
+            let mut encoded = 0;
+            tokio::time::timeout(
+                std::time::Duration::from_secs(60),
+                engine.download_to_file(
+                    DownloadRequest {
+                        source_id: "danbooru".into(),
+                        post_id: "12411796".into(),
+                        variant: MediaVariantKind::Original,
+                        download_root: folder.to_string_lossy().into(),
+                        ugoira_export: Some(format),
+                    },
+                    |event| {
+                        match event {
+                            DownloadEvent::Done { path } => result = Some(path),
+                            DownloadEvent::Encoding { .. } => encoded += 1,
+                            _ => (),
+                        }
+                        Ok(())
+                    },
+                ),
+            )
+            .await
+            .unwrap()
+            .unwrap();
+            let output = std::path::PathBuf::from(result.unwrap());
+            let bytes = std::fs::read(&output).unwrap();
+            if format == UgoiraExport::LosslessWebp {
+                assert_eq!(output.extension().unwrap(), "webp");
+                assert_eq!(&bytes[..4], b"RIFF");
+                assert!(encoded > 0);
+                assert!(!output.with_extension("zip").exists());
+            } else {
+                assert_eq!(output.extension().unwrap(), "zip");
+                assert!(bytes.starts_with(b"PK"));
+                assert_eq!(encoded, 0);
+            }
+            println!(
+                "R7 download {format:?}: {} bytes, {} encoding notifications",
+                bytes.len(),
+                encoded
+            );
+        }
+    }
+
     fn engine() -> BooruEngine {
         let directory = tempfile::tempdir().unwrap().keep();
         BooruEngine::new(BooruEngineConfig {
@@ -1228,6 +1342,104 @@ mod tests {
         assert_eq!(error.code, BooruErrorCode::UnsupportedCapability);
     }
 
+    #[test]
+    fn video_request_resolves_current_headers_without_exposing_them_to_images() {
+        let engine = engine();
+        let mut request = engine
+            .prepare_media_url(
+                "danbooru".into(),
+                "1".into(),
+                MediaVariantKind::Original,
+                "https://cdn.donmai.us/original/test.mp4".into(),
+                true,
+            )
+            .unwrap();
+        assert!(request.headers.is_empty());
+        request.headers.push(crate::api::booru_models::HttpHeader {
+            name: "authorization".into(),
+            value: "forged-value".into(),
+        });
+        let video = engine.prepare_video_request(request.clone()).unwrap();
+        assert!(!video.allow_disk_cache);
+        assert!(video
+            .headers
+            .iter()
+            .any(|h| h.name == "user-agent" && h.value == "booruflow-test"));
+        assert!(!video.headers.iter().any(|h| h.value == "forged-value"));
+        request.auth_revision += 1;
+        assert_eq!(
+            engine
+                .prepare_video_request(request.clone())
+                .err()
+                .unwrap()
+                .code,
+            BooruErrorCode::Cancelled
+        );
+        request.auth_revision -= 1;
+        request.route_revision.push_str("-stale");
+        assert_eq!(
+            engine
+                .prepare_video_request(request.clone())
+                .err()
+                .unwrap()
+                .code,
+            BooruErrorCode::Cancelled
+        );
+        request.route_revision = engine.runtime.route_revision();
+        request.url = "https://not-a-source.invalid/video.mp4".into();
+        assert!(engine.prepare_video_request(request).is_err());
+    }
+
+    #[test]
+    fn video_request_uses_current_cookie_and_rejects_a_replaced_session() {
+        let engine = engine();
+        let set_cookie = |value: &str| {
+            engine
+                .sessions
+                .set_web_session(
+                    "anime_pictures",
+                    vec![WebCookie {
+                        name: "session".into(),
+                        value: value.into(),
+                        domain: ".anime-pictures.net".into(),
+                        path: "/".into(),
+                        secure: true,
+                        expires_at_iso8601: None,
+                    }],
+                    "test-browser".into(),
+                )
+                .unwrap();
+        };
+        set_cookie("first");
+        let request = engine
+            .prepare_media_url(
+                "anime_pictures".into(),
+                "1".into(),
+                MediaVariantKind::Original,
+                "https://anime-pictures.net/video.mp4".into(),
+                false,
+            )
+            .unwrap();
+        assert!(request.headers.is_empty());
+        let first = engine.prepare_video_request(request.clone()).unwrap();
+        assert!(first
+            .headers
+            .iter()
+            .any(|h| h.name == "cookie" && h.value.contains("session=first")));
+        assert!(first
+            .headers
+            .iter()
+            .any(|h| h.name == "referer" && h.value == "https://anime-pictures.net/"));
+        set_cookie("second");
+        assert!(matches!(
+            engine.prepare_video_request(request),
+            Err(BooruError {
+                code: BooruErrorCode::Cancelled,
+                ..
+            })
+        ));
+    }
+
     #[tokio::test]
     async fn auth_replace_and_clear_change_revision() {
         let engine = engine();
@@ -1284,11 +1496,10 @@ mod tests {
     #[tokio::test]
     async fn duplicate_download_job_is_rejected_before_network() {
         let engine = engine();
-        engine
-            .active_downloads
-            .lock()
-            .unwrap()
-            .insert("yande:1:Original".to_owned());
+        engine.active_downloads.lock().unwrap().insert(
+            "yande:1:Original:None".to_owned(),
+            Arc::new(DownloadControl::new()),
+        );
         let error = engine
             .download_to_file(
                 DownloadRequest {
@@ -1296,6 +1507,7 @@ mod tests {
                     post_id: "1".to_owned(),
                     variant: MediaVariantKind::Original,
                     download_root: "downloads".to_owned(),
+                    ugoira_export: None,
                 },
                 |_| Ok(()),
             )
@@ -1323,7 +1535,7 @@ mod tests {
                 async move {
                     (
                         source.source_id.clone(),
-                        engine.check_source(source.source_id).await,
+                        engine.probe_source_connection(source.source_id, None).await,
                     )
                 }
             }))
@@ -1433,9 +1645,20 @@ mod tests {
 
             for post in posts.into_iter().take(expected_posts) {
                 let post_id = post.post_id.clone();
-                let prepared = engine
-                    .prepare_media(source.source_id.clone(), post_id.clone(), variant)
-                    .await;
+                let prepared = post
+                    .media
+                    .iter()
+                    .find(|media| media.kind == variant)
+                    .ok_or_else(|| BooruError::invalid_request(Some(&source.source_id)))
+                    .and_then(|media| {
+                        engine.prepare_media_url(
+                            source.source_id.clone(),
+                            post_id.clone(),
+                            variant,
+                            media.url.clone(),
+                            true,
+                        )
+                    });
                 match prepared {
                     Ok(prepared)
                         if variant == MediaVariantKind::Original
@@ -1469,6 +1692,7 @@ mod tests {
                             post_id: post.post_id,
                             variant,
                             download_root: output_root.to_string_lossy().into_owned(),
+                            ugoira_export: None,
                         },
                         |event| {
                             if let DownloadEvent::Done { path } = event {

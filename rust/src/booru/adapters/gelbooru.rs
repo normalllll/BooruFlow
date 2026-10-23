@@ -2,8 +2,8 @@ use crate::api::booru_auth::{AuthState, AuthStatus};
 use crate::api::booru_models::{MediaVariantKind, TagCategory};
 use crate::booru::adapter::{BooruAdapter, RequestContext};
 use crate::booru::adapters::common::{
-    media, parse_json, rating, signed32, string, tag_list, unix_to_iso8601, unsigned, unsigned32,
-    username, validate_media_hosts,
+    boolean, md5_checksum, media, parent_id, parse_json, rating, signed32, string, tag_list,
+    unix_to_iso8601, unsigned, unsigned32, username, validate_media_hosts,
 };
 use crate::booru::error::{BooruError, BooruErrorCode, BooruResult};
 use crate::booru::model::{Post, PostFlags, PostId, PostPage, SearchQuery};
@@ -81,10 +81,14 @@ impl GelbooruAdapter {
             return Err(BooruError::invalid_response(self.definition.id));
         }
         validate_media_hosts(&self.definition, &variants)?;
-        let created_at_iso8601 =
-            string(value, "created_at").or_else(|| unix_to_iso8601(unsigned(value, "change")));
+        let created_at_iso8601 = parse_created_at(value);
         Ok(Post {
             source_id: self.definition.id.to_owned(),
+            original_file_size: unsigned(value, "file_size"),
+            original_file_extension: string(value, "file_ext"),
+            original_checksum: md5_checksum(string(value, "md5")),
+            width,
+            height,
             id: PostId(id.clone()),
             web_url: Some(format!(
                 "{}/index.php?page=post&s=view&id={id}",
@@ -101,7 +105,12 @@ impl GelbooruAdapter {
             ),
             media: variants,
             flags: PostFlags {
-                is_deleted: string(value, "status").as_deref() == Some("deleted"),
+                parent_id: parent_id(value),
+                has_children: boolean(value, "has_children"),
+                is_pending: boolean(value, "is_pending")
+                    || string(value, "status").as_deref() == Some("pending"),
+                is_deleted: boolean(value, "is_deleted")
+                    || string(value, "status").as_deref() == Some("deleted"),
                 ..PostFlags::default()
             },
         })
@@ -205,6 +214,11 @@ impl GelbooruAdapter {
             validate_media_hosts(&self.definition, std::slice::from_ref(&preview))?;
             posts.push(Post {
                 source_id: self.definition.id.to_owned(),
+                original_file_size: None,
+                original_file_extension: None,
+                original_checksum: None,
+                width: None,
+                height: None,
                 id: PostId(id.clone()),
                 web_url: Some(format!(
                     "{}/index.php?page=post&s=view&id={id}",
@@ -256,6 +270,11 @@ impl GelbooruAdapter {
         validate_media_hosts(&self.definition, std::slice::from_ref(&original))?;
         Ok(Post {
             source_id: self.definition.id.to_owned(),
+            original_file_size: None,
+            original_file_extension: None,
+            original_checksum: None,
+            width: None,
+            height: None,
             id: id.clone(),
             web_url: Some(format!(
                 "{}/index.php?page=post&s=view&id={}",
@@ -379,6 +398,24 @@ impl BooruAdapter for GelbooruAdapter {
     }
 }
 
+fn parse_created_at(value: &Value) -> Option<String> {
+    use time::format_description::well_known::{Rfc2822, Rfc3339};
+    use time::OffsetDateTime;
+
+    let text = string(value, "created_at")?;
+    // DAPI's Ruby-style date is not ISO 8601. `change` is a modification
+    // timestamp, so it must never substitute for a missing publication date.
+    let legacy = time::format_description::parse_borrowed::<2>(
+        "[weekday repr:short] [month repr:short] [day padding:space] [hour]:[minute]:[second] [offset_hour sign:mandatory][offset_minute] [year]",
+    ).ok()?;
+    OffsetDateTime::parse(&text, &Rfc3339)
+        .or_else(|_| OffsetDateTime::parse(&text, &Rfc2822))
+        .or_else(|_| OffsetDateTime::parse(&text, &legacy))
+        .ok()
+        .and_then(|date| date.format(&Rfc3339).ok())
+        .or_else(|| unix_to_iso8601(unsigned(value, "created_at")))
+}
+
 fn html_attribute<'a>(element: &'a str, name: &str) -> Option<&'a str> {
     for quote in ['"', '\''] {
         let prefix = format!("{name}={quote}");
@@ -433,6 +470,70 @@ mod tests {
     fn accepts_legacy_array_shape() {
         let fixture = br#"[{"id":42,"file_url":"https://img3.gelbooru.com/a.jpg"}]"#;
         assert_eq!(adapter().parse_posts(fixture).unwrap().len(), 1);
+    }
+
+    #[test]
+    fn dapi_metadata_survives_without_an_original_url() {
+        let post = adapter()
+            .parse_post(&serde_json::json!({
+                "id": "42", "width": "2400", "height": "3600",
+                "preview_url": "https://img3.gelbooru.com/thumbnails/a.jpg",
+                "preview_width": 100, "preview_height": 150,
+                "file_size": "4000000", "file_ext": "png",
+                "md5": "0123456789abcdef0123456789abcdef",
+                "parent_id": "7", "has_children": true,
+                "created_at": "Sat Jun 01 12:00:00 +0000 2024", "change": 1800000000,
+                "owner": "Alice", "score": "10", "tags": "sky solo", "rating": "general"
+            }))
+            .unwrap()
+            .into_api();
+        assert_eq!((post.width, post.height), (Some(2400), Some(3600)));
+        assert_eq!(post.original_file_size_decimal.as_deref(), Some("4000000"));
+        assert_eq!(post.original_file_extension.as_deref(), Some("png"));
+        assert!(post.original_checksum.is_some());
+        assert_eq!(post.flags.parent_id.as_deref(), Some("7"));
+        assert!(post.flags.has_children);
+        assert_eq!(
+            post.created_at_iso8601.as_deref(),
+            Some("2024-06-01T12:00:00Z")
+        );
+        assert_eq!(post.score, Some(10));
+        assert_eq!(post.author.as_deref(), Some("Alice"));
+        assert_eq!(post.tags.len(), 2);
+        assert_eq!(
+            (post.media[0].width, post.media[0].height),
+            (Some(100), Some(150))
+        );
+        assert!(post.media[0].byte_length_decimal.is_none());
+    }
+
+    #[test]
+    fn publication_time_accepts_source_formats_but_never_uses_change() {
+        for date in [
+            "Sat Jun 01 12:00:00 +0000 2024",
+            "Sat Jun  1 12:00:00 +0000 2024",
+            "Sat, 01 Jun 2024 14:00:00 +0200",
+            "2024-06-01T12:00:00Z",
+        ] {
+            let normalized = parse_created_at(&serde_json::json!({"created_at": date})).unwrap();
+            assert_eq!(
+                time::OffsetDateTime::parse(
+                    &normalized,
+                    &time::format_description::well_known::Rfc3339
+                )
+                .unwrap()
+                .unix_timestamp(),
+                1717243200
+            );
+        }
+        assert_eq!(
+            parse_created_at(&serde_json::json!({"change": 1717243200})),
+            None
+        );
+        assert_eq!(
+            parse_created_at(&serde_json::json!({"created_at": "invalid", "change": 1717243200})),
+            None
+        );
     }
 
     #[test]

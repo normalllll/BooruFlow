@@ -154,6 +154,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int dco_decode_box_autoadd_u_32(dynamic raw);
 
   @protected
+  UgoiraExport dco_decode_box_autoadd_ugoira_export(dynamic raw);
+
+  @protected
   WebChallengeCandidate dco_decode_box_autoadd_web_challenge_candidate(
     dynamic raw,
   );
@@ -308,6 +311,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
 
   @protected
+  UgoiraExport? dco_decode_opt_box_autoadd_ugoira_export(dynamic raw);
+
+  @protected
   PersistedHostRoute dco_decode_persisted_host_route(dynamic raw);
 
   @protected
@@ -360,6 +366,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int dco_decode_u_8(dynamic raw);
+
+  @protected
+  UgoiraExport dco_decode_ugoira_export(dynamic raw);
 
   @protected
   void dco_decode_unit(dynamic raw);
@@ -533,6 +542,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int sse_decode_box_autoadd_u_32(SseDeserializer deserializer);
+
+  @protected
+  UgoiraExport sse_decode_box_autoadd_ugoira_export(
+    SseDeserializer deserializer,
+  );
 
   @protected
   WebChallengeCandidate sse_decode_box_autoadd_web_challenge_candidate(
@@ -723,6 +737,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
+  UgoiraExport? sse_decode_opt_box_autoadd_ugoira_export(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   PersistedHostRoute sse_decode_persisted_host_route(
     SseDeserializer deserializer,
   );
@@ -781,6 +800,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int sse_decode_u_8(SseDeserializer deserializer);
+
+  @protected
+  UgoiraExport sse_decode_ugoira_export(SseDeserializer deserializer);
 
   @protected
   void sse_decode_unit(SseDeserializer deserializer);
@@ -995,6 +1017,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_ugoira_export(
+    UgoiraExport self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_box_autoadd_web_challenge_candidate(
@@ -1243,6 +1271,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);
 
   @protected
+  void sse_encode_opt_box_autoadd_ugoira_export(
+    UgoiraExport? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_persisted_host_route(
     PersistedHostRoute self,
     SseSerializer serializer,
@@ -1322,6 +1356,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_u_8(int self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_ugoira_export(UgoiraExport self, SseSerializer serializer);
 
   @protected
   void sse_encode_unit(void self, SseSerializer serializer);

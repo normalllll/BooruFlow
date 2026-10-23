@@ -29,8 +29,22 @@ impl StreamingChecksum {
     pub fn finish(self) -> Option<String> {
         match self {
             Self::None => None,
-            Self::Md5(hasher) => Some(format!("{:x}", hasher.finalize())),
-            Self::Sha256(hasher) => Some(format!("{:x}", hasher.finalize())),
+            Self::Md5(hasher) => Some(
+                hasher
+                    .finalize()
+                    .as_slice()
+                    .iter()
+                    .map(|byte| format!("{byte:02x}"))
+                    .collect(),
+            ),
+            Self::Sha256(hasher) => Some(
+                hasher
+                    .finalize()
+                    .as_slice()
+                    .iter()
+                    .map(|byte| format!("{byte:02x}"))
+                    .collect(),
+            ),
         }
     }
 }
@@ -60,6 +74,50 @@ pub fn validate_content_type(
     } else {
         Err(validation_error(source_id, "booru.error.invalidMediaType"))
     }
+}
+
+/// Image streams reject a declared video response before yielding any bytes.
+/// Preserve legacy image hosts that omit MIME or use octet-stream; known video
+/// is deterministic and must never be handed to Flutter's image codec.
+pub fn validate_image_preview_content_type(
+    source_id: &str,
+    actual: Option<&str>,
+) -> BooruResult<()> {
+    if actual.and_then(MediaType::from_mime).map(MediaType::kind) == Some(MediaKind::Video) {
+        return Err(BooruError::new(
+            BooruErrorCode::MediaValidationFailed,
+            Some(source_id),
+            "booru.error.previewUnsupported",
+        ));
+    }
+    Ok(())
+}
+
+/// Opaque originals retain filename/length/checksum validation. They must not
+/// be forced through an image decoder or saved under an image extension.
+/// HTML remains a challenge response, never a successful opaque download.
+pub fn validate_download_content_type(
+    source_id: &str,
+    actual: Option<&str>,
+    allowed: &[MediaKind],
+) -> BooruResult<Option<MediaType>> {
+    if !allowed.is_empty() {
+        return validate_content_type(source_id, actual, allowed).map(Some);
+    }
+    let actual = actual
+        .and_then(|value| value.split(';').next())
+        .map(str::trim)
+        .map(str::to_ascii_lowercase)
+        .filter(|value| !value.is_empty())
+        .ok_or_else(|| validation_error(source_id, "booru.error.missingContentType"))?;
+    if actual == "text/html" || actual == "application/xhtml+xml" {
+        return Err(BooruError::new(
+            BooruErrorCode::ChallengeRequired,
+            Some(source_id),
+            "booru.error.challengeRequired",
+        ));
+    }
+    Ok(MediaType::from_mime(&actual))
 }
 
 pub fn validate_filename_component(source_id: &str, value: &str) -> BooruResult<()> {
@@ -101,6 +159,53 @@ fn validation_error(source_id: &str, key: &str) -> BooruError {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn image_streams_reject_video_before_decoding() {
+        for mime in ["video/mp4", "video/webm", "video/quicktime"] {
+            assert_eq!(
+                validate_image_preview_content_type("danbooru", Some(mime))
+                    .unwrap_err()
+                    .user_message_key,
+                "booru.error.previewUnsupported"
+            );
+        }
+        for mime in [
+            None,
+            Some("image/jpeg"),
+            Some("image/avif"),
+            Some("application/octet-stream"),
+        ] {
+            assert!(validate_image_preview_content_type("danbooru", mime).is_ok());
+        }
+    }
+
+    #[test]
+    fn opaque_originals_accept_files_but_never_html_challenges() {
+        for mime in [
+            "application/zip",
+            "application/x-shockwave-flash",
+            "application/octet-stream",
+        ] {
+            assert_eq!(
+                validate_download_content_type("danbooru", Some(mime), &[]).unwrap(),
+                None
+            );
+            assert!(
+                validate_download_content_type("danbooru", Some(mime), &[MediaKind::Image])
+                    .is_err()
+            );
+        }
+        for mime in ["text/html", "application/xhtml+xml"] {
+            assert_eq!(
+                validate_download_content_type("danbooru", Some(mime), &[])
+                    .unwrap_err()
+                    .code,
+                BooruErrorCode::ChallengeRequired
+            );
+        }
+        assert!(validate_download_content_type("danbooru", None, &[]).is_err());
+    }
 
     #[test]
     fn validates_wildcard_media_type() {

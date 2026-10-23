@@ -13,11 +13,31 @@ final class NativeDownloadPermissionGuard implements DownloadPermissionGuard {
 
   static const _methodChannel = MethodChannel('booruflow/download_engine');
 
+  static Future<void> openAppSettings() async {
+    await _methodChannel.invokeMethod<bool>('openAppSettings');
+  }
+
+  Future<void> ensureReadyForBatchDownload() async {
+    try {
+      await _methodChannel.invokeMethod<void>('prepareForBatchDownload');
+    } on PlatformException catch (error) {
+      if (error.code == 'permission_denied' ||
+          error.code == 'permission_denied_permanent') {
+        throw DownloadPermissionDenied(_nativePermissionMessage(error), error);
+      }
+      throw DownloadException(_nativePermissionMessage(error), error);
+    }
+  }
+
   @override
   Future<void> ensureReadyForDownload() async {
     try {
       await _methodChannel.invokeMethod<void>('prepareForDownload');
     } on PlatformException catch (error) {
+      if (error.code == 'permission_denied' ||
+          error.code == 'permission_denied_permanent') {
+        throw DownloadPermissionDenied(_nativePermissionMessage(error), error);
+      }
       throw DownloadException(_nativePermissionMessage(error), error);
     }
   }

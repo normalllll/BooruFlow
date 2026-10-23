@@ -1,7 +1,13 @@
 import 'dart:async';
-
+import 'package:booruflow/core/file_paths.dart';
+import 'package:booruflow/core/hive_storage.dart';
+import 'package:booruflow/core/legacy_upgrade.dart';
+import 'package:booruflow/src/rust/api/booru_download.dart' show UgoiraExport;
 import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:flutter/widgets.dart' show Brightness;
+import 'package:frost_ui/frost_ui.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'background.dart';
 
 abstract interface class SettingsServiceStore {
   Map<String, dynamic> load();
@@ -13,7 +19,7 @@ final class HiveSettingsServiceStore implements SettingsServiceStore {
   HiveSettingsServiceStore(this._box);
 
   static Future<HiveSettingsServiceStore> open() async {
-    await Hive.initFlutter();
+    await initializeHiveStorage();
     return HiveSettingsServiceStore(
       await Hive.openBox<dynamic>(SettingsService._boxName),
     );
@@ -50,7 +56,12 @@ class SettingsService {
 
   static const _languageKey = 'language';
   static const _themeModeKey = 'themeMode';
+  static const _appearanceKey = 'appearance';
+  static const _backgroundKey = 'background';
+  static const _sidebarExpandedKey = 'sidebarExpanded';
+  static const _predictiveBackKey = 'predictiveBack';
   static const _waterfallColumnsKey = 'waterfallColumns';
+  static const _ugoiraExportKey = 'ugoiraExport';
   static const _downloadPathKey = 'downloadPath';
   static const _maxConcurrentDownloadsKey = 'maxConcurrentDownloads';
   static const _maxSegmentsPerTaskKey = 'maxSegmentsPerTask';
@@ -62,10 +73,16 @@ class SettingsService {
   static const _networkChecksKey = 'booruNetworkChecks';
 
   static const _settingKeys = {
+    legacySettingsVersionKey,
+    _appearanceKey,
+    _backgroundKey,
+    _sidebarExpandedKey,
+    _predictiveBackKey,
     _languageKey,
     _themeModeKey,
     _waterfallColumnsKey,
     _downloadPathKey,
+    _ugoiraExportKey,
     _maxConcurrentDownloadsKey,
     _maxSegmentsPerTaskKey,
     _defaultSourceIdKey,
@@ -79,6 +96,66 @@ class SettingsService {
   static final Map<String, dynamic> _map = {};
   static SettingsServiceStore? _store;
 
+  static FrostAppearance get appearance => FrostAppearance.fromRecord(
+    _map[_appearanceKey],
+    FrostPalettes.pink,
+    fallbackMode: switch (themeMode) {
+      0 => ThemeMode.light,
+      1 => ThemeMode.dark,
+      _ => ThemeMode.system,
+    },
+  );
+  static bool customAccentSelected(Brightness brightness) {
+    final field = brightness == Brightness.light
+        ? 'lightCustomSelected'
+        : 'darkCustomSelected';
+    final stored = _map[_appearanceKey];
+    final value = appearance;
+    if (stored is Map && stored[field] is bool) {
+      return stored[field] == true &&
+          value.customAccentFor(brightness) == value.accentFor(brightness);
+    }
+    return value.customAccentFor(brightness) == value.accentFor(brightness);
+  }
+
+  static Future<void> saveAppearance(
+    FrostAppearance value, {
+    Brightness? accentBrightness,
+    bool? customSelected,
+  }) async {
+    final record = value.toRecord();
+    final previous = _map[_appearanceKey];
+    for (final field in ['lightCustomSelected', 'darkCustomSelected']) {
+      if (previous is Map && previous[field] is bool) {
+        record[field] = previous[field];
+      }
+    }
+    if (accentBrightness != null && customSelected != null) {
+      record[accentBrightness == Brightness.light
+              ? 'lightCustomSelected'
+              : 'darkCustomSelected'] =
+          customSelected;
+    }
+    await _activeStore.write(_appearanceKey, record);
+    _map[_appearanceKey] = record;
+    _changes.add(null);
+  }
+
+  static bool get predictiveBack => _map[_predictiveBackKey] as bool? ?? true;
+  static set predictiveBack(bool value) => _write(_predictiveBackKey, value);
+
+  static bool get sidebarExpanded => _map[_sidebarExpandedKey] as bool? ?? true;
+  static set sidebarExpanded(bool value) => _write(_sidebarExpandedKey, value);
+
+  static BackgroundSettings get background =>
+      BackgroundSettings.fromRecord(_map[_backgroundKey]);
+  static Future<void> saveBackground(BackgroundSettings value) async {
+    final record = value.toRecord();
+    await _activeStore.write(_backgroundKey, record);
+    _map[_backgroundKey] = record;
+    _changes.add(null);
+  }
+
   static int? get language => _map[_languageKey] as int?;
 
   static set language(int? value) {
@@ -87,9 +164,8 @@ class SettingsService {
 
   static int? get themeMode => _map[_themeModeKey] as int?;
 
-  static set themeMode(int? value) {
-    _write(_themeModeKey, value);
-  }
+  // B0 retains the original UI until B1 installs the v2 appearance scope.
+  static set themeMode(int? value) => _write(_themeModeKey, value);
 
   static int? get waterfallColumns => _map[_waterfallColumnsKey] as int?;
 
@@ -97,10 +173,21 @@ class SettingsService {
     _write(_waterfallColumnsKey, value);
   }
 
-  static String? get downloadPath => _map[_downloadPathKey] as String?;
+  static UgoiraExport get ugoiraExport =>
+      UgoiraExport.values
+          .where((v) => v.name == _map[_ugoiraExportKey])
+          .firstOrNull ??
+      UgoiraExport.losslessWebp;
+  static set ugoiraExport(UgoiraExport value) =>
+      _write(_ugoiraExportKey, value.name);
+
+  static String? get downloadPath => switch (_map[_downloadPathKey]) {
+    final String value => normalizeLocalPath(value),
+    _ => null,
+  };
 
   static set downloadPath(String? value) {
-    _write(_downloadPathKey, value);
+    _write(_downloadPathKey, value == null ? null : normalizeLocalPath(value));
   }
 
   static int get maxConcurrentDownloads =>
@@ -130,30 +217,20 @@ class SettingsService {
   static set defaultSourceId(String value) =>
       _write(_defaultSourceIdKey, value);
 
-  static NetworkFallbackMode get networkFallbackMode {
-    final index = _map[_networkFallbackModeKey] as int?;
-    // The former IP URL mode now shares the single bypass implementation.
-    if (index == NetworkFallbackMode.legacyIpUrl.index) {
-      return NetworkFallbackMode.persistedIpOverride;
-    }
-    return index != null &&
-            index >= 0 &&
-            index < NetworkFallbackMode.values.length
-        ? NetworkFallbackMode.values[index]
-        : NetworkFallbackMode.off;
-  }
-
-  static set networkFallbackMode(NetworkFallbackMode value) {
-    _write(_networkFallbackModeKey, value.index);
-  }
-
+  static NetworkFallbackMode get networkFallbackMode =>
+      NetworkFallbackMode.values
+          .where((mode) => mode.name == _map[_networkFallbackModeKey])
+          .firstOrNull ??
+      NetworkFallbackMode.off;
+  static set networkFallbackMode(NetworkFallbackMode value) =>
+      _write(_networkFallbackModeKey, value.name);
   static RouteProvider get dnsProvider =>
-      _map[_dnsProviderKey] == RouteProvider.dohSb.index
-      ? RouteProvider.dohSb
-      : RouteProvider.uncensoredDns;
-
+      RouteProvider.values
+          .where((provider) => provider.name == _map[_dnsProviderKey])
+          .firstOrNull ??
+      RouteProvider.uncensoredDns;
   static set dnsProvider(RouteProvider value) =>
-      _write(_dnsProviderKey, value.index);
+      _write(_dnsProviderKey, value.name);
 
   static String? get proxyUrl {
     final value = (_map[_proxyUrlKey] as String?)?.trim();
@@ -182,18 +259,25 @@ class SettingsService {
     final values = _map[_ratingsKey];
     if (values is! List) return const [];
     return values
-        .whereType<int>()
-        .where((index) => index >= 0 && index < ContentRating.values.length)
-        .map((index) => ContentRating.values[index])
+        .whereType<String>()
+        .map(
+          (name) => ContentRating.values
+              .where((rating) => rating.name == name)
+              .firstOrNull,
+        )
+        .whereType<ContentRating>()
         .toList(growable: false);
   }
 
   static set ratings(List<ContentRating> value) =>
-      _write(_ratingsKey, value.map((rating) => rating.index).toList());
+      _write(_ratingsKey, value.map((rating) => rating.name).toList());
 
   static Future<void> initialize({SettingsServiceStore? store}) async {
     _store = store ?? await HiveSettingsServiceStore.open();
-    final stored = _activeStore.load();
+    final stored = await upgradeLegacySettings(
+      _activeStore.load(),
+      _activeStore.write,
+    );
     final current = _filterSettings(stored);
     for (final key in stored.keys.where((key) => !current.containsKey(key))) {
       await _activeStore.write(key, null);
@@ -231,19 +315,33 @@ class SettingsService {
     }
 
     return switch (key) {
+      _appearanceKey => value is Map,
+      _backgroundKey => value is Map,
+      _sidebarExpandedKey || _predictiveBackKey => value is bool,
       _languageKey ||
       _themeModeKey ||
       _waterfallColumnsKey ||
       _maxConcurrentDownloadsKey ||
-      _maxSegmentsPerTaskKey => value is int,
-      _networkFallbackModeKey => value is int,
+      _maxSegmentsPerTaskKey ||
+      legacySettingsVersionKey => value is int,
+      _networkFallbackModeKey =>
+        value is String &&
+            NetworkFallbackMode.values.any((mode) => mode.name == value),
       _dnsProviderKey =>
-        value is int && value >= 0 && value < RouteProvider.values.length,
+        value is String &&
+            RouteProvider.values.any((provider) => provider.name == value),
+      _ugoiraExportKey ||
       _downloadPathKey ||
       _defaultSourceIdKey ||
       _networkChecksKey ||
       _proxyUrlKey => value is String,
-      _ratingsKey => value is List && value.every((item) => item is int),
+      _ratingsKey =>
+        value is List &&
+            value.every(
+              (item) =>
+                  item is String &&
+                  ContentRating.values.any((rating) => rating.name == item),
+            ),
       _ => false,
     };
   }

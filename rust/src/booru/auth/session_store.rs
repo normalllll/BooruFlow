@@ -144,35 +144,7 @@ impl SessionStore {
     }
 
     pub fn web_snapshot(&self, source_id: &str) -> BooruResult<Option<WebSessionSnapshot>> {
-        self.snapshot_with_status(source_id, false)
-    }
-
-    #[cfg(feature = "web-auth-spike")]
-    pub fn verified_web_snapshot(
-        &self,
-        source_id: &str,
-    ) -> BooruResult<Option<WebSessionSnapshot>> {
-        self.snapshot_with_status(source_id, true)
-    }
-
-    fn snapshot_with_status(
-        &self,
-        source_id: &str,
-        require_verified: bool,
-    ) -> BooruResult<Option<WebSessionSnapshot>> {
         let inner = self.inner.read().map_err(|_| internal_error(source_id))?;
-        if require_verified
-            && inner
-                .sessions
-                .get(source_id)
-                .is_none_or(|session| session.status != AuthStatus::Verified)
-        {
-            return Err(BooruError::new(
-                crate::booru::error::BooruErrorCode::AuthenticationRejected,
-                Some(source_id),
-                "booru.error.authenticationRejected",
-            ));
-        }
         Ok(inner
             .sessions
             .get(source_id)
@@ -186,68 +158,6 @@ impl SessionStore {
                 }),
                 _ => None,
             }))
-    }
-
-    /// Publish only after the durable commit succeeds, while excluding logout and
-    /// manual changes. The candidate must already have passed network validation.
-    #[cfg(feature = "web-auth-spike")]
-    pub fn commit_web_snapshot(
-        &self,
-        source_id: &str,
-        expected_revision: u32,
-        snapshot: WebSessionSnapshot,
-        persist: impl FnOnce() -> BooruResult<()>,
-    ) -> BooruResult<AuthState> {
-        let prepared = SessionStore::default();
-        prepared.set_web_session(source_id, snapshot.cookies, snapshot.user_agent)?;
-        let mut session = prepared
-            .inner
-            .into_inner()
-            .map_err(|_| internal_error(source_id))?
-            .sessions
-            .remove(source_id)
-            .ok_or_else(|| internal_error(source_id))?;
-        let mut inner = self.inner.write().map_err(|_| internal_error(source_id))?;
-        if inner.revisions.get(source_id).copied().unwrap_or(0) != expected_revision {
-            return Err(crate::booru::error::BooruError::new(
-                crate::booru::error::BooruErrorCode::Cancelled,
-                Some(source_id),
-                "booru.error.cancelled",
-            ));
-        }
-        // Allocate the map slots and result before reaching the disk commit point.
-        inner.sessions.reserve(1);
-        inner.revisions.reserve(1);
-        let key = source_id.to_owned();
-        let revision_key = key.clone();
-        session.revision = expected_revision.wrapping_add(1);
-        session.status = AuthStatus::Verified;
-        let result = state_from_session(source_id, &session)?;
-        persist()?;
-        inner.revisions.insert(revision_key, session.revision);
-        inner.sessions.insert(key, session);
-        Ok(result)
-    }
-
-    #[cfg(feature = "web-auth-spike")]
-    pub fn clear_with_persistence(
-        &self,
-        source_id: &str,
-        persist: impl FnOnce() -> BooruResult<()>,
-    ) -> BooruResult<()> {
-        let mut inner = self.inner.write().map_err(|_| internal_error(source_id))?;
-        inner.revisions.reserve(1);
-        let key = source_id.to_owned();
-        let revision = inner
-            .revisions
-            .get(source_id)
-            .copied()
-            .unwrap_or(0)
-            .wrapping_add(1);
-        persist()?;
-        inner.sessions.remove(source_id);
-        inner.revisions.insert(key, revision);
-        Ok(())
     }
 
     pub fn set_credentials(

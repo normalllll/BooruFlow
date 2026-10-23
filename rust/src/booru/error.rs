@@ -41,6 +41,9 @@ pub struct BooruError {
     pub http_status: Option<u32>,
     pub retry_after_seconds: Option<u32>,
     pub action: Option<RecoveryAction>,
+    /// Technical failure stage and original system error; never browser material.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub details: Option<String>,
 }
 
 impl BooruError {
@@ -54,6 +57,7 @@ impl BooruError {
             http_status: None,
             retry_after_seconds: None,
             action: default_action(code),
+            details: None,
         }
     }
 
@@ -71,6 +75,11 @@ impl BooruError {
             Some(source_id),
             "booru.error.invalidResponse",
         )
+    }
+
+    pub fn with_details(mut self, details: String) -> Self {
+        self.details = Some(details);
+        self
     }
 
     pub fn with_http_status(mut self, status: u32) -> Self {
@@ -111,3 +120,27 @@ fn default_action(code: BooruErrorCode) -> Option<RecoveryAction> {
 }
 
 pub type BooruResult<T> = Result<T, BooruError>;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn older_error_records_allow_missing_details_and_new_details_round_trip() {
+        let error = BooruError::new(
+            BooruErrorCode::Internal,
+            Some("aibooru"),
+            "webChallenge.windowFailed",
+        );
+        let old_record = serde_json::to_value(&error).unwrap();
+        assert!(old_record.get("details").is_none());
+        let restored: BooruError = serde_json::from_value(old_record).unwrap();
+        assert!(restored.details.is_none());
+        let with_details = error.with_details("stage=webview-create\nHRESULT 0x8007139F".into());
+        assert_eq!(
+            serde_json::from_value::<BooruError>(serde_json::to_value(&with_details).unwrap())
+                .unwrap(),
+            with_details
+        );
+    }
+}

@@ -69,11 +69,11 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => -974084026;
+  int get rustContentHash => 1973762664;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
-        stem: 'core',
+        stem: 'booruflow_core',
         ioDirectory: 'rust/target/release/',
         webPrefix: 'pkg/',
         wasmBindgenName: 'wasm_bindgen',
@@ -103,14 +103,17 @@ abstract class RustLibApi extends BaseApi {
     required String sourceId,
   });
 
+  Future<void> crateApiBooruEngineBooruEngineCancelDownload({
+    required BooruEngine that,
+    required String sourceId,
+    required String postId,
+    required MediaVariantKind variant,
+    UgoiraExport? ugoiraExport,
+  });
+
   Future<void> crateApiBooruEngineBooruEngineCancelWebChallenge({
     required BooruEngine that,
     required String operationId,
-  });
-
-  Future<void> crateApiBooruEngineBooruEngineCheckSource({
-    required BooruEngine that,
-    required String sourceId,
   });
 
   Future<void> crateApiBooruEngineBooruEngineClearAuth({
@@ -144,6 +147,11 @@ abstract class RustLibApi extends BaseApi {
     required FeedRequest request,
   });
 
+  Future<String> crateApiBooruEngineBooruEngineFeedWebUrl({
+    required BooruEngine that,
+    required FeedRequest request,
+  });
+
   Future<BooruPost> crateApiBooruEngineBooruEngineGetPost({
     required BooruEngine that,
     required String sourceId,
@@ -162,14 +170,15 @@ abstract class RustLibApi extends BaseApi {
     required BooruEngineConfig config,
   });
 
-  Future<PreparedDownload> crateApiBooruEngineBooruEnginePrepareDownload({
+  Future<void> crateApiBooruEngineBooruEnginePauseDownload({
     required BooruEngine that,
     required String sourceId,
     required String postId,
     required MediaVariantKind variant,
+    UgoiraExport? ugoiraExport,
   });
 
-  Future<MediaRequest> crateApiBooruEngineBooruEnginePrepareMedia({
+  Future<PreparedDownload> crateApiBooruEngineBooruEnginePrepareDownload({
     required BooruEngine that,
     required String sourceId,
     required String postId,
@@ -183,6 +192,11 @@ abstract class RustLibApi extends BaseApi {
     required MediaVariantKind variant,
     required String url,
     required bool allowDiskCache,
+  });
+
+  Future<MediaRequest> crateApiBooruEngineBooruEnginePrepareVideoRequest({
+    required BooruEngine that,
+    required MediaRequest request,
   });
 
   Future<SourceConnectionCheck>
@@ -207,6 +221,14 @@ abstract class RustLibApi extends BaseApi {
     required BooruEngine that,
   });
 
+  Future<void> crateApiBooruEngineBooruEngineResumeDownload({
+    required BooruEngine that,
+    required String sourceId,
+    required String postId,
+    required MediaVariantKind variant,
+    UgoiraExport? ugoiraExport,
+  });
+
   Future<RouteCacheState> crateApiBooruEngineBooruEngineRouteCacheState({
     required BooruEngine that,
   });
@@ -221,6 +243,11 @@ abstract class RustLibApi extends BaseApi {
   });
 
   Future<PostPage> crateApiBooruEngineBooruEngineSearch({
+    required BooruEngine that,
+    required SearchRequest request,
+  });
+
+  Future<String> crateApiBooruEngineBooruEngineSearchWebUrl({
     required BooruEngine that,
     required SearchRequest request,
   });
@@ -455,6 +482,50 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<void> crateApiBooruEngineBooruEngineCancelDownload({
+    required BooruEngine that,
+    required String sourceId,
+    required String postId,
+    required MediaVariantKind variant,
+    UgoiraExport? ugoiraExport,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_String(sourceId, serializer);
+          sse_encode_String(postId, serializer);
+          sse_encode_media_variant_kind(variant, serializer);
+          sse_encode_opt_box_autoadd_ugoira_export(ugoiraExport, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 5,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineCancelDownloadConstMeta,
+        argValues: [that, sourceId, postId, variant, ugoiraExport],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruEngineBooruEngineCancelDownloadConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_cancel_download",
+        argNames: ["that", "sourceId", "postId", "variant", "ugoiraExport"],
+      );
+
+  @override
   Future<void> crateApiBooruEngineBooruEngineCancelWebChallenge({
     required BooruEngine that,
     required String operationId,
@@ -471,7 +542,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 5,
+            funcId: 6,
             port: port_,
           );
         },
@@ -491,44 +562,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(
         debugName: "BooruEngine_cancel_web_challenge",
         argNames: ["that", "operationId"],
-      );
-
-  @override
-  Future<void> crateApiBooruEngineBooruEngineCheckSource({
-    required BooruEngine that,
-    required String sourceId,
-  }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
-            that,
-            serializer,
-          );
-          sse_encode_String(sourceId, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 6,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_unit,
-          decodeErrorData: sse_decode_booru_error,
-        ),
-        constMeta: kCrateApiBooruEngineBooruEngineCheckSourceConstMeta,
-        argValues: [that, sourceId],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiBooruEngineBooruEngineCheckSourceConstMeta =>
-      const TaskConstMeta(
-        debugName: "BooruEngine_check_source",
-        argNames: ["that", "sourceId"],
       );
 
   @override
@@ -712,7 +745,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           },
           codec: SseCodec(
             decodeSuccessData: sse_decode_unit,
-            decodeErrorData: sse_decode_booru_error,
+            decodeErrorData: null,
           ),
           constMeta:
               kCrateApiBooruEngineBooruEngineDownloadToFileStreamConstMeta,
@@ -770,6 +803,44 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<String> crateApiBooruEngineBooruEngineFeedWebUrl({
+    required BooruEngine that,
+    required FeedRequest request,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_box_autoadd_feed_request(request, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 13,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_String,
+          decodeErrorData: sse_decode_booru_error,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineFeedWebUrlConstMeta,
+        argValues: [that, request],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruEngineBooruEngineFeedWebUrlConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_feed_web_url",
+        argNames: ["that", "request"],
+      );
+
+  @override
   Future<BooruPost> crateApiBooruEngineBooruEngineGetPost({
     required BooruEngine that,
     required String sourceId,
@@ -788,7 +859,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 13,
+            funcId: 14,
             port: port_,
           );
         },
@@ -824,7 +895,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 14,
+            funcId: 15,
             port: port_,
           );
         },
@@ -861,7 +932,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 15,
+            funcId: 16,
             port: port_,
           );
         },
@@ -894,7 +965,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 16,
+            funcId: 17,
             port: port_,
           );
         },
@@ -912,6 +983,50 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiBooruEngineBooruEngineNewConstMeta =>
       const TaskConstMeta(debugName: "BooruEngine_new", argNames: ["config"]);
+
+  @override
+  Future<void> crateApiBooruEngineBooruEnginePauseDownload({
+    required BooruEngine that,
+    required String sourceId,
+    required String postId,
+    required MediaVariantKind variant,
+    UgoiraExport? ugoiraExport,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_String(sourceId, serializer);
+          sse_encode_String(postId, serializer);
+          sse_encode_media_variant_kind(variant, serializer);
+          sse_encode_opt_box_autoadd_ugoira_export(ugoiraExport, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 18,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEnginePauseDownloadConstMeta,
+        argValues: [that, sourceId, postId, variant, ugoiraExport],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruEngineBooruEnginePauseDownloadConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_pause_download",
+        argNames: ["that", "sourceId", "postId", "variant", "ugoiraExport"],
+      );
 
   @override
   Future<PreparedDownload> crateApiBooruEngineBooruEnginePrepareDownload({
@@ -934,7 +1049,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 17,
+            funcId: 19,
             port: port_,
           );
         },
@@ -952,48 +1067,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiBooruEngineBooruEnginePrepareDownloadConstMeta =>
       const TaskConstMeta(
         debugName: "BooruEngine_prepare_download",
-        argNames: ["that", "sourceId", "postId", "variant"],
-      );
-
-  @override
-  Future<MediaRequest> crateApiBooruEngineBooruEnginePrepareMedia({
-    required BooruEngine that,
-    required String sourceId,
-    required String postId,
-    required MediaVariantKind variant,
-  }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
-            that,
-            serializer,
-          );
-          sse_encode_String(sourceId, serializer);
-          sse_encode_String(postId, serializer);
-          sse_encode_media_variant_kind(variant, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 18,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_media_request,
-          decodeErrorData: sse_decode_booru_error,
-        ),
-        constMeta: kCrateApiBooruEngineBooruEnginePrepareMediaConstMeta,
-        argValues: [that, sourceId, postId, variant],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiBooruEngineBooruEnginePrepareMediaConstMeta =>
-      const TaskConstMeta(
-        debugName: "BooruEngine_prepare_media",
         argNames: ["that", "sourceId", "postId", "variant"],
       );
 
@@ -1022,7 +1095,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 19,
+            funcId: 20,
             port: port_,
           );
         },
@@ -1051,6 +1124,45 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<MediaRequest> crateApiBooruEngineBooruEnginePrepareVideoRequest({
+    required BooruEngine that,
+    required MediaRequest request,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_box_autoadd_media_request(request, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 21,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_media_request,
+          decodeErrorData: sse_decode_booru_error,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEnginePrepareVideoRequestConstMeta,
+        argValues: [that, request],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta
+  get kCrateApiBooruEngineBooruEnginePrepareVideoRequestConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_prepare_video_request",
+        argNames: ["that", "request"],
+      );
+
+  @override
   Future<SourceConnectionCheck>
   crateApiBooruEngineBooruEngineProbeSourceConnection({
     required BooruEngine that,
@@ -1070,7 +1182,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 20,
+            funcId: 22,
             port: port_,
           );
         },
@@ -1108,7 +1220,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 21,
+            funcId: 23,
             port: port_,
           );
         },
@@ -1148,7 +1260,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 22,
+            funcId: 24,
             port: port_,
           );
         },
@@ -1185,7 +1297,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 23,
+            funcId: 25,
             port: port_,
           );
         },
@@ -1208,6 +1320,50 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<void> crateApiBooruEngineBooruEngineResumeDownload({
+    required BooruEngine that,
+    required String sourceId,
+    required String postId,
+    required MediaVariantKind variant,
+    UgoiraExport? ugoiraExport,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_String(sourceId, serializer);
+          sse_encode_String(postId, serializer);
+          sse_encode_media_variant_kind(variant, serializer);
+          sse_encode_opt_box_autoadd_ugoira_export(ugoiraExport, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 26,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineResumeDownloadConstMeta,
+        argValues: [that, sourceId, postId, variant, ugoiraExport],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruEngineBooruEngineResumeDownloadConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_resume_download",
+        argNames: ["that", "sourceId", "postId", "variant", "ugoiraExport"],
+      );
+
+  @override
   Future<RouteCacheState> crateApiBooruEngineBooruEngineRouteCacheState({
     required BooruEngine that,
   }) {
@@ -1222,7 +1378,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 24,
+            funcId: 27,
             port: port_,
           );
         },
@@ -1267,7 +1423,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 25,
+            funcId: 28,
             port: port_,
           );
         },
@@ -1313,7 +1469,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 26,
+            funcId: 29,
             port: port_,
           );
         },
@@ -1331,6 +1487,44 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiBooruEngineBooruEngineSearchConstMeta =>
       const TaskConstMeta(
         debugName: "BooruEngine_search",
+        argNames: ["that", "request"],
+      );
+
+  @override
+  Future<String> crateApiBooruEngineBooruEngineSearchWebUrl({
+    required BooruEngine that,
+    required SearchRequest request,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
+            that,
+            serializer,
+          );
+          sse_encode_box_autoadd_search_request(request, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 30,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_String,
+          decodeErrorData: sse_decode_booru_error,
+        ),
+        constMeta: kCrateApiBooruEngineBooruEngineSearchWebUrlConstMeta,
+        argValues: [that, request],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruEngineBooruEngineSearchWebUrlConstMeta =>
+      const TaskConstMeta(
+        debugName: "BooruEngine_search_web_url",
         argNames: ["that", "request"],
       );
 
@@ -1353,7 +1547,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 27,
+            funcId: 31,
             port: port_,
           );
         },
@@ -1395,7 +1589,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 28,
+            funcId: 32,
             port: port_,
           );
         },
@@ -1436,7 +1630,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
-              funcId: 29,
+              funcId: 33,
               port: port_,
             );
           },
@@ -1476,7 +1670,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 30,
+            funcId: 34,
             port: port_,
           );
         },
@@ -1514,7 +1708,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 31,
+            funcId: 35,
             port: port_,
           );
         },
@@ -1544,7 +1738,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 32,
+            funcId: 36,
             port: port_,
           );
         },
@@ -1571,7 +1765,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 33,
+            funcId: 37,
             port: port_,
           );
         },
@@ -1598,7 +1792,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 34,
+            funcId: 38,
             port: port_,
           );
         },
@@ -1628,7 +1822,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 35,
+            funcId: 39,
             port: port_,
           );
         },
@@ -1658,7 +1852,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 36,
+            funcId: 40,
             port: port_,
           );
         },
@@ -1691,7 +1885,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 37,
+            funcId: 41,
             port: port_,
           );
         },
@@ -1718,7 +1912,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 38,
+            funcId: 42,
             port: port_,
           );
         },
@@ -1748,7 +1942,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 39,
+            funcId: 43,
             port: port_,
           );
         },
@@ -1778,7 +1972,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 40,
+            funcId: 44,
             port: port_,
           );
         },
@@ -1810,7 +2004,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 41,
+            funcId: 45,
             port: port_,
           );
         },
@@ -1839,7 +2033,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 42,
+            funcId: 46,
             port: port_,
           );
         },
@@ -1869,7 +2063,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 43,
+            funcId: 47,
             port: port_,
           );
         },
@@ -2035,8 +2229,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   BooruError dco_decode_booru_error(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 7)
-      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+    if (arr.length != 8)
+      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
     return BooruError(
       code: dco_decode_booru_error_code(arr[0]),
       sourceId: dco_decode_opt_String(arr[1]),
@@ -2045,6 +2239,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       httpStatus: dco_decode_opt_box_autoadd_u_32(arr[4]),
       retryAfterSeconds: dco_decode_opt_box_autoadd_u_32(arr[5]),
       action: dco_decode_opt_box_autoadd_recovery_action(arr[6]),
+      details: dco_decode_opt_String(arr[7]),
     );
   }
 
@@ -2058,21 +2253,26 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   BooruPost dco_decode_booru_post(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 12)
-      throw Exception('unexpected arr length: expect 12 but see ${arr.length}');
+    if (arr.length != 17)
+      throw Exception('unexpected arr length: expect 17 but see ${arr.length}');
     return BooruPost(
       sourceId: dco_decode_String(arr[0]),
-      author: dco_decode_opt_String(arr[1]),
-      postId: dco_decode_String(arr[2]),
-      postKey: dco_decode_String(arr[3]),
-      webUrl: dco_decode_opt_String(arr[4]),
-      rating: dco_decode_content_rating(arr[5]),
-      score: dco_decode_opt_box_autoadd_i_32(arr[6]),
-      createdAtIso8601: dco_decode_opt_String(arr[7]),
-      sourceUrl: dco_decode_opt_String(arr[8]),
-      tags: dco_decode_list_booru_tag(arr[9]),
-      media: dco_decode_list_media_variant(arr[10]),
-      flags: dco_decode_post_flags(arr[11]),
+      width: dco_decode_opt_box_autoadd_u_32(arr[1]),
+      height: dco_decode_opt_box_autoadd_u_32(arr[2]),
+      originalFileSizeDecimal: dco_decode_opt_String(arr[3]),
+      originalFileExtension: dco_decode_opt_String(arr[4]),
+      originalChecksum: dco_decode_opt_box_autoadd_checksum(arr[5]),
+      author: dco_decode_opt_String(arr[6]),
+      postId: dco_decode_String(arr[7]),
+      postKey: dco_decode_String(arr[8]),
+      webUrl: dco_decode_opt_String(arr[9]),
+      rating: dco_decode_content_rating(arr[10]),
+      score: dco_decode_opt_box_autoadd_i_32(arr[11]),
+      createdAtIso8601: dco_decode_opt_String(arr[12]),
+      sourceUrl: dco_decode_opt_String(arr[13]),
+      tags: dco_decode_list_booru_tag(arr[14]),
+      media: dco_decode_list_media_variant(arr[15]),
+      flags: dco_decode_post_flags(arr[16]),
     );
   }
 
@@ -2215,6 +2415,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  UgoiraExport dco_decode_box_autoadd_ugoira_export(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_ugoira_export(raw);
+  }
+
+  @protected
   WebChallengeCandidate dco_decode_box_autoadd_web_challenge_candidate(
     dynamic raw,
   ) {
@@ -2300,12 +2506,25 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     switch (raw[0]) {
       case 0:
+        return DownloadEvent_Failed(
+          error: dco_decode_box_autoadd_booru_error(raw[1]),
+        );
+      case 1:
+        return DownloadEvent_Paused();
+      case 2:
+        return DownloadEvent_Resumed(restarted: dco_decode_bool(raw[1]));
+      case 3:
         return DownloadEvent_Progress(
           receivedBytesDecimal: dco_decode_String(raw[1]),
           totalBytesDecimal: dco_decode_opt_String(raw[2]),
           progress: dco_decode_f_64(raw[3]),
         );
-      case 1:
+      case 4:
+        return DownloadEvent_Encoding(
+          completedFrames: dco_decode_u_32(raw[1]),
+          totalFrames: dco_decode_u_32(raw[2]),
+        );
+      case 5:
         return DownloadEvent_Done(path: dco_decode_String(raw[1]));
       default:
         throw Exception("unreachable");
@@ -2316,13 +2535,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   DownloadRequest dco_decode_download_request(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 4)
-      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
     return DownloadRequest(
       sourceId: dco_decode_String(arr[0]),
       postId: dco_decode_String(arr[1]),
       variant: dco_decode_media_variant_kind(arr[2]),
       downloadRoot: dco_decode_String(arr[3]),
+      ugoiraExport: dco_decode_opt_box_autoadd_ugoira_export(arr[4]),
     );
   }
 
@@ -2628,6 +2848,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  UgoiraExport? dco_decode_opt_box_autoadd_ugoira_export(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_ugoira_export(raw);
+  }
+
+  @protected
   PersistedHostRoute dco_decode_persisted_host_route(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -2830,6 +3056,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   int dco_decode_u_8(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as int;
+  }
+
+  @protected
+  UgoiraExport dco_decode_ugoira_export(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return UgoiraExport.values[raw as int];
   }
 
   @protected
@@ -3107,6 +3339,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_httpStatus = sse_decode_opt_box_autoadd_u_32(deserializer);
     var var_retryAfterSeconds = sse_decode_opt_box_autoadd_u_32(deserializer);
     var var_action = sse_decode_opt_box_autoadd_recovery_action(deserializer);
+    var var_details = sse_decode_opt_String(deserializer);
     return BooruError(
       code: var_code,
       sourceId: var_sourceId,
@@ -3115,6 +3348,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       httpStatus: var_httpStatus,
       retryAfterSeconds: var_retryAfterSeconds,
       action: var_action,
+      details: var_details,
     );
   }
 
@@ -3129,6 +3363,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   BooruPost sse_decode_booru_post(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_sourceId = sse_decode_String(deserializer);
+    var var_width = sse_decode_opt_box_autoadd_u_32(deserializer);
+    var var_height = sse_decode_opt_box_autoadd_u_32(deserializer);
+    var var_originalFileSizeDecimal = sse_decode_opt_String(deserializer);
+    var var_originalFileExtension = sse_decode_opt_String(deserializer);
+    var var_originalChecksum = sse_decode_opt_box_autoadd_checksum(
+      deserializer,
+    );
     var var_author = sse_decode_opt_String(deserializer);
     var var_postId = sse_decode_String(deserializer);
     var var_postKey = sse_decode_String(deserializer);
@@ -3142,6 +3383,11 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_flags = sse_decode_post_flags(deserializer);
     return BooruPost(
       sourceId: var_sourceId,
+      width: var_width,
+      height: var_height,
+      originalFileSizeDecimal: var_originalFileSizeDecimal,
+      originalFileExtension: var_originalFileExtension,
+      originalChecksum: var_originalChecksum,
       author: var_author,
       postId: var_postId,
       postKey: var_postKey,
@@ -3318,6 +3564,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  UgoiraExport sse_decode_box_autoadd_ugoira_export(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_ugoira_export(deserializer));
+  }
+
+  @protected
   WebChallengeCandidate sse_decode_box_autoadd_web_challenge_candidate(
     SseDeserializer deserializer,
   ) {
@@ -3413,6 +3667,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var tag_ = sse_decode_i_32(deserializer);
     switch (tag_) {
       case 0:
+        var var_error = sse_decode_box_autoadd_booru_error(deserializer);
+        return DownloadEvent_Failed(error: var_error);
+      case 1:
+        return DownloadEvent_Paused();
+      case 2:
+        var var_restarted = sse_decode_bool(deserializer);
+        return DownloadEvent_Resumed(restarted: var_restarted);
+      case 3:
         var var_receivedBytesDecimal = sse_decode_String(deserializer);
         var var_totalBytesDecimal = sse_decode_opt_String(deserializer);
         var var_progress = sse_decode_f_64(deserializer);
@@ -3421,7 +3683,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           totalBytesDecimal: var_totalBytesDecimal,
           progress: var_progress,
         );
-      case 1:
+      case 4:
+        var var_completedFrames = sse_decode_u_32(deserializer);
+        var var_totalFrames = sse_decode_u_32(deserializer);
+        return DownloadEvent_Encoding(
+          completedFrames: var_completedFrames,
+          totalFrames: var_totalFrames,
+        );
+      case 5:
         var var_path = sse_decode_String(deserializer);
         return DownloadEvent_Done(path: var_path);
       default:
@@ -3436,11 +3705,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_postId = sse_decode_String(deserializer);
     var var_variant = sse_decode_media_variant_kind(deserializer);
     var var_downloadRoot = sse_decode_String(deserializer);
+    var var_ugoiraExport = sse_decode_opt_box_autoadd_ugoira_export(
+      deserializer,
+    );
     return DownloadRequest(
       sourceId: var_sourceId,
       postId: var_postId,
       variant: var_variant,
       downloadRoot: var_downloadRoot,
+      ugoiraExport: var_ugoiraExport,
     );
   }
 
@@ -3948,6 +4221,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  UgoiraExport? sse_decode_opt_box_autoadd_ugoira_export(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_ugoira_export(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   PersistedHostRoute sse_decode_persisted_host_route(
     SseDeserializer deserializer,
   ) {
@@ -4190,6 +4476,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   int sse_decode_u_8(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getUint8();
+  }
+
+  @protected
+  UgoiraExport sse_decode_ugoira_export(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return UgoiraExport.values[inner];
   }
 
   @protected
@@ -4473,6 +4766,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_opt_box_autoadd_u_32(self.httpStatus, serializer);
     sse_encode_opt_box_autoadd_u_32(self.retryAfterSeconds, serializer);
     sse_encode_opt_box_autoadd_recovery_action(self.action, serializer);
+    sse_encode_opt_String(self.details, serializer);
   }
 
   @protected
@@ -4488,6 +4782,11 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_booru_post(BooruPost self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(self.sourceId, serializer);
+    sse_encode_opt_box_autoadd_u_32(self.width, serializer);
+    sse_encode_opt_box_autoadd_u_32(self.height, serializer);
+    sse_encode_opt_String(self.originalFileSizeDecimal, serializer);
+    sse_encode_opt_String(self.originalFileExtension, serializer);
+    sse_encode_opt_box_autoadd_checksum(self.originalChecksum, serializer);
     sse_encode_opt_String(self.author, serializer);
     sse_encode_String(self.postId, serializer);
     sse_encode_String(self.postKey, serializer);
@@ -4667,6 +4966,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_ugoira_export(
+    UgoiraExport self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_ugoira_export(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_web_challenge_candidate(
     WebChallengeCandidate self,
     SseSerializer serializer,
@@ -4747,17 +5055,32 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_download_event(DownloadEvent self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     switch (self) {
+      case DownloadEvent_Failed(error: final error):
+        sse_encode_i_32(0, serializer);
+        sse_encode_box_autoadd_booru_error(error, serializer);
+      case DownloadEvent_Paused():
+        sse_encode_i_32(1, serializer);
+      case DownloadEvent_Resumed(restarted: final restarted):
+        sse_encode_i_32(2, serializer);
+        sse_encode_bool(restarted, serializer);
       case DownloadEvent_Progress(
         receivedBytesDecimal: final receivedBytesDecimal,
         totalBytesDecimal: final totalBytesDecimal,
         progress: final progress,
       ):
-        sse_encode_i_32(0, serializer);
+        sse_encode_i_32(3, serializer);
         sse_encode_String(receivedBytesDecimal, serializer);
         sse_encode_opt_String(totalBytesDecimal, serializer);
         sse_encode_f_64(progress, serializer);
+      case DownloadEvent_Encoding(
+        completedFrames: final completedFrames,
+        totalFrames: final totalFrames,
+      ):
+        sse_encode_i_32(4, serializer);
+        sse_encode_u_32(completedFrames, serializer);
+        sse_encode_u_32(totalFrames, serializer);
       case DownloadEvent_Done(path: final path):
-        sse_encode_i_32(1, serializer);
+        sse_encode_i_32(5, serializer);
         sse_encode_String(path, serializer);
     }
   }
@@ -4772,6 +5095,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.postId, serializer);
     sse_encode_media_variant_kind(self.variant, serializer);
     sse_encode_String(self.downloadRoot, serializer);
+    sse_encode_opt_box_autoadd_ugoira_export(self.ugoiraExport, serializer);
   }
 
   @protected
@@ -5224,6 +5548,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_box_autoadd_ugoira_export(
+    UgoiraExport? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_ugoira_export(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_persisted_host_route(
     PersistedHostRoute self,
     SseSerializer serializer,
@@ -5406,6 +5743,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_ugoira_export(UgoiraExport self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
   void sse_encode_unit(void self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
   }
@@ -5540,17 +5883,24 @@ class BooruEngineImpl extends RustOpaque implements BooruEngine {
         sourceId: sourceId,
       );
 
+  /// Stops both the HTTP transfer and frame encoding for this resource.
+  Future<void> cancelDownload({
+    required String sourceId,
+    required String postId,
+    required MediaVariantKind variant,
+    UgoiraExport? ugoiraExport,
+  }) => RustLib.instance.api.crateApiBooruEngineBooruEngineCancelDownload(
+    that: this,
+    sourceId: sourceId,
+    postId: postId,
+    variant: variant,
+    ugoiraExport: ugoiraExport,
+  );
+
   Future<void> cancelWebChallenge({required String operationId}) =>
       RustLib.instance.api.crateApiBooruEngineBooruEngineCancelWebChallenge(
         that: this,
         operationId: operationId,
-      );
-
-  /// Check an actual API response using the active network configuration.
-  Future<void> checkSource({required String sourceId}) =>
-      RustLib.instance.api.crateApiBooruEngineBooruEngineCheckSource(
-        that: this,
-        sourceId: sourceId,
       );
 
   Future<void> clearAuth({required String sourceId}) => RustLib.instance.api
@@ -5587,6 +5937,13 @@ class BooruEngineImpl extends RustOpaque implements BooruEngine {
   Future<PostPage> feed({required FeedRequest request}) => RustLib.instance.api
       .crateApiBooruEngineBooruEngineFeed(that: this, request: request);
 
+  /// The website equivalent of a discovery feed, including its range/date.
+  /// API pagination is deliberately omitted so the link opens at the start.
+  Future<String> feedWebUrl({required FeedRequest request}) => RustLib
+      .instance
+      .api
+      .crateApiBooruEngineBooruEngineFeedWebUrl(that: this, request: request);
+
   Future<BooruPost> getPost({
     required String sourceId,
     required String postId,
@@ -5602,22 +5959,25 @@ class BooruEngineImpl extends RustOpaque implements BooruEngine {
   Future<List<BooruSource>> listSources() => RustLib.instance.api
       .crateApiBooruEngineBooruEngineListSources(that: this);
 
+  /// Pause closes the connection, retaining a validated partial for Range.
+  Future<void> pauseDownload({
+    required String sourceId,
+    required String postId,
+    required MediaVariantKind variant,
+    UgoiraExport? ugoiraExport,
+  }) => RustLib.instance.api.crateApiBooruEngineBooruEnginePauseDownload(
+    that: this,
+    sourceId: sourceId,
+    postId: postId,
+    variant: variant,
+    ugoiraExport: ugoiraExport,
+  );
+
   Future<PreparedDownload> prepareDownload({
     required String sourceId,
     required String postId,
     required MediaVariantKind variant,
   }) => RustLib.instance.api.crateApiBooruEngineBooruEnginePrepareDownload(
-    that: this,
-    sourceId: sourceId,
-    postId: postId,
-    variant: variant,
-  );
-
-  Future<MediaRequest> prepareMedia({
-    required String sourceId,
-    required String postId,
-    required MediaVariantKind variant,
-  }) => RustLib.instance.api.crateApiBooruEngineBooruEnginePrepareMedia(
     that: this,
     sourceId: sourceId,
     postId: postId,
@@ -5638,6 +5998,14 @@ class BooruEngineImpl extends RustOpaque implements BooruEngine {
     url: url,
     allowDiskCache: allowDiskCache,
   );
+
+  /// Resolve credentials only for the native video decoder. Image requests keep
+  /// their headers private in Rust. Callers must not log or persist this result.
+  Future<MediaRequest> prepareVideoRequest({required MediaRequest request}) =>
+      RustLib.instance.api.crateApiBooruEngineBooruEnginePrepareVideoRequest(
+        that: this,
+        request: request,
+      );
 
   /// Probe a draft proxy without replacing the engine or saved settings.
   /// A missing proxy override probes the currently applied network settings.
@@ -5668,6 +6036,19 @@ class BooruEngineImpl extends RustOpaque implements BooruEngine {
   Future<List<WebChallengeState>> restoreWebChallenges() => RustLib.instance.api
       .crateApiBooruEngineBooruEngineRestoreWebChallenges(that: this);
 
+  Future<void> resumeDownload({
+    required String sourceId,
+    required String postId,
+    required MediaVariantKind variant,
+    UgoiraExport? ugoiraExport,
+  }) => RustLib.instance.api.crateApiBooruEngineBooruEngineResumeDownload(
+    that: this,
+    sourceId: sourceId,
+    postId: postId,
+    variant: variant,
+    ugoiraExport: ugoiraExport,
+  );
+
   Future<RouteCacheState> routeCacheState() => RustLib.instance.api
       .crateApiBooruEngineBooruEngineRouteCacheState(that: this);
 
@@ -5689,6 +6070,14 @@ class BooruEngineImpl extends RustOpaque implements BooruEngine {
       .instance
       .api
       .crateApiBooruEngineBooruEngineSearch(that: this, request: request);
+
+  /// The source website's first search page. App-only rating filters and the
+  /// website's own account preferences may differ; credentials and API cursors
+  /// are never included in this shareable URL.
+  Future<String> searchWebUrl({required SearchRequest request}) => RustLib
+      .instance
+      .api
+      .crateApiBooruEngineBooruEngineSearchWebUrl(that: this, request: request);
 
   Future<AuthState> setCredentials({
     required String sourceId,

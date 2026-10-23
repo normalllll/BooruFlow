@@ -34,3 +34,19 @@ fn transcode_error(source_id: &str) -> BooruError {
         "booru.error.imageDecodeFailed",
     )
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn avif_preview_is_converted_to_platform_independent_png() {
+        let input = include_bytes!("../../../../test/fixtures/media/white.avif");
+        let png = avif_to_png("anime_pictures", input).unwrap();
+        let image = lodepng::decode32(&png).unwrap();
+        assert_eq!((image.width, image.height), (16, 16));
+        assert!(image
+            .buffer
+            .iter()
+            .all(|pixel| pixel.r > 250 && pixel.g > 250 && pixel.b > 250 && pixel.a == 255));
+    }
+}

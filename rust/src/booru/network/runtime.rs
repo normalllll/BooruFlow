@@ -874,6 +874,79 @@ mod tests {
     use crate::booru::source::builtin_sources;
 
     #[test]
+    fn verified_konachan_session_is_shared_by_api_and_all_image_paths() {
+        use crate::api::web_challenge::{WebChallengeCandidate, WebChallengeSnapshot};
+        use crate::booru::web_challenge::material::ValidatedChallenge;
+
+        let sessions = Arc::new(SessionStore::default());
+        let challenge = ValidatedChallenge::new(
+            "konachan_com",
+            WebChallengeCandidate {
+                cookies: Vec::new(),
+                snapshots: vec![WebChallengeSnapshot {
+                    target_id: "konachan.com".into(),
+                    cookie_header: "cf_clearance=test-clearance; session_konachan-com=test-session"
+                        .into(),
+                }],
+                user_agent: "test-verification-browser".into(),
+            },
+        )
+        .unwrap();
+        sessions.publish_challenge(challenge, 0, || Ok(())).unwrap();
+        let sources = builtin_sources();
+        let source = sources
+            .iter()
+            .find(|source| source.id == "konachan_com")
+            .unwrap();
+        let directory = tempfile::tempdir().unwrap();
+        let runtime = NetworkRuntime::new(
+            BooruEngineConfig {
+                app_support_directory: directory.path().to_string_lossy().into(),
+                proxy_url: None,
+                fallback_mode: NetworkFallbackMode::Off,
+                dns_provider: crate::api::booru_models::RouteProvider::UncensoredDns,
+                user_agent: "test-app".into(),
+            },
+            &sources,
+            sessions,
+        )
+        .unwrap();
+        let api = runtime
+            .request_headers(
+                source,
+                &Url::parse("https://konachan.com/post.json").unwrap(),
+                &[],
+                false,
+            )
+            .unwrap();
+        for path in [
+            "data/preview/test.jpg",
+            "sample/test.jpg",
+            "jpeg/test.jpg",
+            "image/test.png",
+        ] {
+            let url = Url::parse(&format!("https://konachan.com/{path}")).unwrap();
+            let media = runtime.request_headers(source, &url, &[], false).unwrap();
+            assert_eq!(media.get(COOKIE), api.get(COOKIE), "path={path}");
+            assert_eq!(media.get(USER_AGENT).unwrap(), "test-verification-browser");
+            assert_eq!(media.get(REFERER), api.get(REFERER));
+            assert_eq!(media.get(ACCEPT), api.get(ACCEPT));
+        }
+        assert_eq!(
+            api.get(COOKIE).unwrap(),
+            "cf_clearance=test-clearance; session_konachan-com=test-session"
+        );
+        runtime.require_auth_revision(source.id, 1).unwrap();
+        assert_eq!(
+            runtime
+                .require_auth_revision(source.id, 0)
+                .unwrap_err()
+                .code,
+            BooruErrorCode::Cancelled
+        );
+    }
+
+    #[test]
     fn retry_after_is_bounded() {
         assert_eq!(retry_delay(1, Some(500)), Duration::from_secs(30));
         assert_eq!(retry_delay(2, None), Duration::from_millis(500));

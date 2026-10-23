@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:booruflow/core/settings/settings_service.dart';
+import 'package:booruflow/features/booru/services/auth_storage.dart';
 import 'package:booruflow/src/rust/api/booru_auth.dart';
 import 'package:booruflow/src/rust/api/booru_engine.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
@@ -145,11 +146,7 @@ class BooruService {
     String sourceId,
     SourceCredentials value,
   ) async {
-    await _credentials.put(sourceId, <String, String?>{
-      'username': value.username,
-      'userId': value.userId,
-      'apiKey': value.apiKey,
-    });
+    await _credentials.put(sourceId, encodeStoredCredentials(value));
     final state = await _engine.setCredentials(
       sourceId: sourceId,
       credentials: value,
@@ -197,21 +194,12 @@ class BooruService {
 
   Map<String, String> savedAuth(String sourceId) {
     final raw = _credentials.get(sourceId);
-    const fields = {
-      'username',
-      'userId',
-      'apiKey',
-      'cookieHeader',
-      'userAgent',
-    };
-    if (raw is! Map ||
-        raw.entries.any(
-          (entry) => !fields.contains(entry.key) || entry.value is! String,
-        )) {
+    final decoded = decodeStoredAuth(raw);
+    if (decoded == null) {
       if (raw != null) unawaited(_credentials.delete(sourceId));
       return const {};
     }
-    return Map<String, String>.from(raw);
+    return decoded;
   }
 
   Future<void> _restoreCredentials() async {

@@ -16,7 +16,6 @@ pub struct RequestContext {
 pub struct PreparedMedia {
     pub media: MediaVariant,
     pub headers: Vec<HttpHeader>,
-    pub allow_disk_cache: bool,
 }
 
 #[async_trait]
@@ -62,11 +61,7 @@ pub trait BooruAdapter: Send + Sync {
         let url = reqwest::Url::parse(&media.url)
             .map_err(|_| BooruError::invalid_response(self.definition().id))?;
         let headers = ctx.runtime.prepared_headers(self.definition(), &url)?;
-        Ok(PreparedMedia {
-            media,
-            headers,
-            allow_disk_cache: true,
-        })
+        Ok(PreparedMedia { media, headers })
     }
 
     async fn verify_auth(&self, _ctx: &RequestContext) -> BooruResult<AuthState> {

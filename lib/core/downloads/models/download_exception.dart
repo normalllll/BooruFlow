@@ -13,3 +13,12 @@ class DownloadException implements Exception {
     return '$message: $cause';
   }
 }
+
+final class DuplicateDownloadException extends DownloadException {
+  const DuplicateDownloadException()
+    : super('This image is already queued or downloading.');
+}
+
+final class DownloadPermissionDenied extends DownloadException {
+  const DownloadPermissionDenied(super.message, [super.cause]);
+}

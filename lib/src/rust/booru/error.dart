@@ -15,6 +15,9 @@ class BooruError implements FrbException {
   final int? retryAfterSeconds;
   final RecoveryAction? action;
 
+  /// Technical failure stage and original system error; never browser material.
+  final String? details;
+
   const BooruError({
     required this.code,
     this.sourceId,
@@ -23,6 +26,7 @@ class BooruError implements FrbException {
     this.httpStatus,
     this.retryAfterSeconds,
     this.action,
+    this.details,
   });
 
   @override
@@ -33,7 +37,8 @@ class BooruError implements FrbException {
       diagnosticId.hashCode ^
       httpStatus.hashCode ^
       retryAfterSeconds.hashCode ^
-      action.hashCode;
+      action.hashCode ^
+      details.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -46,7 +51,8 @@ class BooruError implements FrbException {
           diagnosticId == other.diagnosticId &&
           httpStatus == other.httpStatus &&
           retryAfterSeconds == other.retryAfterSeconds &&
-          action == other.action;
+          action == other.action &&
+          details == other.details;
 }
 
 enum BooruErrorCode {

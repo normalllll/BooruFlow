@@ -2,7 +2,9 @@ use crate::api::booru_models::{
     Checksum, ChecksumAlgorithm, ContentRating, MediaType, MediaVariantKind, TagCategory,
 };
 use crate::booru::error::{BooruError, BooruResult};
-use crate::booru::model::{extension_from_url, media_type_from_extension, MediaVariant, Tag};
+use crate::booru::model::{
+    extension_from_url, media_type_from_extension, MediaVariant, PostId, Tag,
+};
 use crate::booru::source::SourceDefinition;
 use serde_json::Value;
 
@@ -60,6 +62,21 @@ pub fn unsigned32(value: &Value, key: &str) -> Option<u32> {
     unsigned(value, key).and_then(|value| u32::try_from(value).ok())
 }
 
+pub fn parent_id(value: &Value) -> Option<PostId> {
+    unsigned(value, "parent_id")
+        .filter(|id| *id > 0)
+        .map(|id| PostId(id.to_string()))
+}
+
+pub fn md5_checksum(value: Option<String>) -> Option<Checksum> {
+    value
+        .filter(|value| is_hex(value, 32))
+        .map(|value| Checksum {
+            algorithm: ChecksumAlgorithm::Md5,
+            value: value.to_ascii_lowercase(),
+        })
+}
+
 pub fn signed32(value: &Value, key: &str) -> Option<i32> {
     value.get(key).and_then(|value| match value {
         Value::Number(value) => value.as_i64().and_then(|value| i32::try_from(value).ok()),
@@ -112,10 +129,7 @@ pub fn media(
     let extension = extension.or_else(|| extension_from_url(&url));
     let media_type =
         media_type.or_else(|| extension.as_deref().and_then(media_type_from_extension));
-    let checksum = md5.filter(|value| is_hex(value, 32)).map(|value| Checksum {
-        algorithm: ChecksumAlgorithm::Md5,
-        value: value.to_ascii_lowercase(),
-    });
+    let checksum = md5_checksum(md5);
     Some(MediaVariant {
         kind,
         url,
@@ -136,6 +150,27 @@ pub fn unix_to_iso8601(seconds: Option<u64>) -> Option<String> {
         .ok()
 }
 
+/// These APIs publish UTC for timestamps without an explicit offset.
+pub fn source_time(value: Option<String>) -> Option<String> {
+    use time::format_description::well_known::Rfc3339;
+    use time::{OffsetDateTime, PrimitiveDateTime};
+
+    let value = value?.replacen(' ', "T", 1);
+    if let Ok(date) = OffsetDateTime::parse(&value, &Rfc3339) {
+        return date.format(&Rfc3339).ok();
+    }
+    for format in [
+        "[year]-[month]-[day]T[hour]:[minute]:[second].[subsecond]",
+        "[year]-[month]-[day]T[hour]:[minute]:[second]",
+    ] {
+        let format = time::format_description::parse_borrowed::<2>(format).ok()?;
+        if let Ok(date) = PrimitiveDateTime::parse(&value, &format) {
+            return date.assume_utc().format(&Rfc3339).ok();
+        }
+    }
+    None
+}
+
 pub fn validate_media_hosts(source: &SourceDefinition, media: &[MediaVariant]) -> BooruResult<()> {
     for item in media {
         let url =
@@ -149,4 +184,43 @@ pub fn validate_media_hosts(source: &SourceDefinition, media: &[MediaVariant]) -
 
 fn is_hex(value: &str, length: usize) -> bool {
     value.len() == length && value.bytes().all(|byte| byte.is_ascii_hexdigit())
+}
+
+#[test]
+fn parent_ids_exclude_absent_sentinels_and_keep_real_relationships() {
+    for id in [
+        serde_json::json!(null),
+        serde_json::json!(0),
+        serde_json::json!("0"),
+        serde_json::json!(-1),
+        serde_json::json!(""),
+    ] {
+        assert_eq!(parent_id(&serde_json::json!({"parent_id": id})), None);
+    }
+    for id in [serde_json::json!(42), serde_json::json!("42")] {
+        assert_eq!(
+            parent_id(&serde_json::json!({"parent_id": id})),
+            Some(PostId("42".into()))
+        );
+    }
+}
+
+#[test]
+fn source_times_keep_offsets_and_mark_naive_timestamps_as_utc() {
+    for text in ["2024-06-01 12:00:00", "2024-06-01T12:00:00"] {
+        assert_eq!(
+            source_time(Some(text.into())).as_deref(),
+            Some("2024-06-01T12:00:00Z")
+        );
+    }
+    assert_eq!(
+        source_time(Some("2026-10-24T15:42:12.847548".into())).as_deref(),
+        Some("2026-10-24T15:42:12.847548Z")
+    );
+    assert_eq!(
+        source_time(Some("2024-06-01 14:00:00+02:00".into())).as_deref(),
+        Some("2024-06-01T14:00:00+02:00")
+    );
+    assert_eq!(source_time(Some("invalid".into())), None);
+    assert_eq!(source_time(None), None);
 }

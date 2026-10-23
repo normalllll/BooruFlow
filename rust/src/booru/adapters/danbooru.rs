@@ -2,8 +2,8 @@ use crate::api::booru_auth::AuthState;
 use crate::api::booru_models::{BooruTagSuggestion, ContentRating, MediaVariantKind, TagCategory};
 use crate::booru::adapter::{BooruAdapter, RequestContext};
 use crate::booru::adapters::common::{
-    boolean, media, parse_json, signed32, string, tag_list, unsigned, unsigned32, username,
-    validate_media_hosts,
+    boolean, md5_checksum, media, parent_id, parse_json, signed32, string, tag_list, unsigned,
+    unsigned32, username, validate_media_hosts,
 };
 use crate::booru::error::{BooruError, BooruErrorCode, BooruResult};
 use crate::booru::model::{Post, PostFlags, PostId, PostPage, SearchQuery, Tag};
@@ -15,7 +15,7 @@ use serde_json::Value;
 // Danbooru's `only` projection does not expand `*`: `*,uploader[name]`
 // returns only the uploader association on both Danbooru and AIBooru.
 // Keep every field consumed by parse_post explicit when adding associations.
-const POST_FIELDS: &str = "id,image_width,image_height,file_ext,md5,preview_file_url,large_file_url,file_url,file_size,tag_string_artist,tag_string_copyright,tag_string_character,tag_string_general,tag_string_meta,rating,score,created_at,uploader[name],uploader_name,source,has_children,parent_id,status,is_deleted";
+const POST_FIELDS: &str = "id,image_width,image_height,file_ext,md5,preview_file_url,large_file_url,file_url,file_size,tag_string_artist,tag_string_copyright,tag_string_character,tag_string_general,tag_string_meta,rating,score,created_at,uploader[name],uploader_name,source,has_children,parent_id,status,is_deleted,is_pending";
 
 pub struct DanbooruAdapter {
     definition: SourceDefinition,
@@ -128,6 +128,11 @@ impl DanbooruAdapter {
         append_tags(value, "tag_string_meta", TagCategory::Meta, &mut tags);
         Ok(Post {
             source_id: self.definition.id.to_owned(),
+            original_file_size: unsigned(value, "file_size"),
+            original_file_extension: string(value, "file_ext"),
+            original_checksum: md5_checksum(string(value, "md5")),
+            width,
+            height,
             id: PostId(id.clone()),
             web_url: Some(format!("{}/posts/{id}", self.definition.web_base)),
             rating: danbooru_rating(string(value, "rating").as_deref()),
@@ -139,8 +144,9 @@ impl DanbooruAdapter {
             media: variants,
             flags: PostFlags {
                 has_children: boolean(value, "has_children"),
-                parent_id: string(value, "parent_id").map(PostId),
-                is_pending: string(value, "status").as_deref() == Some("pending"),
+                parent_id: parent_id(value),
+                is_pending: boolean(value, "is_pending")
+                    || string(value, "status").as_deref() == Some("pending"),
                 is_deleted: boolean(value, "is_deleted")
                     || string(value, "status").as_deref() == Some("deleted"),
                 is_ai_generated: self.definition.is_ai_source,
@@ -393,6 +399,42 @@ mod tests {
         )
     }
 
+    #[test]
+    fn projected_preview_only_posts_keep_original_metadata_and_status() {
+        assert!(POST_FIELDS.split(',').any(|field| field == "is_pending"));
+        for source_id in ["danbooru", "aibooru"] {
+            let source = adapter(source_id);
+            let fixture = serde_json::json!({
+                "id": 42, "image_width": 2400, "image_height": 3600,
+                "file_size": 4000000, "file_ext": "png",
+                "md5": "0123456789ABCDEF0123456789ABCDEF",
+                "preview_file_url": format!("https://{}/preview.jpg", source.definition.allowed_hosts[0]),
+                "is_pending": true, "parent_id": 7, "has_children": true,
+                "uploader": {"name": "Alice"}, "tag_string_artist": "artist",
+                "created_at": "2024-06-01T12:00:00Z", "source": "https://example.com/work"
+            });
+            let post = source.parse_post(&fixture).unwrap().into_api();
+            assert_eq!((post.width, post.height), (Some(2400), Some(3600)));
+            assert_eq!(post.original_file_size_decimal.as_deref(), Some("4000000"));
+            assert_eq!(post.original_file_extension.as_deref(), Some("png"));
+            assert_eq!(
+                post.original_checksum.unwrap().value,
+                "0123456789abcdef0123456789abcdef"
+            );
+            assert!(post.flags.is_pending && post.flags.has_children);
+            assert_eq!(post.flags.parent_id.as_deref(), Some("7"));
+            assert_eq!(post.author.as_deref(), Some("Alice"));
+            assert_eq!(post.tags[0].category, TagCategory::Artist);
+            assert_eq!(
+                post.created_at_iso8601.as_deref(),
+                Some("2024-06-01T12:00:00Z")
+            );
+            assert_eq!(post.source_url.as_deref(), Some("https://example.com/work"));
+            assert_eq!(post.media[0].width, None);
+            assert_eq!(post.media[0].checksum, None);
+        }
+    }
+
     #[tokio::test]
     #[ignore = "requires the public Danbooru and AIBooru APIs; JSON only"]
     async fn live_projected_posts_include_media_and_uploader() {
@@ -456,6 +498,27 @@ mod tests {
                 eprintln!("{source_id}{path}: list and detail parsed with uploader and media");
             }
         }
+    }
+
+    #[test]
+    fn real_video_12408475_exposes_image_cover_and_video_sample_original() {
+        let fixture = include_bytes!("../../../../test/fixtures/media/danbooru_12408475.json");
+        let value = serde_json::from_slice(fixture).unwrap();
+        let post = adapter("danbooru").parse_post(&value).unwrap();
+        let kinds: Vec<_> = post
+            .media
+            .iter()
+            .map(|media| (media.kind, media.media_type))
+            .collect();
+        use crate::api::booru_models::MediaType;
+        assert_eq!(
+            kinds,
+            vec![
+                (MediaVariantKind::Thumbnail, Some(MediaType::Jpeg)),
+                (MediaVariantKind::Sample, Some(MediaType::Mp4)),
+                (MediaVariantKind::Original, Some(MediaType::Mp4))
+            ]
+        );
     }
 
     #[test]

@@ -1,4 +1,5 @@
 use super::{material::ValidatedChallenge, rules, ChallengeCoordinator};
+use crate::api::booru_auth::WebCookie;
 use crate::api::web_challenge::{WebChallengeCandidate, WebChallengeSnapshot};
 use reqwest::header::{HeaderMap, COOKIE, USER_AGENT};
 use std::time::Duration;
@@ -211,5 +212,212 @@ fn failed_atomic_replacement_preserves_saved_and_live_session() {
     assert_eq!(
         owner.commit(&next, replacement).unwrap().revision,
         previous.revision + 1
+    );
+}
+
+fn aibooru_cookies(domains: &[&str]) -> WebChallengeCandidate {
+    WebChallengeCandidate {
+        cookies: domains
+            .iter()
+            .map(|domain| WebCookie {
+                name: "cf_clearance".into(),
+                value: "synthetic-test-marker".into(),
+                domain: (*domain).into(),
+                path: "/".into(),
+                secure: true,
+                expires_at_iso8601: None,
+            })
+            .collect(),
+        snapshots: vec![],
+        user_agent: "synthetic-browser".into(),
+    }
+}
+
+#[test]
+fn aibooru_parent_cookie_is_retained_and_applied_only_to_the_registered_cdn() {
+    let material = ValidatedChallenge::new("aibooru", aibooru_cookies(&[".aibooru.download"]))
+        .expect("registered CDN parent cookie must survive capture validation");
+    let mut headers = HeaderMap::new();
+    material
+        .apply(
+            &"https://cdn.aibooru.download/sample/test.jpg"
+                .parse()
+                .unwrap(),
+            &mut headers,
+        )
+        .unwrap();
+    assert_eq!(headers[COOKIE], "cf_clearance=synthetic-test-marker");
+    assert_eq!(headers[USER_AGENT], "synthetic-browser");
+    let mut api = HeaderMap::new();
+    material
+        .apply(
+            &"https://aibooru.online/posts.json".parse().unwrap(),
+            &mut api,
+        )
+        .unwrap();
+    assert!(!api.contains_key(COOKIE));
+    // Accepting parent-domain material must not authorize additional destinations.
+    for url in [
+        "https://aibooru.download/",
+        "https://other.aibooru.download/",
+        "https://cdn.aibooru.download.evil.test/",
+        "http://cdn.aibooru.download/",
+        "https://cdn.aibooru.download:444/",
+        "https://cdn.donmai.us/",
+    ] {
+        let mut headers = HeaderMap::new();
+        headers.insert(USER_AGENT, "default-app-agent".parse().unwrap());
+        material.apply(&url.parse().unwrap(), &mut headers).unwrap();
+        assert!(
+            !headers.contains_key(COOKIE),
+            "cookie escaped registered destination: {url}"
+        );
+        assert_eq!(headers[USER_AGENT], "default-app-agent");
+    }
+}
+
+#[test]
+fn aibooru_api_cookie_does_not_become_a_cdn_cookie() {
+    let material =
+        ValidatedChallenge::new("aibooru", aibooru_cookies(&[".aibooru.online"])).unwrap();
+    let mut api = HeaderMap::new();
+    material
+        .apply(
+            &"https://aibooru.online/posts.json".parse().unwrap(),
+            &mut api,
+        )
+        .unwrap();
+    assert_eq!(api[COOKIE], "cf_clearance=synthetic-test-marker");
+    let mut cdn = HeaderMap::new();
+    material
+        .apply(
+            &"https://cdn.aibooru.download/sample/test.jpg"
+                .parse()
+                .unwrap(),
+            &mut cdn,
+        )
+        .unwrap();
+    assert!(!cdn.contains_key(COOKIE));
+}
+
+#[test]
+fn aibooru_cookie_allowlist_does_not_accept_unrelated_parents_or_sources() {
+    let rule = rules::rules("aibooru").unwrap();
+    for domain in [
+        ".aibooru.online",
+        ".aibooru.download",
+        "cdn.aibooru.download",
+    ] {
+        assert!(
+            rule.allows_cookie_domain(domain),
+            "registered domain: {domain}"
+        );
+    }
+    for domain in [
+        ".download",
+        ".online",
+        ".other.aibooru.download",
+        ".aibooru.download.evil.test",
+        ".donmai.us",
+    ] {
+        assert!(!rule.allows_cookie_domain(domain));
+        assert!(ValidatedChallenge::new("aibooru", aibooru_cookies(&[domain])).is_err());
+    }
+    assert!(ValidatedChallenge::new("danbooru", aibooru_cookies(&[".aibooru.download"])).is_err());
+}
+
+#[test]
+fn aibooru_cdn_snapshot_is_exact_and_never_borrows_the_api_snapshot() {
+    for cdn_cookie in ["", "cf_clearance=synthetic-cdn-marker"] {
+        let material = ValidatedChallenge::new(
+            "aibooru",
+            WebChallengeCandidate {
+                cookies: vec![],
+                snapshots: vec![
+                    WebChallengeSnapshot {
+                        target_id: "aibooru.online".into(),
+                        cookie_header: "api_session=synthetic-api-marker".into(),
+                    },
+                    WebChallengeSnapshot {
+                        target_id: "cdn.aibooru.download".into(),
+                        cookie_header: cdn_cookie.into(),
+                    },
+                ],
+                user_agent: "synthetic-browser".into(),
+            },
+        )
+        .unwrap();
+        let mut api = HeaderMap::new();
+        material
+            .apply(
+                &"https://aibooru.online/posts.json".parse().unwrap(),
+                &mut api,
+            )
+            .unwrap();
+        assert_eq!(api[COOKIE], "api_session=synthetic-api-marker");
+        let mut cdn = HeaderMap::new();
+        material
+            .apply(
+                &"https://cdn.aibooru.download/sample/test.jpg"
+                    .parse()
+                    .unwrap(),
+                &mut cdn,
+            )
+            .unwrap();
+        assert_eq!(
+            cdn.get(COOKIE).map(|v| v.to_str().unwrap()),
+            if cdn_cookie.is_empty() {
+                None
+            } else {
+                Some(cdn_cookie)
+            }
+        );
+        let mut sibling = HeaderMap::new();
+        material
+            .apply(
+                &"https://other.aibooru.download/".parse().unwrap(),
+                &mut sibling,
+            )
+            .unwrap();
+        assert!(sibling.is_empty());
+    }
+    for target in ["aibooru.download", "other.aibooru.download"] {
+        assert!(ValidatedChallenge::new(
+            "aibooru",
+            WebChallengeCandidate {
+                cookies: vec![],
+                snapshots: vec![WebChallengeSnapshot {
+                    target_id: target.into(),
+                    cookie_header: "cf_clearance=synthetic-test-marker".into()
+                }],
+                user_agent: "synthetic-browser".into(),
+            }
+        )
+        .is_err());
+    }
+}
+
+#[test]
+fn aibooru_snapshot_targets_keep_the_exact_api_and_cdn_hosts() {
+    let source = crate::booru::source::builtin_sources()
+        .into_iter()
+        .find(|source| source.id == "aibooru")
+        .unwrap();
+    let spec = rules::spec(&source).unwrap();
+    assert_eq!(
+        spec.navigation_hosts,
+        ["aibooru.online", "cdn.aibooru.download"]
+    );
+    let targets = spec
+        .capture_targets
+        .iter()
+        .map(|target| (target.id.as_str(), target.url.as_str()))
+        .collect::<Vec<_>>();
+    assert_eq!(
+        targets,
+        [
+            ("aibooru.online", "https://aibooru.online/"),
+            ("cdn.aibooru.download", "https://cdn.aibooru.download/"),
+        ]
     );
 }

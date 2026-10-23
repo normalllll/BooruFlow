@@ -63,6 +63,15 @@ class BooruEngineConfig {
 
 class BooruPost {
   final String sourceId;
+
+  /// Original artwork dimensions, even when only preview media is available.
+  final int? width;
+  final int? height;
+
+  /// Original-file metadata is independent of available preview/download URLs.
+  final String? originalFileSizeDecimal;
+  final String? originalFileExtension;
+  final Checksum? originalChecksum;
   final String? author;
   final String postId;
   final String postKey;
@@ -77,6 +86,11 @@ class BooruPost {
 
   const BooruPost({
     required this.sourceId,
+    this.width,
+    this.height,
+    this.originalFileSizeDecimal,
+    this.originalFileExtension,
+    this.originalChecksum,
     this.author,
     required this.postId,
     required this.postKey,
@@ -93,6 +107,11 @@ class BooruPost {
   @override
   int get hashCode =>
       sourceId.hashCode ^
+      width.hashCode ^
+      height.hashCode ^
+      originalFileSizeDecimal.hashCode ^
+      originalFileExtension.hashCode ^
+      originalChecksum.hashCode ^
       author.hashCode ^
       postId.hashCode ^
       postKey.hashCode ^
@@ -111,6 +130,11 @@ class BooruPost {
       other is BooruPost &&
           runtimeType == other.runtimeType &&
           sourceId == other.sourceId &&
+          width == other.width &&
+          height == other.height &&
+          originalFileSizeDecimal == other.originalFileSizeDecimal &&
+          originalFileExtension == other.originalFileExtension &&
+          originalChecksum == other.originalChecksum &&
           author == other.author &&
           postId == other.postId &&
           postKey == other.postKey &&
@@ -565,8 +589,7 @@ enum MediaVariantKind {
 
 enum NetworkFallbackMode {
   off,
-  persistedIpOverride,
-  legacyIpUrl;
+  persistedIpOverride;
 
   static Future<NetworkFallbackMode> default_() =>
       RustLib.instance.api.crateApiBooruModelsNetworkFallbackModeDefault();

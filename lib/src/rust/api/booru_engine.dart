@@ -27,10 +27,15 @@ abstract class BooruEngine implements RustOpaqueInterface {
 
   Future<WebChallengeOperation> beginWebChallenge({required String sourceId});
 
-  Future<void> cancelWebChallenge({required String operationId});
+  /// Stops both the HTTP transfer and frame encoding for this resource.
+  Future<void> cancelDownload({
+    required String sourceId,
+    required String postId,
+    required MediaVariantKind variant,
+    UgoiraExport? ugoiraExport,
+  });
 
-  /// Check an actual API response using the active network configuration.
-  Future<void> checkSource({required String sourceId});
+  Future<void> cancelWebChallenge({required String operationId});
 
   Future<void> clearAuth({required String sourceId});
 
@@ -49,6 +54,10 @@ abstract class BooruEngine implements RustOpaqueInterface {
 
   Future<PostPage> feed({required FeedRequest request});
 
+  /// The website equivalent of a discovery feed, including its range/date.
+  /// API pagination is deliberately omitted so the link opens at the start.
+  Future<String> feedWebUrl({required FeedRequest request});
+
   Future<BooruPost> getPost({required String sourceId, required String postId});
 
   Future<RouteCacheState> initializeRouteCache();
@@ -59,13 +68,15 @@ abstract class BooruEngine implements RustOpaqueInterface {
   static Future<BooruEngine> newInstance({required BooruEngineConfig config}) =>
       RustLib.instance.api.crateApiBooruEngineBooruEngineNew(config: config);
 
-  Future<PreparedDownload> prepareDownload({
+  /// Pause closes the connection, retaining a validated partial for Range.
+  Future<void> pauseDownload({
     required String sourceId,
     required String postId,
     required MediaVariantKind variant,
+    UgoiraExport? ugoiraExport,
   });
 
-  Future<MediaRequest> prepareMedia({
+  Future<PreparedDownload> prepareDownload({
     required String sourceId,
     required String postId,
     required MediaVariantKind variant,
@@ -78,6 +89,10 @@ abstract class BooruEngine implements RustOpaqueInterface {
     required String url,
     required bool allowDiskCache,
   });
+
+  /// Resolve credentials only for the native video decoder. Image requests keep
+  /// their headers private in Rust. Callers must not log or persist this result.
+  Future<MediaRequest> prepareVideoRequest({required MediaRequest request});
 
   /// Probe a draft proxy without replacing the engine or saved settings.
   /// A missing proxy override probes the currently applied network settings.
@@ -97,6 +112,13 @@ abstract class BooruEngine implements RustOpaqueInterface {
   /// the disk record for later retry without publishing an unverified session.
   Future<List<WebChallengeState>> restoreWebChallenges();
 
+  Future<void> resumeDownload({
+    required String sourceId,
+    required String postId,
+    required MediaVariantKind variant,
+    UgoiraExport? ugoiraExport,
+  });
+
   Future<RouteCacheState> routeCacheState();
 
   Future<WebChallengeState> runWindowsWebChallenge({
@@ -107,6 +129,11 @@ abstract class BooruEngine implements RustOpaqueInterface {
   });
 
   Future<PostPage> search({required SearchRequest request});
+
+  /// The source website's first search page. App-only rating filters and the
+  /// website's own account preferences may differ; credentials and API cursors
+  /// are never included in this shareable URL.
+  Future<String> searchWebUrl({required SearchRequest request});
 
   Future<AuthState> setCredentials({
     required String sourceId,

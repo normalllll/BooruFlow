@@ -10,17 +10,26 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'booru_download.freezed.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `assert_fields_are_eq`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`
 
 @freezed
 sealed class DownloadEvent with _$DownloadEvent {
   const DownloadEvent._();
 
+  const factory DownloadEvent.failed({required BooruError error}) =
+      DownloadEvent_Failed;
+  const factory DownloadEvent.paused() = DownloadEvent_Paused;
+  const factory DownloadEvent.resumed({required bool restarted}) =
+      DownloadEvent_Resumed;
   const factory DownloadEvent.progress({
     required String receivedBytesDecimal,
     String? totalBytesDecimal,
     required double progress,
   }) = DownloadEvent_Progress;
+  const factory DownloadEvent.encoding({
+    required int completedFrames,
+    required int totalFrames,
+  }) = DownloadEvent_Encoding;
   const factory DownloadEvent.done({required String path}) = DownloadEvent_Done;
 }
 
@@ -29,12 +38,14 @@ class DownloadRequest {
   final String postId;
   final MediaVariantKind variant;
   final String downloadRoot;
+  final UgoiraExport? ugoiraExport;
 
   const DownloadRequest({
     required this.sourceId,
     required this.postId,
     required this.variant,
     required this.downloadRoot,
+    this.ugoiraExport,
   });
 
   @override
@@ -42,7 +53,8 @@ class DownloadRequest {
       sourceId.hashCode ^
       postId.hashCode ^
       variant.hashCode ^
-      downloadRoot.hashCode;
+      downloadRoot.hashCode ^
+      ugoiraExport.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -52,7 +64,8 @@ class DownloadRequest {
           sourceId == other.sourceId &&
           postId == other.postId &&
           variant == other.variant &&
-          downloadRoot == other.downloadRoot;
+          downloadRoot == other.downloadRoot &&
+          ugoiraExport == other.ugoiraExport;
 }
 
 @freezed
@@ -118,3 +131,5 @@ class PreparedDownload {
           checksum == other.checksum &&
           filename == other.filename;
 }
+
+enum UgoiraExport { losslessWebp, originalZip }

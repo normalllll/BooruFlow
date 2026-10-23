@@ -1,16 +1,28 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:booruflow/core/downloads/download_engine.dart';
 import 'package:booruflow/core/downloads/download_file_system.dart';
 import 'package:booruflow/core/downloads/download_models.dart';
+import 'package:booruflow/core/downloads/download_validator.dart';
+import 'package:booruflow/core/media/encoded_media_cache.dart';
+import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/features/booru/services/booru_service.dart';
 import 'package:booruflow/src/rust/api/booru_download.dart';
+import 'package:booruflow/src/rust/api/booru_engine.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:path/path.dart' as p;
 
 final class RustIoDownloadEngine implements DownloadEngine {
-  RustIoDownloadEngine({required this.type});
+  RustIoDownloadEngine({
+    required this.type,
+    BooruEngine Function()? engine,
+    Future<Directory> Function()? temporaryDirectory,
+    this.cache = const EncodedMediaCache(),
+  }) : _engine = engine ?? (() => BooruService.instance.engine),
+       _temporaryDirectory = temporaryDirectory ?? downloadTempDirectory;
+  final EncodedMediaCache cache;
+  final Future<Directory> Function() _temporaryDirectory;
+  final BooruEngine Function() _engine;
 
   @override
   final DownloadEngineType type;
@@ -20,7 +32,7 @@ final class RustIoDownloadEngine implements DownloadEngine {
     return const DownloadCapabilities(
       supportsBackground: false,
       supportsCancel: true,
-      supportsPauseResume: false,
+      supportsPauseResume: true,
       handlesSaving: false,
       supportsHeaders: true,
       supportsProxy: true,
@@ -42,7 +54,8 @@ final class RustIoDownloadEngine implements DownloadEngine {
   @override
   Future<void> start(List<DownloadJob> jobs) async {
     for (final job in jobs) {
-      if (_running.containsKey(job.id)) {
+      if (_running[job.id] case final running?) {
+        if (running.paused) await resume(job.id);
         continue;
       }
       unawaited(_download(job));
@@ -50,16 +63,42 @@ final class RustIoDownloadEngine implements DownloadEngine {
   }
 
   @override
-  Future<void> pause(String jobId) {
-    throw UnsupportedError(
-      'Pause is not supported by the Rust IO download engine.',
+  Future<void> pause(String jobId) async {
+    final running = _running[jobId];
+    if (running == null || running.cancelled) return;
+    // Starting the FFI stream and registering its Rust control are asynchronous.
+    // Do not lose a pause clicked during local directory/metadata preparation.
+    await Future.any([running.started, running.finished]);
+    if (running.cancelled || !_running.containsKey(jobId)) return;
+    if (running.copyingCache) {
+      if (!running.paused) {
+        running.pauseLocal();
+        _events.add(EnginePausedEvent(jobId: jobId));
+      }
+      return;
+    }
+    await running.engine.pauseDownload(
+      sourceId: running.job.sourceId,
+      postId: running.job.postId,
+      variant: MediaVariantKind.values[running.job.variantIndex],
+      ugoiraExport: running.job.ugoiraExport,
     );
   }
 
   @override
-  Future<void> resume(String jobId) {
-    throw UnsupportedError(
-      'Resume is not supported by the Rust IO download engine.',
+  Future<void> resume(String jobId) async {
+    final running = _running[jobId];
+    if (running == null || running.cancelled) return;
+    if (running.copyingCache) {
+      running.resumeLocal();
+      _events.add(EngineResumedEvent(jobId: jobId, restarted: false));
+      return;
+    }
+    await running.engine.resumeDownload(
+      sourceId: running.job.sourceId,
+      postId: running.job.postId,
+      variant: MediaVariantKind.values[running.job.variantIndex],
+      ugoiraExport: running.job.ugoiraExport,
     );
   }
 
@@ -70,6 +109,15 @@ final class RustIoDownloadEngine implements DownloadEngine {
       return;
     }
     running.cancelled = true;
+    running.resumeLocal();
+    if (!running.copyingCache) {
+      await running.engine.cancelDownload(
+        sourceId: running.job.sourceId,
+        postId: running.job.postId,
+        variant: MediaVariantKind.values[running.job.variantIndex],
+        ugoiraExport: running.job.ugoiraExport,
+      );
+    }
     running.completeWithError(const DownloadException('Download cancelled'));
     await running.cancelSubscription();
     await running.finished;
@@ -81,7 +129,9 @@ final class RustIoDownloadEngine implements DownloadEngine {
       for (final running in _running.values)
         DownloadEngineSnapshot(
           jobId: running.job.id,
-          status: DownloadStatus.running,
+          status: running.paused
+              ? DownloadStatus.paused
+              : DownloadStatus.running,
           saveState: SaveState.none,
           receivedBytes: running.receivedBytes,
           totalBytes: running.totalBytes,
@@ -103,14 +153,78 @@ final class RustIoDownloadEngine implements DownloadEngine {
     await _events.close();
   }
 
+  Future<bool> _copyCached(
+    DownloadJob job,
+    _RunningDownload running,
+    File destination,
+  ) async {
+    final mime = encodedImageMimeForExtension(p.extension(job.filename));
+    if (mime == null ||
+        job.ugoiraExport != null ||
+        !downloadContentTypeMatches(mime, job.validation.allowedContentTypes)) {
+      return false;
+    }
+    var copied = false;
+    try {
+      final request = await running.engine.prepareMediaUrl(
+        sourceId: job.sourceId,
+        postId: job.postId,
+        variant: MediaVariantKind.values[job.variantIndex],
+        url: job.url.toString(),
+        allowDiskCache: true,
+      );
+      final checksum = job.validation.checksum;
+      copied = await cache.copyOriginal(
+        request,
+        destination,
+        mimeType: mime,
+        expectedBytes: job.validation.expectedBytes,
+        md5: checksum?.algorithm == DownloadChecksumAlgorithm.md5
+            ? checksum!.value
+            : null,
+        sha256: checksum?.algorithm == DownloadChecksumAlgorithm.sha256
+            ? checksum!.value
+            : null,
+        onCopyStarted: () {
+          running.copyingCache = true;
+          running.markStarted();
+        },
+      );
+      if (copied) {
+        final current = await running.engine.prepareMediaUrl(
+          sourceId: job.sourceId,
+          postId: job.postId,
+          variant: request.variant,
+          url: job.url.toString(),
+          allowDiskCache: true,
+        );
+        if (current.cacheKey != request.cacheKey || !current.allowDiskCache) {
+          await deleteFileIfExists(destination);
+          copied = false;
+        }
+      }
+    } catch (_) {
+      // Preparation/revalidation can fail after a successful copy as well.
+      // In every case the optional cache must fall back to the real request.
+      copied = false;
+      await deleteFileIfExists(destination);
+    }
+    if (running.copyingCache) {
+      await running.waitForLocalResume();
+      if (!copied) running.copyingCache = false;
+    }
+    if (running.cancelled) throw const DownloadException('Download cancelled');
+    return copied;
+  }
+
   Future<void> _download(DownloadJob job) async {
-    final running = _RunningDownload(job: job);
+    final running = _RunningDownload(job: job, engine: _engine());
     _running[job.id] = running;
 
     File? partialFile;
     File? downloadedFile;
     try {
-      final tempDirectory = await downloadTempDirectory();
+      final tempDirectory = await _temporaryDirectory();
       final jobDirectory = Directory(p.join(tempDirectory.path, job.id));
       await jobDirectory.create(recursive: true);
       final filename = safeDownloadFilename(job.filename);
@@ -120,32 +234,42 @@ final class RustIoDownloadEngine implements DownloadEngine {
       await deleteFileIfExists(destination);
 
       var lastEmit = DateTime.fromMillisecondsSinceEpoch(0);
-      final downloadedPath = await running.download(
-        job,
-        jobDirectory.path,
-        onProgress: (receivedBytes, totalBytes) {
-          running.receivedBytes = receivedBytes;
-          running.totalBytes = totalBytes;
-          running.progress = switch (totalBytes) {
-            null => 0,
-            _ => (receivedBytes / totalBytes).clamp(0.0, 1.0),
-          };
+      final cached = await _copyCached(job, running, partialFile);
+      final downloadedPath = cached
+          ? partialFile.path
+          : await running.download(
+              job,
+              jobDirectory.path,
+              onPaused: () => _events.add(EnginePausedEvent(jobId: job.id)),
+              onResumed: (restarted) {
+                if (restarted) {
+                  running.receivedBytes = 0;
+                  running.progress = 0;
+                }
+                _events.add(
+                  EngineResumedEvent(jobId: job.id, restarted: restarted),
+                );
+              },
+              onProgress: (receivedBytes, totalBytes, progress) {
+                running.receivedBytes = receivedBytes;
+                running.totalBytes = totalBytes;
+                running.progress = progress;
 
-          final now = DateTime.now();
-          if (now.difference(lastEmit).inMilliseconds >= 300 ||
-              running.progress >= 1) {
-            lastEmit = now;
-            _events.add(
-              EngineProgressEvent(
-                jobId: job.id,
-                receivedBytes: running.receivedBytes,
-                totalBytes: running.totalBytes,
-                progress: running.progress,
-              ),
+                final now = DateTime.now();
+                if (now.difference(lastEmit).inMilliseconds >= 300 ||
+                    running.progress >= 1) {
+                  lastEmit = now;
+                  _events.add(
+                    EngineProgressEvent(
+                      jobId: job.id,
+                      receivedBytes: running.receivedBytes,
+                      totalBytes: running.totalBytes,
+                      progress: running.progress,
+                    ),
+                  );
+                }
+              },
             );
-          }
-        },
-      );
 
       downloadedFile = File(downloadedPath);
       if (running.cancelled) {
@@ -159,7 +283,7 @@ final class RustIoDownloadEngine implements DownloadEngine {
 
       final bytesWritten = await downloadedFile.length();
       running.receivedBytes = bytesWritten;
-      running.totalBytes ??= bytesWritten;
+      running.totalBytes = bytesWritten;
       running.progress = 1;
       await deleteFileIfExists(destination);
       final savedTempFile = await downloadedFile.rename(destination.path);
@@ -201,7 +325,7 @@ final class RustIoDownloadEngine implements DownloadEngine {
                 'partialPath=${partialFile?.path ?? '<null>'}\n'
                 'downloadedPath=${downloadedFile?.path ?? '<null>'}\n'
                 'validation=${job.validation.toJson()}\n'
-                'error=$error\n'
+                'error=${describeBooruError(error)}\n'
                 'stackTrace=$stackTrace',
           ),
         );
@@ -215,13 +339,37 @@ final class RustIoDownloadEngine implements DownloadEngine {
 }
 
 class _RunningDownload {
-  _RunningDownload({required this.job});
+  _RunningDownload({required this.job, required this.engine});
+  final BooruEngine engine;
 
   final DownloadJob job;
   StreamSubscription<DownloadEvent>? subscription;
   Completer<String>? _pathCompleter;
   final _finishedCompleter = Completer<void>();
-  bool cancelled = false;
+  final _startedCompleter = Completer<void>();
+  Future<void> get started => _startedCompleter.future;
+  bool cancelled = false, paused = false, copyingCache = false;
+  Completer<void>? _localResume;
+  void markStarted() {
+    if (!_startedCompleter.isCompleted) _startedCompleter.complete();
+  }
+
+  void pauseLocal() {
+    paused = true;
+    _localResume ??= Completer<void>();
+  }
+
+  void resumeLocal() {
+    paused = false;
+    final resume = _localResume;
+    _localResume = null;
+    resume?.complete();
+  }
+
+  Future<void> waitForLocalResume() async {
+    if (_localResume case final pending?) await pending.future;
+  }
+
   int receivedBytes = 0;
   int? totalBytes;
   double progress = 0;
@@ -229,7 +377,10 @@ class _RunningDownload {
   Future<String> download(
     DownloadJob job,
     String downloadRoot, {
-    required void Function(int receivedBytes, int? totalBytes) onProgress,
+    required void Function(int receivedBytes, int? totalBytes, double progress)
+    onProgress,
+    required void Function() onPaused,
+    required void Function(bool restarted) onResumed,
   }) {
     if (cancelled) {
       return Future<String>.error(
@@ -238,7 +389,7 @@ class _RunningDownload {
     }
     final completer = Completer<String>();
     _pathCompleter = completer;
-    subscription = BooruService.instance.engine
+    subscription = engine
         .downloadToFileStream(
           request: DownloadRequest(
             sourceId: job.sourceId,
@@ -249,21 +400,44 @@ class _RunningDownload {
                 ? MediaVariantKind.values[job.variantIndex]
                 : MediaVariantKind.original,
             downloadRoot: downloadRoot,
+            ugoiraExport: job.ugoiraExport,
           ),
         )
         .listen(
           (event) {
+            if (!_startedCompleter.isCompleted) _startedCompleter.complete();
             if (cancelled) {
               return;
             }
             switch (event) {
+              case DownloadEvent_Failed(:final error):
+                completeWithError(error);
+              case DownloadEvent_Paused():
+                paused = true;
+                onPaused();
+              case DownloadEvent_Resumed(:final restarted):
+                paused = false;
+                onResumed(restarted);
               case DownloadEvent_Progress(
                 :final receivedBytesDecimal,
                 :final totalBytesDecimal,
+                :final progress,
               ):
                 onProgress(
                   int.tryParse(receivedBytesDecimal) ?? 0,
                   int.tryParse(totalBytesDecimal ?? ''),
+                  job.ugoiraExport == UgoiraExport.losslessWebp
+                      ? progress * .9
+                      : progress,
+                );
+              case DownloadEvent_Encoding(
+                :final completedFrames,
+                :final totalFrames,
+              ):
+                onProgress(
+                  receivedBytes,
+                  totalBytes,
+                  .9 + .1 * completedFrames / totalFrames,
                 );
               case DownloadEvent_Done(:final path):
                 complete(path);

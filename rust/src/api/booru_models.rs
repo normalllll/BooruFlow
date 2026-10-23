@@ -60,7 +60,6 @@ pub enum NetworkFallbackMode {
     #[default]
     Off,
     PersistedIpOverride,
-    LegacyIpUrl,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -165,6 +164,13 @@ pub struct PostFlags {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct BooruPost {
     pub source_id: String,
+    /// Original artwork dimensions, even when only preview media is available.
+    pub width: Option<u32>,
+    pub height: Option<u32>,
+    /// Original-file metadata is independent of available preview/download URLs.
+    pub original_file_size_decimal: Option<String>,
+    pub original_file_extension: Option<String>,
+    pub original_checksum: Option<Checksum>,
     pub author: Option<String>,
     pub post_id: String,
     pub post_key: String,
