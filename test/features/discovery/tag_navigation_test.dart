@@ -2,27 +2,25 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:booruflow/app/app_router.dart';
-import 'package:booruflow/features/about/about_page.dart';
+import 'package:booruflow/app/frost_config.dart';
 import 'package:booruflow/features/booru/services/booru_service.dart';
 import 'package:booruflow/features/search/post_search_page.dart';
 import 'package:booruflow/features/search/services/tag_suggestion_repository.dart';
 import 'package:booruflow/features/search/user_tags_page.dart';
+import 'package:booruflow/features/settings/settings_page.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_navigation.dart';
-import 'package:booruflow/shared/app_theme.dart';
-import 'package:booruflow/shared/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:hive_ce/hive.dart';
-import 'package:toastification/toastification.dart';
 
 import 'search_interaction_test.dart' show testSource, SearchRepositoryFake;
 
 Future<void> settle(WidgetTester tester) async {
   await tester.pump();
   await tester.runAsync(() => Future<void>.delayed(Duration.zero));
-  toastification.dismissAll(delayForAnimation: false);
   await tester.pumpAndSettle();
 }
 
@@ -45,7 +43,7 @@ void main() {
   });
 
   testWidgets(
-    'registered tag manager uses shell back on desktop and AppBar back on mobile',
+    'registered tag manager keeps page-owned back, aliases and editor navigation on desktop and mobile',
     (tester) async {
       tester.view.physicalSize = const Size(1440, 900);
       tester.view.devicePixelRatio = 1;
@@ -54,27 +52,34 @@ void main() {
       AppRouter.router.go(AppRoute.about.path);
       await tester.pumpWidget(
         ProviderScope(
-          child: AppToastWrapper(
-            child: MaterialApp.router(
-              theme: darkTheme(),
+          child: TranslationProvider(
+            child: FrostApp.router(
+              title: 'Navigation test',
+              config: appFrostConfig,
+              appearance: FrostAppearance.initial(
+                FrostPalettes.pink,
+              ).copyWith(mode: ThemeMode.dark),
               routerConfig: AppRouter.router,
             ),
           ),
         ),
       );
       await settle(tester);
-      final context = tester.element(find.byType(AboutPage));
+      final context = tester.element(find.byType(SettingsPage));
       context.pushUserTags<void>(sourceId: 'first');
       await settle(tester);
       expect(find.byType(UserTagsPage), findsOneWidget);
       expect(find.byType(AppBar), findsNothing);
-      expect(AppRouter.rightNavigatorCanPop.value, isTrue);
+      expect(
+        tester.widget<FrostShell>(find.byType(FrostShell)).canGoBack,
+        isTrue,
+      );
       expect(find.text(t.discovery.noCustomTags), findsOneWidget);
       expect(find.text(t.discovery.customTagsHint), findsOneWidget);
       expect(find.byType(FloatingActionButton), findsNothing);
-      await tester.tap(find.text(t.discovery.addTag));
+      await tester.tap(find.text(t.discovery.addTagAction).hitTestable().first);
       await settle(tester);
-      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(find.byType(FrostDialog), findsOneWidget);
       expect(find.byType(TextField), findsNWidgets(2));
       await tester.tap(find.text(t.generic.cancel));
       await settle(tester);
@@ -104,20 +109,21 @@ void main() {
       final card = find.byKey(const ValueKey('custom-tag-test'));
       final secondCard = find.byKey(const ValueKey('custom-tag-test2'));
       expect(tester.getRect(card).left, tester.getRect(secondCard).left);
-      expect(tester.getRect(secondCard).top - tester.getRect(card).bottom, 12);
-      final title = find
-          .descendant(of: card, matching: find.text('#sky', findRichText: true))
-          .first;
-      expect(tester.getRect(title).left - tester.getRect(card).left, 14);
+      expect(
+        tester.getRect(secondCard).top - tester.getRect(card).bottom,
+        1 / MediaQuery.devicePixelRatioOf(tester.element(card)),
+      );
+      final title = find.descendant(of: card, matching: find.text('sky')).first;
+      expect(tester.getRect(title).left, tester.getRect(card).left);
       expect(find.text(t.discovery.allTagSources), findsOneWidget);
       await tester.runAsync(
         () => TagSuggestionRepository.instance.deleteAlias('test2'),
       );
       await settle(tester);
-      expect(find.text(t.discovery.addTag), findsOneWidget);
-      await tester.tap(find.text(t.discovery.addTag));
+      expect(find.text(t.discovery.addTagAction), findsOneWidget);
+      await tester.tap(find.text(t.discovery.addTagAction).hitTestable().first);
       await settle(tester);
-      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(find.byType(FrostDialog), findsOneWidget);
       await tester.tap(find.text(t.generic.cancel));
       await settle(tester);
       await tester.runAsync(
@@ -125,15 +131,24 @@ void main() {
       );
       await settle(tester);
       expect(find.text(t.discovery.noCustomTags), findsOneWidget);
-      await tester.tap(find.byTooltip('Back'));
+      await tester.tap(
+        find.byWidgetPredicate(
+          (widget) => widget is FrostTooltip && widget.message == t.frost.back,
+        ),
+      );
       await settle(tester);
       expect(find.byType(UserTagsPage), findsNothing);
-      expect(find.byType(AboutPage), findsOneWidget);
-      expect(AppRouter.rightNavigatorCanPop.value, isFalse);
+      expect(find.byType(SettingsPage), findsOneWidget);
+      expect(
+        tester.widget<FrostShell>(find.byType(FrostShell)).canGoBack,
+        isTrue,
+        reason:
+            '/settings/about remains a secondary location with a logical parent',
+      );
 
       // The editor lives in a modal on the same content navigator.
       showModalBottomSheet<void>(
-        context: tester.element(find.byType(AboutPage)),
+        context: tester.element(find.byType(SettingsPage)),
         isScrollControlled: true,
         builder: (_) => FractionallySizedBox(
           heightFactor: .92,
@@ -145,11 +160,22 @@ void main() {
         ),
       );
       await settle(tester);
-      await tester.tap(find.text(t.discovery.manageTags));
+      await tester.tap(
+        find
+            .byWidgetPredicate(
+              (w) => w is FrostTooltip && w.message == t.discovery.manageTags,
+            )
+            .hitTestable()
+            .first,
+      );
       await settle(tester);
       expect(find.byType(UserTagsPage), findsOneWidget);
       expect(find.byType(AppBar), findsNothing);
-      await tester.tap(find.byTooltip('Back'));
+      await tester.tap(
+        find.byWidgetPredicate(
+          (widget) => widget is FrostTooltip && widget.message == t.frost.back,
+        ),
+      );
       await settle(tester);
       expect(find.byType(PostSearchPage), findsOneWidget);
       Navigator.of(tester.element(find.byType(PostSearchPage))).pop();
@@ -158,13 +184,18 @@ void main() {
       tester.view.physicalSize = const Size(360, 740);
       await settle(tester);
       tester
-          .element(find.byType(AboutPage))
+          .element(find.byType(SettingsPage))
           .pushUserTags<void>(sourceId: 'first');
       await settle(tester);
       expect(find.byType(UserTagsPage), findsOneWidget);
-      expect(find.byType(AppBar), findsOneWidget);
-      expect(find.byType(BackButton), findsOneWidget);
-      await tester.tap(find.text(t.discovery.addTag));
+      expect(find.byType(FrostPageHeader), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (widget) => widget is FrostTooltip && widget.message == t.frost.back,
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.text(t.discovery.addTagAction).hitTestable().first);
       await settle(tester);
       await tester.enterText(find.byType(TextField).first, 'mobile_tag');
       await tester.runAsync(() async {
@@ -177,7 +208,7 @@ void main() {
           (_) => onSaved(),
         );
         try {
-          await tester.tap(find.text(t.generic.confirm));
+          await tester.tap(find.text(t.settings.account.save));
           await saved.future.timeout(const Duration(seconds: 3));
         } finally {
           await subscription.cancel();
@@ -185,12 +216,16 @@ void main() {
       });
       await settle(tester);
       expect(TagSuggestionRepository.instance.aliases.single.sourceId, 'first');
-      expect(find.text('#mobile_tag', findRichText: true), findsOneWidget);
-      expect(find.byType(AlertDialog), findsNothing);
-      await tester.tap(find.byType(BackButton));
+      expect(find.text('mobile_tag'), findsOneWidget);
+      expect(find.byType(FrostDialog), findsNothing);
+      await tester.tap(
+        find.byWidgetPredicate(
+          (widget) => widget is FrostTooltip && widget.message == t.frost.back,
+        ),
+      );
       await settle(tester);
       expect(find.byType(UserTagsPage), findsNothing);
-      expect(find.byType(AboutPage), findsOneWidget);
+      expect(find.byType(SettingsPage), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
       await settle(tester);

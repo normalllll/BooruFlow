@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-
+import 'package:booruflow/core/media/encoded_media_cache.dart';
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/features/posts/widgets/rust_extended_network_image_provider.dart';
 import 'package:booruflow/src/rust/api/booru_download.dart';
@@ -11,6 +11,7 @@ import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../../support/preseeded_media.dart';
 
 const request = MediaRequest(
   sourceId: 'source',
@@ -92,6 +93,122 @@ void main() {
     await temp.delete(recursive: true);
   });
 
+  test(
+    'original decodes leave the LRU on last listener; card preview survives',
+    () async {
+      RustExtendedNetworkImageProvider provider(
+        String id,
+        MediaVariantKind variant, {
+        DecodedImageRetention? retention,
+      }) => RustExtendedNetworkImageProvider(
+        request: MediaRequest(
+          sourceId: 'source',
+          postId: id,
+          variant: variant,
+          url: 'https://test/$id.png',
+          headers: [],
+          routeKey: 'route',
+          cacheKey: 'cache-$id',
+          authRevision: 0,
+          routeRevision: '0',
+          allowDiskCache: false,
+        ),
+        mediaStream: (_) => chunks(png),
+        retention: retention,
+      );
+      Future<(ImageStream, ImageStreamListener)> display(
+        RustExtendedNetworkImageProvider image,
+      ) async {
+        final ready = Completer<void>();
+        final stream = image.resolve(ImageConfiguration.empty);
+        final listener = ImageStreamListener(
+          (info, _) {
+            info.dispose();
+            if (!ready.isCompleted) ready.complete();
+          },
+          onError: (Object error, StackTrace? stack) =>
+              ready.completeError(error, stack),
+        );
+        stream.addListener(listener);
+        await ready.future.timeout(const Duration(seconds: 5));
+        expect(
+          PaintingBinding.instance.imageCache.statusForKey(image).keepAlive,
+          true,
+        );
+        return (stream, listener);
+      }
+
+      final card = provider('card', MediaVariantKind.sample);
+      final (cardStream, cardListener) = await display(card);
+      cardStream.removeListener(cardListener);
+      for (final id in ['one', 'two', 'three']) {
+        final original = provider(id, MediaVariantKind.original);
+        final (stream, listener) = await display(original);
+        stream.removeListener(listener);
+        expect(
+          PaintingBinding.instance.imageCache.statusForKey(original).keepAlive,
+          false,
+        );
+        expect(
+          PaintingBinding.instance.imageCache.statusForKey(card).keepAlive,
+          true,
+        );
+      }
+      final alias = provider(
+        'card',
+        MediaVariantKind.sample,
+        retention: DecodedImageRetention.liveOnly,
+      );
+      expect(alias, isNot(card));
+      final (stream, listener) = await display(alias);
+      stream.removeListener(listener);
+      expect(
+        PaintingBinding.instance.imageCache.statusForKey(alias).keepAlive,
+        false,
+      );
+      expect(
+        PaintingBinding.instance.imageCache.statusForKey(card).keepAlive,
+        true,
+      );
+    },
+  );
+
+  test(
+    'unvalidated legacy PNG is fetched once and only the new transfer becomes reusable',
+    () async {
+      await cache.writeAsBytes(png);
+      var requests = 0;
+      final original = MediaRequest(
+        sourceId: request.sourceId,
+        postId: request.postId,
+        variant: MediaVariantKind.original,
+        url: request.url,
+        headers: [],
+        routeKey: request.routeKey,
+        cacheKey: request.cacheKey,
+        authRevision: request.authRevision,
+        routeRevision: request.routeRevision,
+        allowDiskCache: true,
+      );
+      final provider = RustExtendedNetworkImageProvider(
+        request: original,
+        cacheFile: cache,
+        mediaStream: (_) {
+          requests++;
+          return chunks(png);
+        },
+      );
+      final info = await load(provider);
+      info.dispose();
+      expect(requests, 1);
+      expect(await provider.cachedOriginalPng(), png);
+      expect(await cache.readAsBytes(), png);
+      final cached = await load(provider);
+      cached.dispose();
+      expect(requests, 1);
+    },
+  );
+
   for (final code in [
     BooruErrorCode.challengeRequired,
     BooruErrorCode.rateLimited,
@@ -171,7 +288,7 @@ void main() {
   test(
     'a lazy first-frame failure in disk cache is evicted and downloaded again',
     () async {
-      await cache.writeAsBytes([1, 2, 3]);
+      await EncodedMediaCache(file: cache).write(request, png);
       var downloads = 0;
       var decodes = 0;
       final broken = LazyBrokenCodec();
@@ -307,14 +424,17 @@ void main() {
     'card sizing is part of memory cache identity but shares encoded disk bytes',
     () {
       final small = RustExtendedNetworkImageProvider(
+        mediaStream: preseededMedia,
         request: request,
         decodeWidth: 240,
       );
       final large = RustExtendedNetworkImageProvider(
+        mediaStream: preseededMedia,
         request: request,
         decodeWidth: 480,
       );
       final retried = RustExtendedNetworkImageProvider(
+        mediaStream: preseededMedia,
         request: request,
         decodeWidth: 240,
         reloadRevision: 1,

@@ -30,10 +30,19 @@ void main() {
         ),
       );
       await engine.initializeRouteCache();
-      final request = await engine.prepareMedia(
+      final post = await engine.getPost(
+        sourceId: 'anime_pictures',
+        postId: '928938',
+      );
+      final media = post.media.firstWhere(
+        (media) => media.kind == MediaVariantKind.sample,
+      );
+      final request = await engine.prepareMediaUrl(
         sourceId: 'anime_pictures',
         postId: '928938',
         variant: MediaVariantKind.sample,
+        url: media.url,
+        allowDiskCache: true,
       );
       final bytes = BytesBuilder(copy: false);
       await for (final event in engine.streamMedia(request: request)) {

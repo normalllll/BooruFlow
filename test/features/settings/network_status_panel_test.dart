@@ -7,7 +7,10 @@ import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frost_ui/frost_ui.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
+import '../discovery/home_page_test.dart' show browseTestApp;
 import '../discovery/search_interaction_test.dart' show testSource;
 
 const snapshot = RouteCacheState(
@@ -59,18 +62,15 @@ Widget panel({
       ),
     ),
   ],
-  child: MaterialApp(
-    home: MediaQuery(
-      data: MediaQueryData(textScaler: TextScaler.linear(scale)),
-      child: const Scaffold(
-        body: SingleChildScrollView(child: NetworkStatusPanel()),
-      ),
-    ),
+  child: browseTestApp(
+    const SingleChildScrollView(child: NetworkStatusPanel()),
+    scale: scale,
   ),
 );
-Icon dot(WidgetTester tester, String id) =>
-    tester.widget<Icon>(find.byKey(ValueKey('source-status-$id')));
+FrostStatusDot dot(WidgetTester tester, String id) =>
+    tester.widget<FrostStatusDot>(find.byKey(ValueKey('source-status-$id')));
 void main() {
+  setUpAll(initializeDateFormatting);
   setUp(() => LocaleSettings.setLocaleSync(AppLocale.en));
   for (final width in [360.0, 1440.0]) {
     for (final scale in [1.0, 2.0]) {
@@ -94,7 +94,10 @@ void main() {
         await tester.pumpAndSettle();
         await tester.tap(find.byKey(const ValueKey('source-details-danbooru')));
         await tester.pumpAndSettle();
-        expect(find.text('DNS fixture failure'), findsOneWidget);
+        expect(
+          find.text('DNS fixture failure', findRichText: true),
+          findsOneWidget,
+        );
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox());
       });
@@ -118,20 +121,26 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.text(t.settings.network.checkCompact));
+      await tester.tap(find.text(t.settings.network.checkAllSources));
       await tester.pump();
       await tester.pump();
       expect(calls, ['yande', 'danbooru', 'wallhaven']);
       expect(refreshes, 0);
-      expect(dot(tester, 'danbooru').color, Colors.greenAccent.shade400);
-      expect(dot(tester, 'wallhaven').color, Colors.amber);
-      expect(dot(tester, 'yande').color, Colors.blue);
+      expect(dot(tester, 'danbooru').tone, FrostStatusTone.positive);
+      expect(dot(tester, 'wallhaven').tone, FrostStatusTone.caution);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('source-details-yande')),
+          matching: find.byType(FrostActivityIndicator),
+        ),
+        findsOneWidget,
+      );
       await tester.pump(const Duration(seconds: 27));
       await tester.pump();
-      expect(dot(tester, 'yande').color, Colors.redAccent);
+      expect(dot(tester, 'yande').tone, FrostStatusTone.negative);
       pending.complete(result('yande', true, true));
       await tester.pump();
-      expect(dot(tester, 'yande').color, Colors.redAccent);
+      expect(dot(tester, 'yande').tone, FrostStatusTone.negative);
       await tester.pumpWidget(const SizedBox());
     },
   );
@@ -154,7 +163,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(refreshes, 1);
     expect(calls, 0);
-    expect(dot(tester, 'yande').color, Colors.grey);
+    expect(dot(tester, 'yande').tone, FrostStatusTone.neutral);
     await tester.pumpWidget(const SizedBox());
   });
 }

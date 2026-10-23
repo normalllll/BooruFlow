@@ -9,6 +9,9 @@ import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frost_ui/frost_ui.dart';
+
+import '../discovery/home_page_test.dart' show browseTestApp;
 
 class Store implements SettingsServiceStore {
   final data = <String, dynamic>{};
@@ -30,12 +33,79 @@ void main() {
       accepted.complete();
     });
     final endpoint = 'http://127.0.0.1:${server.port}';
-    expect(await probeProxyConnectivity(endpoint), isTrue);
+    final result = await probeProxyConnectivity(endpoint);
+    expect(result.reachable, isTrue);
+    expect(result.latency, greaterThan(Duration.zero));
+    expect(result.latencyMs, greaterThan(0));
     await accepted.future;
     await subscription.cancel();
     await server.close();
-    expect(await probeProxyConnectivity(endpoint), isFalse);
+    final failed = await probeProxyConnectivity(endpoint);
+    expect(failed.reachable, isFalse);
+    expect(failed.latencyMs, isNull);
   });
+  test('only positive measured durations produce a latency label', () {
+    expect(const ProxyConnectivityResult(reachable: true).latencyMs, isNull);
+    expect(
+      const ProxyConnectivityResult(
+        reachable: true,
+        latency: Duration.zero,
+      ).latencyMs,
+      isNull,
+    );
+    expect(
+      const ProxyConnectivityResult(
+        reachable: true,
+        latency: Duration(microseconds: 250),
+      ).latencyMs,
+      1,
+    );
+    expect(
+      const ProxyConnectivityResult(
+        reachable: true,
+        latency: Duration(milliseconds: 128),
+      ).latencyMs,
+      128,
+    );
+  });
+  testWidgets(
+    'proxy displays supplied measured latency and clears it on edit',
+    (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            proxySettingsProvider.overrideWith(TestProxyController.new),
+          ],
+          child: browseTestApp(
+            ProxySettingsPanel(
+              appliedUrl: 'http://127.0.0.1:7890',
+              onApply: (_) async => true,
+              probe: (_) async => const ProxyConnectivityResult(
+                reachable: true,
+                latency: Duration(milliseconds: 128),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.text('${t.settings.network.proxyReachable} · 128 ms'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('0 ms'), findsNothing);
+      await tester.enterText(
+        find.descendant(
+          of: find.byKey(const ValueKey('proxy-port')),
+          matching: find.byType(TextField),
+        ),
+        '7891',
+      );
+      await tester.pumpAndSettle();
+      expect(find.textContaining('128 ms'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
   test(
     'fresh settings use system DNS and explicit mode survives reload',
     () async {
@@ -64,38 +134,40 @@ void main() {
     (tester) async {
       final applied = <String?>[];
       final probed = <String>[];
-      final pending = Completer<bool>();
+      final pending = Completer<ProxyConnectivityResult>();
       String? active = 'http://127.0.0.1:7890';
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             proxySettingsProvider.overrideWith(TestProxyController.new),
           ],
-          child: MaterialApp(
-            home: Scaffold(
-              body: SingleChildScrollView(
-                child: StatefulBuilder(
-                  builder: (_, refresh) => ProxySettingsPanel(
-                    appliedUrl: active,
-
-                    onApply: (value) async {
-                      applied.add(value);
-                      refresh(() => active = value);
-                      return true;
-                    },
-                    probe: (value) {
-                      probed.add(value);
-                      return probed.length == 1
-                          ? Future.value(true)
-                          : pending.future;
-                    },
-                  ),
+          child: browseTestApp(
+            Builder(
+              builder: (context) => FrostButton(
+                label: 'Open proxy',
+                onPressed: () => showProxySettingsDialog(
+                  context: context,
+                  appliedUrl: active,
+                  onApply: (value) async {
+                    applied.add(value);
+                    active = value;
+                    return true;
+                  },
+                  probe: (value) {
+                    probed.add(value);
+                    return probed.length == 1
+                        ? Future.value(
+                            const ProxyConnectivityResult(reachable: true),
+                          )
+                        : pending.future;
+                  },
                 ),
               ),
             ),
           ),
         ),
       );
+      await tester.tap(find.text('Open proxy'));
       await tester.pumpAndSettle();
       expect(probed, ['http://127.0.0.1:7890']);
       expect(find.text(t.settings.network.proxyReachable), findsOneWidget);
@@ -109,26 +181,34 @@ void main() {
         '7891',
       );
       await tester.pump();
-      expect(find.byKey(const ValueKey('proxy-save')), findsOneWidget);
+      expect(find.text(t.settings.network.proxyApply), findsOneWidget);
       await tester.tap(find.text(t.settings.network.checkCompact));
       await tester.pump();
       await tester.pump();
       expect(probed, ['http://127.0.0.1:7890', 'http://127.0.0.1:7891']);
       expect(applied, isEmpty);
-      pending.complete(false);
+      pending.complete(const ProxyConnectivityResult(reachable: false));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('proxy-save')));
+      await tester.tap(find.text(t.settings.network.proxyApply));
       await tester.pumpAndSettle();
       expect(applied, ['http://127.0.0.1:7891']);
-      await tester.tap(find.byKey(const ValueKey('proxy-switch')));
+      expect(find.byType(FrostDialog), findsNothing);
+      await tester.tap(find.text('Open proxy'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(t.settings.network.proxyDisable));
       await tester.pumpAndSettle();
       expect(applied.last, isNull);
+      expect(find.byType(FrostDialog), findsNothing);
+      await tester.tap(find.text('Open proxy'));
+      await tester.pumpAndSettle();
       expect(
-        tester.widget<Switch>(find.byKey(const ValueKey('proxy-switch'))).value,
-        isFalse,
+        tester
+            .widget<FrostDialog>(find.byType(FrostDialog))
+            .leadingAction!
+            .enabled,
+        false,
       );
-      expect(find.text(t.settings.network.proxyHelp), findsNothing);
-      await tester.tap(find.byKey(const ValueKey('proxy-switch')));
+      await tester.tap(find.text(t.settings.network.proxyApply));
       await tester.pumpAndSettle();
       expect(applied.last, 'http://127.0.0.1:7891');
     },

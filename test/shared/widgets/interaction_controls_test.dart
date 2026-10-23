@@ -1,55 +1,53 @@
-import 'package:booruflow/shared/widgets/interaction_controls.dart';
-import 'package:flutter/material.dart';
+import 'package:booruflow/app/frost_config.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frost_ui/frost_ui.dart';
+import '../../features/discovery/home_page_test.dart' show browseTestApp;
 
 void main() {
-  for (final constraints in [
-    const BoxConstraints.tightFor(width: 32, height: 32),
-    const BoxConstraints(maxWidth: 32, maxHeight: 32),
-    const BoxConstraints(minWidth: 48, minHeight: 48),
-    null,
+  for (final (size, scale) in [
+    (FrostControlSize.compact, 1.0),
+    (FrostControlSize.compact, 2.0),
+    (FrostControlSize.regular, 1.0),
+    (FrostControlSize.large, 1.0),
   ]) {
-    testWidgets('copy button respects $constraints under Material 3', (
+    testWidgets('shared copy icon fits the source row at $size/$scale', (
       tester,
     ) async {
       var copied = false;
       await tester.pumpWidget(
-        MaterialApp(
-          theme: ThemeData(
-            useMaterial3: true,
-            visualDensity: VisualDensity.compact,
-          ),
-          home: Scaffold(
-            body: Center(
-              child: SizedBox(
-                width: 260,
-                child: Row(
-                  children: [
-                    const SizedBox(width: 94, child: Text('Source')),
-                    const Expanded(
-                      child: Text(
-                        'A long source URL',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    AppIconButton(
-                      constraints: constraints,
-                      visualDensity: VisualDensity.compact,
-                      padding: EdgeInsets.zero,
-                      onPressed: () => copied = true,
-                      icon: const Icon(Icons.content_copy_outlined, size: 16),
-                    ),
-                  ],
-                ),
+        browseTestApp(
+          Center(
+            child: SizedBox(
+              key: const ValueKey('source-row'),
+              width: 260,
+              child: Row(
+                children: [
+                  const FrostText('Source'),
+                  const SizedBox(width: FrostGap.related),
+                  const Expanded(child: FrostText('A long source URL')),
+                  const SizedBox(width: FrostGap.inline),
+                  FrostButton.icon(
+                    label: 'Copy',
+                    icon: appIcons.copy,
+                    size: size,
+                    onPressed: () => copied = true,
+                  ),
+                ],
               ),
             ),
           ),
+          scale: scale,
         ),
       );
       expect(tester.takeException(), isNull);
-      await tester.tap(find.byType(AppIconButton));
+      expect(
+        tester.getRect(find.byType(FrostButton)).right,
+        lessThanOrEqualTo(
+          tester.getRect(find.byKey(const ValueKey('source-row'))).right,
+        ),
+      );
+      await tester.tap(find.byType(FrostButton));
       expect(copied, isTrue);
     });
   }

@@ -37,10 +37,22 @@ void main() {
       }
       if (Platform.environment['BOORUFLOW_CODEC_METADATA_ONLY'] == '1') return;
       final display = Post(post).displayMedia;
+      final selectedVariant = Platform.environment['BOORUFLOW_CODEC_VARIANT'];
+      if (selectedVariant != null) {
+        expect(
+          post.media.any((media) => media.kind.name == selectedVariant),
+          isTrue,
+          reason: 'Requested live variant must exist',
+        );
+      }
       final seen = <String>{};
       for (final media in post.media) {
         if (!seen.add(media.url)) continue;
-        if (media != display &&
+        if (selectedVariant != null && media.kind.name != selectedVariant) {
+          continue;
+        }
+        if (selectedVariant == null &&
+            media != display &&
             Platform.environment['BOORUFLOW_CODEC_ALL_VARIANTS'] != '1') {
           continue;
         }
@@ -86,7 +98,7 @@ void main() {
           }
         } catch (error) {
           debugPrint('DECODE FAILED ${media.kind.name}: $error');
-          if (media == display) rethrow;
+          if (media == display || media.kind.name == selectedVariant) rethrow;
         }
       }
     },
