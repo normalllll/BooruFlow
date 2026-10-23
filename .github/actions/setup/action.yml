@@ -40,7 +40,7 @@ runs:
           ~/.cargo/registry/cache
           ~/.cargo/registry/src
           ~/.cargo/git/db
-        key: cargo-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.platform }}-${{ hashFiles('rust/Cargo.lock') }}
+        key: cargo-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.platform }}-${{ hashFiles('rust/Cargo.toml', 'rust/rust-toolchain.toml') }}
         restore-keys: |
           cargo-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.platform }}-
 
@@ -71,12 +71,33 @@ runs:
         fi
         printf '[build]\nrustc-wrapper = "sccache"\nincremental = false\n' > .cargo/config.toml
 
+    - name: Prefetch Rust dependencies with retries
+      shell: bash
+      env:
+        RUST_VERSION: ${{ steps.rust-version.outputs.version }}
+        RUST_TARGETS: ${{ inputs.rust-targets }}
+        CARGO_NET_RETRY: '5'
+        CARGO_HTTP_TIMEOUT: '120'
+      run: |
+        args=(--manifest-path rust/Cargo.toml)
+        if [ -n "$RUST_TARGETS" ]; then
+          IFS=',' read -r -a targets <<< "$RUST_TARGETS"
+          for target in "${targets[@]}"; do
+            if [ -n "$target" ]; then
+              args+=(--target "$target")
+            fi
+          done
+        fi
+        # Native Assets buffers Cargo output until its hook completes. Fetch
+        # first so download failures and retries are visible in the CI log.
+        cargo +"$RUST_VERSION" fetch "${args[@]}"
+
     - name: Set up Flutter
       id: flutter
       uses: subosito/flutter-action@v2
       with:
         channel: stable
-        flutter-version: '3.47.2'
+        flutter-version: '3.47.6'
         cache: true
         pub-cache: true
         cache-key: flutter-v1-${{ runner.os }}-${{ runner.arch }}-3.47.2-${{ inputs.platform }}

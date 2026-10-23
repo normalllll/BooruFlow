@@ -81,5 +81,5 @@ flutter {
 }
 
 dependencies {
-    implementation("com.squareup.okhttp3:okhttp:5.4.0")
+    implementation("com.squareup.okhttp3:okhttp:5.5.0")
 }

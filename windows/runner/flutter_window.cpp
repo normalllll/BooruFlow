@@ -27,12 +27,17 @@ bool FlutterWindow::OnCreate() {
   RegisterPlugins(flutter_controller_->engine());
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
-  desktop_window_ = std::make_unique<DesktopWindow>(
-      GetHandle(), flutter_controller_->view()->GetNativeWindow(),
-      flutter_controller_->engine()->messenger());
+#ifdef BOORUFLOW_UI_AUTOMATION
+  automation_ = std::make_unique<AutomationWindow>(
+      flutter_controller_->engine()->messenger(), GetHandle(),
+      [this]() { flutter_controller_->ForceRedraw(); });
+#endif
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
     this->Show();
+#ifdef BOORUFLOW_UI_AUTOMATION
+    flutter_controller_->ForceRedraw();
+#endif
   });
 
   // Flutter can complete the first frame before the "show window" callback is
@@ -44,7 +49,9 @@ bool FlutterWindow::OnCreate() {
 }
 
 void FlutterWindow::OnDestroy() {
-  desktop_window_.reset();
+#ifdef BOORUFLOW_UI_AUTOMATION
+  automation_.reset();
+#endif
   if (flutter_controller_) {
     flutter_controller_ = nullptr;
   }
@@ -56,6 +63,11 @@ LRESULT
 FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
                               WPARAM const wparam,
                               LPARAM const lparam) noexcept {
+#ifdef BOORUFLOW_UI_AUTOMATION
+  if (automation_ && message == WM_ACTIVATE && LOWORD(wparam) != WA_INACTIVE) {
+    automation_->Activated();
+  }
+#endif
   // Give Flutter, including plugins, an opportunity to handle window messages.
   if (flutter_controller_) {
     std::optional<LRESULT> result =

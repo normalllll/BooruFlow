@@ -6,6 +6,9 @@
 
 #include "flutter_window.h"
 #include "utils.h"
+#ifdef BOORUFLOW_UI_AUTOMATION
+#include "automation_window.h"
+#endif
 
 int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
                       _In_ wchar_t *command_line, _In_ int show_command) {
@@ -26,6 +29,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
 
   project.set_dart_entrypoint_arguments(std::move(command_line_arguments));
 
+#ifdef BOORUFLOW_UI_AUTOMATION
+  const auto placement = GetAutomationPlacement();
+  Win32Window::Point origin(placement.x, placement.y);
+  Win32Window::Size size(placement.width, placement.height);
+#else
   constexpr int kWindowWidth = 1200;
   constexpr int kWindowHeight = 900;
   const double scale_factor = GetDpiForSystem() / 96.0;
@@ -50,6 +58,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
 
   Win32Window::Point origin(window_x, window_y);
   Win32Window::Size size(window_width, window_height);
+#endif
 
   FlutterWindow window(project);
   if (!window.Create(L"BooruFlow", origin, size)) {

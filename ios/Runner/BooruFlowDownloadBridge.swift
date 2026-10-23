@@ -19,6 +19,9 @@ final class BooruFlowDownloadBridge: NSObject, FlutterStreamHandler, URLSessionD
   private var backgroundCompletionHandlers: [String: () -> Void] = [:]
   private let sessionIdentifiersKey = "booruflow.download.sessionIdentifiers"
   private let defaultSessionIdentifier = "io.github.normalllll.booruflow.download.background.direct"
+  // Accessed only on queue, so concurrent tasks cannot create duplicate albums.
+  private var batchAlbums: [String: String] = [:]
+  private var albumFilenames: [String: Set<String>] = [:]
 
   func register(messenger: FlutterBinaryMessenger) {
     let methodChannel = FlutterMethodChannel(name: methodChannelName, binaryMessenger: messenger)
@@ -65,12 +68,28 @@ final class BooruFlowDownloadBridge: NSObject, FlutterStreamHandler, URLSessionD
         self.restoreKnownSessions()
         DispatchQueue.main.async { result(nil) }
       }
+    case "photosReadAccess":
+      let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+      let name: String
+      switch status {
+      case .authorized: name = "authorized"
+      case .limited: name = "limited"
+      case .denied: name = "denied"
+      case .restricted: name = "restricted"
+      case .notDetermined: name = "notDetermined"
+      @unknown default: name = "notDetermined"
+      }
+      result(name)
+    case "openAppSettings":
+      openAppSettings { opened in result(opened) }
     case "prepareForDownload":
       prepareForDownload(result: result)
+    case "prepareForBatchDownload":
+      prepareForBatchDownload(result: result)
     case "start":
       let args = call.arguments as? [String: Any]
       let jobs = (args?["jobs"] as? [[String: Any]] ?? []).compactMap(NativeDownloadJob.init)
-      guard hasPhotosAddAccess() else {
+      guard hasPhotosAddAccess() && (jobs.allSatisfy({ $0.batchId == nil }) || hasPhotosAlbumAccess()) else {
         result(FlutterError(code: "permission_denied", message: "Photos add permission is not granted.", details: nil))
         return
       }
@@ -107,7 +126,7 @@ final class BooruFlowDownloadBridge: NSObject, FlutterStreamHandler, URLSessionD
         return
       }
       let bytesWritten = (args["bytesWritten"] as? NSNumber)?.int64Value ?? 0
-      saveToPhotos(job: job, localUrl: URL(fileURLWithPath: path), bytesWritten: bytesWritten) { saveResult in
+      saveDownloadedFile(job: job, localUrl: URL(fileURLWithPath: path), bytesWritten: bytesWritten) { saveResult in
         DispatchQueue.main.async {
           switch saveResult {
           case .success(let payload):
@@ -168,7 +187,7 @@ final class BooruFlowDownloadBridge: NSObject, FlutterStreamHandler, URLSessionD
   }
 
   private func prepareForDownload(result: @escaping FlutterResult) {
-    requestAddOnlyPhotosAccess(openSettingsWhenDenied: true) { outcome in
+    requestAddOnlyPhotosAccess(openSettingsWhenDenied: false) { outcome in
       DispatchQueue.main.async {
         switch outcome {
         case .granted:
@@ -177,6 +196,27 @@ final class BooruFlowDownloadBridge: NSObject, FlutterStreamHandler, URLSessionD
           result(FlutterError(code: openedSettings ? "permission_denied_permanent" : "permission_denied", message: message, details: nil))
         }
       }
+    }
+  }
+
+  private func hasPhotosAlbumAccess() -> Bool {
+    if #available(iOS 14, *) {
+      return PHPhotoLibrary.authorizationStatus(for: .readWrite) == .authorized
+    }
+    return PHPhotoLibrary.authorizationStatus() == .authorized
+  }
+
+  private func prepareForBatchDownload(result: @escaping FlutterResult) {
+    let complete: (PHAuthorizationStatus) -> Void = { status in
+      DispatchQueue.main.async {
+        if status == .authorized { result(["granted": true]) }
+        else { result(FlutterError(code: "permission_denied", message: "Full Photos access is required to create and reuse batch albums.", details: nil)) }
+      }
+    }
+    if #available(iOS 14, *) {
+      PHPhotoLibrary.requestAuthorization(for: .readWrite, handler: complete)
+    } else {
+      PHPhotoLibrary.requestAuthorization(complete)
     }
   }
 
@@ -272,7 +312,7 @@ final class BooruFlowDownloadBridge: NSObject, FlutterStreamHandler, URLSessionD
         self.states[jobId] = state
         self.emit(["type": "completed", "jobId": jobId, "localPath": destination.path, "bytesWritten": state.receivedBytes])
 
-        self.saveToPhotos(job: job, localUrl: destination, bytesWritten: state.receivedBytes) { saveResult in
+        self.saveDownloadedFile(job: job, localUrl: destination, bytesWritten: state.receivedBytes) { saveResult in
           self.queue.async {
             var latest = self.states[jobId] ?? state
             switch saveResult {
@@ -460,7 +500,7 @@ final class BooruFlowDownloadBridge: NSObject, FlutterStreamHandler, URLSessionD
     return destination
   }
 
-  private func saveToPhotos(job: NativeDownloadJob, localUrl: URL, bytesWritten: Int64, completion: @escaping (Result<[String: Any], Error>) -> Void) {
+  private func saveDownloadedFile(job: NativeDownloadJob, localUrl: URL, bytesWritten: Int64, completion: @escaping (Result<[String: Any], Error>) -> Void) {
     guard hasPhotosAddAccess() else {
       completion(.failure(NSError(domain: "booruflow.download", code: 1, userInfo: [NSLocalizedDescriptionKey: "Photos add permission is not granted."])))
       return
@@ -473,25 +513,148 @@ final class BooruFlowDownloadBridge: NSObject, FlutterStreamHandler, URLSessionD
       return
     }
 
+    if job.batchId != nil {
+      guard hasPhotosAlbumAccess(), let path = job.subdirectory else {
+        completion(.failure(NSError(domain: "booruflow.download", code: 3, userInfo: [NSLocalizedDescriptionKey: "Full Photos access and a batch folder are required."])))
+        return
+      }
+      queue.async {
+        do {
+          let album = try self.batchAlbum(path: path)
+          let filename = self.batchFilename(job.filename, album: album)
+          self.savePhotoAsset(job: job, localUrl: localUrl, bytesWritten: bytesWritten, album: album, filename: filename, completion: completion)
+        } catch { completion(.failure(error)) }
+      }
+      return
+    }
+    // Reuse existing read access only. Single saves never ask for read/write.
+    let readStatus = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+    if job.prefersDefaultAlbum && readStatus == .authorized {
+      queue.async {
+        let album = try? self.batchAlbum(path: "")
+        self.savePhotoAsset(job: job, localUrl: localUrl, bytesWritten: bytesWritten,
+          album: album, filename: safeFilename(job.filename)) { result in
+          if case .failure = result, album != nil {
+            // Limited access or a concurrent permission change must not prevent
+            // an add-only save. Photos change transactions fail atomically.
+            self.savePhotoAsset(job: job, localUrl: localUrl, bytesWritten: bytesWritten,
+              album: nil, filename: safeFilename(job.filename), completion: completion)
+          } else { completion(result) }
+        }
+      }
+      return
+    }
+    savePhotoAsset(job: job, localUrl: localUrl, bytesWritten: bytesWritten, album: nil, filename: safeFilename(job.filename), completion: completion)
+  }
+
+  private func savePhotoAsset(job: NativeDownloadJob, localUrl: URL, bytesWritten: Int64, album: PHAssetCollection?, filename: String, completion: @escaping (Result<[String: Any], Error>) -> Void) {
     var localIdentifier: String?
+    var albumUnavailable = false
     PHPhotoLibrary.shared().performChanges {
+      let albumChange = album.flatMap { PHAssetCollectionChangeRequest(for: $0) }
+      if album != nil && albumChange == nil {
+        albumUnavailable = true
+        return
+      }
       let options = PHAssetResourceCreationOptions()
-      options.originalFilename = safeFilename(job.filename)
+      options.originalFilename = filename
       let request = PHAssetCreationRequest.forAsset()
-      request.addResource(with: .photo, fileURL: localUrl, options: options)
+      // Archives, WebM and explicit ugoira exports use Documents in Dart.
+      let isVideo = ["mp4", "mov", "m4v"].contains((job.filename as NSString).pathExtension.lowercased())
+      let resourceType: PHAssetResourceType = isVideo ? .video : .photo
+      request.addResource(with: resourceType, fileURL: localUrl, options: options)
       localIdentifier = request.placeholderForCreatedAsset?.localIdentifier
+      if let placeholder = request.placeholderForCreatedAsset {
+        albumChange?.addAssets([placeholder] as NSArray)
+      }
     } completionHandler: { success, error in
       if let error {
         completion(.failure(error))
         return
       }
-      if !success {
+      if !success || albumUnavailable {
         completion(.failure(NSError(domain: "booruflow.download", code: 2, userInfo: [NSLocalizedDescriptionKey: "Photos save failed."])))
         return
       }
       let savedPath = localIdentifier.map { "ph://\($0)" } ?? localUrl.path
       completion(.success(compactPayload(["path": savedPath, "galleryAssetId": localIdentifier, "bytesWritten": bytesWritten])))
     }
+  }
+
+  private func batchAlbum(path: String) throws -> PHAssetCollection {
+    if let id = batchAlbums[path],
+      let album = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [id], options: nil).firstObject {
+      return album
+    }
+    let components = ["BooruFlow"] + (path.isEmpty ? [] : path.components(separatedBy: "/"))
+    guard components.allSatisfy({ !$0.isEmpty && $0 != "." && $0 != ".." && safeFilename($0) == $0 }) else {
+      throw NSError(domain: "booruflow.download", code: 4, userInfo: [NSLocalizedDescriptionKey: "Invalid batch folder"])
+    }
+    var parent: PHCollectionList?
+    for (index, name) in components.enumerated() {
+      let isAlbum = index == components.count - 1
+      let children = parent.map { PHCollection.fetchCollections(in: $0, options: nil) }
+        ?? PHCollection.fetchTopLevelUserCollections(with: nil)
+      var found: PHCollection?
+      children.enumerateObjects { collection, _, stop in
+        if collection.localizedTitle == name && (isAlbum ? collection is PHAssetCollection : collection is PHCollectionList) {
+          found = collection
+          stop.pointee = true
+        }
+      }
+      if let album = found as? PHAssetCollection {
+        batchAlbums[path] = album.localIdentifier
+        return album
+      }
+      if let folder = found as? PHCollectionList {
+        parent = folder
+        continue
+      }
+      var identifier: String?
+      try PHPhotoLibrary.shared().performChangesAndWait {
+        let parentChange = parent.flatMap { PHCollectionListChangeRequest(for: $0) }
+        if parent != nil && parentChange == nil { return }
+        let placeholder: PHObjectPlaceholder
+        if isAlbum {
+          placeholder = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: name).placeholderForCreatedAssetCollection
+        } else {
+          placeholder = PHCollectionListChangeRequest.creationRequestForCollectionList(withTitle: name).placeholderForCreatedCollectionList
+        }
+        identifier = placeholder.localIdentifier
+        parentChange?.addChildCollections([placeholder] as NSArray)
+      }
+      guard let identifier else { throw NSError(domain: "booruflow.download", code: 5, userInfo: [NSLocalizedDescriptionKey: "Could not create batch folder"]) }
+      if isAlbum, let album = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [identifier], options: nil).firstObject {
+        batchAlbums[path] = album.localIdentifier
+        return album
+      }
+      parent = PHCollectionList.fetchCollectionLists(withLocalIdentifiers: [identifier], options: nil).firstObject
+      guard parent != nil else { throw NSError(domain: "booruflow.download", code: 6, userInfo: [NSLocalizedDescriptionKey: "Could not resolve batch folder"]) }
+    }
+    throw NSError(domain: "booruflow.download", code: 7, userInfo: [NSLocalizedDescriptionKey: "Could not resolve batch album"])
+  }
+
+  private func batchFilename(_ filename: String, album: PHAssetCollection) -> String {
+    let id = album.localIdentifier
+    if albumFilenames[id] == nil {
+      var names = Set<String>()
+      PHAsset.fetchAssets(in: album, options: nil).enumerateObjects { asset, _, _ in
+        for resource in PHAssetResource.assetResources(for: asset) { names.insert(resource.originalFilename) }
+      }
+      albumFilenames[id] = names
+    }
+    let safe = safeFilename(filename)
+    let url = URL(fileURLWithPath: safe)
+    let stem = url.deletingPathExtension().lastPathComponent
+    let ext = url.pathExtension.isEmpty ? "" : ".\(url.pathExtension)"
+    var name = safe
+    var suffix = 1
+    while albumFilenames[id]?.contains(name) == true {
+      name = "\(stem) (\(suffix))\(ext)"
+      suffix += 1
+    }
+    albumFilenames[id, default: []].insert(name)
+    return name
   }
 
   private func hasPhotosAddAccess() -> Bool {
@@ -591,6 +754,9 @@ private struct NativeDownloadJob {
   let filename: String
   let networkOptions: NativeNetworkOptions
   let validation: NativeValidationOptions
+  let batchId: String?
+  let subdirectory: String?
+  let prefersDefaultAlbum: Bool
 
   init?(_ map: [String: Any]) {
     guard let id = map["id"] as? String, let url = map["url"] as? String,
@@ -603,6 +769,10 @@ private struct NativeDownloadJob {
     self.filename = map["filename"] as? String ?? "download"
     self.networkOptions = NativeNetworkOptions(networkOptions)
     self.validation = NativeValidationOptions(validation)
+    let target = map["saveTarget"] as? [String: Any]
+    self.prefersDefaultAlbum = map["prefersDefaultAlbum"] as? Bool ?? false
+    self.batchId = map["batchId"] as? String
+    self.subdirectory = target?["subdirectory"] as? String
   }
 
   init?(taskDescription: String?) {
@@ -621,13 +791,16 @@ private struct NativeDownloadJob {
   }
 
   func encodedTaskDescription() -> String? {
-    let payload: [String: Any] = [
+    let payload: [String: Any] = compactPayload([
       "id": id,
       "url": url,
       "filename": filename,
       "networkOptions": networkOptions.toMap(),
       "validation": validation.toMap(),
-    ]
+      "batchId": batchId,
+      "prefersDefaultAlbum": prefersDefaultAlbum,
+      "saveTarget": compactPayload(["type": "photos", "subdirectory": subdirectory]),
+    ])
     guard let data = try? JSONSerialization.data(withJSONObject: payload) else { return nil }
     return String(data: data, encoding: .utf8)
   }

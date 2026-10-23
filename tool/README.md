@@ -32,3 +32,16 @@ switch the script also regenerates platform launcher resources. Original editing
 masters are retained outside assets. Noto OFL and Lucide ISC remain explicit
 runtime resources, registered in lib/app/licenses.dart. Keep these required
 licenses; source SVG, editing masters and README documents do not belong in assets.
+
+## macOS media prerequisites
+
+After `flutter pub get`, run `bash tool/ci/prepare_macos_media.sh` before the
+macOS build. CI uses this command for both architecture jobs. It runs the media
+packages' own Makefiles with scoped curl retries, leaving their pinned versions
+and checksum verification in control. It propagates setup failures and checks
+that mpv headers and the native framework exist before Swift compilation.
+CocoaPods otherwise ignores these Makefile failures and can report a misleading
+`cannot find type 'mpv_node_list'` compilation error after a failed download.
+
+Run its failure/retry checks with `python3 tool/ci/test_prepare_macos_media.py`
+on macOS or Linux; they use a local HTTP server and temporary package fixtures.
