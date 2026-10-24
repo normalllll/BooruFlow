@@ -25,8 +25,8 @@ dependencies:
       path: packages/frost_window
       ref: v0.2.0
   pasteboard: ^0.5.0
-  flutter_rust_bridge: 2.13.0
-  flutter_rust_bridge_hooks: 2.13.0
+  flutter_rust_bridge: 2.14.0-beta.2
+  flutter_rust_bridge_hooks: 2.14.0-beta.2
   code_assets: ^2.1.0
   package_info_plus: ^10.2.2
   device_info_plus: ^13.3.0
