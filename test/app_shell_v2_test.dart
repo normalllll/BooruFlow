@@ -20,6 +20,7 @@ import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_navigation.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/ui/custom/download_flight.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -77,7 +78,21 @@ void main() {
         .setMockMethodCallHandler(
           channel,
           (call) async => call.method == 'getState'
-              ? {'revision': 0, 'active': true}
+              ? {
+                  'revision': 0,
+                  'active': true,
+                  'captionMode': defaultTargetPlatform == TargetPlatform.macOS
+                      ? 'nativeControls'
+                      : 'client',
+                  'leftButtons': <String>[],
+                  'rightButtons': defaultTargetPlatform == TargetPlatform.macOS
+                      ? <String>[]
+                      : ['minimize', 'maximize', 'close'],
+                  'nativeControls':
+                      defaultTargetPlatform == TargetPlatform.macOS
+                      ? [12.0, 12.0, 72.0, 28.0]
+                      : [0.0, 0.0, 0.0, 0.0],
+                }
               : null,
         );
     AppRouter.router.go('/');
@@ -762,17 +777,17 @@ void main() {
   );
   for (final platform in [TargetPlatform.linux, TargetPlatform.macOS]) {
     testWidgets(
-      'B1 $platform aligns native-frame content with sidebar without a caption gap',
+      'B1 $platform places content below the single integrated title row',
       (tester) async {
         tester.view.physicalSize = const Size(1440, 900);
         tester.view.devicePixelRatio = 1;
         addTearDown(tester.view.reset);
         await mount(tester);
-        expect(find.byType(FrostCaptionButtons), findsNothing);
         expect(
-          tester.getRect(find.byType(FrostPageHeader)).top,
-          FrostGap.related,
+          find.byType(FrostCaptionButtons),
+          platform == TargetPlatform.macOS ? findsNothing : findsOneWidget,
         );
+        expect(tester.getRect(find.byType(FrostPageHeader)).top, 40);
         expect(
           tester
               .getRect(

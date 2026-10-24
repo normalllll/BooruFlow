@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:booruflow/app/frost_config.dart';
+import 'package:booruflow/features/posts/widgets/post_detail_controls.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -60,6 +61,21 @@ void main() {
                   'maximized': false,
                   'active': true,
                   'revision': 0,
+                  'captionMode': defaultTargetPlatform == TargetPlatform.macOS
+                      ? 'nativeControls'
+                      : 'client',
+                  'leftButtons': defaultTargetPlatform == TargetPlatform.linux
+                      ? ['close']
+                      : <String>[],
+                  'rightButtons': switch (defaultTargetPlatform) {
+                    TargetPlatform.macOS => <String>[],
+                    TargetPlatform.linux => ['minimize', 'maximize'],
+                    _ => ['minimize', 'maximize', 'close'],
+                  },
+                  'nativeControls':
+                      defaultTargetPlatform == TargetPlatform.macOS
+                      ? [12.0, 12.0, 72.0, 28.0]
+                      : [0.0, 0.0, 0.0, 0.0],
                 }
               : null;
         });
@@ -77,7 +93,7 @@ void main() {
     }
   }
 
-  Widget app({Widget? home, bool dark = false}) {
+  Widget app({Widget? home, bool dark = false, bool shell = true}) {
     controller = FrostWindowController(minimumSize: const Size(320, 480));
     return TranslationProvider(
       child: FrostScope(
@@ -94,23 +110,28 @@ void main() {
             child: FrostWindowHost(
               controller: controller,
               title: 'Window test',
-              child: FrostShell(
-                destinations: [
-                  FrostNavDestination(label: 'Browse', icon: appIcons.image),
-                ],
-                selectedIndex: 0,
-                atDestinationRoot: true,
-                onDestinationSelected: (_) {},
-                canGoBack: false,
-                onBack: () {},
-                showsMobileNavigation: true,
-                brand: const FrostText(
-                  'Window test',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                child: child!,
-              ),
+              child: shell
+                  ? FrostShell(
+                      destinations: [
+                        FrostNavDestination(
+                          label: 'Browse',
+                          icon: appIcons.image,
+                        ),
+                      ],
+                      selectedIndex: 0,
+                      atDestinationRoot: true,
+                      onDestinationSelected: (_) {},
+                      canGoBack: false,
+                      onBack: () {},
+                      showsMobileNavigation: true,
+                      brand: const FrostText(
+                        'Window test',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      child: child!,
+                    )
+                  : child!,
             ),
           ),
         ),
@@ -269,16 +290,59 @@ void main() {
 
   for (final platform in [TargetPlatform.macOS, TargetPlatform.linux]) {
     windowTest(
-      '$platform keeps system frame and fixed shell Back without custom window buttons',
+      '$platform standalone media header retains native control access',
+      (tester) async {
+        await tester.pumpWidget(
+          app(
+            shell: false,
+            home: const Align(
+              alignment: Alignment.topLeft,
+              child: PostMediaHeader(
+                title: FrostText('Media'),
+                leading: SizedBox(
+                  key: ValueKey('media-back'),
+                  width: 40,
+                  height: 40,
+                ),
+                actions: [],
+                windowButtons: true,
+              ),
+            ),
+          ),
+        );
+        await drain(tester);
+        final back = find.byKey(const ValueKey('media-back'));
+        if (platform == TargetPlatform.macOS) {
+          expect(caption('Close'), findsNothing);
+          expect(tester.getRect(back).left, greaterThanOrEqualTo(80));
+        } else {
+          expect(caption('Close'), findsOneWidget);
+          expect(tester.getRect(caption('Close')).left, 0);
+          expect(
+            tester.getRect(caption('Close')).right,
+            lessThanOrEqualTo(tester.getRect(back).left),
+          );
+          await tester.tap(caption('Close'));
+          expect(calls.where((call) => call.method == 'close'), hasLength(1));
+        }
+        expect(tester.takeException(), isNull);
+      },
+      platform: platform,
+    );
+    windowTest(
+      '$platform uses one integrated title row and the reported native controls',
       (tester) async {
         await tester.binding.setSurfaceSize(const Size(900, 700));
         addTearDown(() => tester.binding.setSurfaceSize(null));
         await tester.pumpWidget(app(dark: true));
         await drain(tester);
-        expect(caption('Minimize'), findsNothing);
-        expect(caption('Maximize'), findsNothing);
-        expect(caption('Close'), findsNothing);
-        expect(tester.getRect(find.byKey(const ValueKey('page'))).top, 8);
+        final expected = platform == TargetPlatform.macOS
+            ? findsNothing
+            : findsOneWidget;
+        expect(caption('Minimize'), expected);
+        expect(caption('Maximize'), expected);
+        expect(caption('Close'), expected);
+        expect(tester.getRect(find.byKey(const ValueKey('page'))).top, 40);
         final back = find.bySemanticsLabel(t.frost.back);
         expect(back, findsOneWidget);
         expect(
@@ -289,8 +353,16 @@ void main() {
               .isEnabled,
           ui.Tristate.isFalse,
         );
-        expect(frostUsesCustomTitleBar, isFalse);
-        expect(calls, isEmpty);
+        expect(frostUsesCustomTitleBar, isTrue);
+        expect(calls.any((call) => call.method == 'configure'), isTrue);
+        if (platform == TargetPlatform.macOS) {
+          expect(tester.getRect(back).left, greaterThanOrEqualTo(80));
+        } else {
+          expect(
+            tester.getCenter(caption('Close')).dx,
+            lessThan(tester.getCenter(caption('Minimize')).dx),
+          );
+        }
       },
       platform: platform,
     );

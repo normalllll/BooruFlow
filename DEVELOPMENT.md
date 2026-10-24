@@ -21,6 +21,23 @@ flutter run
 
 Flutter Native Assets builds and bundles the Rust library automatically. After changing Rust APIs or generated bridge code, stop the app and rebuild it; hot reload cannot replace the native library.
 
+### Desktop window integration
+
+`frost_window` owns native window decoration on all three desktop platforms.
+Linux uses GTK client decoration with Flutter title controls; macOS extends
+Flutter content into the title area and keeps AppKit's original traffic lights.
+`FrostShell` and `FrostPageHeader` reserve measured native-button space.
+Standalone media headers compose `FrostNativeCaptionPadding` at the full-width
+header boundary. Keep runner decoration settings in the shared plugin.
+
+The source/API minimum is macOS 12 and GTK 3.24, matching the Flutter 3.47
+platform baseline; a newer local test system does not raise that minimum.
+Follow Flutter's [supported platforms](https://docs.flutter.dev/reference/supported-platforms)
+and the OS vendor's maintenance status. Linux release binaries also depend on
+the build distribution's glibc and media-library ABI; a source-compatible older
+distribution is not automatically compatible with a binary built on Ubuntu 24.04.
+The current WSL validation environment is Ubuntu 24.04 with WSLg.
+
 The shared `frost_window` plugin supports both Swift Package Manager and
 CocoaPods using one Swift source directory. Flutter can mix SPM plugins with
 CocoaPods-only media dependencies. Keep Xcode's default architecture selection;
@@ -50,6 +67,8 @@ without changing the tracked dependency by creating an ignored `pubspec_override
 dependency_overrides:
   frost_ui:
     path: ../frost_ui/packages/frost_ui
+  frost_window:
+    path: ../frost_ui/packages/frost_window
 ```
 
 For Dart models, providers, database code, or translations that use build_runner:
