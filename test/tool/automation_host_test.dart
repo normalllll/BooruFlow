@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -149,7 +150,7 @@ void main() {
       expect(tapped, 1);
       await send('remove');
       expect(exited, 1);
-      expect(methods.toSet(), {'present'});
+      expect(methods.toSet(), Platform.isWindows ? {'present'} : isEmpty);
       await expectLater(
         host.currentState!.request(
           jsonEncode({'command': 'pointer', 'action': 'tap', 'x': -1, 'y': 10}),
@@ -225,7 +226,7 @@ void main() {
       await send('down', kind: 'mouse');
       await send('up');
       expect(calls, 1);
-      expect(methods.toSet(), {'present'});
+      expect(methods.toSet(), Platform.isWindows ? {'present'} : isEmpty);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     },

@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:booruflow/core/media/image_clipboard.dart';
 import 'package:booruflow/features/posts/displayed_media_frame.dart';
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/features/posts/widgets/post_detail_panel.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
 import '../discovery/browse_v2_test.dart' show browsePost;
@@ -43,12 +45,22 @@ void main() {
         addTearDown(frame.dispose);
         addTearDown(image.dispose);
         await tester.pumpWidget(
-          browseTestApp(
-            Center(
-              child: PostDetailActions(
-                post: Post(browsePost(1)),
-                displayedFrame: frame,
-                onOpen: () {},
+          ProviderScope(
+            overrides: [
+              imageClipboardProvider.overrideWithValue(
+                ImageClipboard(
+                  writePng: (_) async =>
+                      fail('A cancelled copy must not write to the clipboard.'),
+                ),
+              ),
+            ],
+            child: browseTestApp(
+              Center(
+                child: PostDetailActions(
+                  post: Post(browsePost(1)),
+                  displayedFrame: frame,
+                  onOpen: () {},
+                ),
               ),
             ),
           ),
@@ -74,7 +86,7 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.byType(FrostDialog), findsNothing);
         expect(tester.widget<FrostButton>(copy).loading, false);
-        // A late result must not touch the unregistered native clipboard plugin.
+        // A late result must not reach the injected clipboard writer.
         expect(tester.takeException(), isNull);
       },
     );

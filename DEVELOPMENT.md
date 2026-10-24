@@ -73,6 +73,14 @@ cargo +1.99.1 test --manifest-path rust/Cargo.toml --locked
 dart run slang analyze --full --outdir=.dart_tool/i18n_audit
 ```
 
+On Linux, native bridge tests need FRB's supported library-directory override.
+Flutter builds the library through Native Assets before starting the tests, but
+FRB's unpackaged loader otherwise looks in `rust/target/release`:
+
+```bash
+FRB_DART_LOAD_EXTERNAL_LIBRARY_NATIVE_LIB_DIR="$PWD/build/native_assets/linux" flutter test
+```
+
 Do not track lock files. Review dependency changes when upgrading the SDK.
 
 ## CI and releases
