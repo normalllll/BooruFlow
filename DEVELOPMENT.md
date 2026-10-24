@@ -6,7 +6,7 @@
 
 ### Toolchains
 
-- **Flutter 3.47.6 stable**, pinned in [the CI setup action](.github/actions/setup/action.yml).
+- **Flutter 3.47.8 stable**, pinned in [the CI setup action](.github/actions/setup/action.yml).
 - **Rust 1.99.1** through rustup, pinned in [rust/rust-toolchain.toml](rust/rust-toolchain.toml). CI reads this file directly.
 - Platform tools: Visual Studio C++ desktop tools on Windows; Xcode on macOS for Apple builds; Android SDK and Java 21 for Android; Clang, CMake, Ninja, pkg-config, GTK 3, liblzma, libmpv, and libepoxy development headers on Linux.
 - Android builds use SDK 37 and NDK `28.2.13676358`, as configured in the Android project.

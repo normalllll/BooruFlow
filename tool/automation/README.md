@@ -8,7 +8,7 @@ imported by production code.
 
 ## Build the complete prerequisites
 
-Windows 10 1903+, Windows SDK/Visual C++, Flutter 3.47.6, Python 3 and FFmpeg /
+Windows 10 1903+, Windows SDK/Visual C++, Flutter 3.47.8, Python 3 and FFmpeg /
 FFprobe are required. Install the complete skill package, including scripts and
 native sources. This build uses Visual Studio 2026. Run from the project root:
 
