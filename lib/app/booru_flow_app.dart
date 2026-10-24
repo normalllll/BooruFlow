@@ -16,7 +16,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frost_ui/frost_ui.dart';
-import 'package:frost_window/frost_window.dart';
 
 import 'app_router.dart';
 import 'frost_config.dart';

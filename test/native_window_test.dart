@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
-import 'package:frost_window/frost_window.dart';
 
 const channel = MethodChannel('frost_window');
 const codec = StandardMethodCodec();
@@ -342,7 +341,7 @@ void main() {
         expect(caption('Minimize'), expected);
         expect(caption('Maximize'), expected);
         expect(caption('Close'), expected);
-        expect(tester.getRect(find.byKey(const ValueKey('page'))).top, 40);
+        final pageRect = tester.getRect(find.byKey(const ValueKey('page')));
         final back = find.bySemanticsLabel(t.frost.back);
         expect(back, findsOneWidget);
         expect(
@@ -356,8 +355,17 @@ void main() {
         expect(frostUsesCustomTitleBar, isTrue);
         expect(calls.any((call) => call.method == 'configure'), isTrue);
         if (platform == TargetPlatform.macOS) {
-          expect(tester.getRect(back).left, greaterThanOrEqualTo(80));
+          // The native strip clears the traffic lights; Back belongs to the
+          // sidebar below that strip rather than beside the native buttons.
+          expect(
+            pageRect.top,
+            greaterThan(controller.state.nativeControls.bottom),
+          );
+          final backRect = tester.getRect(back);
+          expect(backRect.top, greaterThanOrEqualTo(pageRect.top));
+          expect(backRect.right, lessThanOrEqualTo(pageRect.left));
         } else {
+          expect(pageRect.top, 40);
           expect(
             tester.getCenter(caption('Close')).dx,
             lessThan(tester.getCenter(caption('Minimize')).dx),

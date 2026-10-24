@@ -60,16 +60,22 @@ dart run build_runner build
 Run build_runner without output filters so bridge models, providers, database
 code, and translations stay complete. See [the generation notes](tool/README.md#rustdart-bridge-generation).
 
-The UI depends on the shared `frost_ui` Git package. A local checkout can be used
-without changing the tracked dependency by creating an ignored `pubspec_overrides.yaml`:
+The app depends only on the shared `frost_ui` Git package, following the
+`v0.2.0` branch. Its relative dependency brings `frost_window` from the same
+repository commit. Import window integration and controller types through
+`package:frost_ui/frost_ui.dart`; do not add a second Git dependency on the
+plugin, which would conflict with Pub's same-commit relative-path resolution.
 
-```yaml
-dependency_overrides:
-  frost_ui:
-    path: ../frost_ui/packages/frost_ui
-  frost_window:
-    path: ../frost_ui/packages/frost_window
-```
+Local app builds and CI use the same dependency declarations without
+`dependency_overrides` or `pubspec_overrides.yaml`. Use
+`flutter pub upgrade frost_ui` when intentionally refreshing a local lock file
+to the latest branch revision. Validate dependencies and application checks
+from a clean checkout before releasing.
+
+Inside the Frost repository, `frost_ui` depends on `../frost_window`. The plugin
+itself depends only on Flutter; UI integration, navigation and caption drawing
+belong to `frost_ui`. Local package and example checks therefore use the sibling
+checkout directly without overrides or a Pub workspace.
 
 For Dart models, providers, database code, or translations that use build_runner:
 

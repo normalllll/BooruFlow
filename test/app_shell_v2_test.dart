@@ -787,7 +787,22 @@ void main() {
           find.byType(FrostCaptionButtons),
           platform == TargetPlatform.macOS ? findsNothing : findsOneWidget,
         );
-        expect(tester.getRect(find.byType(FrostPageHeader)).top, 40);
+        final headerTop = tester.getRect(find.byType(FrostPageHeader)).top;
+        if (platform == TargetPlatform.macOS) {
+          final host = tester.widget<FrostWindowHost>(
+            find.byType(FrostWindowHost),
+          );
+          expect(
+            headerTop,
+            greaterThan(host.controller.state.nativeControls.bottom),
+          );
+          expect(
+            tester.getRect(find.byKey(const ValueKey('frost-shell-back'))).top,
+            greaterThanOrEqualTo(headerTop),
+          );
+        } else {
+          expect(headerTop, 40);
+        }
         expect(
           tester
               .getRect(
