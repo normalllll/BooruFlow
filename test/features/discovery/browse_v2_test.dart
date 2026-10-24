@@ -520,7 +520,7 @@ void main() {
     },
   );
   testWidgets(
-    'authentication failure replaces a GIF badge in the shared card corner',
+    'authentication replaces the GIF badge while preserving the resolution badge',
     (tester) async {
       final data = browsePost(1);
       final animated = Post(
@@ -555,9 +555,19 @@ void main() {
           ),
         ),
       );
+      FrostMediaCard card() =>
+          tester.widget<FrostMediaCard>(find.byType(FrostMediaCard));
       expect(
-        tester.widget<FrostBadge>(find.byType(FrostBadge)).label,
-        t.discovery.mediaAnimation,
+        card().topStart,
+        isA<FrostBadge>().having(
+          (badge) => badge.label,
+          'label',
+          t.discovery.mediaAnimation,
+        ),
+      );
+      expect(
+        card().bottomEnd,
+        isA<FrostBadge>().having((badge) => badge.label, 'label', '600 × 800'),
       );
       service.mediaEngine.pending.single.completeError(
         const BooruError(
@@ -568,10 +578,18 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.byType(FrostBadge), findsOneWidget);
+      expect(find.byType(FrostBadge), findsNWidgets(2));
       expect(
-        tester.widget<FrostBadge>(find.byType(FrostBadge)).label,
-        t.booruError.authenticationRequired,
+        card().topStart,
+        isA<FrostBadge>().having(
+          (badge) => badge.label,
+          'label',
+          t.booruError.authenticationRequired,
+        ),
+      );
+      expect(
+        card().bottomEnd,
+        isA<FrostBadge>().having((badge) => badge.label, 'label', '600 × 800'),
       );
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
