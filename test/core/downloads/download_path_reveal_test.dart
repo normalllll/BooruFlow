@@ -181,7 +181,15 @@ void main() {
         await revealer.reveal(file.path.replaceAll('\\', '/')),
         DownloadRevealStatus.file,
       );
-      expect(commands.calls.single.$2.last, normalizeLocalPath(file.path));
+      if (Platform.isLinux) {
+        expect(commands.calls.single.$1, 'gdbus');
+        expect(
+          commands.calls.single.$2,
+          contains("['${Uri.file(normalizeLocalPath(file.path))}']"),
+        );
+      } else {
+        expect(commands.calls.single.$2.last, normalizeLocalPath(file.path));
+      }
       commands.calls.clear();
       await file.delete();
       expect(

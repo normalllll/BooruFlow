@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:booruflow/core/downloads/download_models.dart';
@@ -17,7 +18,6 @@ import 'package:booruflow/src/rust/api/booru_download.dart';
 import 'package:booruflow/src/rust/api/booru_engine.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -268,21 +268,6 @@ void main() {
     'copy uses the displayed AVIF fallback frame with no extra request and matching decoded dimensions',
     (tester) async {
       Uint8List? copied;
-      const channel = MethodChannel('pasteboard');
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(channel, (call) async {
-            if (call.method == 'writeImage') {
-              final args = call.arguments;
-              copied = args is Map
-                  ? File(args['fileName'] as String).readAsBytesSync()
-                  : args as Uint8List;
-            }
-            return null;
-          });
-      addTearDown(
-        () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-            .setMockMethodCallHandler(channel, null),
-      );
       final post = mediaPost([
         variant(MediaVariantKind.original, 'avif'),
         variant(MediaVariantKind.sample, 'jpg'),
@@ -297,7 +282,9 @@ void main() {
       await settle(tester);
       expect(frame.readyFor(post.postKey), isTrue);
       final before = List.of(service.engine.requested);
-      await tester.runAsync(() => frame.copy(post.postKey));
+      await tester.runAsync(
+        () => frame.copy(post.postKey, write: (bytes) async => copied = bytes),
+      );
       expect(service.engine.requested, before);
       expect(before, [endsWith('.avif'), endsWith('.jpg')]);
       await tester.runAsync(() async {
