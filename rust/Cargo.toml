@@ -11,7 +11,7 @@ crate-type = ["cdylib", "staticlib", "rlib"]
 web-challenge-window = ["dep:wry", "dep:tao", "dep:muda", "dep:windows", "dep:webview2-com"]
 
 [dependencies]
-flutter_rust_bridge = "=2.13.0"
+flutter_rust_bridge = "=2.14.0-beta.2"
 async-trait = "0.1.92"
 avif-rust = "0.0.8"
 base64 = "0.23.1"

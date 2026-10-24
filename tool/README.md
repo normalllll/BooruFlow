@@ -1,4 +1,28 @@
-# UI icon and branding resources
+# Development tools
+
+## Rust/Dart bridge generation
+
+Keep `flutter_rust_bridge_codegen`, the Dart runtime/hooks packages, and the
+Rust crate on the same version. After changing the Rust API, run both steps
+from the repository root:
+
+```sh
+flutter_rust_bridge_codegen generate --no-build-runner
+dart run build_runner build
+```
+
+FRB 2.14's automatic `build_runner` step filters outputs to `lib/src/rust`.
+With this project's build_runner, that filtered run removes unrelated generated
+Riverpod/Drift outputs. Skip FRB's partial run and let the complete second step
+generate bridge Freezed models, providers, database code, and translations
+together. Do not add `--build-filter` to the second command. If generation was
+already run without `--no-build-runner`, rerun the full second step to recover
+missing outputs; no provider or database source changes are required.
+
+Stop and rebuild a running app after regenerating the bridge: hot reload cannot
+replace its native Rust library. Do not hand-edit generated Dart/Rust files.
+
+## UI icon and branding resources
 
 UI icon SVG sources live in `tool/icons/svg`; they are not runtime assets.
 Allocations in `tool/icons/codepoints.csv` are append-only. Preserve retired

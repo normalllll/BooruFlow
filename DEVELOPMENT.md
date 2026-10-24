@@ -35,9 +35,13 @@ media downloads and reports setup failures before compiling Swift.
 Install the bridge generator only when modifying the Rust API:
 
 ```bash
-cargo install flutter_rust_bridge_codegen --version 2.13.0 --locked
-flutter_rust_bridge_codegen generate
+cargo install flutter_rust_bridge_codegen --version 2.14.0-beta.2 --locked
+flutter_rust_bridge_codegen generate --no-build-runner
+dart run build_runner build
 ```
+
+Run build_runner without output filters so bridge models, providers, database
+code, and translations stay complete. See [the generation notes](tool/README.md#rustdart-bridge-generation).
 
 The UI depends on the shared `frost_ui` Git package. A local checkout can be used
 without changing the tracked dependency by creating an ignored `pubspec_overrides.yaml`:
