@@ -1,8 +1,7 @@
 import Cocoa
 import FlutterMacOS
 
-// AppKit retains its native title bar and traffic lights. FrostWindowHost only
-// replaces the frame on Windows; no App-specific window channel is needed.
+// Window decoration and native controls belong to the frost_window plugin.
 class MainFlutterWindow: NSWindow {
   override func awakeFromNib() {
     let flutterViewController = FlutterViewController()
@@ -10,11 +9,6 @@ class MainFlutterWindow: NSWindow {
     contentViewController = flutterViewController
     // Flutter's initial preferred size is zero; retain the nib's window frame.
     setFrame(windowFrame, display: true)
-    styleMask.remove(.fullSizeContentView)
-    titleVisibility = .visible
-    titlebarAppearsTransparent = true
-    isMovableByWindowBackground = false
-    minSize = NSSize(width: 320, height: 480)
     center()
     RegisterGeneratedPlugins(registry: flutterViewController)
     super.awakeFromNib()

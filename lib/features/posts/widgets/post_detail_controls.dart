@@ -75,44 +75,52 @@ class PostMediaHeader extends StatelessWidget {
       child: Builder(
         builder: (context) => SafeArea(
           bottom: false,
-          child: Row(
-            children: [
-              Expanded(
-                child: FrostContentColumn(
-                  maxWidth: double.infinity,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      minHeight: FrostPageHeader.verticalHeight,
-                    ),
-                    child: DefaultTextStyle(
-                      style: FrostTypography.of(context)
-                          .style(FrostTextRole.headline)
-                          .copyWith(
-                            color: FrostThemeTokens.of(context).onMediaInk,
-                          ),
-                      child: FrostToolbar(
-                        leading: [
-                          ?(leading ?? FrostPageHeader.leadingFor(context)),
-                          if (windowButtons)
-                            FrostCaptionRegion(
-                              kind: FrostHitKind.caption,
-                              child: title,
-                            )
-                          else
-                            title,
-                        ],
-                        trailing: actions,
+          child: FrostNativeCaptionPadding(
+            child: Row(
+              textDirection: TextDirection.ltr,
+              children: [
+                if (windowButtons)
+                  const SizedBox(
+                    height: FrostPageHeader.verticalHeight,
+                    child: FrostCaptionButtons(side: FrostCaptionSide.left),
+                  ),
+                Expanded(
+                  child: FrostContentColumn(
+                    maxWidth: double.infinity,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minHeight: FrostPageHeader.verticalHeight,
+                      ),
+                      child: DefaultTextStyle(
+                        style: FrostTypography.of(context)
+                            .style(FrostTextRole.headline)
+                            .copyWith(
+                              color: FrostThemeTokens.of(context).onMediaInk,
+                            ),
+                        child: FrostToolbar(
+                          leading: [
+                            ?(leading ?? FrostPageHeader.leadingFor(context)),
+                            if (windowButtons)
+                              FrostCaptionRegion(
+                                kind: FrostHitKind.caption,
+                                child: title,
+                              )
+                            else
+                              title,
+                          ],
+                          trailing: actions,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              if (windowButtons)
-                const SizedBox(
-                  height: FrostPageHeader.verticalHeight,
-                  child: FrostCaptionButtons(),
-                ),
-            ],
+                if (windowButtons)
+                  const SizedBox(
+                    height: FrostPageHeader.verticalHeight,
+                    child: FrostCaptionButtons(),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
