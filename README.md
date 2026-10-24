@@ -6,36 +6,44 @@ English | [简体中文](README_zh_cn.md)
 
 Search, browse, and download artwork from Danbooru, Gelbooru, Yande.re, and other image sources on Android, Windows, Linux, macOS, and iOS.
 
-[Download](https://github.com/normalllll/yande_gui/releases/latest) · [Features](#features) · [Screenshots](#screenshots)
+[Download](https://github.com/normalllll/BooruFlow/releases/latest) · [Features](#features) · [Screenshots](#screenshots)
 
-![Screenshot](screenshots/0.webp)
+![Windows — Yande.re search results for muryo](screenshots/0.webp)
 
 ## Features
 
-- **Multiple sources:** Yande.re, Konachan.net, Danbooru, AIBooru, Gelbooru, Wallhaven, and Anime-Pictures.
+- **Adaptive interface:** Compact navigation on phones, an expandable sidebar on wider screens, and layouts for touch and pointer input.
+- **Desktop window integration:** App content shares the title region on Windows and Linux. macOS keeps its native traffic lights above app navigation; Linux window controls follow the desktop's button layout and icon theme where available.
+- **Multiple sources:** Yande.re, Konachan.net, Konachan.com, Danbooru, AIBooru, Gelbooru, Wallhaven, and Anime-Pictures.
 - **Search and discovery:** Tag search, rating filters, waterfall browsing, and popular posts where supported.
-- **Image details:** View original images, tags, artist and source information, metadata, and related posts.
-- **Download management:** Track progress, pause and resume tasks, retry failed downloads, and organize files by source.
-- **Accounts and networking:** Configure accounts, proxies, and connection settings for each source.
-- **Personalization:** Themes, layout settings, tag translations, and English, Simplified Chinese, Traditional Chinese, and Japanese interfaces.
+- **Media viewing:** Explore images, videos, tags, attribution, metadata, and related posts, with fullscreen zooming, panning, and pull-down dismissal.
+- **Download management:** Group batch downloads, inspect individual tasks, track progress, pause and resume transfers, retry failures, and organize files by source.
+- **Accounts and networking:** Separate accounts for each source, shared proxy settings, connection diagnostics, and web verification on supported platforms.
+- **Personalization:** Themes, background effects, layout settings, tag translations, and English, Simplified Chinese, Traditional Chinese, and Japanese interfaces.
+
+Source features and account requirements vary by site. Keep the app running while downloading; transfers may pause if the system suspends or terminates it.
 
 ## Download and install
 
-Download packages from [GitHub Releases](https://github.com/normalllll/yande_gui/releases/latest).
+Download packages from [GitHub Releases](https://github.com/normalllll/BooruFlow/releases/latest).
 
 | Platform | Package | Installation |
 |---|---|---|
-| Android | [app-arm64-v8a-release.apk](https://github.com/normalllll/yande_gui/releases/latest/download/app-arm64-v8a-release.apk) | Suitable for most current phones. Choose [app-universal-release.apk](https://github.com/normalllll/yande_gui/releases/latest/download/app-universal-release.apk) if unsure about your architecture |
-| Windows | [windows-x64.zip](https://github.com/normalllll/yande_gui/releases/latest/download/windows-x64.zip) | Extract the archive and run the app |
-| Linux | [linux_amd64.deb](https://github.com/normalllll/yande_gui/releases/latest/download/linux_amd64.deb), [linux_amd64.rpm](https://github.com/normalllll/yande_gui/releases/latest/download/linux_amd64.rpm), or [linux-x64.tar.gz](https://github.com/normalllll/yande_gui/releases/latest/download/linux-x64.tar.gz) | Choose the package for your distribution. Builds target Ubuntu 24.04; older systems may lack required libraries |
-| macOS | [ARM64](https://github.com/normalllll/yande_gui/releases/latest/download/macos-arm64-nosigned.zip), [x86_64](https://github.com/normalllll/yande_gui/releases/latest/download/macos-x86_64-nosigned.zip) | Separate builds for Apple Silicon and Intel. The apps are not notarized |
-| iOS | [ios-nosigned.ipa](https://github.com/normalllll/yande_gui/releases/latest/download/ios-nosigned.ipa) | Requires signing before installation. SOCKS5, HTTPS, and authenticated download proxies require iOS 17+ |
+| Android | [app-arm64-v8a-release.apk](https://github.com/normalllll/BooruFlow/releases/latest/download/app-arm64-v8a-release.apk) | Android 8.0+. Suitable for most current phones. Choose [app-universal-release.apk](https://github.com/normalllll/BooruFlow/releases/latest/download/app-universal-release.apk) if unsure about your architecture |
+| Windows | [windows-x64.zip](https://github.com/normalllll/BooruFlow/releases/latest/download/windows-x64.zip) | Extract the archive and run the app |
+| Linux | [linux_amd64.deb](https://github.com/normalllll/BooruFlow/releases/latest/download/linux_amd64.deb), [linux_amd64.rpm](https://github.com/normalllll/BooruFlow/releases/latest/download/linux_amd64.rpm), or [linux-x64.tar.gz](https://github.com/normalllll/BooruFlow/releases/latest/download/linux-x64.tar.gz) | Choose the package for your distribution. Builds target Ubuntu 24.04; older systems may lack required libraries |
+| macOS | [ARM64](https://github.com/normalllll/BooruFlow/releases/latest/download/macos-arm64-nosigned.zip), [x86_64](https://github.com/normalllll/BooruFlow/releases/latest/download/macos-x86_64-nosigned.zip) | Minimum build target: macOS 12. Separate builds for Apple Silicon and Intel. The apps are not notarized |
+| iOS | [ios-nosigned.ipa](https://github.com/normalllll/BooruFlow/releases/latest/download/ios-nosigned.ipa) | iOS 15+. Requires signing before installation |
 
 Android ARM32 and x86_64 packages are also available. Check the release assets for the packages included in each version.
 
+Linux DEB/RPM packages declare their runtime dependencies. The portable archive requires GTK 3, libstdc++, libmpv, and libepoxy to be installed separately; see the [Linux dependency instructions](DEVELOPMENT.md#ci-and-releases). The macOS build target above is a technical minimum; use systems within Flutter's and the OS vendor's maintained support range.
+
+On iOS, supported images and videos are saved to Photos; archives and formats that Photos cannot reliably preserve are saved to Files. Individual photo saves request add-only access, while batch downloads that create and reuse albums require full Photos access.
+
 ## Contributing
 
-Report bugs or suggest features in [Issues](https://github.com/normalllll/yande_gui/issues). For bugs, include your platform, image source, and steps to reproduce. Code, design, and translation contributions are welcome.
+Report bugs or suggest features in [Issues](https://github.com/normalllll/BooruFlow/issues). For bugs, include your platform, image source, and steps to reproduce. Code, design, and translation contributions are welcome.
 
 See the [development guide](DEVELOPMENT.md) for building, testing, and release instructions.
 
@@ -46,14 +54,14 @@ See the [development guide](DEVELOPMENT.md) for building, testing, and release i
 
 ## Screenshots
 
-### Desktop
+### Windows
 
-| ![Desktop Screenshot 1](screenshots/desktop/img0.webp) | ![Desktop Screenshot 2](screenshots/desktop/img1.webp) |
+| ![Yande.re search results for muryo](screenshots/desktop/img0.webp) | ![Details of the second search result](screenshots/desktop/img1.webp) |
 |--------------------------------------------------------|--------------------------------------------------------|
 
-### Mobile
+### iOS Simulator
 
-| ![Mobile Screenshot 1](screenshots/mobile/img0.webp) | ![Mobile Screenshot 2](screenshots/mobile/img1.webp) |
+| ![Anime-Pictures home](screenshots/mobile/img0.webp) | ![Yande.re search page with the keyboard hidden](screenshots/mobile/img1.webp) |
 |------------------------------------------------------|------------------------------------------------------|
 
 ## License

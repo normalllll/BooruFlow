@@ -12,8 +12,8 @@
 - Android builds use SDK 37 and NDK `28.2.13676358`, as configured in the Android project.
 
 ```bash
-git clone https://github.com/normalllll/yande_gui.git
-cd yande_gui
+git clone https://github.com/normalllll/BooruFlow.git
+cd BooruFlow
 flutter pub get
 flutter doctor
 flutter run
