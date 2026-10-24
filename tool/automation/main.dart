@@ -24,7 +24,6 @@ import 'package:flutter_test/flutter_test.dart'
     show simulateKeyDownEvent, simulateKeyUpEvent;
 import 'package:frost_ui/frost_ui.dart';
 import 'package:frost_ui/src/motion/_material_reveal.dart';
-import 'package:frost_window/frost_window.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'automation_binding.dart';
