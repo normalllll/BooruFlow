@@ -14,16 +14,14 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
+  # frost_ui brings its native window plugin (frost_window) from the same checkout.
   frost_ui:
     git:
-      url: https://github.com/normalllll/frost_ui.git
+      url: &frost https://github.com/normalllll/frost_ui.git
       path: packages/frost_ui
-      ref: v0.2.0
-  frost_window:
-    git:
-      url: https://github.com/normalllll/frost_ui.git
-      path: packages/frost_window
-      ref: v0.2.0
+      ref: &frost_ref 1bdd8165c32ae5cbcf7a4851a79818699f97ccde
+  frost_data:
+    git: {url: *frost, path: packages/frost_data, ref: *frost_ref}
   pasteboard: ^0.5.0
   flutter_rust_bridge: 2.14.0-beta.2
   flutter_rust_bridge_hooks: 2.14.0-beta.2
@@ -69,7 +67,7 @@ dev_dependencies:
   freezed: ^4.0.2
 
 flutter:
-  uses-material-design: true
+  uses-material-design: false
 
   assets:
     - assets/tag_translations/
