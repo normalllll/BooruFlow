@@ -23,7 +23,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
 
-import '../discovery/home_page_test.dart' show browseTestApp;
+import '../../support/browse_support.dart' show browseTestApp;
 import '../discovery/search_interaction_test.dart' show testSource;
 
 MediaVariant variant(MediaVariantKind kind, String ext, {MediaType? type}) =>
@@ -147,6 +147,20 @@ void main() {
       expect(post.originalMedia.extension_, ext);
     });
   }
+  test(
+    'without a sample the stage shows the original, not the grid preview',
+    () {
+      final preview = variant(MediaVariantKind.preview, 'jpg');
+      final original = variant(MediaVariantKind.original, 'jpg');
+      final post = mediaPost([
+        variant(MediaVariantKind.thumbnail, 'jpg'),
+        preview,
+        original,
+      ]);
+      expect(postStageMedia(post), original);
+      expect(postImageVariants(post).first, preview);
+    },
+  );
   test(
     'GIF uses a static cover in grids and the original in stage/viewer/copy',
     () {

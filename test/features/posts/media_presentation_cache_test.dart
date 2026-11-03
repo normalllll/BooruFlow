@@ -6,7 +6,7 @@ import 'package:booruflow/features/posts/media_presentation_cache.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import '../discovery/browse_v2_test.dart' show PendingMediaEngine;
+import '../../support/browse_support.dart' show PendingMediaEngine;
 import '../discovery/search_interaction_test.dart' show testSource;
 
 class _Engine extends PendingMediaEngine {

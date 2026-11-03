@@ -7,6 +7,7 @@ import 'package:booruflow/features/posts/widgets/post_media.dart';
 import 'package:booruflow/features/posts/widgets/post_video.dart';
 import 'package:flutter/widgets.dart';
 import 'package:frost_ui/frost_ui.dart';
+import 'package:frost_ui/media.dart';
 
 /// Still images and videos occupy the same finite, opaque viewer stage.
 class ViewerStage extends StatelessWidget {
@@ -37,7 +38,9 @@ class ViewerStage extends StatelessWidget {
   final bool videoMuted;
   final FrostMediaViewportController viewport;
   final double scale, maxScale;
-  final VoidCallback onDismiss;
+
+  /// Null turns off pull-down dismissal.
+  final VoidCallback? onDismiss;
   final ValueChanged<double> onScaleChanged;
   final ValueChanged<ImageProvider?> onImageReady;
   @override

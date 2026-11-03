@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:frost_ui/frost_ui.dart';
+import 'package:frost_ui/media.dart';
 
 /// Every image subscription has loading and failure UI, even when a previously
 /// decoded Hero child remounts after cache eviction. It never fades a sharper

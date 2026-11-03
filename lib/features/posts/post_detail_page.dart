@@ -1,27 +1,27 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' show PointerDeviceKind;
 import 'package:booruflow/app/ambient_artwork.dart';
 import 'package:booruflow/app/frost_config.dart';
 import 'package:booruflow/core/settings/background.dart';
 import 'package:booruflow/core/settings/logic.dart' show settingsProvider;
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
-import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/features/posts/logic.dart';
 import 'package:booruflow/features/posts/media_presentation.dart';
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/features/posts/post_actions.dart';
-import 'package:booruflow/features/posts/widgets/post_detail_controls.dart';
+import 'package:booruflow/features/posts/widgets/post_detail_layout.dart';
 import 'package:booruflow/features/posts/widgets/post_detail_panel.dart';
 import 'package:booruflow/features/posts/widgets/post_media.dart';
 import 'package:booruflow/features/posts/widgets/post_video.dart';
 import 'package:booruflow/intl/number_format.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_navigation.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frost_ui/frost_ui.dart';
-import 'package:go_router/go_router.dart';
 import 'detail_session.dart';
 import 'displayed_media_frame.dart';
 import 'stage_image_presentation.dart';
@@ -35,10 +35,28 @@ class PostDetailPage extends ConsumerStatefulWidget {
   ConsumerState<PostDetailPage> createState() => _PostDetailPageState();
 }
 
+/// How many posts from the loaded end paging starts loading the next page.
+const _prefetchAhead = 3;
+
 class _PostDetailPageState extends ConsumerState<PostDetailPage> {
   late List<Post> _collection;
   late int _index;
-  final _displayedFrame = DisplayedMediaFrame();
+  // Each page has its own frame: a neighbour coming into view must not take
+  // over what the current post's actions copy.
+  final _displayedFrames = <String, DisplayedMediaFrame>{};
+  DisplayedMediaFrame _frame(Post post) =>
+      _displayedFrames.putIfAbsent(post.postKey, DisplayedMediaFrame.new);
+  // Kept across stacked and wide, so a video survives the change of layout.
+  final _stageKeys = <String, GlobalKey>{};
+  GlobalKey _stageKey(Post post) =>
+      _stageKeys.putIfAbsent(post.postKey, GlobalKey.new);
+
+  /// The stacked pages; null while the layout is wide.
+  PageController? _pages;
+
+  /// Whether the current page has scrolled its stage out from under the header.
+  final _pastStage = ValueNotifier(false);
+  final _scrolledPast = <String, bool>{};
   late final PostDetailSession _session;
   final _detailSubscriptions = <ProviderSubscription<AsyncValue<Post>>>[];
   final _familySubscriptions = <ProviderSubscription<AsyncValue<List<Post>>>>[];
@@ -66,6 +84,13 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
   );
   Post? _member;
   Post get _current => _member ?? _collection[_index];
+  late final _ambient = ref.read(ambientArtworkProvider.notifier);
+
+  /// The grid's decoded frame of the work the page opened on, if it shows it.
+  ImageProvider? _openingPreview(Post post) =>
+      post.postKey == widget.args.collection[widget.args.initialIndex].postKey
+      ? widget.args.preview
+      : null;
 
   @override
   void initState() {
@@ -99,35 +124,102 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
     for (final subscription in _familySubscriptions) {
       subscription.close();
     }
-    _displayedFrame.dispose();
+    for (final frame in _displayedFrames.values) {
+      frame.dispose();
+    }
+    _pages?.dispose();
+    _pastStage.dispose();
     for (final presentation in _presentations.values) {
       presentation.dispose();
     }
+    // The window returns to the page below once this one is gone; publishing
+    // waits until the tree is no longer locked for unmounting.
+    final ambient = _ambient;
+    Future.microtask(() => ambient.release(this));
     super.dispose();
   }
 
-  void _select(int index) {
+  bool get _hasMore => widget.args.paging?.hasMore() ?? false;
+  Future<List<Post>>? _pendingLoad;
+
+  /// Loads the next page of the collection this page opened from; the viewer
+  /// shares it. A failure throws and leaves paging to retry.
+  Future<List<Post>> _loadMore() =>
+      _pendingLoad ??= _fetchMore().whenComplete(() => _pendingLoad = null);
+
+  Future<List<Post>> _fetchMore() async {
+    final items = await widget.args.paging!.loadMore();
+    if (mounted) {
+      setState(() {
+        if (items.length > _collection.length) {
+          _collection = [..._collection, ...items.skip(_collection.length)];
+        }
+      });
+    }
+    return _collection;
+  }
+
+  Future<void> _loadMoreReporting() async {
+    try {
+      await _loadMore();
+    } catch (error) {
+      if (mounted) FrostToast.fromError(context, error);
+    }
+  }
+
+  Future<void> _loadAndSelect(int index) async {
+    await _loadMoreReporting();
+    if (mounted && index < _collection.length) _select(index);
+  }
+
+  /// Goes to a post from outside the pages: a key, a button, the viewer.
+  void _select(int index, {bool animate = true}) {
+    if (index >= _collection.length && _hasMore) {
+      unawaited(_loadAndSelect(index));
+      return;
+    }
     if (index < 0 || index >= _collection.length || index == _index) return;
+    final pages = _pages;
+    if (pages == null || !pages.hasClients) {
+      _show(index);
+    } else if (animate && !MediaQuery.disableAnimationsOf(context)) {
+      // The pages report the change as they pass the middle.
+      unawaited(
+        pages.animateToPage(
+          index,
+          duration: FrostMotion.standardDuration,
+          curve: FrostMotion.hoverCurve,
+        ),
+      );
+    } else {
+      pages.jumpToPage(index);
+    }
+  }
+
+  void _show(int index) {
+    if (index == _index || index >= _collection.length) return;
     setState(() {
       _index = index;
       _member = null;
     });
+    _pastStage.value = _scrolledPast[_collection[index].postKey] ?? false;
     _session.select(_collection[index]);
     _selectAmbient(_collection[index]);
+    widget.args.onIndexChanged?.call(index);
+    if (_index >= _collection.length - _prefetchAhead && _hasMore) {
+      unawaited(_loadMoreReporting());
+    }
   }
 
-  void _selectAmbient(Post post) => unawaited(
-    ref
-        .read(ambientArtworkProvider.notifier)
-        .select(
-          post,
-          preview:
-              post.postKey ==
-                  widget.args.collection[widget.args.initialIndex].postKey
-              ? widget.args.preview
-              : null,
-        ),
-  );
+  void _selectAmbient(Post post) =>
+      unawaited(_ambient.select(this, post, preview: _openingPreview(post)));
+
+  /// This page's own artwork; until it resolves, the grid frame it opened with
+  /// rather than whatever the window showed before.
+  ImageProvider? _backdrop(Post post) {
+    ref.watch(ambientArtworkProvider);
+    return _ambient.imageOf(this) ?? _openingPreview(post);
+  }
 
   void _selectRelated(Post post) {
     if (post.postKey == _current.postKey) return;
@@ -170,8 +262,11 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
           presentation: _presentation(current),
           videoPosition: playbackPosition,
           videoMuted: muted,
+          paging: widget.args.paging == null
+              ? null
+              : PostPaging(hasMore: () => _hasMore, loadMore: _loadMore),
           onIndexChanged: (index) {
-            if (mounted) _select(index);
+            if (mounted) _select(index, animate: false);
           },
         ),
       ),
@@ -181,12 +276,12 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
   List<FrostMenuEntry> _menu(Post post) => [
     FrostMenuAction(
       t.postDetail.fullscreen,
-      icon: appIcons.fullscreen,
+      leading: FrostGlyph.icon(appIcons.fullscreen),
       onSelected: () => _open(post),
     ),
     FrostMenuAction(
       t.discovery.copyLink,
-      icon: appIcons.link,
+      leading: FrostGlyph.icon(appIcons.link),
       enabled: post.webUrl != null,
       onSelected: post.webUrl == null
           ? null
@@ -197,7 +292,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
     ),
     FrostMenuAction(
       t.frost.openInBrowser,
-      icon: appIcons.externalLink,
+      leading: FrostGlyph.icon(appIcons.externalLink),
       enabled: post.webUrl != null,
       onSelected: post.webUrl == null
           ? null
@@ -205,7 +300,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
     ),
     FrostMenuAction(
       t.postDetail.openSource,
-      icon: appIcons.link,
+      leading: FrostGlyph.icon(appIcons.link),
       enabled: isPostWebUrl(post.source),
       onSelected: isPostWebUrl(post.source)
           ? () => _openExternal(post.source)
@@ -216,85 +311,37 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
       performPostAction(context, () async {
         if (!await openPostUrl(url)) throw StateError(t.generic.loadFailed);
       });
-  Widget _header(Post post) {
-    final actions = [
-      postIconAction(
-        context,
-        label: t.frost.previous,
-        icon: appIcons.chevronLeft,
-        onPressed: _index > 0 ? () => _select(_index - 1) : null,
-      ),
-      postIconAction(
-        context,
-        label: t.frost.next,
-        icon: appIcons.chevronRight,
-        onPressed: _index + 1 < _collection.length
-            ? () => _select(_index + 1)
-            : null,
-      ),
-      postMoreAction(context, _menu(post)),
-    ];
-    final source = ref
-        .read(booruServiceProvider)
-        .sourceById(post.sourceId)
-        .displayName;
-    final title = FrostText(
-      '$source · #${post.id}',
-      role: FrostTextRole.callout,
-      tone: FrostTextTone.secondary,
-      numeric: true,
-    );
-    return FrostPageHeader(
-      title: title,
-      onBack: () => context.pop(),
-      actions: actions,
-    );
-  }
+  Post _postAt(int index) => index == _index ? _current : _collection[index];
 
-  @override
-  Widget build(BuildContext context) {
-    final initial = _current;
-    final key = (sourceId: initial.sourceId, postId: initial.id);
-    final detail = _session.detail(initial);
-    final post = detail.value ?? initial;
-    final loading = detail.request.isLoading && initial.data.tags.isEmpty;
-    final heroTag = post.postKey == widget.args.post.postKey
+  /// The stage of the post at [index]; the buttons sit on the fixed stage slot,
+  /// not on the media, whose rectangle changes with every post's ratio.
+  Widget _stageOf(int index, {required bool stacked}) {
+    final initial = _postAt(index);
+    final post = _session.detail(initial).value ?? initial;
+    final current = index == _index;
+    // A page that is only passing by never flies back to the grid.
+    final heroTag = current && post.postKey == widget.args.post.postKey
         ? widget.args.heroTag
         : null;
-    final family = _session.family(_collection[_index]);
-    final layout = FrostDetailLayout(
-      key: const ValueKey('post-detail-layout'),
-      stackBelow: FrostSizeClass.expanded,
-      headerPlacement: FrostDetailHeaderPlacement.page,
-      header: _header(post),
-      mediaHeader: (context, scrolled) => FrostPageHeader(
-        title: scrolled
-            ? FrostText(
-                postInformationTitle(ref, post),
-                role: FrostTextRole.headline,
-              )
-            : null,
-        onBack: () => context.pop(),
-        actions: [postMoreAction(context, _menu(post))],
-      ),
-      backdrop:
-          ref.watch(settingsProvider.select((s) => s.background.material)) ==
-              BackgroundMaterial.ambient
-          ? ref.watch(ambientArtworkProvider)
-          : null,
-      stage: LayoutBuilder(
+    final radius = postStageRadius(stacked: stacked);
+    return _StagePaging(
+      index: index,
+      count: _collection.length,
+      hasMore: _hasMore,
+      swipes: !stacked,
+      onSelect: _select,
+      child: LayoutBuilder(
         builder: (context, constraints) {
-          final radius = FrostMediaStage.radiusOf(context);
           Widget cover(VoidCallback? play) => PostMedia(
-            displayedFrame: _displayedFrame,
+            displayedFrame: _frame(post),
             presentation: _presentation(post),
             key: ValueKey(('detail-stage', post.postKey)),
             post: post,
             onPlay: play,
             purpose: PostMediaPurpose.stage,
             fit: BoxFit.contain,
-            // Capture the initial displayed width once per media identity. Tall
-            // natural images never request an original-pixel-size decode.
+            // Capture the initial displayed width once per media identity.
+            // Tall natural images never request an original-pixel decode.
             decodeWidth: math.max(
               1,
               (constraints.maxWidth * MediaQuery.devicePixelRatioOf(context))
@@ -305,13 +352,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
             stageBuilder: (_, ratio, frame) => FrostMediaStage(
               key: ValueKey(post.postKey),
               aspectRatio: ratio,
-              child: _FamilyMediaControls(
-                family: family,
-                post: post,
-                session: _session,
-                onSelected: _selectRelated,
-                child: frame,
-              ),
+              child: frame,
             ),
             onImageReady: (image) {
               if (image == null || !mounted) return;
@@ -322,20 +363,22 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
               label: '${t.postDetail.fullscreen} · #${post.id}',
               child: FrostClickSurface(
                 feedback: FrostClickFeedback.media,
-                borderRadius: FrostRadius.borderRadius(radius),
+                shape: FrostClickShape.rounded(
+                  FrostRadius.borderRadius(radius),
+                ),
                 onTap: play ?? () => _open(post),
                 child: heroTag == null
                     ? image
                     : FrostMediaHero(
                         tag: heroTag,
-                        radius: FrostRadius.borderRadius(radius),
                         fit: BoxFit.contain,
                         child: image,
                       ),
               ),
             ),
           );
-          if (postMediaFormat(post) != PostMediaFormat.video) {
+          // Only the page on screen plays; a neighbour shows its poster.
+          if (postMediaFormat(post) != PostMediaFormat.video || !current) {
             return cover(null);
           }
           return PostVideo(
@@ -353,19 +396,61 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
           );
         },
       ),
-      primary: PostPrimaryInformation(
-        key: const ValueKey('primary'),
-        post: post,
-      ).frostSkeleton(loading),
+    );
+  }
+
+  Widget _informationOf(int index) {
+    final initial = _postAt(index);
+    final key = (sourceId: initial.sourceId, postId: initial.id);
+    final detail = _session.detail(initial);
+    final post = detail.value ?? initial;
+    final loading = detail.request.isLoading && initial.data.tags.isEmpty;
+    final family = _session.family(_collection[index]);
+    final failure = detail.request.error;
+    return PostInformationSliver(
+      primary: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (failure != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: FrostGap.group),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  FrostInlineBanner(
+                    tone: FrostBannerTone.negative,
+                    message: describeBooruError(
+                      failure,
+                      includeDiagnostics: false,
+                    ),
+                    actionLabel: t.frost.retry,
+                    onAction: () {
+                      ref.invalidate(postAttributionDetailProvider(key));
+                      _session.retry(post);
+                    },
+                  ),
+                  if (booruErrorDetails(failure) case final details?)
+                    FrostErrorDetails.quiet(details: details),
+                ],
+              ),
+            ),
+          PostPrimaryInformation(
+            key: const ValueKey('primary'),
+            post: post,
+            loading: loading,
+          ),
+        ],
+      ),
       actions: PostDetailActions(
         key: const ValueKey('actions'),
-        displayedFrame: _displayedFrame,
+        displayedFrame: _frame(post),
         post: post,
         onOpen: () => _presentation(post).requestOriginal(post),
         presentation: _presentation(post),
-      ).frostSkeleton(loading),
+        moreEntries: _menu(post),
+      ),
       sections: [
-        if (family != null)
+        if (family != null && (family.error != null || family.keys.length > 1))
           _RelatedPosts(
             key: ValueKey(('family', family.root)),
             post: post,
@@ -373,44 +458,103 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
             session: _session,
             onSelected: _selectRelated,
           ),
-        FrostModuleGrid(
-          key: const ValueKey('information-cards'),
-          items: postInformationModules(post)
-              .map(
-                (item) => FrostModuleGridItem(
-                  span: item.span,
-                  child: item.child.frostSkeleton(loading),
-                ),
-              )
-              .toList(),
-        ),
-        if (detail.request.hasError)
-          FrostInlineBanner(
-            tone: FrostBannerTone.negative,
-            message: describeBooruError(
-              detail.request.error!,
-              includeDiagnostics: false,
-            ),
-            actionLabel: t.frost.retry,
-            onAction: () {
-              ref.invalidate(postAttributionDetailProvider(key));
-              _session.retry(post);
-            },
-          ),
         if (loading || post.data.tags.isNotEmpty)
-          PostTagsModule(
+          PostTagsSection(
             key: const ValueKey('tags'),
             post: post,
+            query: widget.args.query,
           ).frostSkeleton(loading),
-        if (post.source.isNotEmpty)
-          PostSourceRow(key: const ValueKey('source'), post: post),
+        PostInformationSection(key: const ValueKey('information'), post: post),
       ],
-      technical: post.createdAt != 0
-          ? PostTechnicalInformation(
-              key: const ValueKey('technical'),
-              post: post,
-            )
-          : null,
+    );
+  }
+
+  void _stageScrolled(Post page, ScrollMetrics metrics) {
+    void update() {
+      if (!mounted) return;
+      final stage = _stageKey(page).currentContext?.findRenderObject();
+      if (stage is! RenderBox || !stage.hasSize) return;
+      final header =
+          MediaQuery.paddingOf(context).top + FrostPageHeader.verticalHeight;
+      final past = metrics.extentBefore >= stage.size.height - header;
+      _scrolledPast[page.postKey] = past;
+      if (page.postKey == _collection[_index].postKey) _pastStage.value = past;
+    }
+
+    // Metrics also arrive during layout, before the header may rebuild.
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance.addPostFrameCallback((_) => update());
+    } else {
+      update();
+    }
+  }
+
+  Widget _stacked(Post post) {
+    final pages = _pages ??= PageController(initialPage: _index);
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        PageView.builder(
+          key: const ValueKey('post-detail-pages'),
+          controller: pages,
+          itemCount: _collection.length,
+          onPageChanged: _show,
+          itemBuilder: (context, index) {
+            final page = _collection[index];
+            return PostStackedScroll(
+              key: ValueKey(('post-detail-page', page.postKey)),
+              stageKey: _stageKey(page),
+              stage: _stageOf(index, stacked: true),
+              information: _informationOf(index),
+              onMetrics: (metrics) => _stageScrolled(page, metrics),
+            );
+          },
+        ),
+        PostMediaHeader(pastStage: _pastStage, menu: _menu(post)),
+      ],
+    );
+  }
+
+  Widget _wide() {
+    final old = _pages;
+    if (old != null) {
+      _pages = null;
+      _pastStage.value = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) => old.dispose());
+    }
+    return PostWideLayout(
+      stageKey: _stageKey(_collection[_index]),
+      stage: _stageOf(_index, stacked: false),
+      information: _informationOf(_index),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final initial = _current;
+    final post = _session.detail(initial).value ?? initial;
+    final ambient =
+        ref.watch(settingsProvider.select((s) => s.background.material)) ==
+        BackgroundMaterial.ambient;
+    final layout = LayoutBuilder(
+      builder: (context, box) {
+        final stacked = postDetailStacked(context, box.biggest);
+        return Stack(
+          key: const ValueKey('post-detail-layout'),
+          fit: StackFit.expand,
+          children: [
+            PostDetailBackdrop(
+              image: ambient ? _backdrop(post) : null,
+              stageKey: _stageKey(post),
+            ),
+            FrostLayoutCrossfade(
+              layoutIdentity: stacked,
+              child: stacked ? _stacked(post) : _wide(),
+            ),
+          ],
+        );
+      },
     );
     return FrostWindowTitleContribution(
       path: '/posts/${widget.args.post.id}',
@@ -487,7 +631,7 @@ class _RelatedPosts extends StatelessWidget {
                         .ceil(),
               ),
             ),
-            null => FrostMediaFrame.skeleton(aspectRatio: null),
+            null => FrostMediaFrame.skeleton(aspectRatio: null, radius: 0),
           },
         ),
       ],
@@ -495,94 +639,98 @@ class _RelatedPosts extends StatelessWidget {
   }
 }
 
-/// Only this overlay rebuilds on hover; the media and information stay mounted.
-class _FamilyMediaControls extends StatefulWidget {
-  const _FamilyMediaControls({
-    required this.family,
-    required this.post,
-    required this.session,
-    required this.onSelected,
+/// Previous and next over the stage while the pointer is on it, and optionally
+/// a swipe for touch. Only this overlay rebuilds on hover; the media stays mounted.
+class _StagePaging extends StatefulWidget {
+  const _StagePaging({
+    required this.index,
+    required this.count,
+    required this.hasMore,
+    required this.swipes,
+    required this.onSelect,
     required this.child,
   });
-  final PostFamily? family;
-  final Post post;
-  final PostDetailSession session;
-  final ValueChanged<Post> onSelected;
+  final int index, count;
+  final bool hasMore;
+
+  /// Whether a swipe on the stage pages; stacked pages move by themselves.
+  final bool swipes;
+  final ValueChanged<int> onSelect;
   final Widget child;
   @override
-  State<_FamilyMediaControls> createState() => _FamilyMediaControlsState();
+  State<_StagePaging> createState() => _StagePagingState();
 }
 
-class _FamilyMediaControlsState extends State<_FamilyMediaControls> {
+class _StagePagingState extends State<_StagePaging> {
+  static const _swipeVelocity = 300.0;
   bool _hovered = false, _focused = false;
+
+  VoidCallback? _page(int target) =>
+      target < 0 || target >= widget.count && !widget.hasMore
+      ? null
+      : () => widget.onSelect(target);
+
   @override
   Widget build(BuildContext context) {
-    final family = widget.family;
-    if (family == null || family.loading || family.keys.length < 2) {
-      return widget.child;
-    }
-    final index = family.keys.indexOf(postIdentity(widget.post));
-    void select(int index) {
-      if (widget.session.lookup(family.keys[index]) case final item?) {
-        widget.onSelected(item);
-      }
-    }
-
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: Focus(
-        canRequestFocus: false,
-        onFocusChange: (value) => setState(() => _focused = value),
-        child: Stack(
-          fit: StackFit.passthrough,
-          children: [
-            widget.child,
-            Positioned.fill(
-              child: FrostOnMediaChromeScope(
-                child: FrostPresence(
-                  visible: _hovered || _focused,
-                  child: Stack(
-                    children: [
-                      for (final previous in [true, false])
-                        Align(
-                          alignment: previous
-                              ? AlignmentDirectional.centerStart
-                              : AlignmentDirectional.centerEnd,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: FrostGap.group,
-                            ),
-                            child: FrostButton.icon(
-                              label: previous ? t.frost.previous : t.frost.next,
-                              icon: previous
-                                  ? appIcons.chevronLeft
-                                  : appIcons.chevronRight,
-                              onPressed: previous
-                                  ? (index > 0 ? () => select(index - 1) : null)
-                                  : (index >= 0 &&
-                                            index + 1 < family.keys.length
-                                        ? () => select(index + 1)
-                                        : null),
+    // One structure either way: the stage's media must survive a change here.
+    final pageable = widget.count >= 2 || widget.hasMore;
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    return GestureDetector(
+      supportedDevices: const {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.stylus,
+      },
+      onHorizontalDragEnd: !pageable || !widget.swipes
+          ? null
+          : (details) {
+              final velocity = (details.primaryVelocity ?? 0) * (rtl ? -1 : 1);
+              if (velocity.abs() < _swipeVelocity) return;
+              _page(widget.index + (velocity < 0 ? 1 : -1))?.call();
+            },
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        child: Focus(
+          canRequestFocus: false,
+          onFocusChange: (value) => setState(() => _focused = value),
+          child: Stack(
+            fit: StackFit.passthrough,
+            children: [
+              widget.child,
+              if (pageable && FrostInputCapability.of(context).hoverAvailable)
+                Positioned.fill(
+                  child: FrostPresence(
+                    visible: _hovered || _focused,
+                    child: Stack(
+                      children: [
+                        for (final previous in [true, false])
+                          Align(
+                            alignment: previous
+                                ? AlignmentDirectional.centerStart
+                                : AlignmentDirectional.centerEnd,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: FrostGap.group,
+                              ),
+                              child: FrostButton.iconOnMedia(
+                                label: previous
+                                    ? t.frost.previous
+                                    : t.frost.next,
+                                icon: previous
+                                    ? appIcons.chevronLeft
+                                    : appIcons.chevronRight,
+                                onPressed: _page(
+                                  widget.index + (previous ? -1 : 1),
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      Align(
-                        alignment: Alignment.bottomCenter,
-                        child: Padding(
-                          padding: const EdgeInsets.all(FrostGap.group),
-                          child: FrostBadge(
-                            label: '${index + 1}/${family.keys.length}',
-                            tone: FrostBadgeTone.onMedia,
-                          ),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

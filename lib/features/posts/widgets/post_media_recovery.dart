@@ -68,20 +68,23 @@ class PostMediaRecovery extends ConsumerWidget {
             label: t.generic.retry,
             icon: appIcons.refresh,
             size: FrostControlSize.compact,
-            loading: retrying,
+            state: retrying
+                ? const FrostActionState.running()
+                : FrostActionState.idle,
             onPressed: onRetry,
           )
         else
           FrostButton.icon(
             icon: appIcons.refresh,
             label: t.generic.retry,
-            loading: retrying,
+            state: retrying
+                ? const FrostActionState.running()
+                : FrostActionState.idle,
             onPressed: onRetry,
           ),
         if (labeled)
-          FrostButton(
+          FrostButton.plain(
             label: t.mediaError.details,
-            variant: FrostButtonVariant.plain,
             size: FrostControlSize.compact,
             onPressed: () => _showError(context, error),
           )
@@ -157,10 +160,9 @@ class PostMediaRecovery extends ConsumerWidget {
                   children: [
                     FrostIcon(appIcons.imageError),
                     if (onPlay case final play?)
-                      FrostButton.icon(
+                      FrostButton.iconOnMedia(
                         icon: appIcons.play,
                         label: t.frost.play,
-                        style: FrostIconButtonStyle.onMedia,
                         onPressed: play,
                       ),
                     if (!tiny) ...[

@@ -5,6 +5,7 @@ import 'package:booruflow/core/media/image_clipboard.dart';
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_navigation.dart';
+import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -43,12 +44,12 @@ List<FrostMenuEntry> postMenuEntries({
   return [
     FrostMenuAction(
       labels.postDetail.download,
-      icon: appIcons.download,
+      leading: FrostGlyph.icon(appIcons.download),
       onSelected: download,
     ),
     FrostMenuAction(
       labels.discovery.copyLink,
-      icon: appIcons.link,
+      leading: FrostGlyph.icon(appIcons.link),
       enabled: webUrl != null,
       onSelected: webUrl == null
           ? null
@@ -61,7 +62,7 @@ List<FrostMenuEntry> postMenuEntries({
     ),
     FrostMenuAction(
       labels.frost.openInBrowser,
-      icon: appIcons.externalLink,
+      leading: FrostGlyph.icon(appIcons.externalLink),
       enabled: webUrl != null,
       onSelected: webUrl == null
           ? null
@@ -77,7 +78,7 @@ List<FrostMenuEntry> postMenuEntries({
     const FrostMenuDivider(),
     FrostMenuAction(
       labels.discovery.searchAuthor,
-      icon: appIcons.search,
+      leading: FrostGlyph.icon(appIcons.search),
       enabled: artist != null,
       onSelected: artist == null
           ? null
@@ -193,6 +194,8 @@ Future<void> copyDisplayedPostImage(
   try {
     final copied = await frame.copy(identity, write: clipboard.write);
     if (copied && context.mounted) FrostToast.copied(t.frost.copied);
+  } catch (error) {
+    AppToast.errorWithCause(t.discovery.copyImageFailed, error);
   } finally {
     finished = true;
     pending.cancel();

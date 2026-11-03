@@ -5,7 +5,7 @@ import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/features/posts/stage_image_presentation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'detail_switching_r11_test.dart' show item;
+import 'post_detail_paging_test.dart' show item;
 
 void main() {
   test(

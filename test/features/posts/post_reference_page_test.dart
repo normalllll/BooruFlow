@@ -10,7 +10,7 @@ import 'package:booruflow/core/downloads/download_store.dart';
 import 'package:booruflow/core/settings/settings_service.dart';
 import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/features/booru/services/booru_service.dart';
-import 'package:booruflow/features/discovery/collection_logic.dart';
+import 'package:booruflow/features/browse/collection_logic.dart';
 import 'package:booruflow/features/downloads/logic.dart';
 import 'package:booruflow/features/downloads/models/booru_download_item.dart';
 import 'package:booruflow/features/downloads/widgets/download_task_widgets.dart';
@@ -27,7 +27,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
 
-import '../discovery/browse_v2_test.dart' show PendingMediaEngine;
+import '../../support/browse_support.dart' show PendingMediaEngine;
 import '../discovery/search_interaction_test.dart'
     show testSource, SearchRepositoryFake;
 import '../downloads/support.dart';
@@ -99,7 +99,7 @@ void main() {
 
   setUpAll(() async {
     temporary = await Directory.systemTemp.createTemp(
-      'booruflow-r8-reference-',
+      'booruflow-reference-',
     );
     for (final origin in ['single', 'batch', 'legacy']) {
       final file = File('${temporary.path}/$origin.db');
@@ -159,7 +159,7 @@ void main() {
               ? {'revision': 0, 'active': true}
               : null,
         );
-    AppRouter.router.go('/downloads');
+    AppRouter.router.go('/settings');
   });
   tearDown(
     () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -193,7 +193,12 @@ void main() {
               SearchRepositoryFake(),
             ),
           ],
-          child: BooruFlowApp(checkUpdates: false),
+          child: BooruFlowApp(
+            windowController: FrostWindowController(
+              minimumSize: const Size(320, 480),
+            ),
+            checkUpdates: false,
+          ),
         ),
       ),
     );
@@ -229,7 +234,7 @@ void main() {
           AppRouter.popRightNavigator();
           await frames(tester);
           expect(find.byType(PostReferencePage), findsNothing);
-          expect(AppRouter.currentUri.path, '/downloads');
+          expect(AppRouter.currentUri.path, '/settings');
         }
       },
       variant: TargetPlatformVariant.only(TargetPlatform.windows),
@@ -243,7 +248,7 @@ void main() {
         code: BooruErrorCode.invalidResponse,
         httpStatus: 404,
         userMessageKey: 'fixture.missing',
-        diagnosticId: 'r8',
+        diagnosticId: 'reference',
       );
       await mount(tester);
       unawaited(
@@ -278,7 +283,7 @@ void main() {
       expect(back, findsOneWidget);
       await tester.tap(back);
       await frames(tester);
-      expect(AppRouter.currentUri.path, '/downloads');
+      expect(AppRouter.currentUri.path, '/settings');
     },
     variant: TargetPlatformVariant.only(TargetPlatform.windows),
   );

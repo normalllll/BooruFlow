@@ -114,6 +114,18 @@ final class Post {
   }
 }
 
+/// The resolution class of an artwork by its longer side, or null below HD.
+String? resolutionClass((int, int) dimensions) {
+  final longest = dimensions.$1 > dimensions.$2 ? dimensions.$1 : dimensions.$2;
+  return switch (longest) {
+    >= 7680 => '8K',
+    >= 3840 => '4K',
+    >= 2048 => '2K',
+    >= 1280 => 'HD',
+    _ => null,
+  };
+}
+
 (int, int)? _dimensions(int? width, int? height) =>
     width != null && height != null && width > 0 && height > 0
     ? (width, height)

@@ -9,8 +9,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
-import '../discovery/home_page_test.dart' show browseTestApp;
-import 'detail_viewer_v2_test.dart' show data;
+import '../../support/browse_support.dart' show browseTestApp;
+import 'post_detail_viewer_test.dart' show data;
 
 void main() {
   setUp(() => LocaleSettings.setLocaleSync(AppLocale.en));
@@ -103,7 +103,7 @@ void main() {
   );
   for (final width in [340.0, 260.0, 100.0]) {
     testWidgets(
-      'actions remain one row, fit and retain original activation at $width',
+      'actions remain one row, fold into more and retain original activation at $width',
       (tester) async {
         var opens = 0;
         await tester.pumpWidget(
@@ -115,6 +115,7 @@ void main() {
                   child: PostDetailActions(
                     post: Post(data('101')),
                     onOpen: () => opens++,
+                    moreEntries: const [],
                   ),
                 ),
               ),
@@ -140,18 +141,49 @@ void main() {
           expect(tester.getCenter(visible).dy, tester.getCenter(download).dy);
           await tester.tap(visible);
         } else {
-          final original = find
-              .byWidgetPredicate(
-                (w) => w is FrostButton && w.label == t.postDetail.viewOriginal,
-              )
-              .last;
-          await tester.ensureVisible(original);
+          // Too narrow for the button: the original folds into the more menu.
+          await tester.tap(
+            find
+                .byWidgetPredicate(
+                  (w) => w is FrostButton && w.label == t.frost.more,
+                )
+                .hitTestable(),
+          );
           await tester.pumpAndSettle();
-          await tester.tap(original);
+          await tester.tap(find.text(t.postDetail.viewOriginal).hitTestable());
+          await tester.pumpAndSettle();
         }
         expect(opens, 1);
         expect(tester.takeException(), isNull);
       },
     );
   }
+
+  testWidgets('view original is the tinted secondary action', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        child: browseTestApp(
+          Center(
+            child: SizedBox(
+              width: 600,
+              child: PostDetailActions(
+                post: Post(data('101')),
+                onOpen: () {},
+                moreEntries: const [],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    // FrostFit also lays out the narrower forms; the shown one is hittable.
+    final original = find
+        .byWidgetPredicate(
+          (w) => w is FrostButton && w.label == t.postDetail.viewOriginal,
+        )
+        .hitTestable();
+    expect(original, findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }

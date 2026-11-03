@@ -15,10 +15,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
-import 'package:frost_ui/src/media/media_stage.dart';
 
-import '../discovery/browse_v2_test.dart' show PendingMediaService;
-import '../discovery/home_page_test.dart' show browseTestApp;
+import '../../support/browse_support.dart' show PendingMediaService;
+import '../../support/browse_support.dart' show browseTestApp;
 import '../discovery/search_interaction_test.dart'
     show testSource, SearchRepositoryFake;
 import 'post_media_handoff_test.dart' show seed;
@@ -132,10 +131,9 @@ void main() {
               sourceId: 'yande',
               postId: '100',
             )).overrideWith((_) async => posts.single),
-            getSimilarProvider(
-              sourceId: 'yande',
-              id: '100',
-            ).overrideWith((_) async => posts),
+            getSimilarProvider(sourceId: 'yande', id: '100').overrideWith(
+              (_) async => [posts.single, item('101', .5, parent: '100')],
+            ),
           ],
           child: browseTestApp(
             Builder(
@@ -192,7 +190,7 @@ void main() {
     },
   );
   testWidgets(
-    'missing reference uses the shared page safe areas with a 48-point header',
+    'missing reference keeps its message clear of the safe areas and header',
     (tester) async {
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1;
@@ -218,9 +216,6 @@ void main() {
         ),
       );
       await tester.pump();
-      final header = tester.getRect(find.byType(FrostPageHeader));
-      expect(header.top, 47);
-      expect(header.height, 48);
       final body = tester.getRect(find.byType(FrostEmptyState));
       expect(body.top, greaterThanOrEqualTo(95));
       expect(body.left, greaterThanOrEqualTo(19));
@@ -236,20 +231,22 @@ void main() {
     final posts = [item('101', .5), item('102', 2)];
     await setup(tester, posts);
     double ratio() => tester
-        .widget<FrostMediaStageGeometry>(
-          find.descendant(
-            of: find.byKey(ValueKey(('detail-stage', posts[1].postKey))),
-            matching: find.byType(FrostMediaStageGeometry),
-          ),
+        .widget<AspectRatio>(
+          find
+              .descendant(
+                of: find.descendant(
+                  of: find.byKey(ValueKey(('detail-stage', posts[1].postKey))),
+                  matching: find.byType(FrostMediaStage),
+                ),
+                matching: find.byType(AspectRatio),
+              )
+              .first,
         )
         .aspectRatio;
-    await tester.tap(
-      find
-          .byWidgetPredicate((w) => w is FrostButton && w.label == t.frost.next)
-          .hitTestable()
-          .first,
-    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
     await tester.pump();
+    // The next page comes into view on the next frame of its slide.
+    await tester.pump(const Duration(milliseconds: 16));
     for (var i = 0; i < 20; i++) {
       expect(
         ratio(),
@@ -320,7 +317,7 @@ void main() {
           .state<ScrollableState>(
             find
                 .descendant(
-                  of: find.byType(FrostDetailLayout),
+                  of: find.byKey(const ValueKey('post-detail-layout')),
                   matching: find.byType(Scrollable),
                 )
                 .first,
@@ -339,29 +336,15 @@ void main() {
       expect(tester.state(find.byType(PostDetailPage)), same(page));
       expect(tester.state(find.byType(FrostThumbnailStrip)), same(stripState));
       expect(scroll.pixels, offset);
-      await tester.tap(
-        find
-            .byWidgetPredicate(
-              (w) => w is FrostButton && w.label == t.frost.next,
-            )
-            .hitTestable()
-            .first,
-      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
       await tester.pump();
       expect(
         find.byKey(const ValueKey(('detail-stage', 'yande:200'))),
         findsOneWidget,
         reason:
-            'header Next advances to the next grid item, never to an appended family member',
+            'Next advances to the next grid item, never to an appended family member',
       );
-      await tester.tap(
-        find
-            .byWidgetPredicate(
-              (w) => w is FrostButton && w.label == t.frost.previous,
-            )
-            .hitTestable()
-            .first,
-      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
       expect(

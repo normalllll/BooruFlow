@@ -17,9 +17,9 @@ void main() {
   HttpOverrides.global = null;
   tearDownAll(() => HttpOverrides.global = previousHttp);
   for (final name in [
-    'r9-baseline.jpg',
-    'r9-progressive.jpg',
-    'r9-noninterlaced.png',
+    'baseline.jpg',
+    'progressive.jpg',
+    'noninterlaced.png',
   ]) {
     test(
       'slow HTTP $name uses its scan contract, final exact pixels and complete-only cache',
@@ -53,7 +53,7 @@ void main() {
           await done.future.timeout(const Duration(seconds: 15));
           expect(
             partials,
-            name == 'r9-progressive.jpg' ? greaterThanOrEqualTo(3) : 0,
+            name == 'progressive.jpg' ? greaterThanOrEqualTo(3) : 0,
           );
           final all = await Future.wait(frames);
           final codec = await ui.instantiateImageCodec(
@@ -128,7 +128,7 @@ void main() {
   test(
     'an unknown-length truncated progressive JPEG is never promoted into disk cache',
     () async {
-      final fixture = await _SlowFixture.open('r9-progressive.jpg');
+      final fixture = await _SlowFixture.open('progressive.jpg');
       addTearDown(fixture.close);
       final provider = RustExtendedNetworkImageProvider(
         request: fixture.provider.request,
@@ -173,7 +173,7 @@ void main() {
   test(
     'last consumer cancellation stops preview frames and never caches a prefix',
     () async {
-      final fixture = await _SlowFixture.open('r9-progressive.jpg');
+      final fixture = await _SlowFixture.open('progressive.jpg');
       addTearDown(fixture.close);
       final stream = fixture.provider.resolve(ImageConfiguration.empty);
       final first = Completer<void>();
@@ -224,7 +224,7 @@ class _SlowFixture {
     final fixture = _SlowFixture(
       bytes,
       server,
-      await Directory.systemTemp.createTemp('r9-prefix-'),
+      await Directory.systemTemp.createTemp('progressive-prefix-'),
     );
     server.listen((request) async {
       request.response.contentLength = bytes.length;

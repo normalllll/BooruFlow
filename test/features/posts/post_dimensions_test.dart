@@ -116,4 +116,26 @@ void main() {
       },
     );
   }
+
+  group('resolutionClass', () {
+    for (final (size, label) in [
+      ((1279, 720), null),
+      ((1280, 720), 'HD'),
+      ((720, 1280), 'HD'),
+      ((2047, 1152), 'HD'),
+      ((2048, 1152), '2K'),
+      ((1152, 2048), '2K'),
+      ((3839, 2160), '2K'),
+      ((3840, 2160), '4K'),
+      ((2160, 3840), '4K'),
+      ((7679, 4320), '4K'),
+      ((7680, 4320), '8K'),
+      ((4320, 7680), '8K'),
+      ((600, 800), null),
+    ]) {
+      test('$size by its longer side is ${label ?? 'not classified'}', () {
+        expect(resolutionClass(size), label);
+      });
+    }
+  });
 }

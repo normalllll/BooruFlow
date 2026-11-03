@@ -21,7 +21,7 @@ const scanEnds = [
 void main() {
   test('completed scans are independent of transport chunk boundaries', () {
     final bytes = File(
-      'test/fixtures/media/r9-progressive.jpg',
+      'test/fixtures/media/progressive.jpg',
     ).readAsBytesSync();
     for (final size in [1, 127, 4096, bytes.length]) {
       final parser = JpegScanParser();
@@ -59,7 +59,7 @@ void main() {
     },
   );
 
-  for (final name in ['r9-baseline.jpg', 'r9-noninterlaced.png']) {
+  for (final name in ['baseline.jpg', 'noninterlaced.png']) {
     test(
       '$name transfers the unmodified final bytes without previews',
       () async {
@@ -88,7 +88,7 @@ void main() {
     'one outstanding preview; acknowledgement pulls latest completed scan',
     () async {
       final bytes = File(
-        'test/fixtures/media/r9-progressive.jpg',
+        'test/fixtures/media/progressive.jpg',
       ).readAsBytesSync();
       final frames = <(Uint8List, int)>[];
       final first = Completer<void>(), next = Completer<void>();

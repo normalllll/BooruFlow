@@ -94,10 +94,12 @@ List<MediaVariant> postImageVariants(
       MediaVariantKind.thumbnail,
       MediaVariantKind.original,
     ],
+    // A preview is sized for the grid. Without a sample the stage shows the
+    // original rather than enlarging it (Wallhaven's largest thumb is 300 wide).
     (_, _, PostMediaPurpose.stage) => const [
       MediaVariantKind.sample,
-      MediaVariantKind.preview,
       MediaVariantKind.original,
+      MediaVariantKind.preview,
       MediaVariantKind.thumbnail,
     ],
     _ => const [

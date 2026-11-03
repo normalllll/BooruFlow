@@ -24,8 +24,13 @@ class MediaViewerPage extends Page<void> {
 
 class _MediaViewerRoute extends ModalRoute<void> {
   _MediaViewerRoute(MediaViewerPage page, BuildContext context)
-    : _enter = FrostMotion.duration(context, FrostMotion.page),
-      _exit = FrostMotion.duration(context, FrostMotion.exit),
+    // The desktop viewer fills the window: it appears and leaves at once.
+    : _enter = frostUsesCustomTitleBar
+          ? Duration.zero
+          : FrostMotion.duration(context, FrostMotion.page),
+      _exit = frostUsesCustomTitleBar
+          ? Duration.zero
+          : FrostMotion.duration(context, FrostMotion.exit),
       super(settings: page);
   final Duration _enter, _exit;
   bool _viewportDismissed = false;
@@ -43,8 +48,10 @@ class _MediaViewerRoute extends ModalRoute<void> {
   @override
   // The shared viewport paints an opaque media background at rest and fades
   // that background during pull-down. A transparent route exposes the detail
-  // beneath it without reintroducing root PageRoute Hero collection.
-  bool get opaque => false;
+  // beneath it without reintroducing root PageRoute Hero collection. The
+  // desktop viewer has no pull-down: it is opaque, so the shell's glass and
+  // the pages below stop laying out, painting and blurring.
+  bool get opaque => frostUsesCustomTitleBar;
   @override
   bool get maintainState => true;
   @override

@@ -8,7 +8,7 @@ import 'package:flutter/painting.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
-import '../discovery/browse_v2_test.dart' show PendingMediaService, browsePost;
+import '../../support/browse_support.dart' show PendingMediaService, browsePost;
 import '../discovery/search_interaction_test.dart' show testSource;
 
 class _Store implements SettingsServiceStore {
@@ -43,15 +43,17 @@ void main() {
     );
   });
   tearDown(() => container.dispose());
+  final owner = Object();
 
   test(
     'same work retains grid source and does not prepare a larger original for backdrop',
     () async {
       final artwork = container.read(ambientArtworkProvider.notifier);
       const grid = AssetImage('grid-preview');
-      await artwork.select(Post(browsePost(1)), preview: grid);
+      await artwork.select(owner, Post(browsePost(1)), preview: grid);
       expect(container.read(ambientArtworkProvider), same(grid));
       await artwork.select(
+        owner,
         Post(browsePost(1)),
         preview: const AssetImage('original-upgrade'),
       );
@@ -65,9 +67,9 @@ void main() {
     () async {
       final artwork = container.read(ambientArtworkProvider.notifier);
       const previous = AssetImage('previous-artwork');
-      artwork.show(previous);
-      final second = artwork.select(Post(browsePost(2)));
-      final third = artwork.select(Post(browsePost(3)));
+      await artwork.select(owner, Post(browsePost(9)), preview: previous);
+      final second = artwork.select(owner, Post(browsePost(2)));
+      final third = artwork.select(owner, Post(browsePost(3)));
       expect(container.read(ambientArtworkProvider), same(previous));
       service.mediaEngine.pending.first.complete(request(2));
       await second;
@@ -79,7 +81,7 @@ void main() {
               as RustExtendedNetworkImageProvider;
       expect(selected.request.postId, '3');
       expect(selected.decodeWidth, FrostAmbientBackdropHost.sampleWidth);
-      final failed = artwork.select(Post(browsePost(4)));
+      final failed = artwork.select(owner, Post(browsePost(4)));
       service.mediaEngine.pending.last.completeError(
         StateError('optional artwork unavailable'),
       );
@@ -87,4 +89,48 @@ void main() {
       expect(container.read(ambientArtworkProvider), same(selected));
     },
   );
+
+  test(
+    'releasing a page returns the window to the page below, then to none',
+    () async {
+      final artwork = container.read(ambientArtworkProvider.notifier);
+      final below = Object(), above = Object();
+      const first = AssetImage('first'), second = AssetImage('second');
+      await artwork.select(below, Post(browsePost(1)), preview: first);
+      await artwork.select(above, Post(browsePost(2)), preview: second);
+      expect(container.read(ambientArtworkProvider), same(second));
+      expect(artwork.imageOf(below), same(first));
+      artwork.release(above);
+      expect(container.read(ambientArtworkProvider), same(first));
+      artwork.release(below);
+      expect(container.read(ambientArtworkProvider), isNull);
+    },
+  );
+
+  test('a new page keeps the current artwork until its own resolves', () async {
+    final artwork = container.read(ambientArtworkProvider.notifier);
+    final below = Object(), above = Object();
+    const first = AssetImage('first');
+    await artwork.select(below, Post(browsePost(1)), preview: first);
+    final pending = artwork.select(above, Post(browsePost(2)));
+    expect(container.read(ambientArtworkProvider), same(first));
+    expect(artwork.imageOf(above), isNull);
+    service.mediaEngine.pending.last.complete(request(2));
+    await pending;
+    expect(artwork.imageOf(above), isNotNull);
+    expect(
+      container.read(ambientArtworkProvider),
+      same(artwork.imageOf(above)),
+    );
+  });
+
+  test('a late result for a released page does not come back', () async {
+    final artwork = container.read(ambientArtworkProvider.notifier);
+    final page = Object();
+    final pending = artwork.select(page, Post(browsePost(2)));
+    artwork.release(page);
+    service.mediaEngine.pending.last.complete(request(2));
+    await pending;
+    expect(container.read(ambientArtworkProvider), isNull);
+  });
 }

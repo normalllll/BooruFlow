@@ -242,7 +242,7 @@ class _PostVideoState extends ConsumerState<PostVideo>
           }),
         ),
         const SizedBox(height: FrostGap.related),
-        FrostErrorDetails(details: describeBooruError(failure.cause)),
+        FrostErrorDetails.quiet(details: describeBooruError(failure.cause)),
       ],
     ),
   );

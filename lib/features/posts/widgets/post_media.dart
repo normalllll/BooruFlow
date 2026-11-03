@@ -512,12 +512,8 @@ class _PostMediaState extends ConsumerState<PostMedia> {
   Widget _placeholder(BuildContext context, double? progress) => Stack(
     fit: StackFit.expand,
     children: [
-      FrostMediaFrame.skeleton(
-        aspectRatio: null,
-        radius: widget.stageBuilder == null
-            ? FrostRadius.lg
-            : widget.stageRadius,
-      ),
+      // The enclosing card, strip or stage frame owns the corners.
+      FrostMediaFrame.skeleton(aspectRatio: null, radius: widget.stageRadius),
       if (progress != null)
         Align(
           alignment: Alignment.topCenter,
@@ -574,10 +570,9 @@ class _PostMediaState extends ConsumerState<PostMedia> {
           children: [
             content,
             Center(
-              child: FrostButton.icon(
+              child: FrostButton.iconOnMedia(
                 icon: FrostIconSet.of(context).play,
                 label: t.frost.play,
-                style: FrostIconButtonStyle.onMedia,
                 size: FrostControlSize.large,
                 onPressed:
                     widget.onPlay ??
@@ -628,7 +623,7 @@ class _PostMediaState extends ConsumerState<PostMedia> {
     }
     // A new work or recovery from loading/error may fade. More pixels of the
     // same work replace immediately, including progressive scans and originals.
-    Widget frame = FrostLayoutCrossfade(
+    Widget frame = FrostLayoutCrossfade.media(
       layoutIdentity: (
         widget.post.postKey,
         _unsupported
@@ -639,8 +634,6 @@ class _PostMediaState extends ConsumerState<PostMedia> {
             ? _MediaFrameState.failed
             : _MediaFrameState.loading,
       ),
-      duration: FrostMotion.imageFade,
-      settleDuration: Duration.zero,
       child: content,
     );
     if (widget.frameBuilder case final wrap?) frame = wrap(frame);

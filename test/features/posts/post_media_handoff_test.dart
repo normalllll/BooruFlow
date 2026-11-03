@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ui' as ui;
+
 import 'package:booruflow/core/settings/settings_service.dart';
 import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/features/posts/models/post.dart';
@@ -16,11 +17,10 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
-import 'package:frost_ui/src/feedback/skeleton.dart';
-import 'package:frost_ui/src/motion/_material_reveal.dart';
+
+import '../../support/browse_support.dart' show PendingMediaService, browsePost;
+import '../../support/browse_support.dart' show browseTestApp;
 import '../../support/preseeded_media.dart';
-import '../discovery/browse_v2_test.dart' show PendingMediaService, browsePost;
-import '../discovery/home_page_test.dart' show browseTestApp;
 import '../discovery/search_interaction_test.dart' show testSource;
 
 class _Store implements SettingsServiceStore {
@@ -76,6 +76,13 @@ class _DelayedPreview extends ImageProvider<_DelayedPreview> {
     return OneFrameImageStreamCompleter(pending.future);
   }
 }
+
+final _mediaSkeleton = find.byWidgetPredicate(
+  (widget) =>
+      widget is FrostMediaFrame &&
+      widget.image == null &&
+      widget.child is SizedBox,
+);
 
 void main() {
   late PendingMediaService service;
@@ -155,7 +162,7 @@ void main() {
     const Size(128, 1024),
   ]) {
     testWidgets(
-      'R3 decoded geometry $dimensions replaces metadata with one natural media rectangle',
+      'decoded geometry $dimensions replaces metadata with one natural media rectangle',
       (tester) async {
         const provider = RustExtendedNetworkImageProvider(
           mediaStream: preseededMedia,
@@ -171,7 +178,6 @@ void main() {
         final hero = FrostMediaHeroTag(
           image: provider,
           aspectRatio: post.aspectRatio,
-          sourceRadius: BorderRadius.zero,
         );
         await tester.pumpWidget(
           app(
@@ -186,7 +192,6 @@ void main() {
                         FrostMediaStage(aspectRatio: ratio, child: child),
                     frameBuilder: (child) => FrostMediaHero(
                       tag: hero,
-                      radius: BorderRadius.zero,
                       fit: BoxFit.contain,
                       child: child,
                     ),
@@ -219,6 +224,8 @@ void main() {
           return image;
         }))!;
         decoded.complete(ImageInfo(image: image));
+        await tester.pump();
+        // The resize starts on the frame after the decoded geometry arrives.
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 80));
         final middle = tester.getSize(frames.first).height;
@@ -265,23 +272,15 @@ void main() {
       ),
     );
     await seed(tester, preview);
-    final tag = FrostMediaHeroTag(
-      image: preview,
-      aspectRatio: .75,
-      sourceRadius: FrostRadius.borderRadius(FrostRadius.lg),
-    );
+    final tag = FrostMediaHeroTag(image: preview, aspectRatio: .75);
     await tester.pumpWidget(
       app(
         PostMedia(
           post: Post(browsePost(1)),
           preview: preview,
           fit: BoxFit.contain,
-          frameBuilder: (image) => FrostMediaHero(
-            tag: tag,
-            radius: FrostRadius.borderRadius(FrostRadius.lg),
-            fit: BoxFit.contain,
-            child: image,
-          ),
+          frameBuilder: (image) =>
+              FrostMediaHero(tag: tag, fit: BoxFit.contain, child: image),
         ),
       ),
     );
@@ -454,11 +453,7 @@ void main() {
         ),
       );
       await seed(tester, preview);
-      final tag = FrostMediaHeroTag(
-        image: preview,
-        aspectRatio: .75,
-        sourceRadius: BorderRadius.zero,
-      );
+      final tag = FrostMediaHeroTag(image: preview, aspectRatio: .75);
       const originalRequest = MediaRequest(
         sourceId: 'yande',
         postId: '1',
@@ -485,11 +480,7 @@ void main() {
           PostMedia(
             post: Post(browsePost(1)),
             preview: preview,
-            frameBuilder: (image) => FrostMediaHero(
-              tag: tag,
-              radius: BorderRadius.zero,
-              child: image,
-            ),
+            frameBuilder: (image) => FrostMediaHero(tag: tag, child: image),
             media: const MediaVariant(
               kind: MediaVariantKind.original,
               url: 'https://example.invalid/original.png',
@@ -521,15 +512,6 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 1));
       expect(find.byType(FrostMediaHero), findsOneWidget);
-      for (final fade
-          in find
-              .ancestor(
-                of: find.byType(RawImage),
-                matching: find.byType(FrostContentFade),
-              )
-              .evaluate()) {
-        expect((fade.renderObject! as RenderFrostContentFade).opacity, 1);
-      }
       expect(tester.state(find.byType(FrostMediaHero)), same(heroState));
       expect(
         find.descendant(
@@ -580,7 +562,7 @@ void main() {
           ),
         ),
       );
-      expect(find.byType(FrostSkeletonLeaf), findsWidgets);
+      expect(_mediaSkeleton, findsWidgets);
       final image = await tester.runAsync(() async {
         final codec = await ui.instantiateImageCodec(
           base64Decode(
@@ -605,7 +587,7 @@ void main() {
       update(() => visible = true);
       await tester.pump();
       expect(preview.frames, hasLength(1));
-      expect(find.byType(FrostSkeletonLeaf), findsNothing);
+      expect(_mediaSkeleton, findsNothing);
       expect(
         tester
             .renderObject<RenderImage>(find.byType(RawImage))

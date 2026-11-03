@@ -1,15 +1,17 @@
 import 'package:booruflow/app/frost_config.dart';
 import 'package:booruflow/core/media/image_clipboard.dart';
+import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/features/downloads/logic.dart';
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/features/posts/post_actions.dart';
 import 'package:booruflow/features/search/logic.dart';
-import 'package:booruflow/features/search/user_tags_page.dart';
 import 'package:booruflow/features/search/widgets/search_tag_widgets.dart';
+import 'package:booruflow/features/tags/tag_menu.dart';
 import 'package:booruflow/features/tags/tag_presentation.dart';
 import 'package:booruflow/features/tags/tag_translations_service.dart';
 import 'package:booruflow/intl/number_format.dart';
 import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/action_runner_builder.dart';
 import 'package:booruflow/shared/app_navigation.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/widgets.dart';
@@ -54,40 +56,75 @@ String postInformationTitle(WidgetRef ref, Post post) {
   );
 }
 
+/// The creator as the title, with copyright and upload date beneath it. The
+/// list post supplies all of it; only an unknown creator waits for the detail,
+/// and the id stays on the meta line meanwhile.
 class PostPrimaryInformation extends ConsumerWidget {
-  const PostPrimaryInformation({required this.post, super.key});
+  const PostPrimaryInformation({
+    required this.post,
+    this.loading = false,
+    super.key,
+  });
   final Post post;
+  final bool loading;
   @override
-  Widget build(BuildContext context, WidgetRef ref) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      FrostText(postInformationTitle(ref, post), role: FrostTextRole.title1),
-      if (post.createdAt != 0 || postCopyrightMetadata(post).isNotEmpty) ...[
-        const SizedBox(height: FrostGap.inline),
-        FrostMetaLine(
-          items: [
-            ...postCopyrightMetadata(post),
-            if (post.createdAt != 0)
-              t.postDetail.uploadedAt(date: postDate(post)),
-          ],
-        ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final creatorPending = loading && postHeadlineCategory(post) == null;
+    final meta = [
+      if (creatorPending) '#${post.id}',
+      ...postCopyrightMetadata(post),
+      if (post.createdAt != 0) t.postDetail.uploadedAt(date: postDate(post)),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        FrostText(
+          postInformationTitle(ref, post),
+          role: FrostTextRole.title2,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          content: true,
+        ).frostSkeleton(creatorPending),
+        if (meta.isNotEmpty) ...[
+          const SizedBox(height: FrostGap.inline),
+          FrostText(
+            meta.join(' · '),
+            role: FrostTextRole.footnote,
+            tone: FrostTextTone.tertiary,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ],
-    ],
-  );
+    );
+  }
 }
 
+/// Download is the one solid button. Narrow rows drop to icons first and then
+/// fold the secondary actions into the more menu; the row never wraps.
 class PostDetailActions extends ConsumerWidget {
   const PostDetailActions({
     required this.post,
     required this.onOpen,
+    required this.moreEntries,
     this.displayedFrame,
     this.presentation,
     super.key,
   });
   final Post post;
   final VoidCallback onOpen;
+
+  /// Full screen, links and the other entries of the more menu.
+  final List<FrostMenuEntry> moreEntries;
   final DisplayedMediaFrame? displayedFrame;
   final StageImagePresentation? presentation;
+
+  bool get _canOpenOriginal => presentation?.canUpgrade(post) ?? true;
+  bool get _openingOriginal => presentation?.loadingOriginal(post) ?? false;
+  bool _canCopy(WidgetRef ref) =>
+      ref.watch(imageClipboardProvider).supportsImages &&
+      displayedFrame?.readyFor(post.postKey) == true;
+
   Future<void> _copy(BuildContext context, WidgetRef ref) =>
       performPostAction(context, () async {
         await copyDisplayedPostImage(
@@ -97,179 +134,150 @@ class PostDetailActions extends ConsumerWidget {
           clipboard: ref.read(imageClipboardProvider),
         );
       });
-  Widget _download(WidgetRef ref, {required bool text}) => text
-      ? FrostButton(
-          label: t.postDetail.download,
-          icon: appIcons.download,
-          variant: FrostButtonVariant.prominent,
-          onPressedAsync: () => ref.read(booruDownloadsProvider).add(post),
-        )
-      : FrostButton.icon(
-          label: t.postDetail.download,
-          icon: appIcons.download,
-          style: FrostIconButtonStyle.standard,
-          onPressedAsync: () => ref.read(booruDownloadsProvider).add(post),
-        );
-  Widget _actions(
+
+  Widget _download(WidgetRef ref, {required bool text}) => ActionRunnerBuilder(
+    builder: (context, runner) {
+      Future<void> add() =>
+          runner.run(() => ref.read(booruDownloadsProvider).add(post));
+      return text
+          ? FrostButton.prominent(
+              label: t.postDetail.download,
+              icon: appIcons.download,
+              onPressed: add,
+              state: runner.state,
+            )
+          : FrostButton.iconFilled(
+              label: t.postDetail.download,
+              icon: appIcons.download,
+              onPressed: add,
+              state: runner.state,
+            );
+    },
+  );
+
+  Widget _row(
     BuildContext context,
     WidgetRef ref, {
     required bool downloadText,
     required bool originalText,
-  }) => Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      _download(ref, text: downloadText),
-      const SizedBox(width: FrostGap.related),
-      if (presentation?.canUpgrade(post) ?? true) ...[
-        if (originalText)
-          FrostButton(
-            label: t.postDetail.viewOriginal,
-            icon: appIcons.fullscreen,
-            loading: presentation?.loadingOriginal(post) ?? false,
-            onPressed: onOpen,
-          )
-        else
-          FrostButton.icon(
-            label: t.postDetail.viewOriginal,
-            icon: appIcons.fullscreen,
-            style: FrostIconButtonStyle.standard,
-            loading: presentation?.loadingOriginal(post) ?? false,
-            onPressed: onOpen,
+    required bool folded,
+  }) {
+    final running = _openingOriginal
+        ? const FrostActionState.running()
+        : FrostActionState.idle;
+    final canCopy = _canCopy(ref);
+    final entries = [
+      if (folded) ...[
+        if (_canOpenOriginal)
+          FrostMenuAction(
+            t.postDetail.viewOriginal,
+            leading: FrostGlyph.icon(appIcons.zoomIn),
+            onSelected: onOpen,
           ),
-        const SizedBox(width: FrostGap.related),
+        FrostMenuAction(
+          t.discovery.copyImage,
+          leading: FrostGlyph.icon(appIcons.copy),
+          enabled: canCopy,
+          onSelected: canCopy ? () => _copy(context, ref) : null,
+        ),
+        const FrostMenuDivider(),
       ],
-      FrostButton.icon(
-        label: t.discovery.copyImage,
-        tooltip: displayedFrame?.readyFor(post.postKey) == true
-            ? null
-            : t.generic.loading,
-        icon: appIcons.copy,
-        style: FrostIconButtonStyle.standard,
-        loading: displayedFrame?.copying ?? false,
-        onPressed:
-            ref.watch(imageClipboardProvider).supportsImages &&
-                displayedFrame?.readyFor(post.postKey) == true
-            ? () => _copy(context, ref)
-            : null,
-      ),
-    ],
-  );
+      ...moreEntries,
+    ];
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _download(ref, text: downloadText),
+        const SizedBox(width: FrostGap.related),
+        if (!folded) ...[
+          if (_canOpenOriginal)
+            originalText
+                ? FrostButton.tinted(
+                    label: t.postDetail.viewOriginal,
+                    icon: appIcons.zoomIn,
+                    state: running,
+                    onPressed: onOpen,
+                  )
+                : FrostButton.icon(
+                    label: t.postDetail.viewOriginal,
+                    icon: appIcons.zoomIn,
+                    state: running,
+                    onPressed: onOpen,
+                  ),
+          FrostButton.icon(
+            label: t.discovery.copyImage,
+            tooltip: displayedFrame?.readyFor(post.postKey) == true
+                ? null
+                : t.generic.loading,
+            icon: appIcons.copy,
+            state: (displayedFrame?.copying ?? false)
+                ? const FrostActionState.running()
+                : FrostActionState.idle,
+            onPressed: canCopy ? () => _copy(context, ref) : null,
+          ),
+        ],
+        FrostMenuAnchor(
+          entries: entries,
+          builder: (context, focus, toggle) => Focus(
+            focusNode: focus,
+            canRequestFocus: false,
+            child: FrostButton.icon(
+              label: t.frost.more,
+              icon: appIcons.more,
+              onPressed: toggle,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) => ListenableBuilder(
     listenable: Listenable.merge([displayedFrame, presentation]),
     builder: (context, _) => FrostFit(
       candidates: [
-        (_) => _actions(context, ref, downloadText: true, originalText: true),
-        (_) => _actions(context, ref, downloadText: true, originalText: false),
-        (_) => _actions(context, ref, downloadText: false, originalText: false),
-        (_) => SingleChildScrollView(
-          primary: false,
-          scrollDirection: Axis.horizontal,
-          child: _actions(
-            context,
-            ref,
-            downloadText: false,
-            originalText: false,
-          ),
+        (_) => _row(
+          context,
+          ref,
+          downloadText: true,
+          originalText: true,
+          folded: false,
+        ),
+        (_) => _row(
+          context,
+          ref,
+          downloadText: true,
+          originalText: false,
+          folded: false,
+        ),
+        (_) => _row(
+          context,
+          ref,
+          downloadText: false,
+          originalText: false,
+          folded: false,
+        ),
+        (_) => _row(
+          context,
+          ref,
+          downloadText: false,
+          originalText: false,
+          folded: true,
         ),
       ],
     ),
   );
 }
 
-List<FrostModuleGridItem> postInformationModules(Post post) {
-  final size = post.fileSize;
-  final dimensions = post.dimensions;
-  final unit = size >= 1024 * 1024 ? 'MB' : 'KB';
-  final amount = size / (size >= 1024 * 1024 ? 1024 * 1024 : 1024);
-  final fileSize = NumberFormat.decimalPatternDigits(
-    locale: LocaleSettings.currentLocale.languageTag,
-    decimalDigits: 1,
-  ).format(amount);
-  return [
-    if (dimensions case (final width, final height))
-      FrostModuleGridItem(
-        child: FrostModule(
-          key: const ValueKey('dimensions'),
-          title: t.postDetail.dimensions,
-          value: '${formatCount(width)} × ${formatCount(height)}',
-        ),
-      ),
-    if (size > 0)
-      FrostModuleGridItem(
-        child: FrostModule(
-          key: const ValueKey('file-size'),
-          title: t.postDetail.size,
-          value: '$fileSize $unit',
-        ),
-      ),
-    if (post.data.score != null)
-      FrostModuleGridItem(
-        child: FrostModule(
-          key: const ValueKey('score'),
-          title: t.postDetail.score,
-          value: formatCount(post.score),
-        ),
-      ),
-    if (post.rating != ContentRating.unknown)
-      FrostModuleGridItem(
-        child: FrostModule(
-          key: const ValueKey('rating'),
-          title: t.postDetail.rating,
-          value: postRatingLabel(post.rating),
-        ),
-      ),
-  ];
-}
-
-class PostTagsModule extends ConsumerWidget {
-  const PostTagsModule({required this.post, super.key});
+/// Tags grouped by category; a tap searches the tag, the menu has the rest.
+class PostTagsSection extends ConsumerWidget {
+  const PostTagsSection({required this.post, this.query = const [], super.key});
   final Post post;
-  Future<void> _addToQuery(BuildContext context, String tag) async {
-    final query = await context.editSearch(
-      [tag],
-      sourceId: post.sourceId,
-      autofocus: false,
-    );
-    if (context.mounted && query != null) {
-      await context.pushTaggedPosts(query.tags, sourceId: query.sourceId);
-    }
-  }
 
-  List<FrostMenuEntry> _entries(BuildContext context, String raw) => [
-    FrostMenuAction(
-      t.postDetail.searchTag,
-      icon: appIcons.search,
-      onSelected: () => context.pushTaggedPosts([raw], sourceId: post.sourceId),
-    ),
-    FrostMenuAction(
-      t.postDetail.addToSearch,
-      icon: appIcons.add,
-      onSelected: () => _addToQuery(context, raw),
-    ),
-    FrostMenuAction(
-      t.postDetail.excludeTag,
-      icon: appIcons.remove,
-      onSelected: () =>
-          context.pushTaggedPosts(['-$raw'], sourceId: post.sourceId),
-    ),
-    FrostMenuAction(
-      t.discovery.addCustomTag,
-      icon: appIcons.edit,
-      onSelected: () => editUserTag(
-        context,
-        source: post.sourceId,
-        locale: LocaleSettings.currentLocale.languageTag,
-        value: raw,
-      ),
-    ),
-    FrostMenuAction(
-      t.frost.copy,
-      icon: appIcons.copy,
-      onSelected: () =>
-          performPostAction(context, () => copyPostValue(context, raw)),
-    ),
-  ];
+  /// The tags of the search the post was listed in, which tag actions refine.
+  final List<String> query;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(userTagsProvider);
@@ -287,65 +295,57 @@ class PostTagsModule extends ConsumerWidget {
           post.data.tags.where((tag) => tag.category == category).toList(),
         ),
     ].where((group) => group.$2.isNotEmpty).toList();
-    return FrostModule(
-      title: t.postDetail.tags,
-      content: groups.isEmpty
-          ? FrostText(t.generic.notFound, tone: FrostTextTone.secondary)
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+    // With no known categories a single general bucket conveys no
+    // classification; it gets neither a name nor a colour.
+    final plain = groups.length == 1 && groups.single.$1 == TagCategory.general;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        FrostSectionHeader(title: t.postDetail.tags),
+        const SizedBox(height: FrostGap.related),
+        if (groups.isEmpty)
+          FrostText(t.generic.notFound, tone: FrostTextTone.secondary)
+        else
+          for (final (index, group) in groups.indexed) ...[
+            if (index > 0) const SizedBox(height: FrostGap.group),
+            if (!plain) ...[
+              FrostText(
+                categoryLabel(group.$1),
+                role: FrostTextRole.footnote,
+                tone: FrostTextTone.tertiary,
+              ),
+              const SizedBox(height: FrostGap.inline),
+            ],
+            FrostWrap(
               children: [
-                for (final (index, group) in groups.indexed) ...[
-                  if (index > 0) const SizedBox(height: FrostGap.group),
-                  // With no known categories a single general bucket conveys
-                  // no classification; do not present it as authoritative.
-                  if (groups.length > 1 || group.$1 != TagCategory.general) ...[
-                    FrostText(
-                      categoryLabel(group.$1),
-                      role: FrostTextRole.footnote,
-                      tone: FrostTextTone.tertiary,
-                    ),
-                    const SizedBox(height: FrostGap.inline),
-                  ],
-                  Wrap(
-                    spacing: FrostGap.inline,
-                    runSpacing: FrostGap.inline,
-                    children: [
-                      for (final tag in group.$2)
-                        Builder(
-                          builder: (context) {
-                            final entries = _entries(context, tag.name);
-                            return FrostMenuAnchor(
-                              entries: entries,
-                              builder: (context, focus, toggle) => Focus(
-                                focusNode: focus,
-                                canRequestFocus: false,
-                                child: FrostTag(
-                                  label: tag.name,
-                                  detail: distinctTagTranslation(
-                                    tag.name,
-                                    repository.displayName(
-                                      post.sourceId,
-                                      LocaleSettings.currentLocale.languageTag,
-                                      tag.name,
-                                    ),
-                                  ),
-                                  dataColor:
-                                      groups.length == 1 &&
-                                          group.$1 == TagCategory.general
-                                      ? null
-                                      : group.$1.colorIndex,
-                                  contextMenu: entries,
-                                  onPressed: toggle,
-                                ),
-                              ),
-                            );
-                          },
+                for (final tag in group.$2)
+                  Builder(
+                    builder: (context) => FrostTag(
+                      label: tag.name,
+                      detail: distinctTagTranslation(
+                        tag.name,
+                        repository.displayName(
+                          post.sourceId,
+                          LocaleSettings.currentLocale.languageTag,
+                          tag.name,
                         ),
-                    ],
+                      ),
+                      dataColor: plain ? null : group.$1.colorIndex,
+                      contextMenu: tagMenuEntries(
+                        context,
+                        tag.name,
+                        sourceId: post.sourceId,
+                        query: query,
+                      ),
+                      onPressed: () => context.pushTaggedPosts([
+                        tag.name,
+                      ], sourceId: post.sourceId),
+                    ),
                   ),
-                ],
               ],
             ),
+          ],
+      ],
     );
   }
 }
@@ -357,55 +357,89 @@ String postSourceDisplay(String source) {
   return '$host${uri.path}${uri.hasQuery ? '?${uri.query}' : ''}${uri.hasFragment ? '#${uri.fragment}' : ''}';
 }
 
-class PostSourceRow extends StatelessWidget {
-  const PostSourceRow({required this.post, super.key});
+/// File facts as key-value rows, with a button to copy them all.
+class PostInformationSection extends ConsumerWidget {
+  const PostInformationSection({required this.post, super.key});
   final Post post;
-  @override
-  Widget build(BuildContext context) => FrostListRow(
-    title: postSourceDisplay(post.source),
-    subtitle: null,
-    icon: appIcons.link,
-    accessory: FrostRowAccessory.external,
-    onPressed: isPostWebUrl(post.source)
-        ? () => performPostAction(context, () async {
-            if (!await openPostUrl(post.source)) {
-              throw StateError(t.generic.loadFailed);
-            }
-          })
-        : null,
-  );
-}
 
-class PostTechnicalInformation extends StatelessWidget {
-  const PostTechnicalInformation({required this.post, super.key});
-  final Post post;
+  String _fileSize() {
+    final size = post.fileSize;
+    final megabytes = size >= 1024 * 1024;
+    final amount = NumberFormat.decimalPatternDigits(
+      locale: LocaleSettings.currentLocale.languageTag,
+      decimalDigits: 1,
+    ).format(size / (megabytes ? 1024 * 1024 : 1024));
+    return '$amount ${megabytes ? 'MB' : 'KB'}';
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dimensions = post.dimensions;
+    final source = ref
+        .watch(booruSourcesProvider)
+        .where((source) => source.sourceId == post.sourceId)
+        .firstOrNull;
+    final identity = [?source?.displayName, '#${post.id}'].join(' · ');
     final details = [
       'ID: ${post.id}',
       if (post.createdAt != 0)
         '${t.postDetail.createdAt}: ${postDate(post, full: true)}',
     ].join('\n');
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(
-          child: FrostText(
-            [
-              if (post.createdAt != 0)
-                '${t.postDetail.createdAt} ${postDate(post, full: true)}',
-            ].join(' · '),
-            role: FrostTextRole.footnote,
-            tone: FrostTextTone.tertiary,
-            numeric: true,
-          ),
+        FrostSectionHeader(
+          title: t.postDetail.details,
+          trailing: [
+            FrostButton.icon(
+              label: t.frost.copyDetails,
+              icon: appIcons.copy,
+              size: FrostControlSize.compact,
+              onPressed: () => performPostAction(
+                context,
+                () => copyPostValue(context, details),
+              ),
+            ),
+          ],
         ),
-        FrostButton.icon(
-          label: t.frost.copyDetails,
-          edgeAlignment: FrostButtonEdgeAlignment.end,
-          icon: appIcons.copy,
-          size: FrostControlSize.compact,
-          onPressed: () =>
-              performPostAction(context, () => copyPostValue(context, details)),
+        FrostKeyValueList(
+          entries: [
+            FrostKeyValue(label: t.postDetail.post, value: identity),
+            if (dimensions case (final width, final height))
+              FrostKeyValue(
+                label: t.postDetail.dimensions,
+                value: '${formatCount(width)} × ${formatCount(height)}',
+              ),
+            if (post.fileSize > 0)
+              FrostKeyValue(label: t.postDetail.size, value: _fileSize()),
+            if (post.data.score != null)
+              FrostKeyValue(
+                label: t.postDetail.score,
+                value: formatCount(post.score),
+              ),
+            if (post.rating != ContentRating.unknown)
+              FrostKeyValue(
+                label: t.postDetail.rating,
+                value: postRatingLabel(post.rating),
+              ),
+            if (post.source.isNotEmpty)
+              FrostKeyValue.link(
+                label: t.postDetail.source,
+                value: postSourceDisplay(post.source),
+                onPressed: isPostWebUrl(post.source)
+                    ? () => performPostAction(context, () async {
+                        if (!await openPostUrl(post.source)) {
+                          throw StateError(t.generic.loadFailed);
+                        }
+                      })
+                    : null,
+              ),
+            if (post.createdAt != 0)
+              FrostKeyValue(
+                label: t.postDetail.createdAt,
+                value: postDate(post, full: true),
+              ),
+          ],
         ),
       ],
     );

@@ -198,22 +198,17 @@ void main() {
     'current host Flutter AVIF codec capability is observed independently of Rust conversion',
     () async {
       final bytes = File('test/fixtures/media/white.avif').readAsBytesSync();
-      Object? failure;
       ui.Codec? codec;
       try {
         codec = await ui.instantiateImageCodec(Uint8List.fromList(bytes));
         final frame = await codec.getNextFrame();
         expect(frame.image.width, 16);
         frame.image.dispose();
-      } catch (error) {
-        failure = error;
+      } catch (_) {
+        // Host codec support varies; the Rust conversion is tested separately.
       } finally {
         codec?.dispose();
       }
-      // Diagnostic only: AVIF preview success relies on the separately tested
-      // existing Rust conversion, never on this platform-dependent result.
-      // ignore: avoid_print
-      print('R5 host Flutter AVIF native decoding: ${failure ?? 'supported'}');
     },
   );
 }
