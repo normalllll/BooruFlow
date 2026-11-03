@@ -1,7 +1,7 @@
 import 'package:booruflow/core/downloads/download_models.dart';
 import 'package:booruflow/features/booru/booru_logic.dart';
-import 'package:booruflow/features/downloads/downloads_page.dart';
 import 'package:booruflow/features/downloads/models/booru_download_item.dart';
+import 'package:booruflow/features/downloads/widgets/download_task_details.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,7 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-import '../discovery/home_page_test.dart' show browseTestApp;
+import '../../support/browse_support.dart' show browseTestApp;
 import '../discovery/search_interaction_test.dart' show testSource;
 
 void main() {
@@ -17,7 +17,7 @@ void main() {
   setUp(() => LocaleSettings.setLocaleSync(AppLocale.en));
   for (final available in [false, true]) {
     testWidgets(
-      'inspector uses actual metadata, omits missing data and folds logs $available',
+      'details use actual metadata, omit missing data and fold logs $available',
       (tester) async {
         final task = BooruDownloadItem(
           snapshot: DownloadTaskSnapshot(
@@ -50,7 +50,9 @@ void main() {
                 child: SizedBox(
                   width: 300,
                   height: 850,
-                  child: DownloadTaskInspector(task: task),
+                  child: SingleChildScrollView(
+                    child: DownloadTaskDetails(task: task, start: 0),
+                  ),
                 ),
               ),
             ),
@@ -64,10 +66,11 @@ void main() {
           entries.map((e) => e.label),
           available
               ? [
+                  t.downloads.path,
+                  t.postDetail.source,
                   t.postDetail.size,
                   t.downloads.format,
                   t.downloads.startedAt,
-                  t.downloads.path,
                 ]
               : [t.downloads.format, t.downloads.startedAt],
         );

@@ -11,7 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
 
-import '../discovery/home_page_test.dart' show browseTestApp;
+import '../../support/browse_support.dart' show browseTestApp;
 
 void main() {
   testWidgets(

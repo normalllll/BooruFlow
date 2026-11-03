@@ -8,6 +8,7 @@ import 'package:booruflow/features/downloads/download_presentation.dart';
 import 'package:booruflow/features/downloads/logic.dart';
 import 'package:booruflow/features/downloads/models/booru_download_item.dart';
 import 'package:booruflow/features/downloads/widgets/download_artwork.dart';
+import 'package:booruflow/features/downloads/widgets/download_task_details.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_navigation.dart';
 import 'package:booruflow/shared/app_toast.dart';
@@ -38,17 +39,20 @@ FrostTaskStatus downloadTaskStatus(DownloadTaskSnapshot task) {
 // All download rows use the shared small thumbnail, including saved records.
 const downloadThumbnailExtent = 48.0;
 
+/// Where the text of a row (and what expands below it) starts.
+const downloadTextColumn = downloadThumbnailExtent + FrostGap.related;
+
 class DownloadTaskTile extends ConsumerStatefulWidget {
   const DownloadTaskTile({
     required this.task,
     this.onTaskTap,
-    this.selected = false,
-    this.plainRetry = false,
+    this.expanded = false,
     super.key,
   });
   final BooruDownloadItem task;
-  final bool selected;
-  final bool plainRetry;
+
+  /// Whether the task's details show below the row.
+  final bool expanded;
   final ValueChanged<BooruDownloadItem>? onTaskTap;
   @override
   ConsumerState<DownloadTaskTile> createState() => _DownloadTaskTileState();
@@ -115,17 +119,36 @@ class _DownloadTaskTileState extends ConsumerState<DownloadTaskTile> {
       ),
       _ => null,
     };
+    final completed = downloadCompleted(task);
+    final openPath = completed && (task.localPath?.trim().isNotEmpty ?? false)
+        ? task.localPath
+        : null;
+    void openFile(String path) => unawaited(
+      _run(
+        () => openDownloadFile(
+          path,
+          revealer: ref.read(downloadPathRevealerProvider),
+          onRedownload: () => manager.retry(task.id),
+        ),
+      ),
+    );
     final entries = <FrostMenuEntry>[
+      if (openPath != null)
+        FrostMenuAction(
+          t.downloads.open,
+          leading: FrostGlyph.icon(appIcons.externalLink),
+          onSelected: () => openFile(openPath),
+        ),
       if (primary != null)
         FrostMenuAction(
           primary.$1,
-          icon: primary.$2,
+          leading: FrostGlyph.icon(primary.$2),
           onSelected: _busy ? null : () => unawaited(_run(primary.$3)),
         ),
       if (item.canOpenPost)
         FrostMenuAction(
           t.downloads.openPost,
-          icon: appIcons.image,
+          leading: FrostGlyph.icon(appIcons.image),
           onSelected: _openPost,
         ),
       if (task.localPath case final path?
@@ -133,7 +156,7 @@ class _DownloadTaskTileState extends ConsumerState<DownloadTaskTile> {
               path.trim().isNotEmpty)
         FrostMenuAction(
           t.frost.showInFolder,
-          icon: appIcons.folder,
+          leading: FrostGlyph.icon(appIcons.folder),
           onSelected: () => unawaited(
             _run(
               () => revealDownloadPath(
@@ -144,44 +167,31 @@ class _DownloadTaskTileState extends ConsumerState<DownloadTaskTile> {
             ),
           ),
         ),
-      if (downloadActive(task))
+      // The manager cannot stop a file that is already being saved.
+      if (switch (task.status) {
+        DownloadStatus.queued ||
+        DownloadStatus.running ||
+        DownloadStatus.paused => true,
+        _ => false,
+      })
         FrostMenuAction(
           t.downloads.cancel,
-          icon: appIcons.close,
+          leading: FrostGlyph.icon(appIcons.close),
           onSelected: _busy
               ? null
               : () => unawaited(_run(() => manager.cancel(task.id))),
         ),
       FrostMenuAction(
         t.downloads.deleteTask,
-        icon: appIcons.delete,
+        leading: FrostGlyph.icon(appIcons.delete),
         destructive: true,
         onSelected: _busy
             ? null
             : () => unawaited(_run(() => manager.deleteTask(task.id))),
       ),
     ];
-    final completed = downloadCompleted(task);
     final failure = downloadFailed(task);
-    final detail = <String>[
-      ?source,
-      if (failure)
-        task.error?.split('\n').firstOrNull?.trim().nonEmpty ??
-            downloadStatusLabel(task)
-      else if (completed) ...[
-        if ((task.totalBytes ?? task.receivedBytes) > 0)
-          downloadBytes(task.totalBytes ?? task.receivedBytes),
-        downloadTime(task.updatedAt),
-      ] else if (task.status == DownloadStatus.queued)
-        t.downloads.queued
-      else ...[
-        if (task.receivedBytes > 0 || task.totalBytes != null)
-          downloadByteProgress(task),
-        if (rate != null && task.status == DownloadStatus.running)
-          downloadRate(rate),
-        if (task.status != DownloadStatus.running) downloadStatusLabel(task),
-      ],
-    ].join(' · ');
+    final detail = downloadTaskDetail(task, source: source, rate: rate);
     final title = downloadTaskTitle(item);
     final artwork = DownloadArtwork(
       key: _artwork,
@@ -197,61 +207,75 @@ class _DownloadTaskTileState extends ConsumerState<DownloadTaskTile> {
       onPressed: () => _menu(entries),
     );
     final showActions = _hovered || _focused;
+    // Without hover these never show; swipe, long press and the details hold
+    // the same actions, so a touch row gives their room back to its text.
+    final hover = FrostInputCapability.of(context).hoverAvailable;
+    // Each press is guarded in _run; a control that dims for the moment an
+    // instant action takes would only flicker.
+    void pressPrimary() => unawaited(_run(primary!.$3));
     Widget primaryButton({required bool iconOnly}) => iconOnly
         ? FrostButton.icon(
             label: primary!.$1,
             icon: primary.$2,
             size: FrostControlSize.compact,
-            onPressed: _busy ? null : () => unawaited(_run(primary.$3)),
+            onPressed: pressPrimary,
           )
         : FrostButton(
             label: primary!.$1,
-            icon: widget.plainRetry ? null : primary.$2,
+            icon: primary.$2,
             size: FrostControlSize.compact,
-            variant: widget.plainRetry
-                ? FrostButtonVariant.plain
-                : FrostButtonVariant.standard,
-            edgeAlignment: widget.plainRetry
-                ? FrostButtonEdgeAlignment.end
-                : null,
-            onPressed: _busy ? null : () => unawaited(_run(primary.$3)),
+            onPressed: pressPrimary,
+          );
+    Widget openButton({required bool iconOnly}) => iconOnly
+        ? FrostButton.icon(
+            label: t.downloads.open,
+            icon: appIcons.externalLink,
+            size: FrostControlSize.compact,
+            onPressed: () => openFile(openPath!),
+          )
+        : FrostButton(
+            label: t.downloads.open,
+            icon: appIcons.externalLink,
+            size: FrostControlSize.compact,
+            onPressed: () => openFile(openPath!),
           );
     Widget moreSlot() => SizedBox(
       width: FrostDensity.of(context).targetHeight,
       child: FrostPresence(visible: showActions, child: more()),
     );
-    Widget retryActions({required bool iconOnly}) => Row(
+    // A failed row keeps its retry, a completed one its open, always visible.
+    Widget trailingActions({required bool iconOnly}) => Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        moreSlot(),
-        if (primary != null) primaryButton(iconOnly: iconOnly),
+        if (hover) moreSlot(),
+        if (failure && primary != null) primaryButton(iconOnly: iconOnly),
+        if (openPath != null) openButton(iconOnly: iconOnly),
       ],
     );
-    Widget? controls;
-    {
-      controls = failure
-          ? FrostFit(
-              candidates: [
-                (_) => retryActions(iconOnly: false),
-                (_) => retryActions(iconOnly: true),
-              ],
-            )
-          : SizedBox(
-              width:
-                  FrostDensity.of(context).targetHeight *
-                  (primary == null ? 1 : 2),
-              child: FrostPresence(
-                visible: showActions,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (primary != null) primaryButton(iconOnly: true),
-                    more(),
-                  ],
-                ),
+    final Widget? controls = failure || openPath != null
+        ? FrostFit(
+            candidates: [
+              (_) => trailingActions(iconOnly: false),
+              (_) => trailingActions(iconOnly: true),
+            ],
+          )
+        : !hover
+        ? null
+        : SizedBox(
+            width:
+                FrostDensity.of(context).targetHeight *
+                (primary == null ? 1 : 2),
+            child: FrostPresence(
+              visible: showActions,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (primary != null) primaryButton(iconOnly: true),
+                  more(),
+                ],
               ),
-            );
-    }
+            ),
+          );
     final thumbnail = FrostThumbnail(
       size: FrostThumbnailSize.small,
       image: artwork,
@@ -260,16 +284,18 @@ class _DownloadTaskTileState extends ConsumerState<DownloadTaskTile> {
     final mainRow = completed
         ? FrostListRow(
             title: title,
-            subtitle: [
-              if (task.ugoiraExport case final format?)
-                format == UgoiraExport.losslessWebp
-                    ? t.ugoira.webpRecord
-                    : t.ugoira.zipRecord,
-              if (detail.isNotEmpty) detail,
-            ].join(' · '),
-            selected: widget.selected,
+            subtitle: FrostRowSubtitle(
+              [
+                if (task.ugoiraExport case final format?)
+                  format == UgoiraExport.losslessWebp
+                      ? t.ugoira.webpRecord
+                      : t.ugoira.zipRecord,
+                if (detail.isNotEmpty) detail,
+              ].join(' · '),
+            ),
+            selected: widget.expanded,
             trailing: controls,
-            leading: thumbnail,
+            leading: FrostLeading.custom(thumbnail),
             onPressed: widget.onTaskTap == null
                 ? null
                 : () => widget.onTaskTap!(item),
@@ -278,7 +304,7 @@ class _DownloadTaskTileState extends ConsumerState<DownloadTaskTile> {
         : FrostTaskRow(
             title: title,
             detail: detail.isEmpty ? null : detail,
-            selected: widget.selected,
+            selected: widget.expanded,
             trailing: controls,
             status: downloadTaskStatus(task),
             showsStatusDot: false,
@@ -290,7 +316,7 @@ class _DownloadTaskTileState extends ConsumerState<DownloadTaskTile> {
                 ? null
                 : () => widget.onTaskTap!(item),
           );
-    return Focus(
+    final row = Focus(
       canRequestFocus: false,
       onFocusChange: (value) => setState(() => _focused = value),
       child: MouseRegion(
@@ -317,11 +343,20 @@ class _DownloadTaskTileState extends ConsumerState<DownloadTaskTile> {
         ),
       ),
     );
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        row,
+        FrostPresence(
+          visible: widget.expanded,
+          effect: FrostPresenceEffect.expand,
+          alignment: AlignmentDirectional.topStart,
+          child: DownloadTaskDetails(task: item),
+        ),
+      ],
+    );
   }
-}
-
-extension on String {
-  String? get nonEmpty => isEmpty ? null : this;
 }
 
 /// Opens both live tasks and restored historical records through real routes.

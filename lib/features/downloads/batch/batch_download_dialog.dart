@@ -5,9 +5,9 @@ import 'package:booruflow/core/downloads/download_permission_guard.dart';
 import 'package:booruflow/core/downloads/download_platform.dart';
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/features/downloads/batch/logic.dart';
+import 'package:booruflow/features/downloads/download_notifications.dart';
 import 'package:booruflow/intl/number_format.dart';
 import 'package:booruflow/intl/translations.g.dart';
-import 'package:booruflow/shared/app_navigation.dart';
 import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -65,7 +65,7 @@ class _BatchDownloadDialogState extends ConsumerState<BatchDownloadDialog> {
   void _viewDownloads() {
     final router = GoRouter.of(context);
     Navigator.pop(context, true);
-    router.goNamed(AppRoute.downloads.name);
+    unawaited(openDownloads(router: router));
   }
 
   List<FrostDialogAction<bool>> _actions(

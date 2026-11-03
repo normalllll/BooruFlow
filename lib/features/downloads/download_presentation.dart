@@ -9,8 +9,6 @@ import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:intl/intl.dart';
 
-enum DownloadFilter { all, active, failed, saved }
-
 /// Persisted save failures take precedence over a completed network transfer.
 bool downloadFailed(DownloadTaskSnapshot task) =>
     task.status == DownloadStatus.failed || task.saveState == SaveState.failed;
@@ -38,6 +36,37 @@ String downloadStatusLabel(DownloadTaskSnapshot task) =>
       (DownloadStatus.failed, _) => t.downloads.failed,
       (DownloadStatus.cancelled, _) => t.downloads.cancelled,
     };
+
+/// The secondary line of a task row: why a failed task failed, the size and
+/// time of a completed one, or how far one in flight has come.
+String downloadTaskDetail(
+  DownloadTaskSnapshot task, {
+  String? source,
+  double? rate,
+}) {
+  final firstError = task.error?.split('\n').firstOrNull?.trim();
+  return [
+    ?source,
+    if (downloadFailed(task))
+      firstError == null || firstError.isEmpty
+          ? downloadStatusLabel(task)
+          : firstError
+    else if (downloadCompleted(task)) ...[
+      if ((task.totalBytes ?? task.receivedBytes) > 0)
+        downloadBytes(task.totalBytes ?? task.receivedBytes),
+      downloadTime(task.updatedAt),
+    ] else if (task.status == DownloadStatus.queued)
+      t.downloads.queued
+    else ...[
+      if (task.receivedBytes > 0 || task.totalBytes != null)
+        downloadByteProgress(task),
+      if (rate != null && task.status == DownloadStatus.running)
+        downloadRate(rate),
+      if (task.status != DownloadStatus.running) downloadStatusLabel(task),
+    ],
+  ].join(' · ');
+}
+
 String downloadBytes(int bytes) {
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
   var value = bytes.clamp(0, 1 << 60).toDouble(), unit = 0;
@@ -62,25 +91,47 @@ Future<void> revealDownloadPath(
 }) async {
   try {
     final result = await revealer.reveal(path, directory: directory);
-    if (result == DownloadRevealStatus.fileMissing) {
-      FrostToast.info(t.downloads.fileMissing);
-    } else if (result == DownloadRevealStatus.missing) {
-      AppToast.error(
-        t.downloads.locationMissing,
-        actionLabel: onRedownload == null ? null : t.downloads.redownload,
-        onAction: onRedownload == null
-            ? null
-            : () async {
-                try {
-                  await onRedownload();
-                } catch (error) {
-                  AppToast.errorWithCause(t.downloads.actionFailed, error);
-                }
-              },
-      );
-    }
+    _reportMissing(result, onRedownload);
   } catch (error) {
     AppToast.errorWithCause(t.downloads.actionFailed, error);
+  }
+}
+
+/// Opens a downloaded file with its default app, reporting a missing file the
+/// way [revealDownloadPath] does and a launch failure as an error.
+Future<void> openDownloadFile(
+  String path, {
+  required DownloadPathRevealer revealer,
+  Future<void> Function()? onRedownload,
+}) async {
+  try {
+    final result = await revealer.open(path);
+    _reportMissing(result, onRedownload);
+  } catch (error) {
+    AppToast.errorWithCause(t.downloads.actionFailed, error);
+  }
+}
+
+void _reportMissing(
+  DownloadRevealStatus result,
+  Future<void> Function()? onRedownload,
+) {
+  if (result == DownloadRevealStatus.fileMissing) {
+    FrostToast.info(t.downloads.fileMissing);
+  } else if (result == DownloadRevealStatus.missing) {
+    AppToast.error(
+      t.downloads.locationMissing,
+      actionLabel: onRedownload == null ? null : t.downloads.redownload,
+      onAction: onRedownload == null
+          ? null
+          : () async {
+              try {
+                await onRedownload();
+              } catch (error) {
+                AppToast.errorWithCause(t.downloads.actionFailed, error);
+              }
+            },
+    );
   }
 }
 
@@ -141,14 +192,29 @@ String downloadRemainingTime(double seconds) {
   return t.downloads.remainingSeconds(count: formatCount(seconds.ceil()));
 }
 
-({int count, double? progress, double? rate, String? remaining})
+/// The tasks in flight among [items]. [finished] are tasks of the same run that
+/// are already done: they count towards progress and not towards the rest.
+({
+  int count,
+  bool transferring,
+  double? progress,
+  double? rate,
+  String? remaining,
+})
 downloadTransferSummary(
   List<BooruDownloadItem> items,
-  Map<String, double> rates,
-) {
+  Map<String, double> rates, {
+  Iterable<BooruDownloadItem> finished = const [],
+}) {
   final active = items.where((item) => downloadActive(item.snapshot)).toList();
   if (active.isEmpty) {
-    return (count: 0, progress: null, rate: null, remaining: null);
+    return (
+      count: 0,
+      transferring: false,
+      progress: null,
+      rate: null,
+      remaining: null,
+    );
   }
   final knownSizes = active.every(
     (item) => (item.snapshot.totalBytes ?? 0) > 0,
@@ -166,13 +232,23 @@ downloadTransferSummary(
           item.snapshot.totalBytes ?? item.snapshot.receivedBytes,
         ),
   );
+  final done = finished.fold<int>(
+    0,
+    (sum, item) =>
+        sum + (item.snapshot.totalBytes ?? item.snapshot.receivedBytes),
+  );
   final knownRates = [for (final item in active) ?rates[item.snapshot.id]];
   final rate = knownRates.isEmpty
       ? null
       : knownRates.fold<double>(0, (sum, value) => sum + value);
   return (
     count: active.length,
-    progress: knownSizes ? (received / total).clamp(0.0, 1.0) : null,
+    transferring: active.any(
+      (item) => item.snapshot.status != DownloadStatus.paused,
+    ),
+    progress: knownSizes
+        ? ((received + done) / (total + done)).clamp(0.0, 1.0)
+        : null,
     rate: rate,
     remaining: knownSizes && rate != null && rate > 0 && received < total
         ? downloadRemainingTime((total - received) / rate)

@@ -112,7 +112,7 @@ void main() {
   test(
     'iOS original-file save never queries or requests Photos permission',
     () async {
-      final root = await Directory.systemTemp.createTemp('r7-ios-files-');
+      final root = await Directory.systemTemp.createTemp('ios-files-');
       addTearDown(() => root.delete(recursive: true));
       var calls = 0;
       messenger.setMockMethodCallHandler(channel, (_) async {

@@ -49,6 +49,10 @@ abstract interface class DownloadEngine {
   /// state has been durably recorded by the manager.
   Future<void> acknowledge(Set<String> jobIds);
 
+  /// Removes temporary files of jobs that ended with an earlier process, except
+  /// those of [keepJobIds].
+  Future<void> removeLeftovers(Set<String> keepJobIds);
+
   Future<void> dispose();
 }
 

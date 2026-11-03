@@ -1,4 +1,4 @@
-// frost-escape: BOORUFLOW_REBUILD_PLAN section 7 authorizes the measured download flight and navigation landing bounce.
+// app-owned: measured download flight and navigation landing bounce animations.
 import 'dart:math' as math;
 
 import 'package:flutter/physics.dart';
@@ -25,6 +25,10 @@ class DownloadFlightHostState extends State<DownloadFlightHost>
     with TickerProviderStateMixin {
   final target = GlobalKey();
   final landed = ValueNotifier<int>(0);
+
+  /// Whether a flight is on its way, so a floating entry that shows only with
+  /// downloads is there to receive it.
+  final flying = ValueNotifier<bool>(false);
   final _flights = <_Flight>[];
   void fly({required Rect source, required ImageProvider image}) {
     if (!mounted ||
@@ -35,6 +39,7 @@ class DownloadFlightHostState extends State<DownloadFlightHost>
     final controller = AnimationController.unbounded(vsync: this);
     final flight = _Flight(source, image, controller);
     setState(() => _flights.add(flight));
+    flying.value = true;
     FrostMotion.springTo(
       context,
       controller,
@@ -44,6 +49,7 @@ class DownloadFlightHostState extends State<DownloadFlightHost>
       if (!mounted || !_flights.contains(flight)) return;
       setState(() => _flights.remove(flight));
       controller.dispose();
+      flying.value = _flights.isNotEmpty;
       landed.value++;
     });
   }
@@ -56,6 +62,7 @@ class DownloadFlightHostState extends State<DownloadFlightHost>
       flight.progress.dispose();
     }
     landed.dispose();
+    flying.dispose();
     super.dispose();
   }
 
@@ -196,9 +203,11 @@ class _DownloadFlightTargetState extends State<DownloadFlightTarget>
     super.dispose();
   }
 
+  // The key sits inside the scale: the measured box is the child itself, and
+  // scaling about its center leaves the point a flight lands on where it is.
   @override
-  Widget build(BuildContext context) => KeyedSubtree(
-    key: _host?.target,
-    child: ScaleTransition(scale: _scale, child: widget.child),
+  Widget build(BuildContext context) => ScaleTransition(
+    scale: _scale,
+    child: KeyedSubtree(key: _host?.target, child: widget.child),
   );
 }

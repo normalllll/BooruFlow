@@ -112,6 +112,8 @@ class _IdleEngine extends Fake implements DownloadEngine {
   @override
   Future<void> acknowledge(Set<String> jobIds) async {}
   @override
+  Future<void> removeLeftovers(Set<String> keepJobIds) async {}
+  @override
   Future<void> start(List<DownloadJob> jobs) async {}
   @override
   Future<void> dispose() async {}

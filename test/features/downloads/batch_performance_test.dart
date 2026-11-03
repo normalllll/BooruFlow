@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:booruflow/core/downloads/download_models.dart';
+import 'package:booruflow/dev/sample_downloads.dart';
 import 'package:booruflow/features/downloads/download_presentation.dart';
 import 'package:booruflow/features/downloads/downloads_page.dart';
 import 'package:booruflow/features/downloads/logic.dart';
@@ -12,16 +13,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
 
-import '../../../tool/automation/preview/downloads.dart';
-import '../discovery/home_page_test.dart' show browseTestApp;
-import 'downloads_v2_test.dart' show task;
+import '../../support/browse_support.dart' show browseTestApp;
+import 'download_tasks_test.dart' show task;
 import 'support.dart';
 
 void main() {
   test(
-    'L15 exposes repeated-name groups without replacing existing download fixtures',
+    'exposes repeated-name groups without replacing existing download fixtures',
     () {
-      final items = downloadPreviewItems('L15');
+      final items = sampleSameNamedDownloads();
       expect(items.length, 6);
       expect(items.map((i) => i.snapshot.batchName).toSet(), {'muryo'});
       expect(
@@ -31,7 +31,7 @@ void main() {
         hasLength(3),
       );
       expect(
-        downloadPreviewItems('L13').map((i) => i.snapshot.ugoiraExport).toSet(),
+        sampleUgoiraDownloads().map((i) => i.snapshot.ugoiraExport).toSet(),
         hasLength(2),
       );
     },
@@ -114,7 +114,7 @@ void main() {
   test(
     'batch outcome reports persisted statuses without inventing a skipped item',
     () {
-      final base = largeDownloadPreviewItems().first.snapshot;
+      final base = sampleLargeDownloads().first.snapshot;
       final cancelled = BooruDownloadItem(
         snapshot: DownloadTaskSnapshot(
           id: 'cancelled',
@@ -135,7 +135,7 @@ void main() {
         ),
       );
       final result = downloadBatchResult([
-        ...largeDownloadPreviewItems().take(207),
+        ...sampleLargeDownloads().take(207),
         cancelled,
       ]);
       expect(result, contains('${t.downloads.saved} 207'));
@@ -237,7 +237,7 @@ void main() {
         ProviderScope(
           overrides: [
             downloadItemsProvider.overrideWith(
-              () => TestDownloadItems(largeDownloadPreviewItems()),
+              () => TestDownloadItems(sampleLargeDownloads()),
             ),
             downloadManagerProvider.overrideWithValue(TestDownloadManager()),
           ],
@@ -299,7 +299,7 @@ void main() {
     },
   );
   testWidgets(
-    'saved-only page has one section gap; offscreen collapse does not pre-scroll',
+    'saved-only page has one group gap under the header; offscreen collapse does not pre-scroll',
     (tester) async {
       tester.view.physicalSize = const Size(1440, 900);
       tester.view.devicePixelRatio = 1;
@@ -308,7 +308,7 @@ void main() {
         ProviderScope(
           overrides: [
             downloadItemsProvider.overrideWith(
-              () => TestDownloadItems(largeDownloadPreviewItems()),
+              () => TestDownloadItems(sampleLargeDownloads()),
             ),
             downloadManagerProvider.overrideWithValue(TestDownloadManager()),
           ],
@@ -321,11 +321,11 @@ void main() {
           .dy;
       expect(
         tester.getTopLeft(find.text(t.downloads.today)).dy,
-        closeTo(headerBottom + FrostGap.section, .001),
+        closeTo(headerBottom + FrostGap.group, .001),
       );
-      final scroll = tester
-          .widget<CustomScrollView>(find.byType(CustomScrollView))
-          .controller!;
+      final scroll = Scrollable.of(
+        tester.element(find.byType(DownloadTaskTile).first),
+      ).position;
       scroll.jumpTo(500);
       await tester.pump();
       final batch = find.byWidgetPredicate(
@@ -333,13 +333,28 @@ void main() {
         skipOffstage: false,
       );
       expect(tester.getTopLeft(batch).dy, lessThan(headerBottom));
-      tester.widget<FrostListRow>(batch).onPressed!();
-      expect(scroll.offset, 500);
+      // Collapse the batch the way a tap on its row does, without a hit test.
+      final batchRect = tester.getRect(batch);
+      final surfaces =
+          find.byType(FrostClickSurface, skipOffstage: false).evaluate().where((
+            element,
+          ) {
+            final box = element.renderObject! as RenderBox;
+            final rect = box.localToGlobal(Offset.zero) & box.size;
+            return rect.contains(batchRect.center);
+          }).toList()..sort((a, b) {
+            double area(Element e) =>
+                (e.renderObject! as RenderBox).size.width *
+                (e.renderObject! as RenderBox).size.height;
+            return area(a).compareTo(area(b));
+          });
+      (surfaces.first.widget as FrostClickSurface).onTap!();
+      expect(scroll.pixels, 500);
       await tester.pump();
-      expect(scroll.offset, 500);
+      expect(scroll.pixels, 500);
       await tester.pumpAndSettle();
       // Programmatic collapse does not force an offscreen header into view.
-      expect(scroll.offset, lessThanOrEqualTo(scroll.position.maxScrollExtent));
+      expect(scroll.pixels, lessThanOrEqualTo(scroll.maxScrollExtent));
       expect(tester.takeException(), isNull);
     },
   );
@@ -353,7 +368,7 @@ void main() {
         ProviderScope(
           overrides: [
             downloadItemsProvider.overrideWith(
-              () => TestDownloadItems(largeDownloadPreviewItems()),
+              () => TestDownloadItems(sampleLargeDownloads()),
             ),
             downloadManagerProvider.overrideWithValue(TestDownloadManager()),
           ],
@@ -365,27 +380,27 @@ void main() {
         (widget) => widget is FrostListRow && widget.title == 'muryo 2',
         skipOffstage: false,
       );
-      final scroll = tester
-          .widget<CustomScrollView>(find.byType(CustomScrollView))
-          .controller!;
+      final scroll = Scrollable.of(
+        tester.element(find.byType(DownloadTaskTile).first),
+      ).position;
       // Set up the observed edge position via framework scrolling, independent of
       // the page's toggle callback. A second layout resolves lazy extent estimates.
       for (var attempt = 0; attempt < 2; attempt++) {
         await Scrollable.ensureVisible(tester.element(batch), alignment: 1);
         await tester.pump();
       }
-      scroll.jumpTo(scroll.offset - 20);
+      scroll.jumpTo(scroll.pixels - 20);
       await tester.pump();
       final viewport = tester.getRect(find.byType(CustomScrollView));
-      final header = tester.getRect(batch), offset = scroll.offset;
+      final header = tester.getRect(batch), offset = scroll.pixels;
       expect(header.top, lessThan(viewport.bottom));
       expect(header.bottom, greaterThan(viewport.bottom));
       await tester.tapAt(Offset(header.center.dx, header.top + 8));
-      expect(scroll.offset, closeTo(offset, .001));
+      expect(scroll.pixels, closeTo(offset, .001));
       await tester.pump();
       for (var frame = 0; frame < 50; frame++) {
         await tester.pump(const Duration(milliseconds: 16));
-        expect(scroll.offset, closeTo(offset, .001));
+        expect(scroll.pixels, closeTo(offset, .001));
         expect(tester.getTopLeft(batch).dy, closeTo(header.top, .001));
         expect(tester.takeException(), isNull);
       }
@@ -395,14 +410,19 @@ void main() {
           )
           .toList()[1];
       expect(firstReveal.expanded, isFalse);
-      final picker = tester.widget<FrostPicker<DownloadFilter>>(
-        find
-            .byWidgetPredicate((w) => w is FrostPicker<DownloadFilter>)
-            .hitTestable(),
+      // Another section and back keeps the collapsed state.
+      final tabs = find.descendant(
+        of: find.byType(FrostTabBar),
+        matching: find.textContaining(t.downloads.active),
       );
-      picker.onChanged!(DownloadFilter.failed);
+      await tester.tap(tabs.first);
       await tester.pumpAndSettle();
-      picker.onChanged!(DownloadFilter.all);
+      await tester.tap(
+        find.descendant(
+          of: find.byType(FrostTabBar),
+          matching: find.textContaining(t.downloads.completed),
+        ),
+      );
       await tester.pumpAndSettle();
       expect(
         tester
@@ -422,7 +442,7 @@ void main() {
     tester.view.physicalSize = const Size(1440, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    final items = TestDownloadItems(largeDownloadPreviewItems());
+    final items = TestDownloadItems(sampleLargeDownloads());
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -460,10 +480,6 @@ void main() {
         );
       }
     }
-    // ignore: avoid_print
-    print(
-      'R4 mounted task rows: max=${counts.reduce((a, b) => a > b ? a : b)} frames=$counts',
-    );
     expect(counts.every((count) => count < 35), isTrue);
     expect(unrelatedRebuilds, 0);
     expect(tester.takeException(), isNull);

@@ -50,6 +50,8 @@ final class DefaultDownloadManager implements DownloadManager {
   bool _disposed = false;
   final _jobs = <String, DownloadJob>{};
   final _saves = <String, Future<void>>{};
+  // Saves run one at a time, apart from the engine's events.
+  Future<void> _saveTail = Future<void>.value();
   final _waiters = <String, Completer<DownloadedFile>>{};
 
   @override
@@ -101,7 +103,12 @@ final class DefaultDownloadManager implements DownloadManager {
           },
         );
     _initialized = true;
-    await sync();
+    await _sync(recoverInterrupted: true);
+    final saving = await _activeStore.listPendingSaveTasks();
+    final failed = await _activeStore.listTasks(saveState: SaveState.failed);
+    await _activeEngine.removeLeftovers({
+      for (final task in [...saving, ...failed]) task.id,
+    });
   }
 
   @override
@@ -217,9 +224,9 @@ final class DefaultDownloadManager implements DownloadManager {
       throw const DuplicateDownloadException();
     }
 
+    await validateDownloadedBytes(bytes, validation: job.validation);
     _jobs[job.id] = job;
     await _activeStore.upsertJob(job);
-    await validateDownloadedBytes(bytes, validation: job.validation);
     await _activeStore.updateStatus(job.id, DownloadStatus.running);
     await _activeStore.updateProgress(
       job.id,
@@ -264,6 +271,12 @@ final class DefaultDownloadManager implements DownloadManager {
   @override
   Future<void> pause(String jobId) async {
     await _ensureInitialized();
+    final task = await _activeStore.getTask(jobId);
+    if (task?.status == DownloadStatus.queued) {
+      // Nothing is transferring, so the engine has nothing to pause.
+      await _activeStore.updateStatus(jobId, DownloadStatus.paused);
+      return;
+    }
     await _activeEngine.pause(jobId);
   }
 
@@ -273,7 +286,8 @@ final class DefaultDownloadManager implements DownloadManager {
     final task = await _activeStore.getTask(jobId);
     if (task?.status != DownloadStatus.paused) return;
     final snapshots = await _activeEngine.syncActiveTasks();
-    if (!snapshots.any((item) => item.jobId == jobId)) {
+    if ((task?.receivedBytes ?? 0) > 0 &&
+        !snapshots.any((item) => item.jobId == jobId)) {
       // In-memory transfer state ends with the old process. A persisted paused
       // task can still be resumed honestly by restarting, through the queue.
       await _activeStore.updateProgress(jobId, receivedBytes: 0, progress: 0);
@@ -298,13 +312,16 @@ final class DefaultDownloadManager implements DownloadManager {
         task.saveState == SaveState.saved) {
       return;
     }
-    if (task.status == DownloadStatus.queued) {
-      await _activeStore.updateStatus(jobId, DownloadStatus.cancelled);
-      _completeWithError(jobId, const DownloadException('Download cancelled'));
-      await _pumpQueue();
+    // A transfer the engine holds reports its own end. A resumed task waiting
+    // for a slot is one, though its row says queued.
+    final snapshots = await _activeEngine.syncActiveTasks();
+    if (snapshots.any((item) => item.jobId == jobId)) {
+      await _activeEngine.cancel(jobId);
       return;
     }
-    await _activeEngine.cancel(jobId);
+    await _activeStore.updateStatus(jobId, DownloadStatus.cancelled);
+    _completeWithError(jobId, const DownloadException('Download cancelled'));
+    await _pumpQueue();
   }
 
   @override
@@ -315,7 +332,8 @@ final class DefaultDownloadManager implements DownloadManager {
       return;
     }
 
-    if (task.status == DownloadStatus.running ||
+    if (task.status == DownloadStatus.queued ||
+        task.status == DownloadStatus.running ||
         task.status == DownloadStatus.paused) {
       await _activeEngine.cancel(jobId);
     }
@@ -323,6 +341,7 @@ final class DefaultDownloadManager implements DownloadManager {
     _jobs.remove(jobId);
     _completeWithError(jobId, const DownloadException('Download task deleted'));
     await _activeStore.deleteTask(jobId);
+    await _activeEngine.acknowledge({jobId});
     await _pumpQueue();
   }
 
@@ -430,6 +449,13 @@ final class DefaultDownloadManager implements DownloadManager {
   @override
   Future<void> sync() async {
     await _ensureInitialized();
+    await _sync(recoverInterrupted: false);
+  }
+
+  /// [recoverInterrupted] is for launch only: a running row with no transfer
+  /// is left over from the old process. Later, the same row can be a transfer
+  /// about to start or one whose completion is still on its way.
+  Future<void> _sync({required bool recoverInterrupted}) async {
     final snapshots = await _activeEngine.syncActiveTasks();
     final activeIds = <String>{};
     final nativeSavingIds = <String>{};
@@ -452,19 +478,27 @@ final class DefaultDownloadManager implements DownloadManager {
           snapshot.saveState == SaveState.failed) {
         terminalSnapshotIds.add(snapshot.jobId);
       }
+      // A resumed task waiting for a slot stays paused in the engine.
+      final task = await _activeStore.getTask(snapshot.jobId);
+      if (task?.status == DownloadStatus.queued &&
+          snapshot.status == DownloadStatus.paused) {
+        continue;
+      }
       await _activeStore.applyEngineSnapshot(snapshot);
     }
     await _activeEngine.acknowledge(terminalSnapshotIds);
 
-    final recoverableTasks = await _activeStore.listRecoverableTasks();
-    for (final task in recoverableTasks) {
-      if (task.status == DownloadStatus.running &&
-          !activeIds.contains(task.id)) {
-        await _activeStore.updateStatus(
-          task.id,
-          DownloadStatus.failed,
-          error: 'Download was interrupted.',
-        );
+    if (recoverInterrupted) {
+      final recoverableTasks = await _activeStore.listRecoverableTasks();
+      for (final task in recoverableTasks) {
+        if (task.status == DownloadStatus.running &&
+            !activeIds.contains(task.id)) {
+          await _activeStore.updateStatus(
+            task.id,
+            DownloadStatus.failed,
+            error: 'Download was interrupted.',
+          );
+        }
       }
     }
 
@@ -512,11 +546,14 @@ final class DefaultDownloadManager implements DownloadManager {
         if (!_activeEngine.capabilities.handlesSaving) {
           final job = await _jobFor(event.jobId);
           if (job != null) {
-            await _saveCompletedFile(
-              job,
-              DownloadedFile(
-                path: event.localPath,
-                bytesWritten: event.bytesWritten,
+            // Not awaited: a long save must not hold up other tasks' events.
+            unawaited(
+              _saveCompletedFile(
+                job,
+                DownloadedFile(
+                  path: event.localPath,
+                  bytesWritten: event.bytesWritten,
+                ),
               ),
             );
           }
@@ -625,11 +662,15 @@ final class DefaultDownloadManager implements DownloadManager {
   }
 
   Future<void> _saveCompletedFile(DownloadJob job, DownloadedFile file) =>
-      _saves.putIfAbsent(
-        job.id,
-        () =>
-            _saveFileOnce(job, file).whenComplete(() => _saves.remove(job.id)),
-      );
+      _saves.putIfAbsent(job.id, () {
+        final save = _saveTail
+            .then((_) => _saveFileOnce(job, file))
+            .whenComplete(() {
+              _saves.remove(job.id);
+            });
+        _saveTail = save.catchError((Object _) {});
+        return save;
+      });
 
   Future<void> _saveFileOnce(DownloadJob job, DownloadedFile file) async {
     final current = await _activeStore.getTask(job.id);
@@ -641,7 +682,9 @@ final class DefaultDownloadManager implements DownloadManager {
     );
     try {
       final result = await _activeMediaSaver.saveDownloadedFile(
-        job: job,
+        job: job.copyWith(
+          filename: downloadedFilename(job.filename, file.path),
+        ),
         file: file,
       );
       await _activeStore.updateSaveState(
@@ -650,6 +693,7 @@ final class DefaultDownloadManager implements DownloadManager {
         localPath: result.path,
         galleryAssetId: result.galleryAssetId,
       );
+      await _activeEngine.acknowledge({job.id});
       _complete(
         job.id,
         DownloadedFile(path: result.path, bytesWritten: result.bytesWritten),
@@ -742,6 +786,16 @@ final class DefaultDownloadManager implements DownloadManager {
       status: DownloadStatus.queued,
     );
     queuedTasks.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    // The engine allows one transfer per media item, and a batch job of a post
+    // is a different job from the single download of it. The later one waits.
+    final held = {
+      for (final snapshot in await _activeEngine.syncActiveTasks())
+        snapshot.jobId,
+    };
+    final busy = <Object>{
+      for (final id in held)
+        if (await _jobFor(id) case final job?) _transferKey(job),
+    };
     for (final task in queuedTasks) {
       if (availableSlots <= 0) {
         return;
@@ -760,6 +814,8 @@ final class DefaultDownloadManager implements DownloadManager {
         );
         continue;
       }
+
+      if (!held.contains(job.id) && !busy.add(_transferKey(job))) continue;
 
       final runtimeJob = _prepareRuntimeJob(job);
       await _activeStore.updateStatus(job.id, DownloadStatus.running);
@@ -790,6 +846,9 @@ final class DefaultDownloadManager implements DownloadManager {
       }
     }
   }
+
+  Object _transferKey(DownloadJob job) =>
+      (job.sourceId, job.postId, job.variantIndex, job.ugoiraExport);
 
   Future<void> _completeWithSnapshot(String jobId) async {
     final waiter = _waiters.remove(jobId);

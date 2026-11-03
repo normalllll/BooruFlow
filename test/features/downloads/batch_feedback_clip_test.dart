@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:booruflow/dev/sample_downloads.dart';
 import 'package:booruflow/features/downloads/downloads_page.dart';
 import 'package:booruflow/features/downloads/logic.dart';
 import 'package:booruflow/features/downloads/widgets/download_task_widgets.dart';
@@ -11,15 +12,14 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
-import '../../../tool/automation/preview/downloads.dart';
-import '../discovery/home_page_test.dart' show browseTestApp;
+import '../../support/browse_support.dart' show browseTestApp;
 import 'support.dart';
 
 void main() {
   for (final width in [1024.0, 1440.0]) {
     for (final brightness in Brightness.values) {
       testWidgets(
-        '3x208 batch ink and action caps survive reveal with Inspector $width/$brightness',
+        '3x208 batch ink and action caps survive reveal with an expanded row $width/$brightness',
         (tester) async {
           tester.view.physicalSize = Size(width, 900);
           tester.view.devicePixelRatio = 1;
@@ -29,7 +29,7 @@ void main() {
             ProviderScope(
               overrides: [
                 downloadItemsProvider.overrideWith(
-                  () => TestDownloadItems(largeDownloadPreviewItems()),
+                  () => TestDownloadItems(sampleLargeDownloads()),
                 ),
                 downloadManagerProvider.overrideWithValue(
                   TestDownloadManager(),
@@ -47,13 +47,20 @@ void main() {
           );
           await tester.tap(tile);
           await tester.pumpAndSettle();
-          expect(tester.widget<DownloadTaskTile>(tile).selected, isTrue);
+          expect(tester.widget<DownloadTaskTile>(tile).expanded, isTrue);
           final mouse = await tester.createGesture(
             kind: PointerDeviceKind.mouse,
           );
           await mouse.addPointer(location: Offset.zero);
           addTearDown(mouse.removePointer);
-          await mouse.moveTo(tester.getCenter(tile));
+          await mouse.moveTo(
+            tester.getCenter(
+              find.descendant(
+                of: tile,
+                matching: find.byType(FrostSwipeActions),
+              ),
+            ),
+          );
           await tester.pumpAndSettle();
           final tokens = FrostThemeTokens.of(tester.element(tile));
           final selection = find.descendant(

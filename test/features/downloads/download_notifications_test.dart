@@ -9,10 +9,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frost_ui/frost_ui.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import '../discovery/home_page_test.dart' show browseTestApp;
-import 'downloads_v2_test.dart' show task;
+import '../../support/browse_support.dart' show browseTestApp;
+import 'download_tasks_test.dart' show task;
 import 'support.dart';
 
 void main() {
@@ -68,23 +67,21 @@ void main() {
       }
       final selected = tester
           .widgetList<DownloadTaskTile>(find.byType(DownloadTaskTile))
-          .where((w) => w.selected);
+          .where((w) => w.expanded);
       expect(selected.map((w) => w.task.snapshot.id), ['task-49']);
       expect(find.byType(DownloadTaskTile).evaluate().length, lessThan(30));
-      final scroll = tester
-          .widget<CustomScrollView>(
-            find.byKey(const PageStorageKey('downloads-scroll')),
-          )
-          .controller!;
-      expect(scroll.offset, greaterThan(0));
-      scroll.jumpTo(scroll.offset + 40);
+      final scroll = Scrollable.of(
+        tester.element(find.byType(DownloadTaskTile).first),
+      ).position;
+      expect(scroll.pixels, greaterThan(0));
+      scroll.jumpTo(scroll.pixels + 40);
       await tester.pump();
-      final before = scroll.offset;
+      final before = scroll.pixels;
       (container.read(downloadItemsProvider.notifier) as TestDownloadItems)
           .replace(List.of(items));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
-      expect(scroll.offset, closeTo(before, .001));
+      expect(scroll.pixels, closeTo(before, .001));
       request.value = 'second';
       for (var i = 0; i < 45; i++) {
         await tester.pump(const Duration(milliseconds: 20));
@@ -92,7 +89,7 @@ void main() {
       expect(
         tester
             .widgetList<DownloadTaskTile>(find.byType(DownloadTaskTile))
-            .where((w) => w.selected)
+            .where((w) => w.expanded)
             .single
             .task
             .snapshot
@@ -120,7 +117,7 @@ void main() {
       addTearDown(() => messenger.setMockMethodCallHandler(channel, null));
       await tester.pumpWidget(
         browseTestApp(
-          FrostToastHost(child: const SizedBox()),
+          const SizedBox(),
           navigatorKey: AppRouter.rootNavigatorKey,
         ),
       );

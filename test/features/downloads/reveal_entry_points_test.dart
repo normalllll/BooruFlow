@@ -14,7 +14,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
-import '../discovery/home_page_test.dart' show browseTestApp;
+import '../../support/browse_support.dart' show browseTestApp;
 import '../discovery/search_interaction_test.dart' show testSource;
 import 'support.dart';
 
@@ -93,7 +93,7 @@ void main() {
           downloadPathRevealerProvider.overrideWith((_) => revealer),
         ],
         child: browseTestApp(
-          FrostToastHost(child: body),
+          body,
           navigatorKey: AppRouter.rootNavigatorKey,
         ),
       ),
@@ -102,7 +102,7 @@ void main() {
     addTearDown(() => tester.pumpWidget(const SizedBox()));
   }
 
-  for (final entry in ['context menu', 'inspector']) {
+  for (final entry in ['context menu', 'details']) {
     for (final result in [
       DownloadRevealStatus.file,
       DownloadRevealStatus.fileMissing,

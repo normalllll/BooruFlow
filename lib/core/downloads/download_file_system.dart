@@ -100,6 +100,21 @@ Future<String> prepareDesktopCustomDownloadDirectory(
   return directory.path;
 }
 
+/// [filename] with the extension of the file downloaded to [path], when that
+/// names a different type. The two spellings of JPEG are one type.
+String downloadedFilename(String filename, String path) {
+  String kind(String value) {
+    final extension = p.extension(value).toLowerCase();
+    return extension == '.jpeg' ? '.jpg' : extension;
+  }
+
+  final actual = p.extension(path);
+  if (actual.isEmpty || actual == '.part' || kind(path) == kind(filename)) {
+    return filename;
+  }
+  return p.setExtension(filename, actual);
+}
+
 Future<Directory> downloadTempDirectory() async {
   final temp = await getTemporaryDirectory();
   final directory = Directory(p.join(temp.path, downloadTempDirectoryName));
@@ -137,7 +152,8 @@ Future<File> moveFileWithFallback({
     return source;
   }
 
-  await deleteFileIfExists(destination);
+  // Keep an existing destination until the new file is in place: rename
+  // replaces it, and the copy below removes it only once the copy has worked.
   try {
     return await source.rename(destination.path);
   } on FileSystemException catch (renameError) {

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:booruflow/core/downloads/download_models.dart';
 import 'package:booruflow/features/booru/booru_logic.dart';
-import 'package:booruflow/features/discovery/collection_logic.dart';
+import 'package:booruflow/features/browse/collection_logic.dart';
 import 'package:booruflow/features/downloads/batch/batch_download_dialog.dart';
 import 'package:booruflow/features/downloads/batch/logic.dart';
 import 'package:booruflow/features/downloads/logic.dart';
@@ -15,8 +15,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
 
-import '../discovery/home_page_test.dart' show browseTestApp;
-import '../posts/detail_viewer_v2_test.dart' show data;
+import '../../support/browse_support.dart' show browseTestApp;
+import '../posts/post_detail_viewer_test.dart' show data;
 import 'support.dart';
 
 class _Session extends BooruSession {

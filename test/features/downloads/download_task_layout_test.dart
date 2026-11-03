@@ -9,7 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
 
-import '../discovery/home_page_test.dart' show browseTestApp;
+import '../../support/browse_support.dart' show browseTestApp;
 import 'support.dart';
 
 DownloadTaskSnapshot snapshot(
@@ -44,6 +44,45 @@ void main() {
       else
         (status, SaveState.none),
   ];
+
+  testWidgets('a row keeps its height from queued to running', (tester) async {
+    tester.view.physicalSize = const Size(411, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    var current = snapshot(DownloadStatus.queued, SaveState.none, 0);
+    late StateSetter update;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          downloadManagerProvider.overrideWithValue(TestDownloadManager()),
+        ],
+        child: browseTestApp(
+          Align(
+            alignment: Alignment.topLeft,
+            child: StatefulBuilder(
+              builder: (context, setState) {
+                update = setState;
+                return SizedBox(
+                  width: 411,
+                  child: DownloadTaskTile(
+                    task: BooruDownloadItem(snapshot: current),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 600));
+    final queued = tester.getSize(find.byType(DownloadTaskTile)).height;
+    update(() => current = snapshot(DownloadStatus.running, SaveState.none, 0));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(tester.getSize(find.byType(DownloadTaskTile)).height, queued);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
 
   for (final locale in AppLocale.values) {
     for (final width in [260.0, 372.0]) {

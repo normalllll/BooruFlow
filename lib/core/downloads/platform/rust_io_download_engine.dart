@@ -141,7 +141,36 @@ final class RustIoDownloadEngine implements DownloadEngine {
   }
 
   @override
-  Future<void> acknowledge(Set<String> jobIds) async {}
+  Future<void> acknowledge(Set<String> jobIds) async {
+    final root = await _temporaryDirectory();
+    for (final id in jobIds) {
+      if (!_running.containsKey(id)) {
+        await _removeTemporary(Directory(p.join(root.path, id)));
+      }
+    }
+  }
+
+  @override
+  Future<void> removeLeftovers(Set<String> keepJobIds) async {
+    final root = await _temporaryDirectory();
+    await for (final entry in root.list()) {
+      final name = p.basename(entry.path);
+      if (_running.containsKey(name) ||
+          keepJobIds.any((id) => name == id || name.startsWith('$id-'))) {
+        continue;
+      }
+      await _removeTemporary(entry);
+    }
+  }
+
+  /// Temporary files are best effort: a locked file must never decide a task.
+  Future<void> _removeTemporary(FileSystemEntity entry) async {
+    try {
+      if (await entry.exists()) await entry.delete(recursive: true);
+    } on FileSystemException {
+      // The next launch tries again.
+    }
+  }
 
   @override
   Future<void> dispose() async {
@@ -211,7 +240,10 @@ final class RustIoDownloadEngine implements DownloadEngine {
     }
     if (running.copyingCache) {
       await running.waitForLocalResume();
-      if (!copied) running.copyingCache = false;
+      if (!copied) {
+        running.copyingCache = false;
+        running.restartPreparation();
+      }
     }
     if (running.cancelled) throw const DownloadException('Download cancelled');
     return copied;
@@ -229,7 +261,7 @@ final class RustIoDownloadEngine implements DownloadEngine {
       await jobDirectory.create(recursive: true);
       final filename = safeDownloadFilename(job.filename);
       partialFile = File(p.join(jobDirectory.path, '$filename.part'));
-      final destination = File(p.join(jobDirectory.path, filename));
+      var destination = File(p.join(jobDirectory.path, filename));
       await deleteFileIfExists(partialFile);
       await deleteFileIfExists(destination);
 
@@ -285,6 +317,15 @@ final class RustIoDownloadEngine implements DownloadEngine {
       running.receivedBytes = bytesWritten;
       running.totalBytes = bytesWritten;
       running.progress = 1;
+      // The engine named the file after the type it verified.
+      if (!cached) {
+        destination = File(
+          p.join(
+            jobDirectory.path,
+            downloadedFilename(filename, downloadedPath),
+          ),
+        );
+      }
       await deleteFileIfExists(destination);
       final savedTempFile = await downloadedFile.rename(destination.path);
       _events.add(
@@ -303,14 +344,8 @@ final class RustIoDownloadEngine implements DownloadEngine {
         ),
       );
     } catch (error, stackTrace) {
-      if (partialFile != null && await partialFile.exists()) {
-        await partialFile.delete();
-      }
-      if (downloadedFile != null &&
-          downloadedFile.path != partialFile?.path &&
-          await downloadedFile.exists()) {
-        await downloadedFile.delete();
-      }
+      if (partialFile != null) await _removeTemporary(partialFile);
+      if (downloadedFile != null) await _removeTemporary(downloadedFile);
 
       if (running.cancelled) {
         _events.add(EngineCancelledEvent(jobId: job.id));
@@ -346,12 +381,18 @@ class _RunningDownload {
   StreamSubscription<DownloadEvent>? subscription;
   Completer<String>? _pathCompleter;
   final _finishedCompleter = Completer<void>();
-  final _startedCompleter = Completer<void>();
+  var _startedCompleter = Completer<void>();
   Future<void> get started => _startedCompleter.future;
   bool cancelled = false, paused = false, copyingCache = false;
   Completer<void>? _localResume;
   void markStarted() {
     if (!_startedCompleter.isCompleted) _startedCompleter.complete();
+  }
+
+  /// A cache copy that fell through is followed by the real request; a pause
+  /// must wait for that to be registered.
+  void restartPreparation() {
+    if (_startedCompleter.isCompleted) _startedCompleter = Completer<void>();
   }
 
   void pauseLocal() {

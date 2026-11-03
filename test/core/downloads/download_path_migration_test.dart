@@ -29,7 +29,7 @@ void main() {
     'version 3 migration normalizes stored target and path once, preserving references and opaque metadata',
     () async {
       final temp = await Directory.systemTemp.createTemp(
-        'booruflow-r8-path-migration-',
+        'booruflow-path-migration-',
       );
       addTearDown(() async {
         expect(temp.absolute.parent.path, Directory.systemTemp.absolute.path);

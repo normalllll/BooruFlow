@@ -21,6 +21,8 @@ class _Engine extends Fake implements DownloadEngine {
   @override
   Future<void> acknowledge(Set<String> jobIds) async {}
   @override
+  Future<void> removeLeftovers(Set<String> keepJobIds) async {}
+  @override
   Future<void> dispose() => changes.close();
   @override
   Future<List<DownloadEngineSnapshot>> syncActiveTasks() async => [

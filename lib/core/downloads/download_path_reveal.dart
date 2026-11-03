@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:path/path.dart' as p;
+import 'package:url_launcher/url_launcher.dart';
 import '../file_paths.dart';
 
 enum DownloadRevealStatus { file, directory, fileMissing, missing }
@@ -46,18 +47,26 @@ typedef FileManagerLauncher =
       required bool waitForExit,
     });
 
+typedef UriOpener = Future<bool> Function(Uri uri);
+
 /// The injected process boundary prevents tests from launching desktop windows.
 class DownloadPathRevealer {
   DownloadPathRevealer({
     String? operatingSystem,
     DownloadPathProbe? probe,
     FileManagerLauncher? launch,
+    UriOpener? openUri,
   }) : operatingSystem = operatingSystem ?? Platform.operatingSystem,
        _probe = probe ?? FileSystemEntity.type,
-       _launch = launch ?? _start;
+       _launch = launch ?? _start,
+       _openUri = openUri ?? _openExternally;
   final String operatingSystem;
   final DownloadPathProbe _probe;
   final FileManagerLauncher _launch;
+  final UriOpener _openUri;
+
+  static Future<bool> _openExternally(Uri uri) =>
+      launchUrl(uri, mode: LaunchMode.externalApplication);
 
   static Future<int> _start(
     String executable,
@@ -69,19 +78,18 @@ class DownloadPathRevealer {
     return 0;
   }
 
-  Future<DownloadRevealStatus> reveal(
-    String path, {
-    bool directory = false,
+  p.Style get _style =>
+      operatingSystem == 'windows' ? p.Style.windows : p.Style.posix;
+
+  Future<({DownloadRevealStatus status, String path})> _plan(
+    String normalized, {
+    required bool directory,
   }) async {
-    final style = operatingSystem == 'windows'
-        ? p.Style.windows
-        : p.Style.posix;
-    final context = localPathContext(style: style);
-    final normalized = normalizeLocalPath(path, style: style);
+    final context = localPathContext(style: _style);
     if (normalized.isEmpty ||
         isNonFileLocation(normalized) ||
         !context.isAbsolute(normalized)) {
-      return DownloadRevealStatus.missing;
+      return (status: DownloadRevealStatus.missing, path: normalized);
     }
     final type = await _probe(normalized);
     final parentExists =
@@ -89,12 +97,41 @@ class DownloadPathRevealer {
         type != FileSystemEntityType.file &&
         await _probe(context.dirname(normalized)) ==
             FileSystemEntityType.directory;
-    final plan = planDownloadReveal(
+    return planDownloadReveal(
       path: normalized,
       directory: directory,
       type: type,
       parentExists: parentExists,
-      style: style,
+      style: _style,
+    );
+  }
+
+  /// Opens the file with its default app. A content URI is handed over as
+  /// given; a path that is not a file there is reported, not opened.
+  Future<DownloadRevealStatus> open(String path) async {
+    final normalized = normalizeLocalPath(path, style: _style);
+    final Uri uri;
+    if (isNonFileLocation(normalized)) {
+      uri = Uri.parse(normalized);
+    } else {
+      final plan = await _plan(normalized, directory: false);
+      if (plan.status != DownloadRevealStatus.file) return plan.status;
+      uri = Uri.file(plan.path, windows: _style == p.Style.windows);
+    }
+    if (!await _openUri(uri)) {
+      throw StateError('No app could open $uri');
+    }
+    return DownloadRevealStatus.file;
+  }
+
+  Future<DownloadRevealStatus> reveal(
+    String path, {
+    bool directory = false,
+  }) async {
+    final context = localPathContext(style: _style);
+    final plan = await _plan(
+      normalizeLocalPath(path, style: _style),
+      directory: directory,
     );
     if (plan.status == DownloadRevealStatus.missing) return plan.status;
     final selected = plan.status == DownloadRevealStatus.file;

@@ -82,13 +82,21 @@ final class NativeMediaSaver implements MediaSaver {
     required Uint8List bytes,
   }) async {
     final tempFile = await _writeTempBytes(job, bytes);
-    return saveDownloadedFile(
-      job: job,
-      file: DownloadedFile(
-        path: tempFile.path,
-        bytesWritten: bytes.lengthInBytes,
-      ),
-    );
+    try {
+      return await saveDownloadedFile(
+        job: job,
+        file: DownloadedFile(
+          path: tempFile.path,
+          bytesWritten: bytes.lengthInBytes,
+        ),
+      );
+    } finally {
+      try {
+        await tempFile.delete();
+      } on FileSystemException {
+        // The next launch removes it.
+      }
+    }
   }
 
   Future<File> _writeTempBytes(DownloadJob job, Uint8List bytes) async {

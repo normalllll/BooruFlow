@@ -2,12 +2,13 @@ import 'dart:convert';
 import 'dart:ui' as ui;
 
 import 'package:booruflow/core/downloads/download_models.dart';
+import 'package:booruflow/features/downloads/download_presentation.dart';
 import 'package:booruflow/features/downloads/downloads_page.dart';
 import 'package:booruflow/features/downloads/logic.dart';
 import 'package:booruflow/features/downloads/models/booru_download_item.dart';
 import 'package:booruflow/features/downloads/widgets/download_artwork.dart';
+import 'package:booruflow/features/downloads/widgets/download_task_details.dart';
 import 'package:booruflow/features/downloads/widgets/download_task_widgets.dart';
-import 'package:booruflow/intl/number_format.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/ui/custom/download_flight.dart';
 import 'package:flutter/gestures.dart';
@@ -18,7 +19,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-import '../discovery/home_page_test.dart' show browseTestApp;
+import '../../support/browse_support.dart' show browseTestApp;
 import 'support.dart';
 
 BooruDownloadItem task(
@@ -46,6 +47,11 @@ BooruDownloadItem task(
     batchId: batch,
   ),
 );
+
+class _FixedRates extends DownloadTransferRates {
+  @override
+  Map<String, double> build() => {'job': 1000.0};
+}
 
 void main() {
   setUpAll(initializeDateFormatting);
@@ -101,11 +107,11 @@ void main() {
           await tester.tapAt(Offset(target.right - 1, target.center.dy));
           await tester.pumpAndSettle();
           expect(find.text(t.downloads.cancel), findsOneWidget);
-          expect(tester.widget<DownloadTaskTile>(tile).selected, isFalse);
+          expect(tester.widget<DownloadTaskTile>(tile).expanded, isFalse);
           expect(tester.takeException(), isNull);
         },
       );
-      testWidgets('download page and inspector first frame $width/$scale', (
+      testWidgets('download page and details first frame $width/$scale', (
         tester,
       ) async {
         tester.view.physicalSize = Size(width, 1400);
@@ -127,32 +133,26 @@ void main() {
         await tester.pump();
         expect(tester.takeException(), isNull);
         expect(find.byType(FrostPageHeader), findsOneWidget);
-        // The filter is now a priority-aware toolbar control. Measurement
+        // The batch action is a priority-aware toolbar control. Measurement
         // variants are not interactive; inspect the actual live form.
-        final filter = find.byType(FrostPicker<DownloadFilter>).hitTestable();
-        if (filter.evaluate().isNotEmpty) {
-          expect(
-            tester.widget<FrostPicker<DownloadFilter>>(filter.last).style,
-            isIn([FrostPickerStyle.segmented, FrostPickerStyle.menu]),
-          );
-        } else {
-          expect(
-            find
-                .byWidgetPredicate(
-                  (w) => w is FrostTooltip && w.message == t.frost.more,
-                )
-                .hitTestable(),
-            findsOneWidget,
-          );
-        }
+        expect(
+          find
+              .byWidgetPredicate(
+                (w) =>
+                    w is FrostButton && w.label == t.downloads.pauseAll ||
+                    w is FrostTooltip && w.message == t.frost.more,
+              )
+              .hitTestable(),
+          findsWidgets,
+        );
         expect(find.byType(FrostTaskRow), findsOneWidget);
         await tester.tap(find.text('running.png'));
         await tester.pumpAndSettle();
-        expect(find.byType(DownloadTaskInspector), findsOneWidget);
+        expect(find.byType(DownloadTaskDetails), findsOneWidget);
         expect(
           tester
               .widget<DownloadTaskTile>(find.byType(DownloadTaskTile))
-              .selected,
+              .expanded,
           isTrue,
         );
         final selectedFill = FrostThemeTokens.of(
@@ -170,21 +170,6 @@ void main() {
           ),
           findsWidgets,
         );
-        if (width < 900) {
-          expect(find.text(t.downloads.taskDetails), findsNothing);
-          expect(
-            tester
-                .widget<FrostInspector>(find.byType(FrostInspector))
-                .sheetDetents,
-            [FrostSheetDetent.fitted],
-          );
-          expect(
-            tester
-                .widget<FrostInspector>(find.byType(FrostInspector))
-                .showsSheetCloseButton,
-            isFalse,
-          );
-        }
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox.shrink());
         await tester.pumpAndSettle();
@@ -192,7 +177,7 @@ void main() {
     }
   }
   testWidgets(
-    'same-day separators exist before inspector selection and retain geometry',
+    'same-day separators exist before a row expands and retain geometry',
     (tester) async {
       tester.view.physicalSize = const Size(2160, 1800);
       tester.view.devicePixelRatio = 1.5;
@@ -218,6 +203,13 @@ void main() {
             downloadManagerProvider.overrideWithValue(TestDownloadManager()),
           ],
           child: browseTestApp(const DownloadsPage()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byType(FrostTabBar),
+          matching: find.textContaining(t.downloads.completed),
         ),
       );
       await tester.pumpAndSettle();
@@ -253,15 +245,15 @@ void main() {
       }
 
       expectSameDaySeparator();
-      await tester.tap(find.text('running.png'));
+      await tester.tap(find.text('saved-a.png'));
       await tester.pumpAndSettle();
-      expect(find.byType(DownloadTaskInspector), findsOneWidget);
+      expect(find.byType(DownloadTaskDetails), findsOneWidget);
       expectSameDaySeparator();
       expect(tester.takeException(), isNull);
     },
   );
   testWidgets(
-    'L01 expanded batch does not clip a pixel-snapped same-day separator',
+    'expanded batch does not clip a pixel-snapped same-day separator',
     (tester) async {
       tester.view.physicalSize = const Size(2160, 1800);
       tester.view.devicePixelRatio = 1.5;
@@ -313,9 +305,16 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('batch-queued.png'), findsOneWidget);
+      await tester.tap(
+        find.descendant(
+          of: find.byType(FrostTabBar),
+          matching: find.textContaining(t.downloads.completed),
+        ),
+      );
+      await tester.pumpAndSettle();
       final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await mouse.addPointer(
-        location: tester.getCenter(find.text('running.png')),
+        location: tester.getCenter(find.text('saved-a.png')),
       );
       addTearDown(mouse.removePointer);
       await tester.pumpAndSettle();
@@ -349,30 +348,38 @@ void main() {
           ))!;
           final origin = boundary.localToGlobal(Offset.zero);
           final x = ((line.center.dx - origin.dx) * 1.5).round();
-          final y = ((line.top - origin.dy) * 1.5).round();
-          final index = (y * image.width + x) * 4;
-          final pixel = Color.fromARGB(
-            bytes.getUint8(index + 3),
-            bytes.getUint8(index),
-            bytes.getUint8(index + 1),
-            bytes.getUint8(index + 2),
-          );
-          image.dispose();
-          return pixel;
+          // The hairline is snapped to one physical row; which one depends on
+          // the fraction of the line's top, so read the row it can land on.
+          final top = ((line.top - origin.dy) * 1.5).floor();
+          return [
+            for (final y in [top, top + 1])
+              () {
+                final index = (y * image.width + x) * 4;
+                return Color.fromARGB(
+                  bytes.getUint8(index + 3),
+                  bytes.getUint8(index),
+                  bytes.getUint8(index + 1),
+                  bytes.getUint8(index + 2),
+                );
+              }(),
+          ];
         });
         expect(
-          pixel!.r,
-          closeTo(color.r, 1 / 255),
-          reason: 'offset=$offset line=$line',
+          pixel!.any(
+            (sample) =>
+                (sample.r - color.r).abs() <= 1 / 255 &&
+                (sample.g - color.g).abs() <= 1 / 255 &&
+                (sample.b - color.b).abs() <= 1 / 255,
+          ),
+          isTrue,
+          reason: 'offset=$offset line=$line samples=$pixel',
         );
-        expect(pixel.g, closeTo(color.g, 1 / 255));
-        expect(pixel.b, closeTo(color.b, 1 / 255));
       }
       expect(tester.takeException(), isNull);
     },
   );
   testWidgets(
-    'retained inactive downloads do not present an inspector sheet on resize',
+    'retained inactive downloads keep their expanded row across a resize',
     (tester) async {
       tester.view.physicalSize = const Size(1440, 900);
       tester.view.devicePixelRatio = 1;
@@ -412,14 +419,13 @@ void main() {
       tester.view.physicalSize = const Size(390, 900);
       await tester.pumpAndSettle();
       expect(find.text('Other page').hitTestable(), findsOneWidget);
-      expect(find.text(t.downloads.taskDetails).hitTestable(), findsNothing);
       expect(tester.takeException(), isNull);
       update(() => active = true);
       await tester.pumpAndSettle();
       expect(tester.state(find.byType(DownloadsPage)), same(retained));
-      expect(find.byType(DownloadTaskInspector).hitTestable(), findsOneWidget);
+      expect(find.byType(DownloadTaskDetails), findsOneWidget);
       expect(
-        tester.widget<DownloadTaskTile>(find.byType(DownloadTaskTile)).selected,
+        tester.widget<DownloadTaskTile>(find.byType(DownloadTaskTile)).expanded,
         isTrue,
       );
       expect(tester.takeException(), isNull);
@@ -506,30 +512,6 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.byType(FrostTaskRow).evaluate().length, lessThan(30));
-      final picker = find.byType(FrostPicker<DownloadFilter>);
-      var active = find
-          .descendant(
-            of: picker,
-            matching: find.text('${t.downloads.active} ${formatCount(1000)}'),
-          )
-          .hitTestable();
-      if (active.evaluate().isEmpty) {
-        await tester.tap(
-          find
-              .descendant(
-                of: picker,
-                matching: find.text('${t.downloads.all} ${formatCount(1000)}'),
-              )
-              .hitTestable(),
-        );
-        await tester.pumpAndSettle();
-        active = find
-            .text('${t.downloads.active} ${formatCount(1000)}')
-            .hitTestable()
-            .last;
-      }
-      await tester.tap(active);
-      await tester.pumpAndSettle();
       items.replace([
         task(
           'job0',
@@ -641,45 +623,8 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
-  for (final direction in TextDirection.values) {
-    testWidgets('failed-filter retry uses shared end keyline in $direction', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            downloadManagerProvider.overrideWithValue(TestDownloadManager()),
-          ],
-          child: browseTestApp(
-            Directionality(
-              textDirection: direction,
-              child: FrostContentColumn(
-                child: DownloadTaskTile(
-                  task: task('failed', DownloadStatus.failed),
-                  plainRetry: true,
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      final retry = find
-          .byWidgetPredicate(
-            (widget) =>
-                widget is FrostButton && widget.label == t.generic.retry,
-          )
-          .hitTestable();
-      expect(retry, findsOneWidget);
-      expect(
-        tester.widget<FrostButton>(retry).edgeAlignment,
-        FrostButtonEdgeAlignment.end,
-      );
-      expect(tester.takeException(), isNull);
-    });
-  }
   testWidgets(
-    'selected row keeps pointer actions hidden until hover or row keyboard focus without moving text',
+    'expanded row keeps pointer actions hidden until hover or row keyboard focus without moving text',
     (tester) async {
       await tester.pumpWidget(
         ProviderScope(
@@ -694,7 +639,7 @@ void main() {
                 width: 700,
                 child: DownloadTaskTile(
                   task: task('job', DownloadStatus.running),
-                  selected: true,
+                  expanded: true,
                   onTaskTap: (_) {},
                 ),
               ),
@@ -704,9 +649,13 @@ void main() {
       );
       final title = find.text('job.png');
       final before = tester.getRect(title);
+      // The row's pointer action; the details below it have their own Pause.
       final pause = find
-          .byWidgetPredicate(
-            (w) => w is FrostButton && w.label == t.downloads.pause,
+          .descendant(
+            of: find.byType(FrostSwipeActions),
+            matching: find.byWidgetPredicate(
+              (w) => w is FrostButton && w.label == t.downloads.pause,
+            ),
           )
           .hitTestable();
       expect(pause, findsNothing);
@@ -734,7 +683,7 @@ void main() {
     },
   );
   testWidgets(
-    'running and saved rows share 48 thumbnails and title keylines, inspector selects only one',
+    'running and saved rows share 48 thumbnails and title keylines, one row expands at a time',
     (tester) async {
       tester.view.physicalSize = const Size(1440, 900);
       tester.view.devicePixelRatio = 1;
@@ -745,6 +694,7 @@ void main() {
             downloadItemsProvider.overrideWith(
               () => TestDownloadItems([
                 task('running', DownloadStatus.running),
+                task('paused', DownloadStatus.paused),
                 task('saved', DownloadStatus.downloaded, save: SaveState.saved),
               ]),
             ),
@@ -758,30 +708,54 @@ void main() {
         of: find.byType(DownloadTaskTile),
         matching: find.text('$value.png'),
       );
-      expect(
-        tester.getRect(title('running')).left,
-        tester.getRect(title('saved')).left,
-      );
-      expect(
-        find.descendant(
+      void expectThumbnails(int count) {
+        final thumbnails = find.descendant(
           of: find.byType(DownloadTaskTile),
           matching: find.byType(DownloadArtwork),
-        ),
-        findsNWidgets(2),
-      );
-      for (final thumb
-          in find
-              .descendant(
-                of: find.byType(DownloadTaskTile),
-                matching: find.byType(DownloadArtwork),
-              )
-              .evaluate()) {
-        expect(
-          tester.getSize(find.byElementPredicate((e) => identical(e, thumb))),
-          const Size(48, 48),
         );
+        expect(thumbnails, findsNWidgets(count));
+        for (final thumb in thumbnails.evaluate()) {
+          expect(
+            tester.getSize(find.byElementPredicate((e) => identical(e, thumb))),
+            const Size(48, 48),
+          );
+        }
       }
-      expect(find.byType(FrostTaskRow), findsOneWidget);
+
+      final keyline = tester.getRect(title('running')).left;
+      expect(tester.getRect(title('paused')).left, keyline);
+      // All lists the saved row below the two in flight, on the same keyline.
+      expect(tester.getRect(title('saved')).left, keyline);
+      expectThumbnails(3);
+      expect(find.byType(FrostTaskRow), findsNWidgets(2));
+      await tester.tap(title('running'));
+      await tester.pumpAndSettle();
+      await tester.tap(title('paused'));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widgetList<DownloadTaskTile>(find.byType(DownloadTaskTile))
+            .where((w) => w.expanded)
+            .map((w) => w.task.snapshot.id),
+        ['paused'],
+      );
+      expect(
+        tester
+            .widget<DownloadTaskDetails>(find.byType(DownloadTaskDetails))
+            .task
+            .snapshot
+            .id,
+        'paused',
+      );
+      await tester.tap(
+        find.descendant(
+          of: find.byType(FrostTabBar),
+          matching: find.textContaining(t.downloads.completed),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.getRect(title('saved')).left, keyline);
+      expectThumbnails(1);
       expect(
         find.descendant(
           of: find.byType(DownloadTaskTile),
@@ -791,26 +765,155 @@ void main() {
         ),
         findsOneWidget,
       );
-      await tester.tap(title('running'));
-      await tester.pumpAndSettle();
-      await tester.tap(title('saved'));
-      await tester.pumpAndSettle();
-      expect(
-        tester
-            .widgetList<DownloadTaskTile>(find.byType(DownloadTaskTile))
-            .where((w) => w.selected)
-            .map((w) => w.task.snapshot.id),
-        ['saved'],
-      );
-      expect(
-        tester
-            .widget<DownloadTaskInspector>(find.byType(DownloadTaskInspector))
-            .task
-            .snapshot
-            .id,
-        'saved',
-      );
       expect(tester.takeException(), isNull);
     },
   );
+
+  Future<TestDownloadManager> pumpDetails(
+    WidgetTester tester,
+    BooruDownloadItem item,
+  ) async {
+    final manager = TestDownloadManager();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          downloadManagerProvider.overrideWithValue(manager),
+          downloadItemsProvider.overrideWith(() => TestDownloadItems([item])),
+        ],
+        child: browseTestApp(
+          SingleChildScrollView(child: DownloadTaskDetails(task: item)),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    return manager;
+  }
+
+  Finder button(String label) =>
+      find.byWidgetPredicate((w) => w is FrostButton && w.label == label);
+
+  testWidgets('details pause a running task', (tester) async {
+    final manager = await pumpDetails(
+      tester,
+      task('job', DownloadStatus.running),
+    );
+    expect(button(t.downloads.resume), findsNothing);
+    await tester.tap(button(t.downloads.pause));
+    await tester.pumpAndSettle();
+    expect(manager.calls, [('pause', 'job')]);
+  });
+
+  testWidgets('details resume a paused task', (tester) async {
+    final manager = await pumpDetails(
+      tester,
+      task('job', DownloadStatus.paused),
+    );
+    expect(button(t.downloads.pause), findsNothing);
+    await tester.tap(button(t.downloads.resume));
+    await tester.pumpAndSettle();
+    expect(manager.calls, [('resume', 'job')]);
+  });
+
+  testWidgets('details offer neither pause nor resume to a finished task', (
+    tester,
+  ) async {
+    await pumpDetails(tester, task('job', DownloadStatus.downloaded));
+    expect(button(t.downloads.pause), findsNothing);
+    expect(button(t.downloads.resume), findsNothing);
+  });
+
+  testWidgets('details show status, percent and only known values', (
+    tester,
+  ) async {
+    await pumpDetails(tester, task('job', DownloadStatus.paused));
+    expect(find.text(t.downloads.paused), findsOneWidget);
+    expect(find.text('50%'), findsOneWidget);
+    // No transfer rate is known, and a paused task has no remaining time.
+    expect(find.textContaining('/s'), findsNothing);
+  });
+
+  for (final (status, shown) in [
+    (DownloadStatus.running, true),
+    (DownloadStatus.paused, false),
+  ]) {
+    testWidgets('details show the rate only while running: $status', (
+      tester,
+    ) async {
+      final item = task('job', status);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            downloadManagerProvider.overrideWithValue(TestDownloadManager()),
+            downloadItemsProvider.overrideWith(() => TestDownloadItems([item])),
+            downloadTransferRatesProvider.overrideWith(_FixedRates.new),
+          ],
+          child: browseTestApp(DownloadTaskDetails(task: item)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining(downloadRate(1000)),
+        shown ? findsOneWidget : findsNothing,
+      );
+    });
+  }
+
+  testWidgets('details of a failed task show its status and no percent', (
+    tester,
+  ) async {
+    await pumpDetails(tester, task('job', DownloadStatus.failed));
+    expect(find.text(t.downloads.failed), findsOneWidget);
+    expect(find.textContaining('%'), findsNothing);
+  });
+
+  testWidgets('cancelled tasks leave Completed and follow failed ones', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1000, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          downloadManagerProvider.overrideWithValue(TestDownloadManager()),
+          downloadItemsProvider.overrideWith(
+            () => TestDownloadItems([
+              task('cancelled', DownloadStatus.cancelled),
+              task('done', DownloadStatus.downloaded),
+              task('running', DownloadStatus.running),
+              task('broken', DownloadStatus.failed),
+            ]),
+          ),
+        ],
+        child: browseTestApp(const DownloadsPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    Finder tab(String label) => find
+        .descendant(of: find.byType(FrostTabBar), matching: find.text(label))
+        .first;
+    // The Active tab counts failed, running and cancelled tasks.
+    expect(find.text('3'), findsWidgets);
+    // All lists them in that order, and the completed task after them.
+    final order = [
+      for (final name in ['broken', 'running', 'cancelled', 'done'])
+        tester.getTopLeft(find.text('$name.png')).dy,
+    ];
+    expect(order, orderedEquals([...order]..sort()));
+    // Completed holds only the finished task.
+    await tester.tap(tab(t.downloads.completed));
+    await tester.pumpAndSettle();
+    expect(find.text('done.png').hitTestable(), findsOneWidget);
+    expect(find.text('cancelled.png').hitTestable(), findsNothing);
+    await tester.tap(tab(t.downloads.all));
+    await tester.pumpAndSettle();
+    // Failures lead under a caption with their count; the rest follow under
+    // the Active caption.
+    expect(find.text(t.downloads.failedTasks(count: '1')), findsOneWidget);
+    expect(find.text(t.downloads.active), findsWidgets);
+    // A cancelled task keeps Retry and Delete.
+    await tester.tap(find.text('cancelled.png'));
+    await tester.pumpAndSettle();
+    expect(button(t.generic.retry), findsWidgets);
+  });
 }

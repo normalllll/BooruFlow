@@ -6,18 +6,25 @@ import 'package:booruflow/core/downloads/download_models.dart';
 import 'package:booruflow/core/downloads/download_permission_guard.dart';
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/app_navigation.dart';
 import 'package:booruflow/shared/app_toast.dart';
 import 'package:frost_ui/frost_ui.dart';
+import 'package:go_router/go_router.dart';
 
-void openDownloadTask(String id) => AppRouter.router.go(
-  Uri(
-    path: '/downloads',
-    queryParameters: {
-      'task': id,
-      'reveal': '${DateTime.now().microsecondsSinceEpoch}',
-    },
-  ).toString(),
-);
+/// Opens the downloads page above the page the user is on, so Back returns
+/// there; on a downloads page already open it shows [taskId] there instead.
+Future<void> openDownloads({String? taskId, GoRouter? router}) {
+  router ??= AppRouter.router;
+  final open = AppRouter.currentUri.path == AppRoute.downloads.path;
+  if (open && taskId == null) return Future.value();
+  final location = downloadsLocation(
+    taskId: taskId,
+    reveal: taskId == null ? null : '${DateTime.now().microsecondsSinceEpoch}',
+  );
+  return open ? router.replace<void>(location) : router.push<void>(location);
+}
+
+void openDownloadTask(String id) => unawaited(openDownloads(taskId: id));
 
 void notifyDownloadAdded({required String taskId, required String name}) =>
     FrostToast.success(

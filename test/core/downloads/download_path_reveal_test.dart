@@ -163,7 +163,7 @@ void main() {
     'real temporary download exists, disappears, then loses its folder without launching any real desktop UI',
     () async {
       final root = await Directory.systemTemp.createTemp(
-        'booruflow-r8-reveal-',
+        'booruflow-reveal-',
       );
       addTearDown(() async {
         expect(root.absolute.parent.path, Directory.systemTemp.absolute.path);

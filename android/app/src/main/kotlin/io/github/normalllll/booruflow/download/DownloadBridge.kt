@@ -685,7 +685,9 @@ object AndroidMediaSaver {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 values.clear()
                 values.put(MediaStore.MediaColumns.IS_PENDING, 0)
-                resolver.update(uri, values, null, null)
+                if (resolver.update(uri, values, null, null) == 0) {
+                    throw IllegalStateException("Could not publish MediaStore entry")
+                }
             }
             return mapOf("path" to uri.toString(), "galleryAssetId" to uri.toString(), "bytesWritten" to bytesWritten)
         } catch (error: Throwable) {

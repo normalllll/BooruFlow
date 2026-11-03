@@ -8,7 +8,7 @@ import 'package:booruflow/core/file_paths.dart';
 import 'package:booruflow/core/settings/logic.dart';
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/features/booru/booru_logic.dart';
-import 'package:booruflow/features/discovery/collection_logic.dart';
+import 'package:booruflow/features/browse/collection_logic.dart';
 import 'package:booruflow/features/downloads/logic.dart';
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/intl/number_format.dart';
