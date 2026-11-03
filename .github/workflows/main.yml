@@ -161,10 +161,24 @@ jobs:
           path: |
             build/windows/x64/runner/Release/windows-x64.zip
 
-  build-and-release-linux-amd64:
-    name: Build Linux amd64
-    runs-on: ubuntu-24.04
+  build-and-release-linux:
+    name: Build Linux ${{ matrix.package-arch }}
+    runs-on: ${{ matrix.runner }}
     needs: validate
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            package-arch: amd64
+            rpm-arch: x86_64
+            runner: ubuntu-24.04
+            rust-target: x86_64-unknown-linux-gnu
+          - arch: arm64
+            package-arch: arm64
+            rpm-arch: aarch64
+            runner: ubuntu-24.04-arm
+            rust-target: aarch64-unknown-linux-gnu
 
     env:
       APP_NAME: booruflow
@@ -172,9 +186,9 @@ jobs:
       APP_DISPLAY_NAME: BooruFlow
       APP_URL: https://github.com/${{ github.repository }}
       APP_LICENSE: GPL-3.0-only
-      APP_ARCH: amd64
-      RPM_ARCH: x86_64
-      BUNDLE_DIR: build/linux/x64/release/bundle
+      APP_ARCH: ${{ matrix.package-arch }}
+      RPM_ARCH: ${{ matrix.rpm-arch }}
+      BUNDLE_DIR: build/linux/${{ matrix.arch }}/release/bundle
       PACKAGE_ROOT: build/package-root
       DEB_DIR: build/deb/booruflow
 
@@ -205,8 +219,8 @@ jobs:
       - name: Set up SDKs and caches
         uses: ./.github/actions/setup
         with:
-          platform: linux
-          rust-targets: x86_64-unknown-linux-gnu
+          platform: linux-${{ matrix.arch }}
+          rust-targets: ${{ matrix.rust-target }}
 
       - name: Build Linux
         run: flutter build linux --release
@@ -276,7 +290,7 @@ jobs:
 
       - name: Package Linux Tarball
         run: |
-          tar -C "$BUNDLE_DIR" -czvf "build/linux-x64.tar.gz" .
+          tar -C "$BUNDLE_DIR" -czvf "build/linux-${{ matrix.arch }}.tar.gz" .
 
       - name: Package Linux Deb
         run: |
@@ -298,7 +312,7 @@ jobs:
            $APP_DISPLAY_NAME desktop application built with Flutter.
           EOF
 
-          dpkg-deb --build --root-owner-group "$DEB_DIR" "build/linux_amd64.deb"
+          dpkg-deb --build --root-owner-group "$DEB_DIR" "build/linux_$APP_ARCH.deb"
 
       - name: Package Linux RPM
         run: |
@@ -320,20 +334,20 @@ jobs:
             --depends mpv-libs \
             --depends libepoxy \
             -C "$PACKAGE_ROOT" \
-            -p "build/linux_amd64.rpm" \
+            -p "build/linux_$APP_ARCH.rpm" \
             usr
 
       - name: Upload linux artifacts
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: release-linux
+          name: release-linux-${{ matrix.arch }}
           if-no-files-found: error
           retention-days: 14
           compression-level: 0
           path: |
-            build/linux_amd64.deb
-            build/linux_amd64.rpm
-            build/linux-x64.tar.gz
+            build/linux_${{ matrix.package-arch }}.deb
+            build/linux_${{ matrix.package-arch }}.rpm
+            build/linux-${{ matrix.arch }}.tar.gz
 
   build-and-release-ios:
     name: Build iOS
@@ -450,7 +464,7 @@ jobs:
       - validate
       - build-and-release-android
       - build-and-release-windows-x64
-      - build-and-release-linux-amd64
+      - build-and-release-linux
       - build-and-release-ios
       - build-and-release-macos
     if: startsWith(github.ref, 'refs/tags/') && (github.event_name == 'push' || inputs.publish_release)
@@ -470,6 +484,7 @@ jobs:
             app-arm64-v8a-release.apk app-armeabi-v7a-release.apk \
             app-universal-release.apk app-x86_64-release.apk \
             windows-x64.zip linux-x64.tar.gz linux_amd64.deb linux_amd64.rpm \
+            linux-arm64.tar.gz linux_arm64.deb linux_arm64.rpm \
             ios-nosigned.ipa \
             macos-arm64-nosigned.zip macos-x86_64-nosigned.zip; do
             test -s "release/$asset" || {
