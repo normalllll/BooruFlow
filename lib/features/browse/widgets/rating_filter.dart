@@ -60,20 +60,25 @@ class _RatingChoices extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (final rating in SettingsService.configurableRatings)
-          FrostCheckboxRow(
-            title: rating.displayLabel,
-            value: ratings.contains(rating),
-            onChanged: (selected) {
-              final next = ref.read(settingsProvider).ratings.toSet();
-              if (selected == true) {
-                next.add(rating);
-              } else {
-                next.remove(rating);
-              }
-              ref.read(settingsProvider.notifier).setRatings(next.toList());
-            },
-          ),
+        // A form section lines the marks up with the title and the hint.
+        FrostFormSection(
+          children: [
+            for (final rating in SettingsService.configurableRatings)
+              FrostCheckboxRow(
+                title: rating.displayLabel,
+                value: ratings.contains(rating),
+                onChanged: (selected) {
+                  final next = ref.read(settingsProvider).ratings.toSet();
+                  if (selected == true) {
+                    next.add(rating);
+                  } else {
+                    next.remove(rating);
+                  }
+                  ref.read(settingsProvider.notifier).setRatings(next.toList());
+                },
+              ),
+          ],
+        ),
         const SizedBox(height: FrostGap.related),
         FrostText(
           t.discovery.defaultRatingsHint,
@@ -94,40 +99,43 @@ class _RatingChoices extends ConsumerWidget {
   }
 }
 
+/// The conditions bar: shown only while a rating filter is in effect.
 class RatingConditions extends ConsumerStatefulWidget {
-  const RatingConditions({this.showsReset = true, super.key});
-  final bool showsReset;
+  const RatingConditions({super.key});
   @override
   ConsumerState<RatingConditions> createState() => _RatingConditionsState();
 }
 
 class _RatingConditionsState extends ConsumerState<RatingConditions> {
-  List<String> _last = const [];
+  // Kept while the bar collapses, after the filter has been cleared.
+  String _last = '';
+
   @override
   Widget build(BuildContext context) {
     final t = Translations.of(context);
     final ratings = ref.watch(settingsProvider).ratings;
-    if (ratings.isNotEmpty) _last = ratings.map((r) => r.displayLabel).toList();
+    if (ratings.isNotEmpty) {
+      _last = ratings
+          .map((rating) => rating.displayLabel)
+          .join(t.discovery.ratingSeparator);
+    }
     void reset() => ref.read(settingsProvider.notifier).setRatings([]);
     return FrostPresence(
       visible: ratings.isNotEmpty,
       effect: FrostPresenceEffect.expand,
-      child: Wrap(
-        spacing: FrostGap.related,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          FrostFilterChip(
-            label: t.discovery.ratingLabel,
-            value: _last.join(t.discovery.ratingSeparator),
-            onClear: reset,
-          ),
-          if (widget.showsReset)
-            FrostButton.quiet(
-              label: t.discovery.resetFilters,
-              size: FrostControlSize.compact,
-              onPressed: reset,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: FrostGap.related),
+        child: FrostFilterBar(
+          chips: [
+            FrostFilterChip(
+              label: t.discovery.ratingLabel,
+              value: _last,
+              onPressed: () => showRatingFilterSheet(context),
+              onClear: reset,
             ),
-        ],
+          ],
+          onClearAll: reset,
+        ),
       ),
     );
   }

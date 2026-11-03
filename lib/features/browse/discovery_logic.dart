@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:booruflow/features/booru/booru_logic.dart';
-import 'package:booruflow/features/discovery/collection_logic.dart';
-import 'package:booruflow/features/discovery/services/discovery_availability.dart';
+import 'package:booruflow/features/browse/collection_logic.dart';
+import 'package:booruflow/features/browse/services/discovery_availability.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

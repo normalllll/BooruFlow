@@ -5,7 +5,7 @@ import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/features/booru/services/booru_service.dart';
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
-import 'package:frost_ui/frost_ui.dart';
+import 'package:frost_data/frost_data.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'collection_logic.g.dart';
@@ -134,6 +134,17 @@ class PostListSource extends FrostListSource<Post> {
   final CollectionLoader loader;
   String? _cursor;
   bool _exhausted = false;
+
+  /// Whether another page may exist and this source is still live.
+  bool get canLoadMore => !isDisposed && hasMore;
+
+  /// Loads the next page for a detail opened from this list and returns the
+  /// whole list after it. A failed load throws and leaves the source ready to
+  /// retry.
+  Future<List<Post>> loadNext() async {
+    if (!await loadMore()) throw lastError ?? StateError('Page load failed');
+    return List.of(items);
+  }
 
   @override
   Future<List<Post>> initList() => _fetch(null);
