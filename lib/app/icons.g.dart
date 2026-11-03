@@ -95,6 +95,7 @@ abstract final class BooruFlowIcons {
   static const x = IconData(0xE93D, fontFamily: 'BooruFlowIcons');
   static const zoomIn = IconData(0xE93E, fontFamily: 'BooruFlowIcons');
   static const zoomOut = IconData(0xE93F, fontFamily: 'BooruFlowIcons');
+  static const tags = IconData(0xE940, fontFamily: 'BooruFlowIcons');
 
   static const all = <IconData>[
     clock,
@@ -161,6 +162,7 @@ abstract final class BooruFlowIcons {
     x,
     zoomIn,
     zoomOut,
+    tags,
   ];
   static const names = <String>[
     'clock',
@@ -227,5 +229,6 @@ abstract final class BooruFlowIcons {
     'x',
     'zoom-in',
     'zoom-out',
+    'tags',
   ];
 }
