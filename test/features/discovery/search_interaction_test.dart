@@ -2,11 +2,12 @@ import 'dart:async';
 
 import 'package:booruflow/app/frost_config.dart';
 import 'package:booruflow/features/booru/services/booru_service.dart';
+import 'package:booruflow/features/search/inline_search.dart';
 import 'package:booruflow/features/search/logic.dart';
-import 'package:booruflow/features/search/post_search_page.dart';
 import 'package:booruflow/features/search/services/tag_suggestion_repository.dart';
-import 'package:booruflow/features/search/widgets/common_tags_sheet.dart';
 import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/app_navigation.dart';
+import 'package:booruflow/shared/app_page.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,7 +15,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
-import 'package:frost_ui/src/overlays/_popover_surface.dart';
+import 'package:go_router/go_router.dart';
 
 BooruSource testSource(String id) => BooruSource(
   sourceId: id,
@@ -46,10 +47,16 @@ BooruSource testSource(String id) => BooruSource(
 
 class SearchRepositoryFake extends TagSuggestionRepository {
   int commonCount = 1;
+  bool failInitialize = false, failHistory = false, failCommon = false;
+  int initializations = 0, historyLoads = 0, commonLoads = 0;
   final calls = <String>[];
   final pending = <String, Completer<List<TagSuggestion>>>{};
   @override
-  Future<void> initialize() async {}
+  Future<void> initialize() async {
+    initializations++;
+    if (failInitialize) throw StateError('initialize failed');
+  }
+
   @override
   List<TagSuggestion> local(String source, String locale, String text) => [];
   @override
@@ -63,8 +70,12 @@ class SearchRepositoryFake extends TagSuggestionRepository {
   String? displayName(String source, String locale, String value) => null;
   final history = <String, List<String>>{};
   @override
-  Future<List<String>> recentSearches(String source) async =>
-      List.of(history[source] ?? []);
+  Future<List<String>> recentSearches(String source) async {
+    historyLoads++;
+    if (failHistory) throw StateError('history failed');
+    return List.of(history[source] ?? []);
+  }
+
   @override
   Future<void> removeSearch(String source, String query) async =>
       history[source]?.remove(query);
@@ -81,7 +92,13 @@ class SearchRepositoryFake extends TagSuggestionRepository {
     String locale, {
     bool refresh = false,
     int page = 1,
-  }) async => List.generate(
+  }) async {
+    commonLoads++;
+    if (failCommon) throw StateError('common failed');
+    return commonTags();
+  }
+
+  List<TagSuggestion> commonTags() => List.generate(
     commonCount,
     (index) => TagSuggestion(
       value: index == 0 ? 'sky' : 'common_long_tag_$index',
@@ -148,184 +165,179 @@ Finder suggestion(String label) =>
 TextEditingController input(WidgetTester tester) =>
     tester.widget<EditableText>(find.byType(EditableText)).controller;
 
+/// A page whose header carries an [InlineSearch], inside a router that records
+/// the tags of every results page opened.
+class SearchHarness {
+  final submissions = <List<String>>[];
+
+  Future<void> mount(
+    WidgetTester tester, {
+    required TagSuggestionRepository repository,
+    List<String> query = const [],
+    double scale = 1,
+    AppLocale locale = AppLocale.en,
+  }) async {
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (_, _) => FrostLayoutScope(
+            child: AppPage(
+              header: FrostPageHeader(
+                title: const FrostText('Host'),
+                middle: InlineSearch(sourceId: 'first', query: query),
+              ),
+              slivers: const [SliverToBoxAdapter(child: SizedBox(height: 600))],
+            ),
+          ),
+          routes: [
+            GoRoute(
+              name: AppRoute.results.name,
+              path: 'results',
+              builder: (_, state) {
+                final tags = ResultsQuery.parse(state.uri).tags;
+                if (submissions.isEmpty || submissions.last != tags) {
+                  submissions.add(tags);
+                }
+                return const SizedBox();
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      TranslationProvider(
+        child: ProviderScope(
+          overrides: [
+            tagSuggestionRepositoryProvider.overrideWithValue(repository),
+          ],
+          child: FrostApp.router(
+            title: 'Search test',
+            config: appFrostConfig,
+            routerConfig: router,
+            locale: locale.flutterLocale,
+            supportedLocales: AppLocaleUtils.supportedLocales,
+            localizationsDelegates: GlobalMaterialLocalizations.delegates,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: TextScaler.linear(scale)),
+              child: child!,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+}
+
 void main() {
   late SearchRepositoryFake repository;
-  late List<List<String>> submissions;
+  late SearchHarness harness;
   setUp(() {
     BooruService.instance.useSourcesForTesting([
       testSource('first'),
       testSource('second'),
     ]);
     repository = SearchRepositoryFake();
-    submissions = [];
+    harness = SearchHarness();
   });
   Future<void> mount(WidgetTester tester) async {
-    await tester.pumpWidget(
-      searchTestApp(
-        PostSearchPage(
-          sourceId: 'first',
-          repository: repository,
-          onSubmit: (_, tags) => submissions.add(tags),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
+    tester.view.physicalSize = const Size(390, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await harness.mount(tester, repository: repository);
   }
 
-  for (final width in [320.0, 600.0, 1440.0]) {
-    testWidgets('source, token input and actions share one header at $width', (
-      tester,
-    ) async {
-      tester.view.physicalSize = Size(width, 800);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-      await mount(tester);
-      final header = tester.getRect(find.byType(FrostPageHeader)),
-          field = tester.getRect(find.byType(FrostTokenField));
-      expect(header.height, width < 600 ? 48 : 52);
-      expect(field.center.dy, closeTo(header.center.dy, 1));
-      expect(field.width, greaterThan(0));
-      if (width >= 600) {
-        expect(find.byType(FrostTitleMenu), findsOneWidget);
-        expect(field.width, lessThanOrEqualTo(640));
-        final manager = find.byWidgetPredicate(
-          (w) => w is FrostTooltip && w.message == t.discovery.manageTags,
-        );
-        expect(
-          tester.getCenter(manager.hitTestable().first).dy,
-          closeTo(header.center.dy, 1),
-        );
-      } else {
-        expect(find.byType(FrostTitleMenu), findsOneWidget);
-        final source = find.byType(FrostTitleMenu);
-        expect(tester.getRect(source).right, lessThan(field.left));
-      }
-      expect(tester.takeException(), isNull);
-    });
-  }
   testWidgets(
-    'suggestions float without shifting content and stay pinned during body scrolling',
-    (tester) async {
-      tester.view.physicalSize = const Size(1000, 600);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-      repository.commonCount = 40;
-      await mount(tester);
-      final common = find.byType(FrostTag).first,
-          before = tester.getTopLeft(find.byType(FrostTag).first);
-      await tester.enterText(find.byType(EditableText), 'mi');
-      await tester.pump(const Duration(milliseconds: 300));
-      repository.pending['first:mi']!.complete([
-        const TagSuggestion(value: 'miku', origin: SuggestionOrigin.sourceApi),
-        const TagSuggestion(value: 'mio', origin: SuggestionOrigin.sourceApi),
-      ]);
-      await tester.pumpAndSettle();
-      final panel = find.byType(FrostPopoverSurface),
-          anchor = tester.getRect(find.byType(FrostPopoverSurface));
-      expect(tester.getTopLeft(common), before);
-      expect(anchor.left, tester.getRect(find.byType(FrostTokenField)).left);
-      expect(anchor.top, tester.getRect(find.byType(FrostTokenField)).bottom);
-      final scroll = tester.state<ScrollableState>(
-        find.descendant(
-          of: find.byKey(const PageStorageKey('search-content')),
-          matching: find.byType(Scrollable),
-        ),
-      );
-      expect(scroll.position.maxScrollExtent, greaterThan(0));
-      scroll.position.jumpTo(scroll.position.maxScrollExtent);
-      await tester.pump();
-      expect(tester.getRect(panel), anchor);
-      await tester.tap(find.text('miku'));
-      await tester.pumpAndSettle();
-      expect(input(tester).text, 'miku ');
-      expect(submissions, isEmpty);
-      expect(panel, findsNothing);
-      expect(tester.takeException(), isNull);
-    },
-  );
-  testWidgets(
-    'common tags wrap and append completed tokens without submitting',
-    (tester) async {
-      tester.view.physicalSize = const Size(360, 700);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-      repository.commonCount = 20;
-      await mount(tester);
-      final tags = find.byType(FrostTag);
-      expect(tags, findsNWidgets(20));
-      expect(
-        tester.getTopLeft(tags.last).dy,
-        greaterThan(tester.getTopLeft(tags.first).dy),
-      );
-      await tester.tap(find.text('sky'));
-      await tester.pumpAndSettle();
-      expect(input(tester).text, 'sky ');
-      expect(submissions, isEmpty);
-      expect(tester.takeException(), isNull);
-    },
-  );
-  testWidgets(
-    'compact body suggestions fit above keyboard and dismiss on outside tap',
-    (tester) async {
-      tester.view.physicalSize = const Size(360, 700);
-      tester.view.devicePixelRatio = 1;
-      tester.view.viewInsets = const FakeViewPadding(bottom: 320);
-      addTearDown(tester.view.reset);
-      await mount(tester);
-      await tester.enterText(find.byType(EditableText), 'mi');
-      await tester.pump(const Duration(milliseconds: 300));
-      repository.complete('first:mi', 'miku');
-      await tester.pumpAndSettle();
-      final list = find.byWidgetPredicate((widget) => widget is FrostList);
-      expect(find.byType(FrostPopoverSurface), findsNothing);
-      expect(list, findsOneWidget);
-      expect(tester.getRect(list).bottom, lessThanOrEqualTo(380));
-      expect(tester.getSize(find.byType(FrostPageHeader)).height, 48);
-      await tester.tapAt(const Offset(350, 400));
-      await tester.pumpAndSettle();
-      expect(find.byType(FrostPopoverSurface), findsNothing);
-      expect(list, findsNothing);
-      expect(tester.takeException(), isNull);
-    },
-  );
-  testWidgets(
-    'more common tags opens a shared lazy panel and selection returns to query',
-    (tester) async {
-      await mount(tester);
-      await tester.tap(find.text(t.discovery.moreTags));
-      await tester.pumpAndSettle();
-      expect(find.byType(CommonTagsSheet), findsOneWidget);
-      final row = find.descendant(
-        of: find.byType(CommonTagsSheet),
-        matching: suggestion('sky'),
-      );
-      expect(row, findsOneWidget);
-      await tester.tap(row);
-      await tester.pumpAndSettle();
-      expect(input(tester).text, 'sky ');
-      expect(submissions, isEmpty);
-      expect(find.byType(CommonTagsSheet), findsNothing);
-      expect(tester.takeException(), isNull);
-    },
-  );
-  testWidgets(
-    'empty submit and candidate clicks never search automatically; next Enter submits',
+    'empty submit and landing selections never search automatically; next Enter submits',
     (tester) async {
       await mount(tester);
       await tester.tap(find.byType(EditableText));
-      await tester.testTextInput.receiveAction(TextInputAction.search);
-      expect(submissions, isEmpty);
-      expect(repository.calls, isEmpty);
-      await tester.tap(find.text('sky'));
       await tester.pumpAndSettle();
-      expect(submissions, isEmpty);
+      await tester.testTextInput.receiveAction(TextInputAction.search);
+      expect(harness.submissions, isEmpty);
+      expect(repository.calls, isEmpty);
+      await tester.tap(suggestion('sky').hitTestable());
+      await tester.pumpAndSettle();
+      expect(input(tester).text, 'sky ');
+      expect(harness.submissions, isEmpty);
       expect(repository.calls, isEmpty);
       await tester.testTextInput.receiveAction(TextInputAction.search);
-      expect(submissions, [
+      await tester.pumpAndSettle();
+      expect(harness.submissions, [
         ['sky'],
       ]);
     },
   );
+  testWidgets('a common tag pick records the tag as verified', (tester) async {
+    await mount(tester);
+    await tester.tap(find.byType(EditableText));
+    await tester.pumpAndSettle();
+    final rules =
+        (tester.widget<EditableText>(find.byType(EditableText)).controller
+                as FrostTokenEditingController)
+            .rules;
+    expect(rules.any((r) => r.tone == FrostTokenTone.positive), isFalse);
+    await tester.tap(suggestion('sky').hitTestable());
+    await tester.pumpAndSettle();
+    final picked =
+        (tester.widget<EditableText>(find.byType(EditableText)).controller
+                as FrostTokenEditingController)
+            .rules;
+    expect(
+      picked.any(
+        (r) => r.tone == FrostTokenTone.positive && r.pattern.hasMatch('sky'),
+      ),
+      isTrue,
+    );
+  });
+  testWidgets('a history failure is shown with a retry, not as an empty list', (
+    tester,
+  ) async {
+    repository.failHistory = true;
+    await mount(tester);
+    await tester.tap(find.byType(EditableText));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('history failed'), findsNothing);
+    expect(find.text(t.discovery.recentSearches), findsOneWidget);
+    final loads = repository.historyLoads;
+    repository.failHistory = false;
+    repository.history['first'] = ['blue_sky'];
+    await tester.tap(find.text(t.generic.retry));
+    await tester.pumpAndSettle();
+    expect(repository.historyLoads, greaterThan(loads));
+    expect(suggestion('blue_sky'), findsOneWidget);
+  });
+  testWidgets('a common tag failure is shown with a retry', (tester) async {
+    repository.failCommon = true;
+    await mount(tester);
+    await tester.tap(find.byType(EditableText));
+    await tester.pumpAndSettle();
+    expect(suggestion('sky'), findsNothing);
+    expect(find.text(t.discovery.commonTags), findsOneWidget);
+    repository.failCommon = false;
+    await tester.tap(find.text(t.generic.retry));
+    await tester.pumpAndSettle();
+    expect(suggestion('sky'), findsOneWidget);
+  });
+  testWidgets('an initialization failure offers a retry', (tester) async {
+    repository.failInitialize = true;
+    await mount(tester);
+    await tester.tap(find.byType(EditableText));
+    await tester.pumpAndSettle();
+    expect(find.text(t.generic.retry), findsOneWidget);
+    final loads = repository.initializations;
+    repository.failInitialize = false;
+    await tester.tap(find.text(t.generic.retry));
+    await tester.pumpAndSettle();
+    expect(repository.initializations, greaterThan(loads));
+    expect(find.text(t.generic.retry), findsNothing);
+    expect(suggestion('sky'), findsOneWidget);
+  });
   testWidgets('debounce and generation discard slow old responses', (
     tester,
   ) async {
@@ -359,7 +371,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     await tester.testTextInput.receiveAction(TextInputAction.search);
     expect(repository.calls, isEmpty);
-    expect(submissions, isEmpty);
+    expect(harness.submissions, isEmpty);
     tester.testTextInput.updateEditingValue(
       const TextEditingValue(
         text: '初音',
@@ -384,11 +396,11 @@ void main() {
       await tester.pump();
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
       await tester.pumpAndSettle();
-      expect(submissions, isEmpty);
+      expect(harness.submissions, isEmpty);
       expect(input(tester).text, 'hatsune_miku ');
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-      await tester.pump();
-      expect(submissions, [
+      await tester.pumpAndSettle();
+      expect(harness.submissions, [
         ['hatsune_miku'],
       ]);
     },
@@ -399,17 +411,13 @@ void main() {
     await mount(tester);
     await tester.enterText(find.byType(EditableText), 'mi');
     await tester.pump(const Duration(milliseconds: 300));
-    await tester.tap(find.text('first'));
-    await tester.pump(const Duration(milliseconds: 200));
-    await tester.tap(find.text('second'));
+    BooruService.instance.selectSource('second');
     await tester.pump(const Duration(milliseconds: 300));
     repository.complete('first:mi', 'stale_source');
     await tester.pump();
     expect(suggestion('stale_source'), findsNothing);
+    await tester.pump(const Duration(milliseconds: 300));
     repository.complete('second:mi', 'new_source');
-    await tester.pump();
-    // Changing a source leaves focus on its trigger; focusing the input reveals its new results.
-    await tester.tap(find.byType(EditableText));
     await tester.pumpAndSettle();
     expect(suggestion('new_source'), findsOneWidget);
   });
@@ -423,19 +431,14 @@ void main() {
         tester.view.physicalSize = Size(width, 1000);
         tester.view.devicePixelRatio = 1;
         addTearDown(tester.view.reset);
-        await tester.pumpWidget(
-          searchTestApp(
-            PostSearchPage(
-              sourceId: 'first',
-              repository: repository,
-              initialTags: List.generate(20, (i) => '長い作品名_超长角色标签_$i'),
-              onSubmit: (_, _) {},
-            ),
-            scale: 2,
-            locale: locale,
-          ),
+        await harness.mount(
+          tester,
+          repository: repository,
+          query: List.generate(20, (i) => '長い作品名_超长角色标签_$i'),
+          scale: 2,
+          locale: locale,
         );
-        await tester.pumpAndSettle();
+        await tester.tap(find.byType(EditableText));
         await tester.enterText(find.byType(EditableText), 'long');
         await tester.pump(const Duration(milliseconds: 300));
         repository.pending['first:long']!.complete([

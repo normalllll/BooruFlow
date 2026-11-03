@@ -1,6 +1,7 @@
 import 'package:booruflow/features/booru/services/booru_service.dart';
-import 'package:booruflow/features/search/post_search_page.dart';
+import 'package:booruflow/features/search/inline_search.dart';
 import 'package:booruflow/features/search/query.dart';
+import 'package:booruflow/shared/app_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
@@ -46,12 +47,16 @@ void main() {
           final tags = List.generate(30, (i) => 'とても長いキャラクター名_超长角色名称_$i');
           await tester.pumpWidget(
             searchTestApp(
-              PostSearchPage(
-                sourceId: 'first',
-                initialTags: tags,
-                repository: SearchRepositoryFake(),
-                onSubmit: (_, _) {},
+              AppPage(
+                header: FrostPageHeader(
+                  title: const FrostText('Host'),
+                  middle: InlineSearch(sourceId: 'first', query: tags),
+                ),
+                slivers: const [
+                  SliverToBoxAdapter(child: SizedBox(height: 40)),
+                ],
               ),
+              repository: SearchRepositoryFake(),
               scale: scale,
             ),
           );
@@ -64,8 +69,6 @@ void main() {
             tester.getSize(find.byType(FrostTokenField)).width,
             greaterThan(0),
           );
-          // Full source labels retain their natural width. The existing
-          // horizontal safety net keeps editors accessible at extreme width/scale.
           await tester.ensureVisible(find.byType(FrostTokenField));
           await tester.pump();
           expect(

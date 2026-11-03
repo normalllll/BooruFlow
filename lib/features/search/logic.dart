@@ -237,7 +237,11 @@ class Search extends _$Search {
     final source = state.sourceId, locale = state.locale;
     state = state.copyWith(common: previous.loading());
     try {
-      final values = await repository.common(source, locale, refresh: refresh);
+      final common = commonTagsProvider(source, locale);
+      if (refresh || ref.read(common).hasError) {
+        await ref.read(common.notifier).reload();
+      }
+      final values = await ref.read(common.future);
       if (ref.mounted && generation == _commonGeneration) {
         state = state.copyWith(common: AsyncContent(values));
       }
@@ -309,5 +313,44 @@ class SearchHistory extends _$SearchHistory {
     } catch (error, stack) {
       if (ref.mounted) state = AsyncError(error, stack);
     }
+  }
+}
+
+/// Text a menu or link asks the page's search box to take. The box that shows
+/// it focuses itself and clears the request.
+class SearchTextRequest {
+  const SearchTextRequest(this.text);
+  final String text;
+}
+
+@Riverpod(keepAlive: true)
+class PendingSearch extends _$PendingSearch {
+  @override
+  SearchTextRequest? build() => null;
+
+  void request(String text) => state = SearchTextRequest(text);
+
+  void clear(SearchTextRequest handled) {
+    if (identical(state, handled)) state = null;
+  }
+}
+
+/// The first page of a source's common tags, shared by everything that shows
+/// them so one load serves the title bar search, the Tags page and the full
+/// list.
+@Riverpod(keepAlive: true)
+class CommonTags extends _$CommonTags {
+  @override
+  Future<List<TagSuggestion>> build(String source, String locale) =>
+      ref.read(tagSuggestionRepositoryProvider).common(source, locale);
+
+  /// Asks the source again, past the repository's cache.
+  Future<void> reload() async {
+    state = const AsyncLoading<List<TagSuggestion>>();
+    state = await AsyncValue.guard(
+      () => ref
+          .read(tagSuggestionRepositoryProvider)
+          .common(source, locale, refresh: true),
+    );
   }
 }

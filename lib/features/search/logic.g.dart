@@ -105,7 +105,7 @@ final class SearchProvider extends $NotifierProvider<Search, SearchState> {
   }
 }
 
-String _$searchHash() => r'd372e6b9aacfefdc80ddda92df8ba66c3ddca4e4';
+String _$searchHash() => r'024c74478ba81eb7873f6a40e1cd4a3d1922c6cc';
 
 final class SearchFamily extends $Family
     with
@@ -286,6 +286,171 @@ abstract class _$SearchHistory extends $AsyncNotifier<List<String>> {
             as $ClassProviderElement<
               AnyNotifier<AsyncValue<List<String>>, List<String>>,
               AsyncValue<List<String>>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, () => build(_$args.$1, _$args.$2));
+  }
+}
+
+@ProviderFor(PendingSearch)
+final pendingSearchProvider = PendingSearchProvider._();
+
+final class PendingSearchProvider
+    extends $NotifierProvider<PendingSearch, SearchTextRequest?> {
+  PendingSearchProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'pendingSearchProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$pendingSearchHash();
+
+  @$internal
+  @override
+  PendingSearch create() => PendingSearch();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(SearchTextRequest? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<SearchTextRequest?>(value),
+    );
+  }
+}
+
+String _$pendingSearchHash() => r'0f80743fb19ddf2cd6c3232516c1ed2eeb030e3c';
+
+abstract class _$PendingSearch extends $Notifier<SearchTextRequest?> {
+  SearchTextRequest? build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<SearchTextRequest?, SearchTextRequest?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<SearchTextRequest?, SearchTextRequest?>,
+              SearchTextRequest?,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+/// The first page of a source's common tags, shared by everything that shows
+/// them so one load serves the title bar search, the Tags page and the full
+/// list.
+
+@ProviderFor(CommonTags)
+final commonTagsProvider = CommonTagsFamily._();
+
+/// The first page of a source's common tags, shared by everything that shows
+/// them so one load serves the title bar search, the Tags page and the full
+/// list.
+final class CommonTagsProvider
+    extends $AsyncNotifierProvider<CommonTags, List<TagSuggestion>> {
+  /// The first page of a source's common tags, shared by everything that shows
+  /// them so one load serves the title bar search, the Tags page and the full
+  /// list.
+  CommonTagsProvider._({
+    required CommonTagsFamily super.from,
+    required (String, String) super.argument,
+  }) : super(
+         retry: null,
+         name: r'commonTagsProvider',
+         isAutoDispose: false,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$commonTagsHash();
+
+  @override
+  String toString() {
+    return r'commonTagsProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  CommonTags create() => CommonTags();
+
+  @override
+  bool operator ==(Object other) {
+    return other is CommonTagsProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$commonTagsHash() => r'429202e2d6d36046d7ff3d2ece9f7eb0b57abf34';
+
+/// The first page of a source's common tags, shared by everything that shows
+/// them so one load serves the title bar search, the Tags page and the full
+/// list.
+
+final class CommonTagsFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          CommonTags,
+          AsyncValue<List<TagSuggestion>>,
+          List<TagSuggestion>,
+          FutureOr<List<TagSuggestion>>,
+          (String, String)
+        > {
+  CommonTagsFamily._()
+    : super(
+        retry: null,
+        name: r'commonTagsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: false,
+      );
+
+  /// The first page of a source's common tags, shared by everything that shows
+  /// them so one load serves the title bar search, the Tags page and the full
+  /// list.
+
+  CommonTagsProvider call(String source, String locale) =>
+      CommonTagsProvider._(argument: (source, locale), from: this);
+
+  @override
+  String toString() => r'commonTagsProvider';
+}
+
+/// The first page of a source's common tags, shared by everything that shows
+/// them so one load serves the title bar search, the Tags page and the full
+/// list.
+
+abstract class _$CommonTags extends $AsyncNotifier<List<TagSuggestion>> {
+  late final _$args = ref.$arg as (String, String);
+  String get source => _$args.$1;
+  String get locale => _$args.$2;
+
+  FutureOr<List<TagSuggestion>> build(String source, String locale);
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref =
+        this.ref as $Ref<AsyncValue<List<TagSuggestion>>, List<TagSuggestion>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<TagSuggestion>>, List<TagSuggestion>>,
+              AsyncValue<List<TagSuggestion>>,
               Object?,
               Object?
             >;
