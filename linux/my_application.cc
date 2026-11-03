@@ -17,24 +17,10 @@ G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
+  // The window stays hidden until the app has placed it (frost_window) and
+  // rendered its first frame; this size only gives the engine a surface.
   constexpr gint kWindowWidth = 1280;
   constexpr gint kWindowHeight = 720;
-  GdkRectangle workarea = {0, 0, kWindowWidth, kWindowHeight};
-  GdkDisplay* display = gdk_display_get_default();
-  GdkMonitor* monitor = display == nullptr
-                            ? nullptr
-                            : gdk_display_get_primary_monitor(display);
-  if (monitor == nullptr && display != nullptr) {
-    monitor = gdk_display_get_monitor_at_point(display, 0, 0);
-  }
-  if (monitor != nullptr) {
-    gdk_monitor_get_workarea(monitor, &workarea);
-  }
-
-  const gint window_width = MIN(kWindowWidth, workarea.width);
-  const gint window_height = MIN(kWindowHeight, workarea.height);
-  const gint window_x = workarea.x + (workarea.width - window_width) / 2;
-  const gint window_y = workarea.y + (workarea.height - window_height) / 2;
 
   GtkWindow* window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
@@ -50,8 +36,7 @@ static void my_application_activate(GApplication* application) {
 
   gtk_window_set_title(window, "BooruFlow");
 
-  gtk_window_set_default_size(window, window_width, window_height);
-  gtk_window_move(window, window_x, window_y);
+  gtk_window_set_default_size(window, kWindowWidth, kWindowHeight);
 
   g_autoptr(FlDartProject) project = fl_dart_project_new();
   fl_dart_project_set_dart_entrypoint_arguments(project, self->dart_entrypoint_arguments);
@@ -59,7 +44,6 @@ static void my_application_activate(GApplication* application) {
   FlView* view = fl_view_new(project);
   gtk_widget_show(GTK_WIDGET(view));
   gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(view));
-  g_signal_connect_swapped(view, "first-frame", G_CALLBACK(gtk_widget_show), window);
   gtk_widget_realize(GTK_WIDGET(view));
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));

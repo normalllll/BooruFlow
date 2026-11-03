@@ -16,13 +16,6 @@ add_executable(${BINARY_NAME} WIN32
   "runner.exe.manifest"
 )
 
-# Test integration is absent from normal production builds.
-option(BOORUFLOW_UI_AUTOMATION "Build the isolated background UI test runner" OFF)
-if(BOORUFLOW_UI_AUTOMATION)
-  target_sources(${BINARY_NAME} PRIVATE "automation_window.cpp")
-  target_compile_definitions(${BINARY_NAME} PRIVATE BOORUFLOW_UI_AUTOMATION)
-endif()
-
 # Apply the standard set of build settings. This can be removed for applications
 # that need different build settings.
 apply_standard_settings(${BINARY_NAME})

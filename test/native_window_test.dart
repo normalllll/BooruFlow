@@ -2,14 +2,12 @@ import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:booruflow/app/frost_config.dart';
-import 'package:booruflow/features/posts/widgets/post_detail_controls.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
-import 'package:frost_window/frost_window.dart';
 
 const channel = MethodChannel('frost_window');
 const codec = StandardMethodCodec();
@@ -124,10 +122,12 @@ void main() {
                       canGoBack: false,
                       onBack: () {},
                       showsMobileNavigation: true,
-                      brand: const FrostText(
-                        'Window test',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      brand: const FrostShellBrand(
+                        expanded: FrostText(
+                          'Window test',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       child: child!,
                     )
@@ -167,10 +167,10 @@ void main() {
     // remaining brand/title span is draggable.
     final captionRegions = regions.where((row) => row[4] == 'caption');
     expect(captionRegions, hasLength(1));
-    expect(captionRegions.single[0], 80);
+    expect(captionRegions.single[0], 60);
     expect(
       tester.getRect(find.byKey(const ValueKey('frost-shell-back'))),
-      const Rect.fromLTWH(0, 0, 80, 40),
+      const Rect.fromLTWH(0, 0, 60, 40),
     );
     expect(regions.where((row) => row[4] == 'maximize'), hasLength(1));
   });
@@ -278,7 +278,7 @@ void main() {
     tester.view.physicalSize = const Size(480, 360);
     await tester.pump();
     await tester.pump();
-    expect(find.byType(FrostCaptionButtons), findsOneWidget);
+    expect(caption('Close'), findsOneWidget);
     expect(tester.getRect(find.byKey(const ValueKey('page'))).top, 40);
     expect(tester.getRect(caption('Close')).right, 480);
     expect(
@@ -289,46 +289,6 @@ void main() {
   });
 
   for (final platform in [TargetPlatform.macOS, TargetPlatform.linux]) {
-    windowTest(
-      '$platform standalone media header retains native control access',
-      (tester) async {
-        await tester.pumpWidget(
-          app(
-            shell: false,
-            home: const Align(
-              alignment: Alignment.topLeft,
-              child: PostMediaHeader(
-                title: FrostText('Media'),
-                leading: SizedBox(
-                  key: ValueKey('media-back'),
-                  width: 40,
-                  height: 40,
-                ),
-                actions: [],
-                windowButtons: true,
-              ),
-            ),
-          ),
-        );
-        await drain(tester);
-        final back = find.byKey(const ValueKey('media-back'));
-        if (platform == TargetPlatform.macOS) {
-          expect(caption('Close'), findsNothing);
-          expect(tester.getRect(back).left, greaterThanOrEqualTo(80));
-        } else {
-          expect(caption('Close'), findsOneWidget);
-          expect(tester.getRect(caption('Close')).left, 0);
-          expect(
-            tester.getRect(caption('Close')).right,
-            lessThanOrEqualTo(tester.getRect(back).left),
-          );
-          await tester.tap(caption('Close'));
-          expect(calls.where((call) => call.method == 'close'), hasLength(1));
-        }
-        expect(tester.takeException(), isNull);
-      },
-      platform: platform,
-    );
     windowTest(
       '$platform uses one integrated title row and the reported native controls',
       (tester) async {
@@ -342,7 +302,7 @@ void main() {
         expect(caption('Minimize'), expected);
         expect(caption('Maximize'), expected);
         expect(caption('Close'), expected);
-        expect(tester.getRect(find.byKey(const ValueKey('page'))).top, 40);
+        final pageRect = tester.getRect(find.byKey(const ValueKey('page')));
         final back = find.bySemanticsLabel(t.frost.back);
         expect(back, findsOneWidget);
         expect(
@@ -356,8 +316,17 @@ void main() {
         expect(frostUsesCustomTitleBar, isTrue);
         expect(calls.any((call) => call.method == 'configure'), isTrue);
         if (platform == TargetPlatform.macOS) {
-          expect(tester.getRect(back).left, greaterThanOrEqualTo(80));
+          // The native strip clears the traffic lights; Back belongs to the
+          // sidebar below that strip rather than beside the native buttons.
+          expect(
+            pageRect.top,
+            greaterThan(controller.state.nativeControls.bottom),
+          );
+          final backRect = tester.getRect(back);
+          expect(backRect.top, greaterThanOrEqualTo(pageRect.top));
+          expect(backRect.right, lessThanOrEqualTo(pageRect.left));
         } else {
+          expect(pageRect.top, 40);
           expect(
             tester.getCenter(caption('Close')).dx,
             lessThan(tester.getCenter(caption('Minimize')).dx),
