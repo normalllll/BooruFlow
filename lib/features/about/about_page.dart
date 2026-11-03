@@ -2,12 +2,14 @@ import 'package:booruflow/app/frost_config.dart';
 import 'package:booruflow/core/app_runtime.dart';
 import 'package:booruflow/features/update/logic.dart';
 import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/action_runner_builder.dart';
 import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/shared/loading_content.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frost_ui/frost_ui.dart';
+import 'package:frost_ui/social.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class AboutPage extends ConsumerWidget {
@@ -49,7 +51,13 @@ class AboutPage extends ConsumerWidget {
             top: FrostGap.related,
             bottom: FrostGap.section,
           ),
-          child: FrostFormRow(label: _appIcon(64), control: _identity()),
+          child: Row(
+            children: [
+              _appIcon(64),
+              const SizedBox(width: FrostGap.group),
+              Expanded(child: _identity()),
+            ],
+          ),
         ),
         if (check.result case final result?)
           FrostInlineBanner(
@@ -68,10 +76,13 @@ class AboutPage extends ConsumerWidget {
         else
           Align(
             alignment: AlignmentDirectional.centerStart,
-            child: FrostButton(
-              label: t.settingsV2.checkUpdates,
-              icon: appIcons.refresh,
-              onPressedAsync: () => _check(context, ref),
+            child: ActionRunnerBuilder(
+              builder: (context, runner) => FrostButton(
+                label: t.settingsV2.checkUpdates,
+                icon: appIcons.refresh,
+                onPressed: () => runner.run(() => _check(context, ref)),
+                state: runner.state,
+              ),
             ),
           ),
         const SizedBox(height: FrostGap.section),

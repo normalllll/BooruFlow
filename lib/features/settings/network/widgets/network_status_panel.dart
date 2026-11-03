@@ -1,6 +1,7 @@
 import 'package:booruflow/app/frost_config.dart';
 import 'package:booruflow/features/settings/network/network_logic.dart';
 import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/action_runner_builder.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -102,13 +103,16 @@ class _NetworkStatusPanelState extends ConsumerState<NetworkStatusPanel> {
                   tone: FrostTextTone.secondary,
                 ),
               ),
-              FrostButton.quiet(
-                label: n.checkAllSources,
-                tooltip: n.checkAllSources,
-                size: FrostControlSize.compact,
-                onPressedAsync: _enabled || _checking && _checkingSource == null
-                    ? () => _check(_sources)
-                    : null,
+              ActionRunnerBuilder(
+                builder: (context, runner) => FrostButton.quiet(
+                  label: n.checkAllSources,
+                  tooltip: n.checkAllSources,
+                  size: FrostControlSize.compact,
+                  onPressed: _enabled || _checking && _checkingSource == null
+                      ? () => runner.run(() => _check(_sources))
+                      : null,
+                  state: runner.state,
+                ),
               ),
             ],
           ),
@@ -127,7 +131,7 @@ class _NetworkStatusPanelState extends ConsumerState<NetworkStatusPanel> {
                         key: ValueKey('source-status-${source.sourceId}'),
                         tone: _tone(source.sourceId),
                       ),
-                subtitle: _label(source.sourceId),
+                subtitle: FrostRowSubtitle(_label(source.sourceId)),
                 onPressed: () => _showDetails(source),
               ),
           ],
@@ -182,19 +186,29 @@ class _NetworkStatusPanelState extends ConsumerState<NetworkStatusPanel> {
                 spacing: FrostGap.related,
                 runSpacing: FrostGap.related,
                 children: [
-                  FrostButton(
-                    label: n.checkCompact,
-                    icon: appIcons.refresh,
-                    onPressedAsync:
-                        _enabled ||
-                            _checking && _checkingSource == source.sourceId
-                        ? () => _check([source], sourceId: source.sourceId)
-                        : null,
+                  ActionRunnerBuilder(
+                    builder: (context, runner) => FrostButton(
+                      label: n.checkCompact,
+                      icon: appIcons.refresh,
+                      onPressed:
+                          _enabled ||
+                              _checking && _checkingSource == source.sourceId
+                          ? () => runner.run(
+                              () => _check([source], sourceId: source.sourceId),
+                            )
+                          : null,
+                      state: runner.state,
+                    ),
                   ),
-                  FrostButton(
-                    label: n.refreshRoutes,
-                    icon: appIcons.refresh,
-                    onPressedAsync: _enabled || _refreshing ? _refresh : null,
+                  ActionRunnerBuilder(
+                    builder: (context, runner) => FrostButton(
+                      label: n.refreshRoutes,
+                      icon: appIcons.refresh,
+                      onPressed: _enabled || _refreshing
+                          ? () => runner.run(_refresh)
+                          : null,
+                      state: runner.state,
+                    ),
                   ),
                 ],
               ),
@@ -235,8 +249,9 @@ class _NetworkStatusPanelState extends ConsumerState<NetworkStatusPanel> {
       children: [
         FrostListRow(
           title: report.logicalHost,
-          subtitle:
-              '$status${report.elapsedMs == null ? '' : ' · ${report.elapsedMs} ms'}',
+          subtitle: FrostRowSubtitle(
+            '$status${report.elapsedMs == null ? '' : ' · ${report.elapsedMs} ms'}',
+          ),
         ),
         if (report.candidates.isNotEmpty)
           Padding(

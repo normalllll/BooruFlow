@@ -5,8 +5,10 @@ import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frost_data/frost_data.dart';
 import 'package:frost_ui/frost_ui.dart';
-import '../discovery/home_page_test.dart' show browseTestApp;
+
+import '../../support/browse_support.dart' show browseTestApp;
 
 void main() {
   const error = BooruError(

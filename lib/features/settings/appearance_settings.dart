@@ -7,9 +7,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frost_ui/frost_ui.dart';
 
-// Small windows demonstrate the palette, not an additional application theme.
-const _tonePreviewWidth = 64.0, _tonePreviewHeight = 44.0;
-
 class AppearanceSettings extends ConsumerStatefulWidget {
   const AppearanceSettings({super.key});
   @override
@@ -123,80 +120,6 @@ class _AppearanceSettingsState extends ConsumerState<AppearanceSettings> {
     FrostTone.cool => t.settingsV2.cool,
     FrostTone.warm => t.settingsV2.warm,
   };
-  Widget _preview(FrostThemeTokens palette) => SizedBox(
-    height: _tonePreviewHeight,
-    child: ColoredBox(
-      color: palette.canvas,
-      child: Padding(
-        padding: const EdgeInsets.all(FrostGap.related),
-        child: Row(
-          children: [
-            SizedBox(
-              width: FrostGap.of(context).page,
-              child: ColoredBox(
-                color: palette.surfaceRaised,
-                child: const SizedBox.expand(),
-              ),
-            ),
-            const SizedBox(width: FrostGap.inline),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SizedBox(
-                    height: FrostGap.related,
-                    child: ColoredBox(color: palette.accent),
-                  ),
-                  const SizedBox(height: FrostGap.related),
-                  Expanded(child: ColoredBox(color: palette.surface)),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-  Widget _tone(FrostTone tone) {
-    final appearance = _appearance;
-    final palette = appFrostConfig.palettes.palette(
-      _brightness,
-      tone,
-      appearance.accentFor(_brightness),
-    );
-    final selected = appearance.effectiveToneFor(_brightness) == tone;
-    final enabled = !_saving && appearance.mode != ThemeMode.system;
-    return SizedBox(
-      width: _tonePreviewWidth,
-      child: Column(
-        children: [
-          SizedBox(
-            height: _tonePreviewHeight,
-            width: double.infinity,
-            child: FrostThumbnail(
-              image: _preview(palette),
-              semanticLabel: _toneLabel(tone),
-              selected: selected,
-              onPressed: !enabled
-                  ? null
-                  : () => _save(
-                      _brightness == Brightness.light
-                          ? appearance.copyWith(lightTone: tone)
-                          : appearance.copyWith(darkTone: tone),
-                    ),
-            ),
-          ),
-          const SizedBox(height: FrostGap.related),
-          FrostText(
-            _toneLabel(tone),
-            role: FrostTextRole.footnote,
-            tone: selected ? FrostTextTone.accent : FrostTextTone.secondary,
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final t = Translations.of(context);
@@ -213,13 +136,6 @@ class _AppearanceSettingsState extends ConsumerState<AppearanceSettings> {
         label: FrostText(title, role: FrostTextRole.body),
         control: controls,
       ),
-    );
-    final tones = Wrap(
-      spacing: FrostGap.group,
-      runSpacing: FrostGap.related,
-      children: [
-        for (final tone in FrostTone.values) ...[_tone(tone)],
-      ],
     );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -252,12 +168,22 @@ class _AppearanceSettingsState extends ConsumerState<AppearanceSettings> {
             ),
             FrostListRow(
               title: t.settingsV2.tone,
-              // Thumbnail selection rings extend outside their square bounds.
-              trailing: Padding(
-                padding: const EdgeInsets.symmetric(vertical: FrostGap.related),
-                child: tones,
+              trailing: FrostPicker<FrostTone>.segmented(
+                label: t.settingsV2.tone,
+                value: appearance.effectiveToneFor(_brightness),
+                options: [
+                  for (final tone in FrostTone.values)
+                    FrostPickerOption(value: tone, label: _toneLabel(tone)),
+                ],
+                // The system tone applies while the mode follows the system.
+                onChanged: _saving || appearance.mode == ThemeMode.system
+                    ? null
+                    : (tone) => _save(
+                        _brightness == Brightness.light
+                            ? appearance.copyWith(lightTone: tone)
+                            : appearance.copyWith(darkTone: tone),
+                      ),
               ),
-              enabled: !_saving && appearance.mode != ThemeMode.system,
             ),
             optionsRow(
               t.settingsV2.accent,

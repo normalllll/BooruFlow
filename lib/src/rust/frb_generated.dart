@@ -81,12 +81,12 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
-  Future<AuthSchema> crateApiBooruEngineBooruEngineAuthSchema({
+  AuthSchema crateApiBooruEngineBooruEngineAuthSchema({
     required BooruEngine that,
     required String sourceId,
   });
 
-  Future<AuthState> crateApiBooruEngineBooruEngineAuthState({
+  AuthState crateApiBooruEngineBooruEngineAuthState({
     required BooruEngine that,
     required String sourceId,
   });
@@ -327,25 +327,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
-  Future<AuthSchema> crateApiBooruEngineBooruEngineAuthSchema({
+  AuthSchema crateApiBooruEngineBooruEngineAuthSchema({
     required BooruEngine that,
     required String sourceId,
   }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
             that,
             serializer,
           );
           sse_encode_String(sourceId, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 1,
-            port: port_,
-          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 1)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_auth_schema,
@@ -365,25 +360,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<AuthState> crateApiBooruEngineBooruEngineAuthState({
+  AuthState crateApiBooruEngineBooruEngineAuthState({
     required BooruEngine that,
     required String sourceId,
   }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
             that,
             serializer,
           );
           sse_encode_String(sourceId, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 2,
-            port: port_,
-          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_auth_state,
@@ -5858,14 +5848,10 @@ class BooruEngineImpl extends RustOpaque implements BooruEngine {
         RustLib.instance.api.rust_arc_decrement_strong_count_BooruEnginePtr,
   );
 
-  Future<AuthSchema> authSchema({required String sourceId}) => RustLib
-      .instance
-      .api
+  AuthSchema authSchema({required String sourceId}) => RustLib.instance.api
       .crateApiBooruEngineBooruEngineAuthSchema(that: this, sourceId: sourceId);
 
-  Future<AuthState> authState({required String sourceId}) => RustLib
-      .instance
-      .api
+  AuthState authState({required String sourceId}) => RustLib.instance.api
       .crateApiBooruEngineBooruEngineAuthState(that: this, sourceId: sourceId);
 
   Future<List<BooruTagSuggestion>> autocomplete({

@@ -463,19 +463,4 @@ mod tests {
         std::fs::write(&path, &bytes).unwrap();
         assert!(validate_archive_directory(&mut File::open(path).unwrap()).is_err());
     }
-
-    /// Explicit public-sample acceptance, not part of the offline suite.
-    #[test]
-    #[ignore = "R7 public sample/benchmark paths supplied by environment"]
-    fn public_sample_benchmark() {
-        let input = PathBuf::from(std::env::var("R7_UGOIRA_ZIP").unwrap());
-        let output = PathBuf::from(std::env::var("R7_UGOIRA_WEBP").unwrap());
-        let start = std::time::Instant::now();
-        export(&input, &output, &CancellationToken::new(), |_, _| Ok(())).unwrap();
-        println!(
-            "R7 image-webp: {} bytes, {} ms",
-            std::fs::metadata(output).unwrap().len(),
-            start.elapsed().as_millis()
-        );
-    }
 }

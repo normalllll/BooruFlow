@@ -4,6 +4,7 @@ import 'package:booruflow/features/booru/services/web_challenge_service.dart';
 import 'package:booruflow/features/booru/web_challenge_logic.dart';
 import 'package:booruflow/features/booru/widgets/web_challenge_button.dart';
 import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/action_runner_builder.dart';
 import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/shared/loading_content.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
@@ -107,12 +108,16 @@ class _WebChallengeDataPanelState extends ConsumerState<WebChallengeDataPanel> {
         _ => t.generic.loading,
       };
       final action = widget.savedOnly
-          ? FrostButton(
+          ? ActionRunnerBuilder(
               key: ValueKey('clear-web-data-${source.sourceId}'),
-              label: t.webChallenge.clear,
-              variant: FrostButtonVariant.plain,
-              size: FrostControlSize.compact,
-              onPressedAsync: busy ? null : () => _clear([source.sourceId]),
+              builder: (context, runner) => FrostButton.plain(
+                label: t.webChallenge.clear,
+                size: FrostControlSize.compact,
+                onPressed: busy
+                    ? null
+                    : () => runner.run(() => _clear([source.sourceId])),
+                state: runner.state,
+              ),
             )
           : WebChallengeButton(
               sourceId: source.sourceId,
@@ -130,12 +135,14 @@ class _WebChallengeDataPanelState extends ConsumerState<WebChallengeDataPanel> {
           FrostListRow(
             key: ValueKey('web-data-${source.sourceId}'),
             title: source.displayName,
-            subtitle: status,
-            subtitleStatus: snapshot.hasError
-                ? FrostStatusTone.negative
-                : snapshot.value?.verified == true
-                ? FrostStatusTone.positive
-                : FrostStatusTone.caution,
+            subtitle: FrostRowSubtitle.status(
+              status,
+              snapshot.hasError
+                  ? FrostStatusTone.negative
+                  : snapshot.value?.verified == true
+                  ? FrostStatusTone.positive
+                  : FrostStatusTone.caution,
+            ),
             trailing: action,
           ),
         );

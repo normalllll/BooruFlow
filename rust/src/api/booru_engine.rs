@@ -419,6 +419,8 @@ impl BooruEngine {
             .collect())
     }
 
+    // Sync reads let the settings list show account status from its first frame.
+    #[flutter_rust_bridge::frb(sync)]
     pub fn auth_schema(&self, source_id: String) -> BooruResult<AuthSchema> {
         let adapter = self.registry.get(&source_id)?;
         Ok(auth_schema(
@@ -427,6 +429,7 @@ impl BooruEngine {
         ))
     }
 
+    #[flutter_rust_bridge::frb(sync)]
     pub fn auth_state(&self, source_id: String) -> BooruResult<AuthState> {
         self.registry.get(&source_id)?;
         self.sessions.state(&source_id)
@@ -1175,58 +1178,6 @@ mod tests {
                     break;
                 }
             }
-        }
-    }
-
-    #[tokio::test]
-    #[ignore = "R7 explicitly authorized public sample download acceptance"]
-    async fn r7_public_ugoira_download_formats() {
-        let root = std::path::PathBuf::from(std::env::var("R7_NETWORK_OUTPUT").unwrap());
-        let engine = engine();
-        for format in [UgoiraExport::LosslessWebp, UgoiraExport::OriginalZip] {
-            let folder = root.join(format!("{format:?}"));
-            let mut result = None;
-            let mut encoded = 0;
-            tokio::time::timeout(
-                std::time::Duration::from_secs(60),
-                engine.download_to_file(
-                    DownloadRequest {
-                        source_id: "danbooru".into(),
-                        post_id: "12411796".into(),
-                        variant: MediaVariantKind::Original,
-                        download_root: folder.to_string_lossy().into(),
-                        ugoira_export: Some(format),
-                    },
-                    |event| {
-                        match event {
-                            DownloadEvent::Done { path } => result = Some(path),
-                            DownloadEvent::Encoding { .. } => encoded += 1,
-                            _ => (),
-                        }
-                        Ok(())
-                    },
-                ),
-            )
-            .await
-            .unwrap()
-            .unwrap();
-            let output = std::path::PathBuf::from(result.unwrap());
-            let bytes = std::fs::read(&output).unwrap();
-            if format == UgoiraExport::LosslessWebp {
-                assert_eq!(output.extension().unwrap(), "webp");
-                assert_eq!(&bytes[..4], b"RIFF");
-                assert!(encoded > 0);
-                assert!(!output.with_extension("zip").exists());
-            } else {
-                assert_eq!(output.extension().unwrap(), "zip");
-                assert!(bytes.starts_with(b"PK"));
-                assert_eq!(encoded, 0);
-            }
-            println!(
-                "R7 download {format:?}: {} bytes, {} encoding notifications",
-                bytes.len(),
-                encoded
-            );
         }
     }
 

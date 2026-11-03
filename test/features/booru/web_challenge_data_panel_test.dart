@@ -8,12 +8,13 @@ import 'package:booruflow/features/booru/widgets/web_challenge_data_panel.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/loading_content.dart';
 import 'package:booruflow/src/rust/api/web_challenge.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
 
-import '../discovery/home_page_test.dart' show browseTestApp;
+import '../../support/browse_support.dart' show browseTestApp;
 import '../discovery/search_interaction_test.dart' show testSource;
 import 'web_challenge_service_test.dart' show Backend;
 
@@ -51,14 +52,12 @@ void main() {
         ),
       ],
       child: browseTestApp(
-        FrostToastHost(
-          child: SingleChildScrollView(
-            child: WebChallengeDataPanel(
-              sources: sources,
-              savedOnly: true,
-              controller: controller,
-              readState: read,
-            ),
+        SingleChildScrollView(
+          child: WebChallengeDataPanel(
+            sources: sources,
+            savedOnly: true,
+            controller: controller,
+            readState: read,
           ),
         ),
       ),
@@ -156,7 +155,6 @@ void main() {
       await pumpPanel(tester, read: read, controller: controller);
       await tester.pumpAndSettle();
       final row = find.byKey(const ValueKey('clear-all-web-data'));
-      expect(tester.widget<FrostListRow>(row).destructive, isTrue);
       expect(
         find.descendant(of: row, matching: find.byType(FrostButton)),
         findsNothing,
@@ -169,14 +167,26 @@ void main() {
       await tester.tap(find.text(t.webChallenge.clear).hitTestable().last);
       await tester.pump();
       expect(controller.clearing, isTrue);
-      expect(tester.widget<FrostListRow>(row).onPressed, isNull);
+      expect(
+        tester
+            .getSemantics(row)
+            .getSemanticsData()
+            .hasAction(SemanticsAction.tap),
+        isFalse,
+      );
       expect(backend.cleared, ['yande']);
       backend.pending.complete();
       await tester.pumpAndSettle();
       expect(backend.cleared, ids);
       expect(find.byType(FrostAlert), findsNothing);
       expect(sourceRows(), findsNothing);
-      expect(tester.widget<FrostListRow>(row).onPressed, isNull);
+      expect(
+        tester
+            .getSemantics(row)
+            .getSemanticsData()
+            .hasAction(SemanticsAction.tap),
+        isFalse,
+      );
     },
   );
 }

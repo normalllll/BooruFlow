@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
-import '../discovery/home_page_test.dart' show browseTestApp;
+import '../../support/browse_support.dart' show browseTestApp;
 
 class _Store implements SettingsServiceStore {
   final values = <String, dynamic>{};
@@ -44,32 +44,16 @@ void main() {
             ),
           );
           await tester.pumpAndSettle();
+          final tone = find.byType(FrostPicker<FrostTone>);
           final row = find.byWidgetPredicate(
             (w) => w is FrostListRow && w.title == t.settingsV2.tone,
           );
-          final warm = find.byWidgetPredicate(
-            (w) => w is FrostThumbnail && w.semanticLabel == t.settingsV2.warm,
-          );
-          expect(tester.widget<FrostListRow>(row).enabled, isFalse);
-          expect(
-            tester.getTopLeft(warm).dy - tester.getTopLeft(row).dy,
-            greaterThanOrEqualTo(FrostGap.related),
-          );
-          expect(
-            tester.getSemantics(row),
-            matchesSemantics(
-              hasEnabledState: true,
-              isEnabled: false,
-              label: t.settingsV2.tone,
-              isSelected: false,
-              hasSelectedState: true,
-              hasToggledState: false,
-              isButton: false,
-              hasCheckedState: false,
-            ),
-          );
+          FrostPicker<FrostTone> picker() =>
+              tester.widget<FrostPicker<FrostTone>>(tone);
+          expect(row, findsOneWidget);
+          expect(picker().onChanged, isNull);
           expect(find.text('System mode uses a neutral tone.'), findsNothing);
-          await tester.tap(warm, warnIfMissed: false);
+          await tester.tap(find.text(t.settingsV2.warm), warnIfMissed: false);
           await tester.pumpAndSettle();
           expect(SettingsService.appearance.lightTone, FrostTone.cool);
           expect(SettingsService.appearance.darkTone, FrostTone.warm);
@@ -79,13 +63,13 @@ void main() {
           );
           await tester.tap(find.text(t.settings.light));
           await tester.pumpAndSettle();
-          expect(tester.widget<FrostListRow>(row).enabled, isTrue);
-          await tester.tap(warm);
+          expect(picker().onChanged, isNotNull);
+          await tester.tap(find.text(t.settingsV2.warm));
           await tester.pumpAndSettle();
           expect(SettingsService.appearance.lightTone, FrostTone.warm);
           await tester.tap(find.text(t.settings.system));
           await tester.pumpAndSettle();
-          expect(tester.widget<FrostListRow>(row).enabled, isFalse);
+          expect(picker().onChanged, isNull);
           expect(SettingsService.appearance.lightTone, FrostTone.warm);
           expect(
             SettingsService.appearance.effectiveToneFor(Brightness.light),
@@ -93,7 +77,7 @@ void main() {
           );
           await tester.tap(find.text(t.settings.light));
           await tester.pumpAndSettle();
-          expect(tester.widget<FrostThumbnail>(warm).selected, isTrue);
+          expect(picker().value, FrostTone.warm);
           expect(tester.takeException(), isNull);
         } finally {
           semantics.dispose();

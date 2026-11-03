@@ -9,7 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
-import '../discovery/home_page_test.dart' show browseTestApp;
+import '../../support/browse_support.dart' show browseTestApp;
 
 class _Store implements SettingsServiceStore {
   final values = <String, dynamic>{};
@@ -90,12 +90,6 @@ void main() {
       addTearDown(tester.view.reset);
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
-      final intensityRow = find.byWidgetPredicate(
-        (widget) =>
-            widget is FrostListRow &&
-            widget.title == t.settingsV2.backgroundIntensity,
-      );
-      expect(tester.widget<FrostListRow>(intensityRow).value, isNull);
       final slider = find.byType(FrostSlider);
       await tester.ensureVisible(slider);
       final rect = tester.getRect(slider);

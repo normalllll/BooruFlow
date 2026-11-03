@@ -1,8 +1,10 @@
 import 'dart:io';
+
 import 'package:booruflow/app/frost_config.dart';
 import 'package:booruflow/app/icons.g.dart';
 import 'package:booruflow/core/downloads/download_file_system.dart';
 import 'package:booruflow/core/downloads/download_platform.dart';
+import 'package:booruflow/core/downloads/platform/macos_folder_access.dart';
 import 'package:booruflow/core/settings/logic.dart';
 import 'package:booruflow/core/settings/settings_service.dart';
 import 'package:booruflow/features/about/about_page.dart';
@@ -19,6 +21,7 @@ import 'package:booruflow/features/settings/widgets/account_editor.dart';
 import 'package:booruflow/features/update/logic.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_navigation.dart';
+import 'package:booruflow/shared/app_page.dart';
 import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/src/rust/api/booru_auth.dart';
 import 'package:booruflow/src/rust/api/booru_download.dart' show UgoiraExport;
@@ -49,7 +52,7 @@ enum SettingsSection {
     network => t.settings.sections.network,
     downloads => t.settings.sections.downloads,
     web => t.webChallenge.title,
-    general => t.settings.sections.general,
+    general => t.settings.language,
     about => t.about.title,
   };
   static SettingsSection? fromPath(String? value) =>
@@ -101,6 +104,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     _sourceId = null;
   });
 
+  /// Closes the source detail. One opened from a link also leaves the link
+  /// location, so Back and the address agree.
+  void _closeDetail() {
+    if (widget.sourceId != null) {
+      context.go('/settings/${SettingsSection.sources.pathSegment}');
+    } else {
+      setState(() => _sourceId = null);
+    }
+  }
+
   void _navigate(int index) => context.pushNamed<void>(
     AppRoute.settingsSection.name,
     pathParameters: {'section': SettingsSection.values[index].pathSegment},
@@ -123,16 +136,26 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         id: (SettingsPage, widget.section, widget.sourceId),
         title: title,
       ),
-      child: FrostSettingsSections.builder(
+      child: FrostSettingsSections(
         header: FrostPageHeader(
           title: FrostText(t.settings.title, role: FrostTextRole.headline),
         ),
-        section: widget.section == null
+        compact: FrostSectionsCompact(
+          section: widget.section == null
+              ? null
+              : _SettingsScroll(
+                  section: widget.section!,
+                  source: source,
+                  title: title,
+                ),
+          onNavigate: _navigate,
+          navigationBuilder: (_) => _SettingsNavigation(onSelected: _navigate),
+        ),
+        detail: source == null
             ? null
-            : _SettingsScroll(
-                section: widget.section!,
-                source: source,
-                title: title,
+            : FrostSectionsDetail(
+                child: _SourceDetail(source: source),
+                onClose: _closeDetail,
               ),
         labels: [for (final section in SettingsSection.values) section.title],
         icons: [
@@ -140,16 +163,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         ],
         selectedIndex: _selected.index,
         onSelected: _open,
-        onNavigate: _navigate,
-        compactNavigationBuilder: (_) =>
-            _SettingsNavigation(onSelected: _navigate),
         sectionBuilder: (_, index) => _SettingsScroll(
           section: SettingsSection.values[index],
-          source: index == SettingsSection.sources.index ? source : null,
           showsHeader: false,
           onSourceSelected: (source) =>
               setState(() => _sourceId = source.sourceId),
-          onSourceBack: () => setState(() => _sourceId = null),
         ),
       ),
     );
@@ -188,10 +206,8 @@ class _SettingsNavigation extends ConsumerWidget {
       _ => null,
     };
     Widget row(SettingsSection section) => FrostListRow(
-      title: section == SettingsSection.general
-          ? t.settings.language
-          : section.title,
-      icon: _sectionIcon(section),
+      title: section.title,
+      leading: FrostGlyph.icon(_sectionIcon(section)),
       value: value(section),
       trailing: section == SettingsSection.about && update != null
           ? const FrostCountBadge(count: 1)
@@ -245,60 +261,24 @@ class _SettingsScroll extends ConsumerWidget {
     this.title,
     this.showsHeader = true,
     this.onSourceSelected,
-    this.onSourceBack,
   });
   final SettingsSection section;
   final BooruSource? source;
   final String? title;
   final bool showsHeader;
   final ValueChanged<BooruSource>? onSourceSelected;
-  final VoidCallback? onSourceBack;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final t = Translations.of(context);
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (!showsHeader) ...[
-          if (source != null)
-            Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: FrostButton(
-                label: SettingsSection.sources.title,
-                edgeAlignment: FrostButtonEdgeAlignment.start,
-                icon: appIcons.chevronLeft,
-                variant: FrostButtonVariant.plain,
-                size: FrostControlSize.compact,
-                onPressed: onSourceBack,
-              ),
-            ),
-          if (section != SettingsSection.about || source != null) ...[
-            FrostText(
-              source?.displayName ?? section.title,
-              role: FrostTextRole.title2,
-            ),
-            const SizedBox(height: FrostGap.rowInset),
-          ],
-        ],
         switch (section) {
           SettingsSection.appearance => const AppearanceSettings(),
           SettingsSection.browsing => const _BrowsingSettings(),
           SettingsSection.sources =>
             source == null
                 ? _SourcesSettings(onSelected: onSourceSelected)
-                : source!.capabilities.authKind == AuthKind.none
-                ? FrostGroupedSection(
-                    children: [
-                      FrostListRow(title: t.settings.account.noAccountRequired),
-                      FrostListRow(
-                        title: t.settings.source.supportedRatings,
-                        value: source!.capabilities.ratings
-                            .map((r) => r.displayLabel)
-                            .join(t.discovery.ratingSeparator),
-                      ),
-                    ],
-                  )
-                : AccountEditor(source: source!),
+                : SourceSettings(source: source!),
           SettingsSection.network => const NetworkSettingsPage(),
           SettingsSection.downloads => const _DownloadSettings(),
           SettingsSection.web => WebChallengeDataPanel(
@@ -320,7 +300,7 @@ class _SettingsScroll extends ConsumerWidget {
         child: FrostContentColumn(child: content),
       );
     }
-    return FrostCollectionLayout(
+    return AppPage(
       header: FrostPageHeader(
         title: FrostText(title ?? section.title, role: FrostTextRole.headline),
       ),
@@ -334,6 +314,49 @@ class _SettingsScroll extends ConsumerWidget {
       ],
     );
   }
+}
+
+/// What a single source page holds: the account, or the facts of a source
+/// that needs none.
+class SourceSettings extends StatelessWidget {
+  const SourceSettings({required this.source, super.key});
+  final BooruSource source;
+  @override
+  Widget build(BuildContext context) =>
+      source.capabilities.authKind == AuthKind.none
+      ? FrostGroupedSection(
+          children: [
+            FrostListRow(title: t.settings.account.noAccountRequired),
+            FrostListRow(
+              title: t.settings.source.supportedRatings,
+              value: source.capabilities.ratings
+                  .map((r) => r.displayLabel)
+                  .join(t.discovery.ratingSeparator),
+            ),
+          ],
+        )
+      : AccountEditor(source: source);
+}
+
+/// The wide window pane for one source, over the sources list.
+class _SourceDetail extends StatelessWidget {
+  const _SourceDetail({required this.source});
+  final BooruSource source;
+  @override
+  Widget build(BuildContext context) => SingleChildScrollView(
+    primary: false,
+    padding: const EdgeInsets.only(bottom: FrostGap.section),
+    child: FrostContentColumn(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          FrostText(source.displayName, role: FrostTextRole.title2),
+          const SizedBox(height: FrostGap.rowInset),
+          SourceSettings(source: source),
+        ],
+      ),
+    ),
+  );
 }
 
 class _BrowsingSettings extends ConsumerWidget {
@@ -361,12 +384,16 @@ class _BrowsingSettings extends ConsumerWidget {
                   v,
               onChanged: update.setDefaultSource,
             ),
-            FrostSettingsSelectTile<int>.values(
-              title: t.settings.columnsPerRow,
-              value: settings.waterfallColumns ?? 0,
-              values: const [0, 2, 3, 4, 5, 6, 7, 8],
-              label: (v) => v == 0 ? t.settings.auto : '$v',
-              onChanged: (v) => update.setColumns(v == 0 ? null : v),
+            FrostSettingsSelectTile<ThumbnailSize>.values(
+              title: t.settings.thumbnailSize,
+              value: settings.thumbnailSize,
+              values: ThumbnailSize.values,
+              label: (size) => switch (size) {
+                ThumbnailSize.small => t.settings.thumbnailSmall,
+                ThumbnailSize.medium => t.settings.thumbnailMedium,
+                ThumbnailSize.large => t.settings.thumbnailLarge,
+              },
+              onChanged: update.setThumbnailSize,
             ),
           ],
         ),
@@ -430,22 +457,31 @@ class _SourcesSettings extends ConsumerWidget {
                 subtitle:
                     state?.status == AuthStatus.verified &&
                         state?.username?.trim().isNotEmpty == true
-                    ? [label, state!.username!].join(' · ')
-                    : label,
-                subtitleStatus: switch (state?.status) {
-                  AuthStatus.verified => FrostStatusTone.positive,
-                  AuthStatus.configuredUnverified => FrostStatusTone.caution,
-                  _ => null,
-                },
+                    ? FrostRowSubtitle.status(
+                        [label, state!.username!].join(' · '),
+                        FrostStatusTone.positive,
+                      )
+                    : switch (state?.status) {
+                        AuthStatus.configuredUnverified =>
+                          FrostRowSubtitle.status(
+                            label,
+                            FrostStatusTone.caution,
+                          ),
+                        AuthStatus.verified => FrostRowSubtitle.status(
+                          label,
+                          FrostStatusTone.positive,
+                        ),
+                        _ => FrostRowSubtitle(label),
+                      },
                 accessory: FrostRowAccessory.chevron,
                 onPressed: () => onSelected != null
                     ? onSelected!(source)
                     : context.pushNamed<void>(
-                        AppRoute.settingsSection.name,
+                        AppRoute.settingsSource.name,
                         pathParameters: {
                           'section': SettingsSection.sources.pathSegment,
+                          'source': source.sourceId,
                         },
-                        queryParameters: {'source': source.sourceId},
                       ),
               );
             },
@@ -501,6 +537,7 @@ class _DownloadSettingsState extends ConsumerState<_DownloadSettings> {
     }
     try {
       await ensureWritableDirectory(Directory(selected));
+      await MacosFolderAccess.remember(selected);
       if (mounted) {
         ref.read(settingsProvider.notifier).setDownloadPath(selected);
       }
@@ -542,25 +579,24 @@ class _DownloadSettingsState extends ConsumerState<_DownloadSettings> {
                 title: platform == DownloadPlatform.android
                     ? t.ugoira.androidDestination
                     : t.ugoira.iosDestination,
-                subtitle: platform == DownloadPlatform.android
-                    ? DownloadPlatform.androidDirectories
-                    : t.ugoira.iosFilesDestination,
+                subtitle: FrostRowSubtitle(
+                  platform == DownloadPlatform.android
+                      ? DownloadPlatform.androidDirectories
+                      : t.ugoira.iosFilesDestination,
+                ),
               )
             else
               FrostListRow(
                 title: t.settings.downloadDirectory,
-                subtitleKind: settings.downloadPath == null
-                    ? FrostRowSubtitleKind.text
-                    : FrostRowSubtitleKind.path,
                 subtitle: settings.downloadPath == null
-                    ? t.settings.platformDefault
-                    : settings.downloadPath!,
+                    ? FrostRowSubtitle(t.settings.platformDefault)
+                    : FrostRowSubtitle.path(settings.downloadPath!),
                 onPressed: _choose,
                 contextMenu: [
                   if (settings.downloadPath != null) ...[
                     FrostMenuAction(
                       t.frost.showInFolder,
-                      icon: appIcons.folder,
+                      leading: FrostGlyph.icon(appIcons.folder),
                       onSelected: () => revealDownloadPath(
                         settings.downloadPath!,
                         directory: true,

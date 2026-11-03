@@ -3,8 +3,8 @@ import 'package:booruflow/app/frost_config.dart';
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/features/booru/services/web_challenge_service.dart';
 import 'package:booruflow/features/booru/web_challenge_logic.dart';
-import 'package:booruflow/features/discovery/collection_logic.dart';
-import 'package:booruflow/features/discovery/widgets/post_collection_view.dart';
+import 'package:booruflow/features/browse/collection_logic.dart';
+import 'package:booruflow/features/browse/widgets/post_waterfall.dart';
 import 'package:booruflow/features/posts/media_presentation.dart';
 import 'package:booruflow/features/posts/widgets/post_media_recovery.dart';
 import 'package:booruflow/features/posts/widgets/rust_extended_network_image_provider.dart';
@@ -15,7 +15,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
-import '../discovery/home_page_test.dart' show browseTestApp;
+import '../../support/browse_support.dart' show browseTestApp;
 import '../posts/media_type_presentation_test.dart' show mediaPost, variant;
 import 'web_challenge_service_test.dart' show Backend, candidate;
 
@@ -162,7 +162,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         browseTestApp(
-          PostCollectionView(
+          PostWaterfall(
             collection: (
               key: CollectionKey(
                 sourceId: 'danbooru',
@@ -175,7 +175,7 @@ void main() {
               loader: (_, _) async =>
                   const PostPage(items: [], exhausted: true),
             ),
-            headerBuilder: (_, source) =>
+            header: (_, source) =>
                 const FrostPageHeader(title: FrostText('Browse')),
           ),
         ),
@@ -191,7 +191,10 @@ void main() {
         findsOneWidget,
       );
       expect(find.text(t.frost.noMoreItems), findsNothing);
-      expect(find.text(t.discovery.resetFilters), findsNothing);
+      expect(
+        find.text(t.discovery.resetFilters),
+        kind == 'filtered' ? findsOneWidget : findsNothing,
+      );
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     });

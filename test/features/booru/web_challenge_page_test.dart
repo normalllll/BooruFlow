@@ -10,7 +10,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
 
-import '../discovery/home_page_test.dart' show browseTestApp;
+import '../../support/browse_support.dart' show browseTestApp;
 import 'web_challenge_service_test.dart' show Backend, candidate, state;
 
 const operation = WebChallengeOperation(
@@ -99,7 +99,6 @@ void main() {
         );
         await tester.pump();
         expect(find.byType(FrostPageHeader), findsOneWidget);
-        expect(find.byType(FrostWebChrome), findsNothing);
         expect(find.text(t.verificationPage.failed), findsOneWidget);
         expect(
           tester
@@ -110,15 +109,12 @@ void main() {
           isNull,
         );
         final header = find.byType(FrostPageHeader);
+        // One standard title row: "<source> verification".
         expect(
           find.descendant(
             of: header,
-            matching: find.text(t.webChallenge.title),
+            matching: find.text(t.webChallenge.pageTitle(source: 'Gelbooru')),
           ),
-          findsOneWidget,
-        );
-        expect(
-          find.descendant(of: header, matching: find.text('Gelbooru')),
           findsOneWidget,
         );
         final retry = tester.getRect(

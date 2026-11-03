@@ -4,6 +4,7 @@ import 'package:booruflow/features/settings/network/proxy_logic.dart';
 import 'package:booruflow/features/settings/network/widgets/network_status_panel.dart';
 import 'package:booruflow/features/settings/network/widgets/proxy_settings_panel.dart';
 import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/action_runner_builder.dart';
 import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/widgets.dart';
@@ -124,12 +125,20 @@ class _NetworkSettingsPageState extends ConsumerState<NetworkSettingsPage> {
             ),
             FrostListRow(
               title: t.settingsDetails.routeCache,
-              subtitle: _cacheDescription(),
-              trailing: FrostButton(
-                label: t.settingsDetails.refresh,
-                icon: appIcons.refresh,
-                size: FrostControlSize.compact,
-                onPressedAsync: busy && !_refreshing ? null : _refresh,
+              subtitle: switch (_cacheDescription()) {
+                final text? => FrostRowSubtitle(text),
+                null => null,
+              },
+              trailing: ActionRunnerBuilder(
+                builder: (context, runner) => FrostButton(
+                  label: t.settingsDetails.refresh,
+                  icon: appIcons.refresh,
+                  size: FrostControlSize.compact,
+                  onPressed: busy && !_refreshing
+                      ? null
+                      : () => runner.run(_refresh),
+                  state: runner.state,
+                ),
               ),
             ),
           ],

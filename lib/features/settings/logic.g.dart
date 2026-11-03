@@ -50,7 +50,7 @@ final class AccountProvider
   }
 }
 
-String _$accountHash() => r'2ad10d5f46a3a955709703eb8ee26c167f33560e';
+String _$accountHash() => r'2f39093920347a16524933ccf57cce72d0ffa3bc';
 
 final class AccountFamily extends $Family
     with

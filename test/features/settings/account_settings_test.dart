@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
-import '../discovery/home_page_test.dart' show browseTestApp;
+import '../../support/browse_support.dart' show browseTestApp;
 import '../discovery/search_interaction_test.dart' show testSource;
 
 class _Engine implements BooruEngine {
@@ -43,7 +43,7 @@ class _Service extends BooruService {
   @override
   BooruEngine get engine => fakeEngine;
   @override
-  Future<AuthSchema> authSchema(String id) async => AuthSchema(
+  AuthSchema authSchema(String id) => AuthSchema(
     sourceId: id,
     usesWebSession: web,
     fields: const [
@@ -62,7 +62,7 @@ class _Service extends BooruService {
     ],
   );
   @override
-  Future<AuthState> authState(String id) async => AuthState(
+  AuthState authState(String id) => AuthState(
     sourceId: id,
     status: status,
     authRevision: 0,
@@ -74,7 +74,7 @@ class _Service extends BooruService {
   Future<AuthState> saveCredentials(String id, SourceCredentials value) {
     saves++;
     credentials = value;
-    return pending?.future ?? authState(id);
+    return pending?.future ?? Future.value(authState(id));
   }
 
   @override
@@ -86,7 +86,7 @@ class _Service extends BooruService {
     saves++;
     cookie = cookieHeader;
     agent = userAgent;
-    return authState(id);
+    return Future.value(authState(id));
   }
 
   @override

@@ -10,6 +10,7 @@ import 'package:booruflow/src/rust/api/web_challenge.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:frost_ui/frost_ui.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 export 'web_challenge_browser.dart'
     show clearEmbeddedWebData, challengeNavigationAllowed, rootSnapshotHeader;
@@ -118,6 +119,11 @@ class _WebChallengePageState extends State<WebChallengePage> {
     child: WebChallengeLayout(
       sourceName: widget.operation.spec.displayName,
       actions: [
+        FrostToolbarItem.action(
+          icon: appIcons.refresh,
+          label: t.settingsDetails.refresh,
+          onPressed: _finishing ? null : _reload,
+        ),
         FrostToolbarItem.custom(
           minWidth: _finishWidth(context),
           priority: FrostToolbarPriority.high,
@@ -127,99 +133,76 @@ class _WebChallengePageState extends State<WebChallengePage> {
                 ? null
                 : _finish,
           ),
-          builder: (_) => FrostButton(
+          builder: (_) => FrostButton.prominent(
             label: t.webChallenge.finish,
             size: FrostControlSize.compact,
-            variant: FrostButtonVariant.prominent,
-            loading: _finishing,
+            state: _finishing
+                ? const FrostActionState.running()
+                : FrostActionState.idle,
             onPressed: _finishing || _failed || !_browser.available
                 ? null
                 : _finish,
           ),
         ),
+        FrostToolbarItem.menu(
+          label: t.frost.more,
+          icon: appIcons.more,
+          showsLabel: false,
+          entries: [
+            FrostMenuSection(
+              header: _uri?.host,
+              entries: [
+                FrostMenuAction(
+                  t.frost.openInBrowser,
+                  leading: FrostGlyph.icon(appIcons.externalLink),
+                  onSelected: _uri == null
+                      ? null
+                      : () => unawaited(
+                          launchUrl(
+                            _uri!,
+                            mode: LaunchMode.externalApplication,
+                          ),
+                        ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ],
       content: _failed
           ? WebChallengeFailureContent(onRetry: _reload)
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+          : Stack(
+              fit: StackFit.expand,
               children: [
-                FrostInlineBanner(
-                  tone: FrostBannerTone.info,
-                  message: t.verificationPage.instructions,
-                ),
-                const SizedBox(height: FrostGap.group),
-                Expanded(
-                  child: FrostSurface(
-                    role: FrostSurfaceRole.module,
-                    elevated: false,
-                    borderRadius: FrostRadius.borderRadius(FrostRadius.lg),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            FrostButton.icon(
-                              label: t.settingsDetails.refresh,
-                              icon: appIcons.refresh,
-                              size: FrostControlSize.compact,
-                              onPressed: _finishing ? null : _reload,
-                            ),
-                            Expanded(
-                              child: FrostText(
-                                (_browser.url ??
-                                            Uri.tryParse(
-                                              widget.operation.spec.entryUrl,
-                                            ))
-                                        ?.host ??
-                                    '',
-                                role: FrostTextRole.footnote,
-                                tone: FrostTextTone.secondary,
-                              ),
-                            ),
-                            const SizedBox(width: FrostGap.related),
-                          ],
-                        ),
-                        const FrostDivider(),
-                        Expanded(
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              if (_browser.available) _browser.content(context),
-                              if (_browser.loading || !_browser.available)
-                                ColoredBox(
-                                  color: FrostThemeTokens.of(
-                                    context,
-                                  ).surfaceRaised,
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        FrostActivityIndicator(
-                                          semanticLabel:
-                                              t.verificationPage.opening,
-                                        ),
-                                        const SizedBox(
-                                          height: FrostGap.related,
-                                        ),
-                                        FrostText(
-                                          t.verificationPage.opening,
-                                          role: FrostTextRole.subheadline,
-                                          tone: FrostTextTone.secondary,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                            ],
+                if (_browser.available) _browser.content(context),
+                if (_browser.loading || !_browser.available)
+                  ColoredBox(
+                    color: FrostThemeTokens.of(context).surface,
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          FrostActivityIndicator(
+                            semanticLabel: t.verificationPage.opening,
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: FrostGap.related),
+                          FrostText(
+                            t.verificationPage.opening,
+                            role: FrostTextRole.subheadline,
+                            tone: FrostTextTone.secondary,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
     ),
   );
+
+  /// The page being verified: where it is now, else where it started.
+  Uri? get _uri => _browser.url ?? Uri.tryParse(widget.operation.spec.entryUrl);
+
   double _finishWidth(BuildContext context) {
     final painter = TextPainter(
       text: TextSpan(
@@ -250,18 +233,7 @@ class WebChallengeLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) => FrostPinnedChrome(
     chrome: FrostPageHeader(
-      title: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          FrostText(t.webChallenge.title, role: FrostTextRole.headline),
-          FrostText(
-            sourceName,
-            role: FrostTextRole.footnote,
-            tone: FrostTextTone.tertiary,
-          ),
-        ],
-      ),
+      title: FrostText(t.webChallenge.pageTitle(source: sourceName)),
       actions: actions,
     ),
     body: Builder(
@@ -300,9 +272,8 @@ class WebChallengeFailureContent extends StatelessWidget {
           icon: appIcons.refresh,
           onPressed: onRetry,
         ),
-        FrostButton(
+        FrostButton.plain(
           label: t.verificationPage.networkSettings,
-          variant: FrostButtonVariant.plain,
           onPressed: () => AppRouter.router.go('/settings/network'),
         ),
       ],

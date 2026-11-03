@@ -136,10 +136,10 @@ class BooruService {
     notifyChanged();
   }
 
-  Future<AuthState> authState(String sourceId) =>
+  AuthState authState(String sourceId) =>
       _engine.authState(sourceId: sourceId);
 
-  Future<AuthSchema> authSchema(String sourceId) =>
+  AuthSchema authSchema(String sourceId) =>
       _engine.authSchema(sourceId: sourceId);
 
   Future<AuthState> saveCredentials(

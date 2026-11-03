@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/src/rust/api/booru_auth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -19,17 +21,15 @@ class AccountData {
 
 @riverpod
 class Account extends _$Account {
+  // Both reads are synchronous, so the first frame already has the status.
   @override
-  Future<AccountData> build(String sourceId) async {
+  FutureOr<AccountData> build(String sourceId) {
     final service = ref.watch(booruServiceProvider);
-    final values = await Future.wait<Object>([
-      service.authSchema(sourceId),
-      service.authState(sourceId),
-    ]);
+    final schema = service.authSchema(sourceId);
     return AccountData(
-      schema: values[0] as AuthSchema,
-      auth: values[1] as AuthState,
-      credentialHints: _hints(values[0] as AuthSchema),
+      schema: schema,
+      auth: service.authState(sourceId),
+      credentialHints: _hints(schema),
     );
   }
 

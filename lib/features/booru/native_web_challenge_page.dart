@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:booruflow/app/frost_config.dart';
 import 'package:booruflow/features/booru/services/web_challenge_service.dart';
 import 'package:booruflow/features/booru/web_challenge_page.dart';
 import 'package:booruflow/intl/translations.g.dart';
@@ -103,6 +104,14 @@ class _NativeWebChallengePageState extends State<NativeWebChallengePage> {
     },
     child: WebChallengeLayout(
       sourceName: widget.sourceName,
+      actions: [
+        FrostToolbarItem.action(
+          icon: appIcons.close,
+          label: t.generic.cancel,
+          priority: FrostToolbarPriority.high,
+          onPressed: _closing ? null : _close,
+        ),
+      ],
       content: _running
           ? Center(
               child: Column(

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:booruflow/features/settings/network/proxy_logic.dart';
 import 'package:booruflow/features/settings/network/services/proxy_connection.dart';
 import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/action_runner_builder.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frost_ui/frost_ui.dart';
@@ -193,13 +194,16 @@ class _ProxySettingsPanelState extends ConsumerState<ProxySettingsPanel> {
           runSpacing: FrostGap.related,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            FrostButton(
-              label: n.checkCompact,
-              tooltip: n.proxyProbe,
-              size: FrostControlSize.compact,
-              onPressedAsync: enabled && (!form.probing || _manualProbe)
-                  ? _probe
-                  : null,
+            ActionRunnerBuilder(
+              builder: (context, runner) => FrostButton(
+                label: n.checkCompact,
+                tooltip: n.proxyProbe,
+                size: FrostControlSize.compact,
+                onPressed: enabled && (!form.probing || _manualProbe)
+                    ? () => runner.run(_probe)
+                    : null,
+                state: runner.state,
+              ),
             ),
             if (form.probing)
               FrostActivityIndicator(semanticLabel: n.checkingCompact)

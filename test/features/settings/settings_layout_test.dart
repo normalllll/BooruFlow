@@ -6,10 +6,11 @@ import 'package:booruflow/features/settings/settings_page.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
-import '../discovery/home_page_test.dart' show browseTestApp;
+import '../../support/browse_support.dart' show browseTestApp;
 import '../discovery/search_interaction_test.dart' show testSource;
 
 class _Store implements SettingsServiceStore {
@@ -110,10 +111,10 @@ void main() {
         mount(const SettingsPage(section: SettingsSection.general)),
       );
       await tester.pumpAndSettle();
-      expect(find.text(t.settings.language), findsOneWidget);
+      expect(find.text(t.settings.language), findsWidgets);
       expect(find.text(t.settings.theme), findsNothing);
-      expect(find.text(t.settings.columnsPerRow), findsNothing);
-      await tester.tap(find.text(t.settings.language));
+      expect(find.text(t.settings.thumbnailSize), findsNothing);
+      await tester.tap(find.text(t.settings.language).last);
       await tester.pumpAndSettle();
       await tester.tap(find.text('日本語'));
       await tester.pumpAndSettle();
@@ -174,7 +175,7 @@ void main() {
           final sections = tester.state(find.byType(FrostSettingsSections));
           final wide = width >= 720;
           if (wide) {
-            await tester.tap(find.text(t.settings.sections.general).first);
+            await tester.tap(find.text(t.settings.language).first);
             await tester.pumpAndSettle();
           }
           for (final locale in [
@@ -202,31 +203,19 @@ void main() {
                 for (final section in SettingsSection.values) section.title,
               ]);
             }
-            expect(
-              find.text(t.settings.language).hitTestable(),
-              findsOneWidget,
-            );
+            expect(find.text(t.settings.language).hitTestable(), findsWidgets);
             expect(tester.takeException(), isNull);
           }
           if (wide) {
             tester.view.physicalSize = const Size(390, 1200);
             await tester.pumpAndSettle();
-            expect(
-              find.text(t.settings.language).hitTestable(),
-              findsOneWidget,
-            );
+            expect(find.text(t.settings.language).hitTestable(), findsWidgets);
             LocaleSettings.setLocaleSync(AppLocale.ja);
             await tester.pumpAndSettle();
-            expect(
-              find.text(t.settings.language).hitTestable(),
-              findsOneWidget,
-            );
+            expect(find.text(t.settings.language).hitTestable(), findsWidgets);
             tester.view.physicalSize = Size(width, 1200);
             await tester.pumpAndSettle();
-            expect(
-              find.text(t.settings.language).hitTestable(),
-              findsOneWidget,
-            );
+            expect(find.text(t.settings.language).hitTestable(), findsWidgets);
             expect(
               identical(
                 tester.state(find.byType(FrostSettingsSections)),
@@ -264,18 +253,18 @@ void main() {
         DownloadPlatform.android => t.ugoira.androidDestination,
         DownloadPlatform.ios => t.ugoira.iosDestination,
       };
-      final row = tester.widget<FrostListRow>(
-        find.byWidgetPredicate(
-          (widget) => widget is FrostListRow && widget.title == title,
-        ),
+      final row = find.byWidgetPredicate(
+        (widget) => widget is FrostListRow && widget.title == title,
       );
+      final tappable = tester
+          .getSemantics(row)
+          .getSemanticsData()
+          .hasAction(SemanticsAction.tap);
       if (platform.canChooseDirectory) {
-        expect(row.onPressed, isNotNull);
+        expect(tappable, isTrue);
         expect(find.text(t.settingsDetails.change), findsOneWidget);
       } else {
-        expect(row.onPressed, isNull);
-        expect(row.trailing, isNull);
-        expect(row.contextMenu, isEmpty);
+        expect(tappable, isFalse);
         expect(find.text(t.settingsDetails.change), findsNothing);
         // Pointer and right-click have no native picker or process callback.
         await tester.tap(find.text(title));

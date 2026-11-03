@@ -6,6 +6,7 @@ import 'package:booruflow/features/booru/native_web_challenge_page.dart';
 import 'package:booruflow/features/booru/services/web_challenge_service.dart';
 import 'package:booruflow/features/booru/web_challenge_logic.dart';
 import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/action_runner_builder.dart';
 import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
 import 'package:flutter/widgets.dart';
@@ -84,12 +85,22 @@ class _WebChallengeButtonState extends ConsumerState<WebChallengeButton> {
         onPressed: action == null ? null : () => unawaited(action()),
       );
     }
-    return widget.compact
-        ? FrostButton.icon(
-            label: label,
-            icon: appIcons.check,
-            onPressedAsync: action,
-          )
-        : FrostButton(label: label, onPressedAsync: action);
+    return ActionRunnerBuilder(
+      builder: (context, runner) {
+        final onPressed = action == null ? null : () => runner.run(action);
+        return widget.compact
+            ? FrostButton.icon(
+                label: label,
+                icon: appIcons.check,
+                onPressed: onPressed,
+                state: runner.state,
+              )
+            : FrostButton(
+                label: label,
+                onPressed: onPressed,
+                state: runner.state,
+              );
+      },
+    );
   }
 }

@@ -5,6 +5,7 @@ import 'package:booruflow/features/booru/widgets/web_challenge_data_panel.dart';
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/features/settings/logic.dart';
 import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/shared/action_runner_builder.dart';
 import 'package:booruflow/shared/app_action_group.dart';
 import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/src/rust/api/booru_auth.dart';
@@ -158,15 +159,19 @@ class _AccountEditorState extends ConsumerState<AccountEditor> {
         const SizedBox(height: FrostGap.related),
         AppActionGroup(
           children: [
-            FrostButton(
-              label: t.settings.account.verify,
-              icon: appIcons.refresh,
-              onPressedAsync: busy && !_verifying ? null : _verify,
+            ActionRunnerBuilder(
+              builder: (context, runner) => FrostButton(
+                label: t.settings.account.verify,
+                icon: appIcons.refresh,
+                onPressed: busy && !_verifying
+                    ? null
+                    : () => runner.run(_verify),
+                state: runner.state,
+              ),
             ),
-            FrostButton(
+            FrostButton.plain(
               label: t.settings.account.signOut,
               role: FrostButtonRole.destructive,
-              variant: FrostButtonVariant.plain,
               onPressed: busy ? null : _clear,
             ),
           ],
@@ -332,7 +337,7 @@ class _AccountCredentialsFormState
         if (widget.schema.usesWebSession) ...[
           FrostListRow(
             title: t.settings.account.openSignInPage,
-            icon: appIcons.externalLink,
+            leading: FrostGlyph.icon(appIcons.externalLink),
             accessory: FrostRowAccessory.external,
             onPressed: () => launchUrlString(
               _signInUrl(widget.sourceId),
@@ -372,10 +377,9 @@ class _AccountCredentialsFormState
         if (!widget.schema.usesWebSession)
           Align(
             alignment: AlignmentDirectional.centerStart,
-            child: FrostButton(
+            child: FrostButton.plain(
               label: t.settings.account.openSignInPage,
               icon: appIcons.externalLink,
-              variant: FrostButtonVariant.plain,
               size: FrostControlSize.compact,
               onPressed: _openSignIn,
             ),

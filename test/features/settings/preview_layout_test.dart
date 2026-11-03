@@ -1,6 +1,7 @@
 import 'package:booruflow/core/settings/settings_service.dart';
 import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/features/booru/services/booru_service.dart';
+import 'package:booruflow/features/settings/appearance_settings.dart';
 import 'package:booruflow/features/settings/network/network_logic.dart';
 import 'package:booruflow/features/settings/settings_page.dart';
 import 'package:booruflow/features/update/logic.dart';
@@ -10,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
-import '../discovery/home_page_test.dart' show browseTestApp;
+import '../../support/browse_support.dart' show browseTestApp;
 import '../discovery/search_interaction_test.dart' show testSource;
 
 class _Store implements SettingsServiceStore {
@@ -52,14 +53,12 @@ void main() {
         mount(const SettingsPage(section: SettingsSection.downloads)),
       );
       await tester.pumpAndSettle();
-      final rows = tester
-          .widgetList<FrostListRow>(find.byType(FrostListRow))
-          .where((row) => row.trailing is FrostStepper)
+      final steppers = tester
+          .widgetList<FrostStepper>(find.byType(FrostStepper))
           .toList();
-      expect(rows, hasLength(2));
-      for (final row in rows) {
-        expect(row.value, '${(row.trailing! as FrostStepper).value.toInt()}');
-        expect(find.text(row.value!), findsWidgets);
+      expect(steppers, hasLength(2));
+      for (final stepper in steppers) {
+        expect(find.text('${stepper.value.toInt()}'), findsWidgets);
       }
       expect(tester.takeException(), isNull);
     },
@@ -81,36 +80,47 @@ void main() {
       expect(find.byType(FrostGroupedSection), findsNWidgets(3));
       expect(find.byType(FrostListRow), findsNWidgets(8));
       expect(find.byType(FrostCountBadge), findsOneWidget);
-      final appearance = tester.widget<FrostListRow>(
-        find.byWidgetPredicate(
-          (w) => w is FrostListRow && w.title == t.settingsV2.appearance,
-        ),
+      final appearance = find.byWidgetPredicate(
+        (w) => w is FrostListRow && w.title == t.settingsV2.appearance,
       );
-      expect(appearance.value, t.settings.system);
+      expect(
+        find.descendant(of: appearance, matching: find.text(t.settings.system)),
+        findsOneWidget,
+      );
       expect(find.text(t.settingsDetails.systemDnsShort), findsOneWidget);
       expect(find.byType(FrostPicker<ThemeMode>), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );
   testWidgets(
-    'wide section title starts exactly 32 after the shared 236 pane and hairline',
+    'wide section starts 32 after the navigation hairline under the one title',
     (tester) async {
       tester.view.physicalSize = const Size(1440, 900);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
       await tester.pumpWidget(mount(const SettingsPage()));
       await tester.pumpAndSettle();
-      final title = find.descendant(
-        of: find.byWidgetPredicate(
+      // The page header holds the only title; the section names itself in
+      // the navigation column, not again above its settings.
+      expect(
+        find.byWidgetPredicate(
           (w) => w is FrostText && w.role == FrostTextRole.title2,
         ),
-        matching: find.text(t.settingsV2.appearance),
+        findsNothing,
       );
+      final title = find.byType(AppearanceSettings);
       final pane = tester.getRect(find.byType(FrostSettingsSections));
-      expect(
-        tester.getTopLeft(title).dx,
-        closeTo(pane.left + 236 + 1 + 32, .001),
+      // The navigation column's width follows the window; measure its hairline.
+      final hairline = tester.getRect(
+        find.descendant(
+          of: find.byType(FrostSettingsSections),
+          matching: find.byWidgetPredicate(
+            (w) => w is FrostDivider && w.axis == Axis.vertical,
+          ),
+        ),
       );
+      expect(hairline.left, greaterThanOrEqualTo(pane.left + 236));
+      expect(tester.getTopLeft(title).dx, closeTo(hairline.right + 32, .001));
       expect(
         tester.getTopLeft(title).dy,
         closeTo(
@@ -131,7 +141,7 @@ void main() {
   );
   for (final scale in [1.0, 2.0]) {
     testWidgets(
-      'phone tone previews remain on one row without text clipping at $scale',
+      'phone tone choice stays inside the row without clipping at $scale',
       (tester) async {
         tester.view.physicalSize = const Size(390, 1000);
         tester.view.devicePixelRatio = 1;
@@ -143,18 +153,14 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        final previews = find
-            .byType(FrostThumbnail)
-            .evaluate()
-            .map(
-              (element) => tester.getRect(
-                find.byElementPredicate((e) => identical(element, e)),
-              ),
-            )
-            .toList();
-        expect(previews, hasLength(3));
-        expect(previews.map((r) => r.top).toSet(), hasLength(1));
-        expect(previews.every((r) => r.height == 44), true);
+        // The tone is one segmented choice; no palette preview is drawn.
+        final tone = find.byType(FrostPicker<FrostTone>);
+        expect(tone, findsOneWidget);
+        expect(find.byType(FrostThumbnail), findsNothing);
+        expect(
+          tester.getRect(tone).right,
+          lessThanOrEqualTo(tester.view.physicalSize.width),
+        );
         expect(tester.takeException(), isNull);
       },
     );

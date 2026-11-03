@@ -16,9 +16,9 @@ import 'web_challenge.dart';
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<BooruEngine>>
 abstract class BooruEngine implements RustOpaqueInterface {
-  Future<AuthSchema> authSchema({required String sourceId});
+  AuthSchema authSchema({required String sourceId});
 
-  Future<AuthState> authState({required String sourceId});
+  AuthState authState({required String sourceId});
 
   Future<List<BooruTagSuggestion>> autocomplete({
     required String sourceId,
