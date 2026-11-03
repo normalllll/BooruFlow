@@ -7,7 +7,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:slang/generated.dart';
-
 import 'translations.g.dart';
 
 // Path: <root>
@@ -134,8 +133,6 @@ class _Translations$generic$ja extends Translations$generic$en {
   @override
   String get cancel => 'キャンセル';
   @override
-  String get clear => 'クリア';
-  @override
   String get confirm => '確認';
   @override
   String get enabled => '有効';
@@ -153,9 +150,15 @@ class _Translations$generic$ja extends Translations$generic$en {
   @override
   String get retry => '再試行';
   @override
+  String get refresh => '更新';
+  @override
   String get noMoreData => 'これ以上データはありません';
   @override
   String get notFound => '見つかりませんでした';
+  @override
+  String get backToBrowse => '閲覧に戻る';
+  @override
+  String get notFoundMessage => 'ページが存在しないか、リンクが不完全です。';
 }
 
 // Path: booruError
@@ -301,6 +304,8 @@ class _Translations$postDetail$ja extends Translations$postDetail$en {
   @override
   String get details => '詳細';
   @override
+  String get post => '投稿';
+  @override
   String get actions => '操作';
   @override
   String get rating => 'レーティング';
@@ -412,6 +417,8 @@ class _Translations$downloads$ja extends Translations$downloads$en {
   @override
   String get all => 'すべて';
   @override
+  String get viewAll => 'すべて表示';
+  @override
   String get pause => '一時停止';
   @override
   String get resume => '再開';
@@ -427,6 +434,8 @@ class _Translations$downloads$ja extends Translations$downloads$en {
   String get openDirectory => 'ダウンロード先を開く';
   @override
   String get openPost => '作品を開く';
+  @override
+  String get open => '開く';
   @override
   String get batch => '一括ダウンロード';
   @override
@@ -495,6 +504,18 @@ class _Translations$downloads$ja extends Translations$downloads$en {
   @override
   String get collapse => '折りたたむ';
   @override
+  String get noActive => 'ダウンロード中のタスクはありません';
+  @override
+  String get noCompleted => '完了したダウンロードはまだありません';
+  @override
+  String partialFailed({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('ja'))(
+        n,
+        other: '${count} 件の操作に失敗しました',
+      );
+  @override
+  String get copyPath => 'パスをコピー';
+  @override
   late final _Translations$downloads$messages$ja messages =
       _Translations$downloads$messages$ja._(_root);
 }
@@ -550,7 +571,13 @@ class _Translations$settings$ja extends Translations$settings$en {
   @override
   String get defaultToPlatformSettings => 'システムの既定値を使用';
   @override
-  String get columnsPerRow => '1 行の画像数';
+  String get thumbnailSize => 'サムネイルのサイズ';
+  @override
+  String get thumbnailSmall => '小';
+  @override
+  String get thumbnailMedium => '中';
+  @override
+  String get thumbnailLarge => '大';
   @override
   String get maxConcurrentDownloads => '同時ダウンロード';
   @override
@@ -563,8 +590,6 @@ class _Translations$settings$ja extends Translations$settings$en {
   String get light => 'ライト';
   @override
   String get dark => 'ダーク';
-  @override
-  String get auto => '自動';
   @override
   String get downloadsOverview => '保存先と同時ダウンロード数';
   @override
@@ -593,9 +618,6 @@ class _Translations$settings$ja extends Translations$settings$en {
   @override
   late final _Translations$settings$bypassSniDialog$ja bypassSniDialog =
       _Translations$settings$bypassSniDialog$ja._(_root);
-  @override
-  late final _Translations$settings$columnsPerRowDialog$ja columnsPerRowDialog =
-      _Translations$settings$columnsPerRowDialog$ja._(_root);
   @override
   late final _Translations$settings$maxSegmentsPerTaskDialog$ja
   maxSegmentsPerTaskDialog =
@@ -639,6 +661,8 @@ class _Translations$discovery$ja extends Translations$discovery$en {
   String get copyQueryLink => '検索リンクをコピー';
   @override
   String get copyImage => '画像をコピー';
+  @override
+  String get copyImageFailed => '画像をコピーできませんでした';
   @override
   String get searchAuthor => 'この絵師を検索';
   @override
@@ -718,8 +742,6 @@ class _Translations$discovery$ja extends Translations$discovery$en {
   @override
   String get commonTags => 'よく使われるタグ';
   @override
-  String get moreTags => 'もっと見る';
-  @override
   String get tagSource => '対象サイト';
   @override
   String get allTagSources => 'すべてのサイト';
@@ -730,7 +752,11 @@ class _Translations$discovery$ja extends Translations$discovery$en {
   @override
   String get addTagAction => '追加';
   @override
+  String get editTagAction => '編集';
+  @override
   String get deleteTag => '削除';
+  @override
+  String deleteTagConfirm({required Object name}) => '「${name}」を削除しますか？';
   @override
   String get addTag => 'タグを追加';
   @override
@@ -748,7 +774,15 @@ class _Translations$discovery$ja extends Translations$discovery$en {
   @override
   String get invalidTag => '空白を含まないタグを1つ入力してください。';
   @override
-  String get queryHint => 'タグを検索';
+  String searchSource({required Object source}) => '${source} を検索';
+  @override
+  String get noCommonTags => 'このソースには人気タグがありません';
+  @override
+  String get category => 'カテゴリ';
+  @override
+  String get allCategories => 'すべて';
+  @override
+  String get allTagsAction => 'すべて';
   @override
   String get unverifiedTag => 'このサイトで未確認のタグがあります。そのまま検索できます。';
   @override
@@ -757,8 +791,6 @@ class _Translations$discovery$ja extends Translations$discovery$en {
   String get noSuggestions => '候補がありません';
   @override
   String get localFallback => 'オンライン候補を取得できません。ローカル候補を利用できます。';
-  @override
-  String get retryTags => 'よく使われるタグを再取得';
   @override
   String get artist => '作者';
   @override
@@ -816,6 +848,8 @@ class _Translations$webChallenge$ja extends Translations$webChallenge$en {
   // Translations
   @override
   String get title => 'ウェブ認証';
+  @override
+  String pageTitle({required Object source}) => '${source} の認証';
   @override
   String get open => 'ウェブ認証を開く';
   @override
@@ -1121,8 +1155,6 @@ class _Translations$frost$ja extends Translations$frost$en {
   @override
   String get exitFullscreen => '全画面表示を終了';
   @override
-  String get reload => '再読み込み';
-  @override
   String get openInBrowser => 'ブラウザーで開く';
   @override
   String get minimize => '最小化';
@@ -1172,28 +1204,9 @@ class _Translations$frost$ja extends Translations$frost$en {
   @override
   String get remove => '削除';
   @override
-  String get forward => '進む';
-  @override
-  String get stop => '停止';
-  @override
   String get seek => '再生位置';
   @override
-  String get send => '送信';
-  @override
-  String get attach => '添付';
-  @override
-  String get readerSettings => '表示設定';
-  @override
-  String get textSize => '文字サイズ';
-  @override
-  String get lineSpacing => '行間';
-  @override
-  String get readingProgress => '読書の進捗';
-  @override
   String showReplies({required Object count}) => '${count}件の返信を表示';
-  @override
-  String characterCount({required Object limit, required Object count}) =>
-      '${limit}文字中${count}文字';
   @override
   String moreMedia({required Object count}) => 'ほか${count}枚';
   @override
@@ -1217,6 +1230,10 @@ class _Translations$navigation$ja extends Translations$navigation$en {
   String get browse => '閲覧';
   @override
   String get search => '検索';
+  @override
+  String get tags => 'タグ';
+  @override
+  String get backToFirst => '最初のページに戻る';
   @override
   String get downloads => 'ダウンロード';
   @override
@@ -1492,8 +1509,6 @@ class _Translations$settings$sections$ja
   String get accounts => 'アカウント';
   @override
   String get network => 'ネットワーク';
-  @override
-  String get general => '一般';
   @override
   String get downloads => 'ダウンロード';
 }
@@ -1801,20 +1816,6 @@ class _Translations$settings$bypassSniDialog$ja
   String get title => 'SNI をバイパス';
 }
 
-// Path: settings.columnsPerRowDialog
-class _Translations$settings$columnsPerRowDialog$ja
-    extends Translations$settings$columnsPerRowDialog$en {
-  _Translations$settings$columnsPerRowDialog$ja._(TranslationsJa root)
-    : this._root = root,
-      super.internal(root);
-
-  final TranslationsJa _root; // ignore: unused_field
-
-  // Translations
-  @override
-  String get title => '1 行の画像数';
-}
-
 // Path: settings.maxSegmentsPerTaskDialog
 class _Translations$settings$maxSegmentsPerTaskDialog$ja
     extends Translations$settings$maxSegmentsPerTaskDialog$en {
@@ -1878,7 +1879,6 @@ extension on TranslationsJa {
     return switch (path) {
           'generic.ok' => 'OK',
           'generic.cancel' => 'キャンセル',
-          'generic.clear' => 'クリア',
           'generic.confirm' => '確認',
           'generic.enabled' => '有効',
           'generic.disabled' => '無効',
@@ -1889,8 +1889,11 @@ extension on TranslationsJa {
           'generic.loading' => '読み込み中',
           'generic.loadFailed' => '読み込みに失敗しました',
           'generic.retry' => '再試行',
+          'generic.refresh' => '更新',
           'generic.noMoreData' => 'これ以上データはありません',
           'generic.notFound' => '見つかりませんでした',
+          'generic.backToBrowse' => '閲覧に戻る',
+          'generic.notFoundMessage' => 'ページが存在しないか、リンクが不完全です。',
           'booruError.invalidRequest' => 'リクエストが無効です。',
           'booruError.unsupportedCapability' => 'この画像ソースは要求された操作に対応していません。',
           'booruError.authenticationRequired' => 'この画像ソースにログインしてから再試行してください。',
@@ -1948,6 +1951,7 @@ extension on TranslationsJa {
           'postDetail.titleWithId' => ({required Object id}) => '投稿: ${id}',
           'postDetail.tags' => 'タグ',
           'postDetail.details' => '詳細',
+          'postDetail.post' => '投稿',
           'postDetail.actions' => '操作',
           'postDetail.rating' => 'レーティング',
           'postDetail.fileType' => 'ファイル形式',
@@ -1992,6 +1996,7 @@ extension on TranslationsJa {
           'downloads.startedAt' => '開始日時',
           'downloads.browse' => '閲覧する',
           'downloads.all' => 'すべて',
+          'downloads.viewAll' => 'すべて表示',
           'downloads.pause' => '一時停止',
           'downloads.resume' => '再開',
           'downloads.pauseAll' => 'すべて一時停止',
@@ -2000,6 +2005,7 @@ extension on TranslationsJa {
           'downloads.clearCompleted' => '完了済みを削除',
           'downloads.openDirectory' => 'ダウンロード先を開く',
           'downloads.openPost' => '作品を開く',
+          'downloads.open' => '開く',
           'downloads.batch' => '一括ダウンロード',
           'downloads.batchProgress' =>
             ({required Object completed, required Object total}) =>
@@ -2035,6 +2041,16 @@ extension on TranslationsJa {
           'downloads.actionFailed' => 'ダウンロード操作に失敗しました',
           'downloads.expand' => '展開',
           'downloads.collapse' => '折りたたむ',
+          'downloads.noActive' => 'ダウンロード中のタスクはありません',
+          'downloads.noCompleted' => '完了したダウンロードはまだありません',
+          'downloads.partialFailed' =>
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('ja'))(
+                  n,
+                  other: '${count} 件の操作に失敗しました',
+                ),
+          'downloads.copyPath' => 'パスをコピー',
           'downloads.messages.storagePermanentlyDenied' =>
             'ストレージのアクセス許可が永久に拒否されました。\n設定で手動でストレージのアクセス許可を有効にしてください。',
           'downloads.messages.storageDenied' => 'ストレージのアクセス許可が拒否されました。',
@@ -2070,19 +2086,20 @@ extension on TranslationsJa {
           'settings.bypassSni' => 'SNI をバイパス',
           'settings.downloadDirectory' => 'ダウンロード先',
           'settings.defaultToPlatformSettings' => 'システムの既定値を使用',
-          'settings.columnsPerRow' => '1 行の画像数',
+          'settings.thumbnailSize' => 'サムネイルのサイズ',
+          'settings.thumbnailSmall' => '小',
+          'settings.thumbnailMedium' => '中',
+          'settings.thumbnailLarge' => '大',
           'settings.maxConcurrentDownloads' => '同時ダウンロード',
           'settings.maxSegmentsPerTask' => 'タスクごとの分割数',
           'settings.platformDefault' => 'システムの既定値',
           'settings.system' => 'システム',
           'settings.light' => 'ライト',
           'settings.dark' => 'ダーク',
-          'settings.auto' => '自動',
           'settings.downloadsOverview' => '保存先と同時ダウンロード数',
           'settings.sections.sourcesAndAccounts' => 'サイトとアカウント',
           'settings.sections.accounts' => 'アカウント',
           'settings.sections.network' => 'ネットワーク',
-          'settings.sections.general' => '一般',
           'settings.sections.downloads' => 'ダウンロード',
           'settings.source.defaultSource' => '既定のサイト',
           'settings.source.supportedRatings' => '対応するレーティング',
@@ -2218,7 +2235,6 @@ extension on TranslationsJa {
           'settings.downloadDirectoryDialog.messages.pathNotWritable' =>
             'パスに書き込みできません。',
           'settings.bypassSniDialog.title' => 'SNI をバイパス',
-          'settings.columnsPerRowDialog.title' => '1 行の画像数',
           'settings.maxSegmentsPerTaskDialog.title' => 'タスクごとの最大分割数',
           'discovery.mode' => '表示',
           'discovery.timeRange' => '期間',
@@ -2234,6 +2250,7 @@ extension on TranslationsJa {
           'discovery.copyLink' => 'リンクをコピー',
           'discovery.copyQueryLink' => '検索リンクをコピー',
           'discovery.copyImage' => '画像をコピー',
+          'discovery.copyImageFailed' => '画像をコピーできませんでした',
           'discovery.searchAuthor' => 'この絵師を検索',
           'discovery.mediaAnimation' => 'アニメ',
           'discovery.mediaVideo' => '動画',
@@ -2276,13 +2293,15 @@ extension on TranslationsJa {
           'discovery.noRecentSearches' => '検索履歴はありません',
           'discovery.myTags' => '自分のタグ',
           'discovery.commonTags' => 'よく使われるタグ',
-          'discovery.moreTags' => 'もっと見る',
           'discovery.tagSource' => '対象サイト',
           'discovery.allTagSources' => 'すべてのサイト',
           'discovery.manageTags' => 'カスタムタグ',
           'discovery.manageTagsAction' => '管理',
           'discovery.addTagAction' => '追加',
+          'discovery.editTagAction' => '編集',
           'discovery.deleteTag' => '削除',
+          'discovery.deleteTagConfirm' =>
+            ({required Object name}) => '「${name}」を削除しますか？',
           'discovery.addTag' => 'タグを追加',
           'discovery.noCustomTags' => 'カスタムタグはまだありません',
           'discovery.customTagsHint' => 'よく使うタグに覚えやすい名前を付けると、検索で見つけやすくなります。',
@@ -2291,12 +2310,16 @@ extension on TranslationsJa {
           'discovery.canonicalTag' => 'サイトのタグ',
           'discovery.displayName' => '表示名（任意）',
           'discovery.invalidTag' => '空白を含まないタグを1つ入力してください。',
-          'discovery.queryHint' => 'タグを検索',
+          'discovery.searchSource' =>
+            ({required Object source}) => '${source} を検索',
+          'discovery.noCommonTags' => 'このソースには人気タグがありません',
+          'discovery.category' => 'カテゴリ',
+          'discovery.allCategories' => 'すべて',
+          'discovery.allTagsAction' => 'すべて',
           'discovery.unverifiedTag' => 'このサイトで未確認のタグがあります。そのまま検索できます。',
           'discovery.verifiedTag' => 'このサイトで確認済み',
           'discovery.noSuggestions' => '候補がありません',
           'discovery.localFallback' => 'オンライン候補を取得できません。ローカル候補を利用できます。',
-          'discovery.retryTags' => 'よく使われるタグを再取得',
           'discovery.artist' => '作者',
           'discovery.character' => 'キャラクター',
           'discovery.copyright' => '作品',
@@ -2316,6 +2339,8 @@ extension on TranslationsJa {
           'mediaError.decodeFailed' =>
             'ダウンロードした画像をデコードできませんでした。再試行すると、この画像のキャッシュを削除して再ダウンロードします。',
           'webChallenge.title' => 'ウェブ認証',
+          'webChallenge.pageTitle' =>
+            ({required Object source}) => '${source} の認証',
           'webChallenge.open' => 'ウェブ認証を開く',
           'webChallenge.windowTitle' =>
             ({required Object source}) => '${source} · 認証後にウィンドウを閉じてください',
@@ -2468,6 +2493,9 @@ extension on TranslationsJa {
           'frost.hidePassword' => 'パスワードを隠す',
           'frost.chooseDate' => '日付を選択',
           'frost.chooseTime' => '時刻を選択',
+          _ => null,
+        } ??
+        switch (path) {
           'frost.increment' => '増やす',
           'frost.decrement' => '減らす',
           'frost.reorderHandle' => '並べ替え',
@@ -2480,12 +2508,8 @@ extension on TranslationsJa {
           'frost.unmute' => 'ミュートを解除',
           'frost.fullscreen' => '全画面表示',
           'frost.exitFullscreen' => '全画面表示を終了',
-          'frost.reload' => '再読み込み',
           'frost.openInBrowser' => 'ブラウザーで開く',
           'frost.minimize' => '最小化',
-          _ => null,
-        } ??
-        switch (path) {
           'frost.maximize' => '最大化',
           'frost.restore' => '元のサイズに戻す',
           'frost.close' => '閉じる',
@@ -2513,19 +2537,8 @@ extension on TranslationsJa {
           'frost.taskFailed' => '失敗',
           'frost.taskCancelled' => 'キャンセル済み',
           'frost.remove' => '削除',
-          'frost.forward' => '進む',
-          'frost.stop' => '停止',
           'frost.seek' => '再生位置',
-          'frost.send' => '送信',
-          'frost.attach' => '添付',
-          'frost.readerSettings' => '表示設定',
-          'frost.textSize' => '文字サイズ',
-          'frost.lineSpacing' => '行間',
-          'frost.readingProgress' => '読書の進捗',
           'frost.showReplies' => ({required Object count}) => '${count}件の返信を表示',
-          'frost.characterCount' =>
-            ({required Object limit, required Object count}) =>
-                '${limit}文字中${count}文字',
           'frost.moreMedia' => ({required Object count}) => 'ほか${count}枚',
           'frost.navigationCount' => ({required Object count}) => '${count}件',
           'frost.navigationProgress' =>
@@ -2533,6 +2546,8 @@ extension on TranslationsJa {
           'frost.listSeparator' => '、',
           'navigation.browse' => '閲覧',
           'navigation.search' => '検索',
+          'navigation.tags' => 'タグ',
+          'navigation.backToFirst' => '最初のページに戻る',
           'navigation.downloads' => 'ダウンロード',
           'navigation.settings' => '設定',
           'navigation.browseEmpty' => 'お気に入りのサイトを閲覧',

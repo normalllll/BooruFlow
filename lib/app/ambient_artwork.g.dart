@@ -8,18 +8,27 @@ part of 'ambient_artwork.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Selects window artwork independently of the detail's display resolution.
-/// The host retains decoded pixels until this provider's replacement is ready.
+/// Window artwork chosen by the pages that show a work, independently of the
+/// detail's display resolution. Each page claims it with itself as owner and
+/// releases the claim when it goes away; the newest remaining claim wins, and
+/// with none left the window has no artwork. The host retains decoded pixels
+/// until a replacement is ready.
 
 @ProviderFor(AmbientArtwork)
 final ambientArtworkProvider = AmbientArtworkProvider._();
 
-/// Selects window artwork independently of the detail's display resolution.
-/// The host retains decoded pixels until this provider's replacement is ready.
+/// Window artwork chosen by the pages that show a work, independently of the
+/// detail's display resolution. Each page claims it with itself as owner and
+/// releases the claim when it goes away; the newest remaining claim wins, and
+/// with none left the window has no artwork. The host retains decoded pixels
+/// until a replacement is ready.
 final class AmbientArtworkProvider
     extends $NotifierProvider<AmbientArtwork, ImageProvider<Object>?> {
-  /// Selects window artwork independently of the detail's display resolution.
-  /// The host retains decoded pixels until this provider's replacement is ready.
+  /// Window artwork chosen by the pages that show a work, independently of the
+  /// detail's display resolution. Each page claims it with itself as owner and
+  /// releases the claim when it goes away; the newest remaining claim wins, and
+  /// with none left the window has no artwork. The host retains decoded pixels
+  /// until a replacement is ready.
   AmbientArtworkProvider._()
     : super(
         from: null,
@@ -47,10 +56,13 @@ final class AmbientArtworkProvider
   }
 }
 
-String _$ambientArtworkHash() => r'5f8d752993ee63a4e7f9ad0355b56b04641c9c3a';
+String _$ambientArtworkHash() => r'8b77b5ef12a77de452427e20f6b4589fec9fd6fb';
 
-/// Selects window artwork independently of the detail's display resolution.
-/// The host retains decoded pixels until this provider's replacement is ready.
+/// Window artwork chosen by the pages that show a work, independently of the
+/// detail's display resolution. Each page claims it with itself as owner and
+/// releases the claim when it goes away; the newest remaining claim wins, and
+/// with none left the window has no artwork. The host retains decoded pixels
+/// until a replacement is ready.
 
 abstract class _$AmbientArtwork extends $Notifier<ImageProvider<Object>?> {
   ImageProvider<Object>? build();

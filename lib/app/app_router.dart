@@ -1,24 +1,23 @@
-import 'dart:convert';
 import 'package:booruflow/features/booru/services/booru_service.dart';
+import 'package:booruflow/features/browse/browse_page.dart';
+import 'package:booruflow/features/browse/results_page.dart';
 import 'package:booruflow/features/downloads/downloads_page.dart';
-import 'package:booruflow/features/home/home_page.dart';
 import 'package:booruflow/features/image_viewer/image_zoom_page.dart';
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/features/posts/post_detail_page.dart';
-import 'package:booruflow/features/posts/post_list_page.dart';
 import 'package:booruflow/features/posts/post_reference_page.dart';
-import 'package:booruflow/features/search/post_search_page.dart';
-import 'package:booruflow/features/search/user_tags_page.dart';
 import 'package:booruflow/features/settings/settings_page.dart';
 import 'package:booruflow/features/shell/app_shell.dart';
-import 'package:booruflow/intl/translations.g.dart';
+import 'package:booruflow/features/tags/common_tags_page.dart';
+import 'package:booruflow/features/tags/my_tags_page.dart';
+import 'package:booruflow/features/tags/tags_page.dart';
 import 'package:booruflow/shared/app_navigation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
-import 'frost_config.dart';
+
 import 'media_viewer_page.dart';
-import 'stage_page.dart';
+import 'not_found_page.dart';
 
 class AppRouter {
   const AppRouter._();
@@ -34,13 +33,12 @@ class AppRouter {
         navigatorKey: rightNavigatorKey,
         builder: (context, state, child) {
           return AppShell(
-            selectedIndex: appDestinationIndexForPath(
-              state.extra is _ContentPageArgs
-                  ? (state.extra as _ContentPageArgs).parentPath
-                  : state.uri.path,
-            ),
+            selectedIndex: destinationIndexFor(state.uri.path),
             atDestinationRoot: isPrimaryNavigationPath(state.uri.path),
+            routeDepth: rightNavigatorDepth,
+            location: state.uri,
             onBack: popRightNavigator,
+            onBackToFirst: popRightNavigatorToRoot,
             onDestinationSelected: (index) =>
                 router.go(appDestinations[index].route.path),
             onResetRightNavigator: popRightNavigatorToRoot,
@@ -65,7 +63,7 @@ class AppRouter {
                     path: AppRoute.posts.path,
                     name: AppRoute.posts.name,
                     pageBuilder: (context, state) =>
-                        _primaryPage(state, const HomePage()),
+                        _primaryPage(state, const BrowsePage()),
                     routes: [
                       GoRoute(
                         parentNavigatorKey: rightNavigatorKey,
@@ -73,8 +71,46 @@ class AppRouter {
                         pageBuilder: (context, state) =>
                             _contentPage(state, switch (state.extra) {
                               _ContentPageArgs(:final child) => child,
-                              _ => const _MissingRouteDataPage(),
+                              _ => const NotFoundPage(),
                             }),
+                      ),
+                      // Downloads is the shell's task entry, not a destination:
+                      // a content page any destination pushes, and a deep link
+                      // to it has Browse below.
+                      GoRoute(
+                        parentNavigatorKey: rightNavigatorKey,
+                        path: 'downloads',
+                        name: AppRoute.downloads.name,
+                        pageBuilder: (context, state) => _contentPage(
+                          state,
+                          DownloadsPage(
+                            taskId: state.uri.queryParameters['task'],
+                            revealRequest: state.uri.queryParameters['reveal'],
+                          ),
+                        ),
+                      ),
+                      GoRoute(
+                        parentNavigatorKey: rightNavigatorKey,
+                        path: 'results',
+                        name: AppRoute.results.name,
+                        redirect: (context, state) {
+                          final query = ResultsQuery.parse(state.uri);
+                          return query.valid && query.tags.isEmpty
+                              ? AppRoute.tags.path
+                              : null;
+                        },
+                        pageBuilder: (context, state) {
+                          final query = ResultsQuery.parse(state.uri);
+                          return _contentPage(
+                            state,
+                            query.valid
+                                ? ResultsPage(
+                                    tags: query.tags,
+                                    sourceId: query.sourceId,
+                                  )
+                                : const TagsPage(invalidQuery: true),
+                          );
+                        },
                       ),
                       GoRoute(
                         parentNavigatorKey: rightNavigatorKey,
@@ -101,107 +137,36 @@ class AppRouter {
               StatefulShellBranch(
                 routes: [
                   GoRoute(
-                    path: AppRoute.search.path,
-                    name: AppRoute.search.name,
+                    path: AppRoute.tags.path,
+                    name: AppRoute.tags.name,
                     pageBuilder: (context, state) =>
-                        _primaryPage(state, const PostSearchPage()),
+                        _primaryPage(state, const TagsPage()),
                     routes: [
                       GoRoute(
                         parentNavigatorKey: rightNavigatorKey,
-                        path: 'posts',
-                        name: AppRoute.taggedPosts.name,
-                        pageBuilder: (context, state) {
-                          final sourceId =
-                              state.uri.queryParameters['source'] ??
-                              BooruService.instance.selectedSourceId;
-                          var tags = <String>[];
-                          var valid = BooruService.instance.sources.any(
-                            (source) => source.sourceId == sourceId,
-                          );
-                          try {
-                            final encoded = state.uri.queryParameters['tags'];
-                            if (encoded != null) {
-                              tags = (jsonDecode(encoded) as List)
-                                  .cast<String>()
-                                  .map((tag) => tag.trim())
-                                  .where((tag) => tag.isNotEmpty)
-                                  .toList();
-                            } else {
-                              tags = parseQueryInput(
-                                state.uri.queryParameters['q'] ?? '',
-                              );
-                            }
-                          } catch (_) {
-                            valid = false;
-                          }
-                          return NoTransitionPage<void>(
-                            key: state.pageKey,
-                            child: !valid || tags.isEmpty
-                                ? PostSearchPage(
-                                    initialTags: tags,
-                                    sourceId: valid ? sourceId : null,
-                                    invalidQuery: !valid,
-                                  )
-                                : PostListPage(
-                                    tags: List<String>.unmodifiable(tags),
-                                    sourceId: sourceId,
-                                  ),
-                          );
-                        },
+                        path: 'mine',
+                        name: AppRoute.userTags.name,
+                        pageBuilder: (context, state) => _contentPage(
+                          state,
+                          MyTagsPage(
+                            sourceId: state.uri.queryParameters['source'],
+                          ),
+                        ),
                       ),
                       GoRoute(
                         parentNavigatorKey: rightNavigatorKey,
-                        path: 'edit',
-                        name: AppRoute.searchEditor.name,
-                        pageBuilder: (context, state) {
-                          final source = state.uri.queryParameters['source'];
-                          var tags = <String>[];
-                          var valid = BooruService.instance.sources.any(
-                            (item) => item.sourceId == source,
-                          );
-                          try {
-                            tags =
-                                (jsonDecode(
-                                          state.uri.queryParameters['tags'] ??
-                                              '[]',
-                                        )
-                                        as List)
-                                    .cast<String>();
-                          } catch (_) {
-                            valid = false;
-                          }
-                          return NoTransitionPage<void>(
-                            key: state.pageKey,
-                            child: PostSearchPage(
-                              sourceId: valid ? source : null,
-                              initialQuery: tags.join(' '),
-                              isQueryEditor: true,
-                              autofocus:
-                                  state.uri.queryParameters['focus'] != 'false',
-                              invalidQuery: !valid,
-                              onSubmit: (source, tags) => context.pop(
-                                SearchQuery(sourceId: source, tags: tags),
-                              ),
-                            ),
-                          );
-                        },
+                        path: 'common',
+                        name: AppRoute.commonTags.name,
+                        pageBuilder: (context, state) => _contentPage(
+                          state,
+                          AllCommonTagsPage(
+                            sourceId:
+                                state.uri.queryParameters['source'] ??
+                                BooruService.instance.selectedSourceId,
+                          ),
+                        ),
                       ),
                     ],
-                  ),
-                ],
-              ),
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                    path: AppRoute.downloads.path,
-                    name: AppRoute.downloads.name,
-                    pageBuilder: (context, state) => _primaryPage(
-                      state,
-                      DownloadsPage(
-                        taskId: state.uri.queryParameters['task'],
-                        revealRequest: state.uri.queryParameters['reveal'],
-                      ),
-                    ),
                   ),
                 ],
               ),
@@ -215,17 +180,6 @@ class AppRouter {
                     routes: [
                       GoRoute(
                         parentNavigatorKey: rightNavigatorKey,
-                        path: 'custom-tags',
-                        name: AppRoute.userTags.name,
-                        pageBuilder: (context, state) => _contentPage(
-                          state,
-                          UserTagsPage(
-                            sourceId: state.uri.queryParameters['source'],
-                          ),
-                        ),
-                      ),
-                      GoRoute(
-                        parentNavigatorKey: rightNavigatorKey,
                         path: ':section',
                         name: AppRoute.settingsSection.name,
                         pageBuilder: (context, state) {
@@ -233,13 +187,27 @@ class AppRouter {
                             state.pathParameters['section'],
                           );
                           return _contentPage(state, switch (section) {
-                            null => const _MissingRouteDataPage(),
-                            _ => SettingsPage(
-                              section: section,
-                              sourceId: state.uri.queryParameters['source'],
-                            ),
+                            null => const NotFoundPage(),
+                            _ => SettingsPage(section: section),
                           });
                         },
+                        routes: [
+                          GoRoute(
+                            parentNavigatorKey: rightNavigatorKey,
+                            path: ':source',
+                            name: AppRoute.settingsSource.name,
+                            pageBuilder: (context, state) => _contentPage(
+                              state,
+                              state.pathParameters['section'] ==
+                                      SettingsSection.sources.pathSegment
+                                  ? SettingsPage(
+                                      section: SettingsSection.sources,
+                                      sourceId: state.pathParameters['source'],
+                                    )
+                                  : const NotFoundPage(),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -263,7 +231,7 @@ class AppRouter {
             key: state.pageKey,
             child: switch (args) {
               ImageViewerRouteArgs() => ImageZoomPage(args: args),
-              _ => const _MissingRouteDataPage(),
+              _ => const NotFoundPage(),
             },
           );
         },
@@ -278,13 +246,33 @@ class AppRouter {
       ? router.routeInformationProvider.value.uri
       : router.state.uri;
 
+  /// The destination that opened the content pages above a destination's root
+  /// page. Pages any destination can open (a post, a result list) keep the
+  /// highlight of the destination they were opened from.
+  static int? _opener;
+
+  /// The destination to highlight for [path].
+  static int? destinationIndexFor(String path) {
+    final byPath = appDestinationIndexForPath(path);
+    if (byPath == null) return _opener ?? 0;
+    if (isPrimaryNavigationPath(path)) _opener = byPath;
+    return byPath;
+  }
+
+  /// How many pages the right navigator holds above the destination's root.
+  static int get rightNavigatorDepth {
+    for (final match in router.routerDelegate.currentConfiguration.matches) {
+      if (match is ShellRouteMatch && match.navigatorKey == rightNavigatorKey) {
+        return match.matches.length - 1;
+      }
+    }
+    return 0;
+  }
+
   /// Secondary content shares the declarative route state and retained shell.
   /// Unlike a raw Navigator push, this immediately updates Back and root nav.
   static Future<T?> pushContent<T>(BuildContext context, Widget child) =>
-      router.push<T>(
-        '/content',
-        extra: _ContentPageArgs(child: child, parentPath: currentUri.path),
-      );
+      router.push<T>('/content', extra: _ContentPageArgs(child));
 
   static void popRightNavigator() {
     if (router.canPop()) {
@@ -320,20 +308,7 @@ class AppRouter {
   }
 }
 
-class _MissingRouteDataPage extends StatelessWidget {
-  const _MissingRouteDataPage();
-
-  @override
-  Widget build(BuildContext context) {
-    return StagePage(
-      title: t.generic.notFound,
-      child: FrostEmptyState(icon: appIcons.error, title: t.generic.notFound),
-    );
-  }
-}
-
 class _ContentPageArgs {
-  const _ContentPageArgs({required this.child, required this.parentPath});
+  const _ContentPageArgs(this.child);
   final Widget child;
-  final String parentPath;
 }

@@ -1,7 +1,6 @@
 generic:
   ok: 確定
   cancel: 取消
-  clear: 清除
   confirm: 確認
   enabled: 啟用
   disabled: 停用
@@ -10,8 +9,11 @@ generic:
   loading: 載入中
   loadFailed: 載入失敗
   retry: 重試
+  refresh: 重新整理
   noMoreData: 沒有更多資料
   notFound: 找不到內容
+  backToBrowse: "返回瀏覽"
+  notFoundMessage: "頁面不存在，或連結不完整。"
 
 booruError:
   invalidRequest: 請求參數無效。
@@ -68,6 +70,7 @@ postDetail:
   titleWithId: "作品：$id"
   tags: 標籤
   details: 詳細資訊
+  post: 作品
   actions: 操作
   rating: 分級
   fileType: 檔案類型
@@ -113,6 +116,7 @@ downloads:
   startedAt: "開始時間"
   browse: "瀏覽"
   all: "全部"
+  viewAll: "查看全部"
   pause: "暫停"
   resume: "繼續"
   pauseAll: "全部暫停"
@@ -121,6 +125,7 @@ downloads:
   clearCompleted: "清除已完成"
   openDirectory: "開啟下載資料夾"
   openPost: "開啟作品"
+  open: 開啟
   batch: "批次下載"
   batchProgress: "$completed / $total"
   path: "儲存路徑"
@@ -154,6 +159,11 @@ downloads:
   actionFailed: 下載操作失敗
   expand: 展開
   collapse: 收合
+  noActive: "沒有進行中的任務"
+  noCompleted: "還沒有已完成的下載"
+  partialFailed(plural, param=n):
+    other: "$count 項操作失敗"
+  copyPath: "複製路徑"
   messages:
     storagePermanentlyDenied: 您已永久拒絕儲存權限。\n請在設定中手動啟用儲存權限。  # Android
     storageDenied: 您已拒絕儲存權限。  # Android
@@ -188,21 +198,22 @@ settings:
   bypassSni: 略過 SNI
   downloadDirectory: 下載資料夾
   defaultToPlatformSettings: 使用系統預設
-  columnsPerRow: "每列圖片數"
+  thumbnailSize: "縮圖大小"
+  thumbnailSmall: "小"
+  thumbnailMedium: "中"
+  thumbnailLarge: "大"
   maxConcurrentDownloads: "同時下載"
   maxSegmentsPerTask: "每個任務的分段數"
   platformDefault: "系統預設"
   system: "跟隨系統"
   light: "淺色"
   dark: "深色"
-  auto: 自動
   downloadsOverview: 儲存位置與同時下載數
 
   sections:
     sourcesAndAccounts: 圖源與帳號
     accounts: 帳號
     network: 網路
-    general: 一般
     downloads: 下載
 
   source:
@@ -325,9 +336,6 @@ settings:
   bypassSniDialog:
     title: 略過 SNI
 
-  columnsPerRowDialog:
-    title: "每列圖片數"
-
   maxSegmentsPerTaskDialog:
     title: 每個下載任務的最大分段數
 
@@ -346,6 +354,7 @@ discovery:
   copyLink: "複製連結"
   copyQueryLink: "複製查詢連結"
   copyImage: "複製圖片"
+  copyImageFailed: "複製圖片失敗"
   searchAuthor: "搜尋此繪師"
   mediaAnimation: "動圖"
   mediaVideo: "影片"
@@ -385,13 +394,14 @@ discovery:
   noRecentSearches: "尚無最近搜尋"
   myTags: "我的標籤"
   commonTags: "常用標籤"
-  moreTags: "查看更多"
   tagSource: "適用圖源"
   allTagSources: "通用"
   manageTags: "標籤管理"
   manageTagsAction: "管理"
   addTagAction: "新增"
+  editTagAction: "編輯"
   deleteTag: "刪除"
+  deleteTagConfirm: "刪除「$name」？"
   addTag: "新增標籤"
   noCustomTags: "還沒有自訂標籤"
   customTagsHint: "給常用標籤取個好記的名字，搜尋時更容易找到。"
@@ -400,12 +410,15 @@ discovery:
   canonicalTag: "圖源標籤"
   displayName: "顯示名稱（選填）"
   invalidTag: "請輸入一個非空且不含空格的標籤。"
-  queryHint: "搜尋標籤"
+  searchSource: "搜尋 $source"
+  noCommonTags: "目前圖源沒有常用標籤"
+  category: "分類"
+  allCategories: "全部"
+  allTagsAction: "全部"
   unverifiedTag: "部分標籤尚未在目前圖源驗證，仍可提交搜尋。"
   verifiedTag: "已在目前圖源驗證"
   noSuggestions: "沒有建議"
   localFallback: "暫時無法取得線上建議，仍可使用本機建議。"
-  retryTags: "重試常用標籤"
   artist: "繪師"
   character: "角色"
   copyright: "作品"
@@ -427,6 +440,7 @@ mediaError:
 
 webChallenge:
   title: 網頁驗證
+  pageTitle: "$source 驗證"
   open: 開啟網頁驗證
   windowTitle: "$source · 完成驗證後關閉視窗"
   instructions: 請手動完成網頁中的人機驗證，完成後返回或關閉視窗。應用程式會儲存驗證資料並重新載入圖源。
@@ -567,7 +581,6 @@ frost:
   unmute: "取消靜音"
   fullscreen: "全螢幕"
   exitFullscreen: "結束全螢幕"
-  reload: "重新載入"
   openInBrowser: "在瀏覽器中開啟"
   minimize: "最小化"
   maximize: "最大化"
@@ -591,17 +604,8 @@ frost:
   taskFailed: "失敗"
   taskCancelled: 已取消
   remove: "移除"
-  forward: "前進"
-  stop: "停止"
   seek: "播放位置"
-  send: "傳送"
-  attach: "加入附件"
-  readerSettings: "閱讀設定"
-  textSize: "文字大小"
-  lineSpacing: "行距"
-  readingProgress: "閱讀進度"
   showReplies: "顯示 $count 則回覆"
-  characterCount: "$count / $limit 字"
   moreMedia: "還有 $count 張圖片"
   navigationCount: "$count 項"
   navigationProgress: "已完成 $progress%"
@@ -610,6 +614,8 @@ frost:
 navigation:
   browse: "瀏覽"
   search: "搜尋"
+  tags: "標籤"
+  backToFirst: "回到第一頁"
   downloads: "下載"
   settings: "設定"
   browseEmpty: "瀏覽喜愛的圖源"

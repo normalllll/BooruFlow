@@ -7,7 +7,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:slang/generated.dart';
-
 import 'translations.g.dart';
 
 // Path: <root>
@@ -137,8 +136,6 @@ class Translations$generic$zh_CN extends Translations$generic$en {
   @override
   String get cancel => '取消';
   @override
-  String get clear => '清除';
-  @override
   String get confirm => '确认';
   @override
   String get enabled => '启用';
@@ -155,9 +152,15 @@ class Translations$generic$zh_CN extends Translations$generic$en {
   @override
   String get retry => '重试';
   @override
+  String get refresh => '刷新';
+  @override
   String get noMoreData => '没有更多数据';
   @override
   String get notFound => '未找到内容';
+  @override
+  String get backToBrowse => '返回浏览';
+  @override
+  String get notFoundMessage => '页面不存在，或链接不完整。';
 }
 
 // Path: booruError
@@ -301,6 +304,8 @@ class Translations$postDetail$zh_CN extends Translations$postDetail$en {
   @override
   String get details => '详细信息';
   @override
+  String get post => '帖子';
+  @override
   String get actions => '操作';
   @override
   String get rating => '分级';
@@ -412,6 +417,8 @@ class Translations$downloads$zh_CN extends Translations$downloads$en {
   @override
   String get all => '全部';
   @override
+  String get viewAll => '查看全部';
+  @override
   String get pause => '暂停';
   @override
   String get resume => '继续';
@@ -427,6 +434,8 @@ class Translations$downloads$zh_CN extends Translations$downloads$en {
   String get openDirectory => '打开下载目录';
   @override
   String get openPost => '打开作品';
+  @override
+  String get open => '打开';
   @override
   String get batch => '批量下载';
   @override
@@ -495,6 +504,18 @@ class Translations$downloads$zh_CN extends Translations$downloads$en {
   @override
   String get collapse => '收起';
   @override
+  String get noActive => '没有进行中的任务';
+  @override
+  String get noCompleted => '还没有已完成的下载';
+  @override
+  String partialFailed({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('zh'))(
+        n,
+        other: '${count} 项操作失败',
+      );
+  @override
+  String get copyPath => '复制路径';
+  @override
   late final Translations$downloads$messages$zh_CN messages =
       Translations$downloads$messages$zh_CN.internal(_root);
 }
@@ -550,7 +571,13 @@ class Translations$settings$zh_CN extends Translations$settings$en {
   @override
   String get defaultToPlatformSettings => '使用平台默认设置';
   @override
-  String get columnsPerRow => '每行列数';
+  String get thumbnailSize => '缩略图大小';
+  @override
+  String get thumbnailSmall => '小';
+  @override
+  String get thumbnailMedium => '中';
+  @override
+  String get thumbnailLarge => '大';
   @override
   String get maxConcurrentDownloads => '同时下载';
   @override
@@ -563,8 +590,6 @@ class Translations$settings$zh_CN extends Translations$settings$en {
   String get light => '浅色';
   @override
   String get dark => '深色';
-  @override
-  String get auto => '自动';
   @override
   String get downloadsOverview => '保存位置与下载并发';
   @override
@@ -592,10 +617,6 @@ class Translations$settings$zh_CN extends Translations$settings$en {
   @override
   late final Translations$settings$bypassSniDialog$zh_CN bypassSniDialog =
       Translations$settings$bypassSniDialog$zh_CN.internal(_root);
-  @override
-  late final Translations$settings$columnsPerRowDialog$zh_CN
-  columnsPerRowDialog =
-      Translations$settings$columnsPerRowDialog$zh_CN.internal(_root);
   @override
   late final Translations$settings$maxSegmentsPerTaskDialog$zh_CN
   maxSegmentsPerTaskDialog =
@@ -639,6 +660,8 @@ class Translations$discovery$zh_CN extends Translations$discovery$en {
   String get copyQueryLink => '复制查询链接';
   @override
   String get copyImage => '复制图片';
+  @override
+  String get copyImageFailed => '复制图片失败';
   @override
   String get searchAuthor => '搜索此画师';
   @override
@@ -718,8 +741,6 @@ class Translations$discovery$zh_CN extends Translations$discovery$en {
   @override
   String get commonTags => '常用标签';
   @override
-  String get moreTags => '查看更多';
-  @override
   String get tagSource => '适用图源';
   @override
   String get allTagSources => '通用';
@@ -730,7 +751,11 @@ class Translations$discovery$zh_CN extends Translations$discovery$en {
   @override
   String get addTagAction => '添加';
   @override
+  String get editTagAction => '编辑';
+  @override
   String get deleteTag => '删除';
+  @override
+  String deleteTagConfirm({required Object name}) => '删除“${name}”？';
   @override
   String get addTag => '添加标签';
   @override
@@ -748,7 +773,15 @@ class Translations$discovery$zh_CN extends Translations$discovery$en {
   @override
   String get invalidTag => '请输入一个非空且不含空格的标签。';
   @override
-  String get queryHint => '搜索标签';
+  String searchSource({required Object source}) => '搜索 ${source}';
+  @override
+  String get noCommonTags => '当前图源没有常用标签';
+  @override
+  String get category => '分类';
+  @override
+  String get allCategories => '全部';
+  @override
+  String get allTagsAction => '全部';
   @override
   String get unverifiedTag => '部分标签尚未在当前图源验证，仍可提交搜索。';
   @override
@@ -757,8 +790,6 @@ class Translations$discovery$zh_CN extends Translations$discovery$en {
   String get noSuggestions => '没有建议';
   @override
   String get localFallback => '在线补全暂不可用，仍可使用本地建议。';
-  @override
-  String get retryTags => '重试常用标签';
   @override
   String get artist => '画师';
   @override
@@ -815,6 +846,8 @@ class Translations$webChallenge$zh_CN extends Translations$webChallenge$en {
   // Translations
   @override
   String get title => '网页验证';
+  @override
+  String pageTitle({required Object source}) => '${source} 验证';
   @override
   String get open => '打开网页验证';
   @override
@@ -1114,8 +1147,6 @@ class Translations$frost$zh_CN extends Translations$frost$en {
   @override
   String get exitFullscreen => '退出全屏';
   @override
-  String get reload => '重新加载';
-  @override
   String get openInBrowser => '在浏览器中打开';
   @override
   String get minimize => '最小化';
@@ -1165,28 +1196,9 @@ class Translations$frost$zh_CN extends Translations$frost$en {
   @override
   String get remove => '移除';
   @override
-  String get forward => '前进';
-  @override
-  String get stop => '停止';
-  @override
   String get seek => '播放位置';
   @override
-  String get send => '发送';
-  @override
-  String get attach => '添加附件';
-  @override
-  String get readerSettings => '阅读设置';
-  @override
-  String get textSize => '字号';
-  @override
-  String get lineSpacing => '行距';
-  @override
-  String get readingProgress => '阅读进度';
-  @override
   String showReplies({required Object count}) => '显示 ${count} 条回复';
-  @override
-  String characterCount({required Object count, required Object limit}) =>
-      '${count} / ${limit} 字';
   @override
   String moreMedia({required Object count}) => '还有 ${count} 张图片';
   @override
@@ -1210,6 +1222,10 @@ class Translations$navigation$zh_CN extends Translations$navigation$en {
   String get browse => '浏览';
   @override
   String get search => '搜索';
+  @override
+  String get tags => '标签';
+  @override
+  String get backToFirst => '回到第一页';
   @override
   String get downloads => '下载';
   @override
@@ -1481,8 +1497,6 @@ class Translations$settings$sections$zh_CN
   String get accounts => '账号';
   @override
   String get network => '网络';
-  @override
-  String get general => '通用';
   @override
   String get downloads => '下载';
 }
@@ -1790,21 +1804,6 @@ class Translations$settings$bypassSniDialog$zh_CN
   String get title => '绕过 SNI';
 }
 
-// Path: settings.columnsPerRowDialog
-class Translations$settings$columnsPerRowDialog$zh_CN
-    extends Translations$settings$columnsPerRowDialog$en {
-  Translations$settings$columnsPerRowDialog$zh_CN.internal(
-    TranslationsZhCn root,
-  ) : this._root = root,
-      super.internal(root);
-
-  final TranslationsZhCn _root; // ignore: unused_field
-
-  // Translations
-  @override
-  String get title => '每行列数';
-}
-
 // Path: settings.maxSegmentsPerTaskDialog
 class Translations$settings$maxSegmentsPerTaskDialog$zh_CN
     extends Translations$settings$maxSegmentsPerTaskDialog$en {
@@ -1869,7 +1868,6 @@ extension on TranslationsZhCn {
     return switch (path) {
           'generic.ok' => '确定',
           'generic.cancel' => '取消',
-          'generic.clear' => '清除',
           'generic.confirm' => '确认',
           'generic.enabled' => '启用',
           'generic.disabled' => '停用',
@@ -1880,8 +1878,11 @@ extension on TranslationsZhCn {
           'generic.loading' => '正在加载',
           'generic.loadFailed' => '加载失败',
           'generic.retry' => '重试',
+          'generic.refresh' => '刷新',
           'generic.noMoreData' => '没有更多数据',
           'generic.notFound' => '未找到内容',
+          'generic.backToBrowse' => '返回浏览',
+          'generic.notFoundMessage' => '页面不存在，或链接不完整。',
           'booruError.invalidRequest' => '请求参数无效。',
           'booruError.unsupportedCapability' => '当前图源不支持此操作。',
           'booruError.authenticationRequired' => '请登录当前图源后重试。',
@@ -1938,6 +1939,7 @@ extension on TranslationsZhCn {
           'postDetail.titleWithId' => ({required Object id}) => '帖子: ${id}',
           'postDetail.tags' => '标签',
           'postDetail.details' => '详细信息',
+          'postDetail.post' => '帖子',
           'postDetail.actions' => '操作',
           'postDetail.rating' => '分级',
           'postDetail.fileType' => '文件类型',
@@ -1982,6 +1984,7 @@ extension on TranslationsZhCn {
           'downloads.startedAt' => '开始于',
           'downloads.browse' => '去浏览',
           'downloads.all' => '全部',
+          'downloads.viewAll' => '查看全部',
           'downloads.pause' => '暂停',
           'downloads.resume' => '继续',
           'downloads.pauseAll' => '全部暂停',
@@ -1990,6 +1993,7 @@ extension on TranslationsZhCn {
           'downloads.clearCompleted' => '清除已完成',
           'downloads.openDirectory' => '打开下载目录',
           'downloads.openPost' => '打开作品',
+          'downloads.open' => '打开',
           'downloads.batch' => '批量下载',
           'downloads.batchProgress' =>
             ({required Object completed, required Object total}) =>
@@ -2025,6 +2029,13 @@ extension on TranslationsZhCn {
           'downloads.actionFailed' => '下载操作失败',
           'downloads.expand' => '展开',
           'downloads.collapse' => '收起',
+          'downloads.noActive' => '没有进行中的任务',
+          'downloads.noCompleted' => '还没有已完成的下载',
+          'downloads.partialFailed' =>
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('zh'))(n, other: '${count} 项操作失败'),
+          'downloads.copyPath' => '复制路径',
           'downloads.messages.storagePermanentlyDenied' =>
             '你已永久拒绝存储权限。\n请在设置中手动启用存储权限。',
           'downloads.messages.storageDenied' => '你已拒绝存储权限。',
@@ -2059,19 +2070,20 @@ extension on TranslationsZhCn {
           'settings.bypassSni' => '绕过 SNI',
           'settings.downloadDirectory' => '下载目录',
           'settings.defaultToPlatformSettings' => '使用平台默认设置',
-          'settings.columnsPerRow' => '每行列数',
+          'settings.thumbnailSize' => '缩略图大小',
+          'settings.thumbnailSmall' => '小',
+          'settings.thumbnailMedium' => '中',
+          'settings.thumbnailLarge' => '大',
           'settings.maxConcurrentDownloads' => '同时下载',
           'settings.maxSegmentsPerTask' => '每个任务的分段数',
           'settings.platformDefault' => '平台默认',
           'settings.system' => '跟随系统',
           'settings.light' => '浅色',
           'settings.dark' => '深色',
-          'settings.auto' => '自动',
           'settings.downloadsOverview' => '保存位置与下载并发',
           'settings.sections.sourcesAndAccounts' => '图源与账号',
           'settings.sections.accounts' => '账号',
           'settings.sections.network' => '网络',
-          'settings.sections.general' => '通用',
           'settings.sections.downloads' => '下载',
           'settings.source.defaultSource' => '默认图源',
           'settings.source.supportedRatings' => '支持的分级',
@@ -2206,7 +2218,6 @@ extension on TranslationsZhCn {
           'settings.downloadDirectoryDialog.messages.pathNotWritable' =>
             '路径不可写入。',
           'settings.bypassSniDialog.title' => '绕过 SNI',
-          'settings.columnsPerRowDialog.title' => '每行列数',
           'settings.maxSegmentsPerTaskDialog.title' => '每个下载任务的最大分段数',
           'discovery.mode' => '模式',
           'discovery.timeRange' => '时间范围',
@@ -2222,6 +2233,7 @@ extension on TranslationsZhCn {
           'discovery.copyLink' => '复制链接',
           'discovery.copyQueryLink' => '复制查询链接',
           'discovery.copyImage' => '复制图片',
+          'discovery.copyImageFailed' => '复制图片失败',
           'discovery.searchAuthor' => '搜索此画师',
           'discovery.mediaAnimation' => '动图',
           'discovery.mediaVideo' => '视频',
@@ -2263,13 +2275,15 @@ extension on TranslationsZhCn {
           'discovery.noRecentSearches' => '暂无最近搜索',
           'discovery.myTags' => '我的标签',
           'discovery.commonTags' => '常用标签',
-          'discovery.moreTags' => '查看更多',
           'discovery.tagSource' => '适用图源',
           'discovery.allTagSources' => '通用',
           'discovery.manageTags' => '标签管理',
           'discovery.manageTagsAction' => '管理',
           'discovery.addTagAction' => '添加',
+          'discovery.editTagAction' => '编辑',
           'discovery.deleteTag' => '删除',
+          'discovery.deleteTagConfirm' =>
+            ({required Object name}) => '删除“${name}”？',
           'discovery.addTag' => '添加标签',
           'discovery.noCustomTags' => '还没有自定义标签',
           'discovery.customTagsHint' => '给常用标签起个好记的名字，搜索时更容易找到。',
@@ -2278,12 +2292,16 @@ extension on TranslationsZhCn {
           'discovery.canonicalTag' => '图源标签',
           'discovery.displayName' => '显示名称（可选）',
           'discovery.invalidTag' => '请输入一个非空且不含空格的标签。',
-          'discovery.queryHint' => '搜索标签',
+          'discovery.searchSource' =>
+            ({required Object source}) => '搜索 ${source}',
+          'discovery.noCommonTags' => '当前图源没有常用标签',
+          'discovery.category' => '分类',
+          'discovery.allCategories' => '全部',
+          'discovery.allTagsAction' => '全部',
           'discovery.unverifiedTag' => '部分标签尚未在当前图源验证，仍可提交搜索。',
           'discovery.verifiedTag' => '已在当前图源验证',
           'discovery.noSuggestions' => '没有建议',
           'discovery.localFallback' => '在线补全暂不可用，仍可使用本地建议。',
-          'discovery.retryTags' => '重试常用标签',
           'discovery.artist' => '画师',
           'discovery.character' => '角色',
           'discovery.copyright' => '作品',
@@ -2301,6 +2319,8 @@ extension on TranslationsZhCn {
           'mediaError.copyDetails' => '复制详情',
           'mediaError.decodeFailed' => '下载的图片无法解码。重试会清除这张图片的缓存并重新下载。',
           'webChallenge.title' => '网页验证',
+          'webChallenge.pageTitle' =>
+            ({required Object source}) => '${source} 验证',
           'webChallenge.open' => '打开网页验证',
           'webChallenge.windowTitle' =>
             ({required Object source}) => '${source} · 完成验证后关闭窗口',
@@ -2440,6 +2460,9 @@ extension on TranslationsZhCn {
           'frost.hidePassword' => '隐藏密码',
           'frost.chooseDate' => '选择日期',
           'frost.chooseTime' => '选择时间',
+          _ => null,
+        } ??
+        switch (path) {
           'frost.increment' => '增加',
           'frost.decrement' => '减少',
           'frost.reorderHandle' => '调整顺序',
@@ -2452,12 +2475,8 @@ extension on TranslationsZhCn {
           'frost.unmute' => '取消静音',
           'frost.fullscreen' => '全屏',
           'frost.exitFullscreen' => '退出全屏',
-          'frost.reload' => '重新加载',
           'frost.openInBrowser' => '在浏览器中打开',
           'frost.minimize' => '最小化',
-          _ => null,
-        } ??
-        switch (path) {
           'frost.maximize' => '最大化',
           'frost.restore' => '还原',
           'frost.close' => '关闭',
@@ -2485,19 +2504,8 @@ extension on TranslationsZhCn {
           'frost.taskFailed' => '失败',
           'frost.taskCancelled' => '已取消',
           'frost.remove' => '移除',
-          'frost.forward' => '前进',
-          'frost.stop' => '停止',
           'frost.seek' => '播放位置',
-          'frost.send' => '发送',
-          'frost.attach' => '添加附件',
-          'frost.readerSettings' => '阅读设置',
-          'frost.textSize' => '字号',
-          'frost.lineSpacing' => '行距',
-          'frost.readingProgress' => '阅读进度',
           'frost.showReplies' => ({required Object count}) => '显示 ${count} 条回复',
-          'frost.characterCount' =>
-            ({required Object count, required Object limit}) =>
-                '${count} / ${limit} 字',
           'frost.moreMedia' => ({required Object count}) => '还有 ${count} 张图片',
           'frost.navigationCount' => ({required Object count}) => '${count} 项',
           'frost.navigationProgress' =>
@@ -2505,6 +2513,8 @@ extension on TranslationsZhCn {
           'frost.listSeparator' => '，',
           'navigation.browse' => '浏览',
           'navigation.search' => '搜索',
+          'navigation.tags' => '标签',
+          'navigation.backToFirst' => '回到第一页',
           'navigation.downloads' => '下载',
           'navigation.settings' => '设置',
           'navigation.browseEmpty' => '浏览喜欢的图源',

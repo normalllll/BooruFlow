@@ -7,7 +7,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:slang/generated.dart';
-
 import 'translations.g.dart';
 
 // Path: <root>
@@ -137,8 +136,6 @@ class Translations$generic$zh_TW extends Translations$generic$en {
   @override
   String get cancel => '取消';
   @override
-  String get clear => '清除';
-  @override
   String get confirm => '確認';
   @override
   String get enabled => '啟用';
@@ -155,9 +152,15 @@ class Translations$generic$zh_TW extends Translations$generic$en {
   @override
   String get retry => '重試';
   @override
+  String get refresh => '重新整理';
+  @override
   String get noMoreData => '沒有更多資料';
   @override
   String get notFound => '找不到內容';
+  @override
+  String get backToBrowse => '返回瀏覽';
+  @override
+  String get notFoundMessage => '頁面不存在，或連結不完整。';
 }
 
 // Path: booruError
@@ -300,6 +303,8 @@ class Translations$postDetail$zh_TW extends Translations$postDetail$en {
   @override
   String get details => '詳細資訊';
   @override
+  String get post => '作品';
+  @override
   String get actions => '操作';
   @override
   String get rating => '分級';
@@ -411,6 +416,8 @@ class Translations$downloads$zh_TW extends Translations$downloads$en {
   @override
   String get all => '全部';
   @override
+  String get viewAll => '查看全部';
+  @override
   String get pause => '暫停';
   @override
   String get resume => '繼續';
@@ -426,6 +433,8 @@ class Translations$downloads$zh_TW extends Translations$downloads$en {
   String get openDirectory => '開啟下載資料夾';
   @override
   String get openPost => '開啟作品';
+  @override
+  String get open => '開啟';
   @override
   String get batch => '批次下載';
   @override
@@ -494,6 +503,18 @@ class Translations$downloads$zh_TW extends Translations$downloads$en {
   @override
   String get collapse => '收合';
   @override
+  String get noActive => '沒有進行中的任務';
+  @override
+  String get noCompleted => '還沒有已完成的下載';
+  @override
+  String partialFailed({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('zh'))(
+        n,
+        other: '${count} 項操作失敗',
+      );
+  @override
+  String get copyPath => '複製路徑';
+  @override
   late final Translations$downloads$messages$zh_TW messages =
       Translations$downloads$messages$zh_TW.internal(_root);
 }
@@ -549,7 +570,13 @@ class Translations$settings$zh_TW extends Translations$settings$en {
   @override
   String get defaultToPlatformSettings => '使用系統預設';
   @override
-  String get columnsPerRow => '每列圖片數';
+  String get thumbnailSize => '縮圖大小';
+  @override
+  String get thumbnailSmall => '小';
+  @override
+  String get thumbnailMedium => '中';
+  @override
+  String get thumbnailLarge => '大';
   @override
   String get maxConcurrentDownloads => '同時下載';
   @override
@@ -562,8 +589,6 @@ class Translations$settings$zh_TW extends Translations$settings$en {
   String get light => '淺色';
   @override
   String get dark => '深色';
-  @override
-  String get auto => '自動';
   @override
   String get downloadsOverview => '儲存位置與同時下載數';
   @override
@@ -591,10 +616,6 @@ class Translations$settings$zh_TW extends Translations$settings$en {
   @override
   late final Translations$settings$bypassSniDialog$zh_TW bypassSniDialog =
       Translations$settings$bypassSniDialog$zh_TW.internal(_root);
-  @override
-  late final Translations$settings$columnsPerRowDialog$zh_TW
-  columnsPerRowDialog =
-      Translations$settings$columnsPerRowDialog$zh_TW.internal(_root);
   @override
   late final Translations$settings$maxSegmentsPerTaskDialog$zh_TW
   maxSegmentsPerTaskDialog =
@@ -638,6 +659,8 @@ class Translations$discovery$zh_TW extends Translations$discovery$en {
   String get copyQueryLink => '複製查詢連結';
   @override
   String get copyImage => '複製圖片';
+  @override
+  String get copyImageFailed => '複製圖片失敗';
   @override
   String get searchAuthor => '搜尋此繪師';
   @override
@@ -717,8 +740,6 @@ class Translations$discovery$zh_TW extends Translations$discovery$en {
   @override
   String get commonTags => '常用標籤';
   @override
-  String get moreTags => '查看更多';
-  @override
   String get tagSource => '適用圖源';
   @override
   String get allTagSources => '通用';
@@ -729,7 +750,11 @@ class Translations$discovery$zh_TW extends Translations$discovery$en {
   @override
   String get addTagAction => '新增';
   @override
+  String get editTagAction => '編輯';
+  @override
   String get deleteTag => '刪除';
+  @override
+  String deleteTagConfirm({required Object name}) => '刪除「${name}」？';
   @override
   String get addTag => '新增標籤';
   @override
@@ -747,7 +772,15 @@ class Translations$discovery$zh_TW extends Translations$discovery$en {
   @override
   String get invalidTag => '請輸入一個非空且不含空格的標籤。';
   @override
-  String get queryHint => '搜尋標籤';
+  String searchSource({required Object source}) => '搜尋 ${source}';
+  @override
+  String get noCommonTags => '目前圖源沒有常用標籤';
+  @override
+  String get category => '分類';
+  @override
+  String get allCategories => '全部';
+  @override
+  String get allTagsAction => '全部';
   @override
   String get unverifiedTag => '部分標籤尚未在目前圖源驗證，仍可提交搜尋。';
   @override
@@ -756,8 +789,6 @@ class Translations$discovery$zh_TW extends Translations$discovery$en {
   String get noSuggestions => '沒有建議';
   @override
   String get localFallback => '暫時無法取得線上建議，仍可使用本機建議。';
-  @override
-  String get retryTags => '重試常用標籤';
   @override
   String get artist => '繪師';
   @override
@@ -814,6 +845,8 @@ class Translations$webChallenge$zh_TW extends Translations$webChallenge$en {
   // Translations
   @override
   String get title => '網頁驗證';
+  @override
+  String pageTitle({required Object source}) => '${source} 驗證';
   @override
   String get open => '開啟網頁驗證';
   @override
@@ -1113,8 +1146,6 @@ class Translations$frost$zh_TW extends Translations$frost$en {
   @override
   String get exitFullscreen => '結束全螢幕';
   @override
-  String get reload => '重新載入';
-  @override
   String get openInBrowser => '在瀏覽器中開啟';
   @override
   String get minimize => '最小化';
@@ -1164,28 +1195,9 @@ class Translations$frost$zh_TW extends Translations$frost$en {
   @override
   String get remove => '移除';
   @override
-  String get forward => '前進';
-  @override
-  String get stop => '停止';
-  @override
   String get seek => '播放位置';
   @override
-  String get send => '傳送';
-  @override
-  String get attach => '加入附件';
-  @override
-  String get readerSettings => '閱讀設定';
-  @override
-  String get textSize => '文字大小';
-  @override
-  String get lineSpacing => '行距';
-  @override
-  String get readingProgress => '閱讀進度';
-  @override
   String showReplies({required Object count}) => '顯示 ${count} 則回覆';
-  @override
-  String characterCount({required Object count, required Object limit}) =>
-      '${count} / ${limit} 字';
   @override
   String moreMedia({required Object count}) => '還有 ${count} 張圖片';
   @override
@@ -1209,6 +1221,10 @@ class Translations$navigation$zh_TW extends Translations$navigation$en {
   String get browse => '瀏覽';
   @override
   String get search => '搜尋';
+  @override
+  String get tags => '標籤';
+  @override
+  String get backToFirst => '回到第一頁';
   @override
   String get downloads => '下載';
   @override
@@ -1480,8 +1496,6 @@ class Translations$settings$sections$zh_TW
   String get accounts => '帳號';
   @override
   String get network => '網路';
-  @override
-  String get general => '一般';
   @override
   String get downloads => '下載';
 }
@@ -1789,21 +1803,6 @@ class Translations$settings$bypassSniDialog$zh_TW
   String get title => '略過 SNI';
 }
 
-// Path: settings.columnsPerRowDialog
-class Translations$settings$columnsPerRowDialog$zh_TW
-    extends Translations$settings$columnsPerRowDialog$en {
-  Translations$settings$columnsPerRowDialog$zh_TW.internal(
-    TranslationsZhTw root,
-  ) : this._root = root,
-      super.internal(root);
-
-  final TranslationsZhTw _root; // ignore: unused_field
-
-  // Translations
-  @override
-  String get title => '每列圖片數';
-}
-
 // Path: settings.maxSegmentsPerTaskDialog
 class Translations$settings$maxSegmentsPerTaskDialog$zh_TW
     extends Translations$settings$maxSegmentsPerTaskDialog$en {
@@ -1868,7 +1867,6 @@ extension on TranslationsZhTw {
     return switch (path) {
           'generic.ok' => '確定',
           'generic.cancel' => '取消',
-          'generic.clear' => '清除',
           'generic.confirm' => '確認',
           'generic.enabled' => '啟用',
           'generic.disabled' => '停用',
@@ -1879,8 +1877,11 @@ extension on TranslationsZhTw {
           'generic.loading' => '載入中',
           'generic.loadFailed' => '載入失敗',
           'generic.retry' => '重試',
+          'generic.refresh' => '重新整理',
           'generic.noMoreData' => '沒有更多資料',
           'generic.notFound' => '找不到內容',
+          'generic.backToBrowse' => '返回瀏覽',
+          'generic.notFoundMessage' => '頁面不存在，或連結不完整。',
           'booruError.invalidRequest' => '請求參數無效。',
           'booruError.unsupportedCapability' => '目前圖源不支援此操作。',
           'booruError.authenticationRequired' => '請登入目前圖源後重試。',
@@ -1936,6 +1937,7 @@ extension on TranslationsZhTw {
           'postDetail.titleWithId' => ({required Object id}) => '作品：${id}',
           'postDetail.tags' => '標籤',
           'postDetail.details' => '詳細資訊',
+          'postDetail.post' => '作品',
           'postDetail.actions' => '操作',
           'postDetail.rating' => '分級',
           'postDetail.fileType' => '檔案類型',
@@ -1980,6 +1982,7 @@ extension on TranslationsZhTw {
           'downloads.startedAt' => '開始時間',
           'downloads.browse' => '瀏覽',
           'downloads.all' => '全部',
+          'downloads.viewAll' => '查看全部',
           'downloads.pause' => '暫停',
           'downloads.resume' => '繼續',
           'downloads.pauseAll' => '全部暫停',
@@ -1988,6 +1991,7 @@ extension on TranslationsZhTw {
           'downloads.clearCompleted' => '清除已完成',
           'downloads.openDirectory' => '開啟下載資料夾',
           'downloads.openPost' => '開啟作品',
+          'downloads.open' => '開啟',
           'downloads.batch' => '批次下載',
           'downloads.batchProgress' =>
             ({required Object completed, required Object total}) =>
@@ -2023,6 +2027,13 @@ extension on TranslationsZhTw {
           'downloads.actionFailed' => '下載操作失敗',
           'downloads.expand' => '展開',
           'downloads.collapse' => '收合',
+          'downloads.noActive' => '沒有進行中的任務',
+          'downloads.noCompleted' => '還沒有已完成的下載',
+          'downloads.partialFailed' =>
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('zh'))(n, other: '${count} 項操作失敗'),
+          'downloads.copyPath' => '複製路徑',
           'downloads.messages.storagePermanentlyDenied' =>
             '您已永久拒絕儲存權限。\n請在設定中手動啟用儲存權限。',
           'downloads.messages.storageDenied' => '您已拒絕儲存權限。',
@@ -2057,19 +2068,20 @@ extension on TranslationsZhTw {
           'settings.bypassSni' => '略過 SNI',
           'settings.downloadDirectory' => '下載資料夾',
           'settings.defaultToPlatformSettings' => '使用系統預設',
-          'settings.columnsPerRow' => '每列圖片數',
+          'settings.thumbnailSize' => '縮圖大小',
+          'settings.thumbnailSmall' => '小',
+          'settings.thumbnailMedium' => '中',
+          'settings.thumbnailLarge' => '大',
           'settings.maxConcurrentDownloads' => '同時下載',
           'settings.maxSegmentsPerTask' => '每個任務的分段數',
           'settings.platformDefault' => '系統預設',
           'settings.system' => '跟隨系統',
           'settings.light' => '淺色',
           'settings.dark' => '深色',
-          'settings.auto' => '自動',
           'settings.downloadsOverview' => '儲存位置與同時下載數',
           'settings.sections.sourcesAndAccounts' => '圖源與帳號',
           'settings.sections.accounts' => '帳號',
           'settings.sections.network' => '網路',
-          'settings.sections.general' => '一般',
           'settings.sections.downloads' => '下載',
           'settings.source.defaultSource' => '預設圖源',
           'settings.source.supportedRatings' => '支援的分級',
@@ -2203,7 +2215,6 @@ extension on TranslationsZhTw {
           'settings.downloadDirectoryDialog.messages.pathNotWritable' =>
             '路徑不可寫入。',
           'settings.bypassSniDialog.title' => '略過 SNI',
-          'settings.columnsPerRowDialog.title' => '每列圖片數',
           'settings.maxSegmentsPerTaskDialog.title' => '每個下載任務的最大分段數',
           'discovery.mode' => '模式',
           'discovery.timeRange' => '時間範圍',
@@ -2219,6 +2230,7 @@ extension on TranslationsZhTw {
           'discovery.copyLink' => '複製連結',
           'discovery.copyQueryLink' => '複製查詢連結',
           'discovery.copyImage' => '複製圖片',
+          'discovery.copyImageFailed' => '複製圖片失敗',
           'discovery.searchAuthor' => '搜尋此繪師',
           'discovery.mediaAnimation' => '動圖',
           'discovery.mediaVideo' => '影片',
@@ -2260,13 +2272,15 @@ extension on TranslationsZhTw {
           'discovery.noRecentSearches' => '尚無最近搜尋',
           'discovery.myTags' => '我的標籤',
           'discovery.commonTags' => '常用標籤',
-          'discovery.moreTags' => '查看更多',
           'discovery.tagSource' => '適用圖源',
           'discovery.allTagSources' => '通用',
           'discovery.manageTags' => '標籤管理',
           'discovery.manageTagsAction' => '管理',
           'discovery.addTagAction' => '新增',
+          'discovery.editTagAction' => '編輯',
           'discovery.deleteTag' => '刪除',
+          'discovery.deleteTagConfirm' =>
+            ({required Object name}) => '刪除「${name}」？',
           'discovery.addTag' => '新增標籤',
           'discovery.noCustomTags' => '還沒有自訂標籤',
           'discovery.customTagsHint' => '給常用標籤取個好記的名字，搜尋時更容易找到。',
@@ -2275,12 +2289,16 @@ extension on TranslationsZhTw {
           'discovery.canonicalTag' => '圖源標籤',
           'discovery.displayName' => '顯示名稱（選填）',
           'discovery.invalidTag' => '請輸入一個非空且不含空格的標籤。',
-          'discovery.queryHint' => '搜尋標籤',
+          'discovery.searchSource' =>
+            ({required Object source}) => '搜尋 ${source}',
+          'discovery.noCommonTags' => '目前圖源沒有常用標籤',
+          'discovery.category' => '分類',
+          'discovery.allCategories' => '全部',
+          'discovery.allTagsAction' => '全部',
           'discovery.unverifiedTag' => '部分標籤尚未在目前圖源驗證，仍可提交搜尋。',
           'discovery.verifiedTag' => '已在目前圖源驗證',
           'discovery.noSuggestions' => '沒有建議',
           'discovery.localFallback' => '暫時無法取得線上建議，仍可使用本機建議。',
-          'discovery.retryTags' => '重試常用標籤',
           'discovery.artist' => '繪師',
           'discovery.character' => '角色',
           'discovery.copyright' => '作品',
@@ -2298,6 +2316,8 @@ extension on TranslationsZhTw {
           'mediaError.copyDetails' => '複製詳細資料',
           'mediaError.decodeFailed' => '下載的圖片無法解碼。重試會清除這張圖片的快取並重新下載。',
           'webChallenge.title' => '網頁驗證',
+          'webChallenge.pageTitle' =>
+            ({required Object source}) => '${source} 驗證',
           'webChallenge.open' => '開啟網頁驗證',
           'webChallenge.windowTitle' =>
             ({required Object source}) => '${source} · 完成驗證後關閉視窗',
@@ -2438,6 +2458,9 @@ extension on TranslationsZhTw {
           'frost.hidePassword' => '隱藏密碼',
           'frost.chooseDate' => '選擇日期',
           'frost.chooseTime' => '選擇時間',
+          _ => null,
+        } ??
+        switch (path) {
           'frost.increment' => '增加',
           'frost.decrement' => '減少',
           'frost.reorderHandle' => '調整順序',
@@ -2450,12 +2473,8 @@ extension on TranslationsZhTw {
           'frost.unmute' => '取消靜音',
           'frost.fullscreen' => '全螢幕',
           'frost.exitFullscreen' => '結束全螢幕',
-          'frost.reload' => '重新載入',
           'frost.openInBrowser' => '在瀏覽器中開啟',
           'frost.minimize' => '最小化',
-          _ => null,
-        } ??
-        switch (path) {
           'frost.maximize' => '最大化',
           'frost.restore' => '還原',
           'frost.close' => '關閉',
@@ -2484,19 +2503,8 @@ extension on TranslationsZhTw {
           'frost.taskFailed' => '失敗',
           'frost.taskCancelled' => '已取消',
           'frost.remove' => '移除',
-          'frost.forward' => '前進',
-          'frost.stop' => '停止',
           'frost.seek' => '播放位置',
-          'frost.send' => '傳送',
-          'frost.attach' => '加入附件',
-          'frost.readerSettings' => '閱讀設定',
-          'frost.textSize' => '文字大小',
-          'frost.lineSpacing' => '行距',
-          'frost.readingProgress' => '閱讀進度',
           'frost.showReplies' => ({required Object count}) => '顯示 ${count} 則回覆',
-          'frost.characterCount' =>
-            ({required Object count, required Object limit}) =>
-                '${count} / ${limit} 字',
           'frost.moreMedia' => ({required Object count}) => '還有 ${count} 張圖片',
           'frost.navigationCount' => ({required Object count}) => '${count} 項',
           'frost.navigationProgress' =>
@@ -2504,6 +2512,8 @@ extension on TranslationsZhTw {
           'frost.listSeparator' => '，',
           'navigation.browse' => '瀏覽',
           'navigation.search' => '搜尋',
+          'navigation.tags' => '標籤',
+          'navigation.backToFirst' => '回到第一頁',
           'navigation.downloads' => '下載',
           'navigation.settings' => '設定',
           'navigation.browseEmpty' => '瀏覽喜愛的圖源',

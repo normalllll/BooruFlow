@@ -21,8 +21,9 @@ class SettingsRepository {
     darkCustomSelected: SettingsService.customAccentSelected(Brightness.dark),
     background: SettingsService.background,
     sidebarExpanded: SettingsService.sidebarExpanded,
+    downloadEntryPosition: SettingsService.downloadEntryPosition,
     predictiveBack: SettingsService.predictiveBack,
-    waterfallColumns: SettingsService.waterfallColumns,
+    thumbnailSize: SettingsService.thumbnailSize,
     downloadPath: SettingsService.downloadPath,
     ugoiraExport: SettingsService.ugoiraExport,
     maxConcurrentDownloads: SettingsService.maxConcurrentDownloads,
@@ -31,6 +32,8 @@ class SettingsRepository {
     ratings: SettingsService.ratings,
   );
   void setPredictiveBack(bool value) => SettingsService.predictiveBack = value;
+  void setDownloadEntryPosition(FrostFloatingEntryPosition value) =>
+      SettingsService.downloadEntryPosition = value;
   void setSidebarExpanded(bool value) =>
       SettingsService.sidebarExpanded = value;
   void setLanguage(int? value) => SettingsService.language = value;
@@ -46,7 +49,8 @@ class SettingsRepository {
   );
   Future<void> setBackground(BackgroundSettings value) =>
       SettingsService.saveBackground(value);
-  void setColumns(int? value) => SettingsService.waterfallColumns = value;
+  void setThumbnailSize(ThumbnailSize value) =>
+      SettingsService.thumbnailSize = value;
   void setDownloadPath(String? value) => SettingsService.downloadPath = value;
   void setConcurrency(int value) =>
       SettingsService.maxConcurrentDownloads = value;
@@ -67,8 +71,9 @@ class AppSettings {
     required this.darkCustomSelected,
     required this.background,
     required this.sidebarExpanded,
+    this.downloadEntryPosition = const FrostFloatingEntryPosition(),
     this.predictiveBack = true,
-    required this.waterfallColumns,
+    required this.thumbnailSize,
     required this.downloadPath,
     this.ugoiraExport = UgoiraExport.losslessWebp,
     required this.maxConcurrentDownloads,
@@ -80,7 +85,9 @@ class AppSettings {
   final bool lightCustomSelected, darkCustomSelected;
   final BackgroundSettings background;
   final bool sidebarExpanded, predictiveBack;
-  final int? language, themeMode, waterfallColumns;
+  final FrostFloatingEntryPosition downloadEntryPosition;
+  final int? language, themeMode;
+  final ThumbnailSize thumbnailSize;
   final UgoiraExport ugoiraExport;
   final String? downloadPath;
   final int maxConcurrentDownloads, maxSegmentsPerTask;
@@ -94,8 +101,9 @@ class AppSettings {
     darkCustomSelected: darkCustomSelected,
     background: value,
     sidebarExpanded: sidebarExpanded,
+    downloadEntryPosition: downloadEntryPosition,
     predictiveBack: predictiveBack,
-    waterfallColumns: waterfallColumns,
+    thumbnailSize: thumbnailSize,
     downloadPath: downloadPath,
     ugoiraExport: ugoiraExport,
     maxConcurrentDownloads: maxConcurrentDownloads,
@@ -140,6 +148,8 @@ class Settings extends _$Settings {
 
   void setPredictiveBack(bool value) => _repository.setPredictiveBack(value);
   void setSidebarExpanded(bool value) => _repository.setSidebarExpanded(value);
+  void setDownloadEntryPosition(FrostFloatingEntryPosition value) =>
+      _repository.setDownloadEntryPosition(value);
   void setLanguage(int? value) => _repository.setLanguage(value);
   void setThemeMode(int? value) => _repository.setThemeMode(value);
   Future<void> setAppearance(
@@ -186,7 +196,8 @@ class Settings extends _$Settings {
     });
   }
 
-  void setColumns(int? value) => _repository.setColumns(value);
+  void setThumbnailSize(ThumbnailSize value) =>
+      _repository.setThumbnailSize(value);
   void setDownloadPath(String? value) => _repository.setDownloadPath(value);
   void setConcurrency(int value) => _repository.setConcurrency(value);
   void setUgoiraExport(UgoiraExport value) =>

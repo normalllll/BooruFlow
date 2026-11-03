@@ -82,13 +82,6 @@ void main() {
                               atDestinationRoot: true,
                               onDestinationSelected: (_) {},
                               showsMobileNavigation: true,
-                              metrics: const FrostNavigationMetrics(
-                                railWidth: 56,
-                                expandedWidth: 220,
-                                expandableMinWidth: 900,
-                                mobileMaxWidth: 600,
-                              ),
-                              sidebarStyle: const FrostSidebarStyle.inset(),
                               child: FrostShellDestination(
                                 child: Column(
                                   children: [
@@ -137,17 +130,8 @@ void main() {
                 )
                 .where((p) => p.text.toPlainText() == name)
                 .toList();
-            if (width == 390) {
-              expect(paragraphs, isNotEmpty, reason: name);
-            } else {
-              // At 860 the real shell is an icon rail; its full labels are tooltips.
-              expect(
-                find.byWidgetPredicate(
-                  (w) => w is FrostTooltip && w.message == name,
-                ),
-                findsOneWidget,
-              );
-            }
+            // Both windows are portrait, so the shell has the labelled bottom bar.
+            expect(paragraphs, isNotEmpty, reason: name);
             for (final p in paragraphs) {
               expect(
                 p.didExceedMaxLines,

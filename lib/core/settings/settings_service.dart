@@ -9,6 +9,17 @@ import 'package:frost_ui/frost_ui.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'background.dart';
 
+/// How large the browse waterfall draws its images. The grid derives the
+/// column count from the tile width and the space it has.
+enum ThumbnailSize {
+  small(120),
+  medium(240),
+  large(320);
+
+  const ThumbnailSize(this.preferredTileWidth);
+  final double preferredTileWidth;
+}
+
 abstract interface class SettingsServiceStore {
   Map<String, dynamic> load();
 
@@ -59,8 +70,10 @@ class SettingsService {
   static const _appearanceKey = 'appearance';
   static const _backgroundKey = 'background';
   static const _sidebarExpandedKey = 'sidebarExpanded';
+  static const _downloadEntryPositionKey = 'downloadEntryPosition';
   static const _predictiveBackKey = 'predictiveBack';
-  static const _waterfallColumnsKey = 'waterfallColumns';
+  static const _thumbnailSizeKey = 'thumbnailSize';
+  static const _windowPlacementKey = 'windowPlacement';
   static const _ugoiraExportKey = 'ugoiraExport';
   static const _downloadPathKey = 'downloadPath';
   static const _maxConcurrentDownloadsKey = 'maxConcurrentDownloads';
@@ -77,10 +90,12 @@ class SettingsService {
     _appearanceKey,
     _backgroundKey,
     _sidebarExpandedKey,
+    _downloadEntryPositionKey,
     _predictiveBackKey,
     _languageKey,
     _themeModeKey,
-    _waterfallColumnsKey,
+    _thumbnailSizeKey,
+    _windowPlacementKey,
     _downloadPathKey,
     _ugoiraExportKey,
     _maxConcurrentDownloadsKey,
@@ -147,6 +162,29 @@ class SettingsService {
   static bool get sidebarExpanded => _map[_sidebarExpandedKey] as bool? ?? true;
   static set sidebarExpanded(bool value) => _write(_sidebarExpandedKey, value);
 
+  /// Where the floating downloads entry of bottom-bar layouts rests. A record
+  /// that cannot be read is a missing one.
+  static FrostFloatingEntryPosition get downloadEntryPosition {
+    final stored = _map[_downloadEntryPositionKey];
+    if (stored is! Map) return const FrostFloatingEntryPosition();
+    final edge = FrostFloatingEntryEdge.values
+        .where((edge) => edge.name == stored['edge'])
+        .firstOrNull;
+    final fraction = stored['fraction'];
+    if (edge == null || fraction is! num || !(fraction >= 0 && fraction <= 1)) {
+      return const FrostFloatingEntryPosition();
+    }
+    return FrostFloatingEntryPosition(
+      edge: edge,
+      fraction: fraction.toDouble(),
+    );
+  }
+
+  static set downloadEntryPosition(FrostFloatingEntryPosition value) => _write(
+    _downloadEntryPositionKey,
+    {'edge': value.edge.name, 'fraction': value.fraction},
+  );
+
   static BackgroundSettings get background =>
       BackgroundSettings.fromRecord(_map[_backgroundKey]);
   static Future<void> saveBackground(BackgroundSettings value) async {
@@ -164,14 +202,32 @@ class SettingsService {
 
   static int? get themeMode => _map[_themeModeKey] as int?;
 
-  // B0 retains the original UI until B1 installs the v2 appearance scope.
   static set themeMode(int? value) => _write(_themeModeKey, value);
 
-  static int? get waterfallColumns => _map[_waterfallColumnsKey] as int?;
+  static ThumbnailSize get thumbnailSize =>
+      ThumbnailSize.values
+          .where((size) => size.name == _map[_thumbnailSizeKey])
+          .firstOrNull ??
+      ThumbnailSize.medium;
+  static set thumbnailSize(ThumbnailSize value) =>
+      _write(_thumbnailSizeKey, value.name);
 
-  static set waterfallColumns(int? value) {
-    _write(_waterfallColumnsKey, value);
+  /// The last window placement, or null when none was saved or the saved
+  /// record cannot be decoded (a damaged record is a missing one).
+  static FrostWindowPlacement? get windowPlacement {
+    final stored = _map[_windowPlacementKey];
+    if (stored is! Map) return null;
+    try {
+      return FrostWindowPlacement.fromMap(stored);
+    } on FormatException {
+      return null;
+    } on TypeError {
+      return null;
+    }
   }
+
+  static set windowPlacement(FrostWindowPlacement? value) =>
+      _write(_windowPlacementKey, value?.toMap());
 
   static UgoiraExport get ugoiraExport =>
       UgoiraExport.values
@@ -316,11 +372,14 @@ class SettingsService {
 
     return switch (key) {
       _appearanceKey => value is Map,
-      _backgroundKey => value is Map,
+      _backgroundKey ||
+      _windowPlacementKey ||
+      _downloadEntryPositionKey => value is Map,
+      _thumbnailSizeKey =>
+        value is String && ThumbnailSize.values.any((e) => e.name == value),
       _sidebarExpandedKey || _predictiveBackKey => value is bool,
       _languageKey ||
       _themeModeKey ||
-      _waterfallColumnsKey ||
       _maxConcurrentDownloadsKey ||
       _maxSegmentsPerTaskKey ||
       legacySettingsVersionKey => value is int,

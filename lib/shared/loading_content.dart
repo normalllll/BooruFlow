@@ -33,7 +33,11 @@ class AppLoadingContent extends StatelessWidget {
     _LoadingShape.rows => Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (final label in labels) FrostListRow(title: label, icon: icon),
+        for (final label in labels)
+          FrostListRow(
+            title: label,
+            leading: icon == null ? null : FrostGlyph.icon(icon!),
+          ),
       ],
     ),
   }.frostSkeleton(true);

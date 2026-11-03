@@ -2,7 +2,7 @@ import 'package:booruflow/app/frost_config.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
-import '../../features/discovery/home_page_test.dart' show browseTestApp;
+import '../../support/browse_support.dart' show browseTestApp;
 
 void main() {
   for (final (size, scale) in [

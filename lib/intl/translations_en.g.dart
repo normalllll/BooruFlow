@@ -117,9 +117,6 @@ class Translations$generic$en {
   /// en: 'Cancel'
   String get cancel => 'Cancel';
 
-  /// en: 'Clear'
-  String get clear => 'Clear';
-
   /// en: 'Confirm'
   String get confirm => 'Confirm';
 
@@ -146,11 +143,21 @@ class Translations$generic$en {
   /// en: 'Retry'
   String get retry => 'Retry';
 
+  /// en: 'Refresh'
+  String get refresh => 'Refresh';
+
   /// en: 'No more items'
   String get noMoreData => 'No more items';
 
   /// en: 'Not found'
   String get notFound => 'Not found';
+
+  /// en: 'Back to Browse'
+  String get backToBrowse => 'Back to Browse';
+
+  /// en: 'This page does not exist, or its link is incomplete.'
+  String get notFoundMessage =>
+      'This page does not exist, or its link is incomplete.';
 }
 
 // Path: booruError
@@ -343,6 +350,9 @@ class Translations$postDetail$en {
   /// en: 'Details'
   String get details => 'Details';
 
+  /// en: 'Post'
+  String get post => 'Post';
+
   /// en: 'Actions'
   String get actions => 'Actions';
 
@@ -488,6 +498,9 @@ class Translations$downloads$en {
   /// en: 'All'
   String get all => 'All';
 
+  /// en: 'View all'
+  String get viewAll => 'View all';
+
   /// en: 'Pause'
   String get pause => 'Pause';
 
@@ -511,6 +524,9 @@ class Translations$downloads$en {
 
   /// en: 'Open post'
   String get openPost => 'Open post';
+
+  /// en: 'Open'
+  String get open => 'Open';
 
   /// en: 'Batch download'
   String get batch => 'Batch download';
@@ -612,6 +628,23 @@ class Translations$downloads$en {
   /// en: 'Collapse'
   String get collapse => 'Collapse';
 
+  /// en: 'Nothing is downloading'
+  String get noActive => 'Nothing is downloading';
+
+  /// en: 'No completed downloads yet'
+  String get noCompleted => 'No completed downloads yet';
+
+  /// en: '(one) {$count action failed} (other) {$count actions failed}'
+  String partialFailed({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(
+        n,
+        one: '${count} action failed',
+        other: '${count} actions failed',
+      );
+
+  /// en: 'Copy path'
+  String get copyPath => 'Copy path';
+
   late final Translations$downloads$messages$en messages =
       Translations$downloads$messages$en.internal(_root);
 }
@@ -680,8 +713,17 @@ class Translations$settings$en {
   /// en: 'Default to platform settings'
   String get defaultToPlatformSettings => 'Default to platform settings';
 
-  /// en: 'Images per row'
-  String get columnsPerRow => 'Images per row';
+  /// en: 'Thumbnail size'
+  String get thumbnailSize => 'Thumbnail size';
+
+  /// en: 'Small'
+  String get thumbnailSmall => 'Small';
+
+  /// en: 'Medium'
+  String get thumbnailMedium => 'Medium';
+
+  /// en: 'Large'
+  String get thumbnailLarge => 'Large';
 
   /// en: 'Concurrent downloads'
   String get maxConcurrentDownloads => 'Concurrent downloads';
@@ -700,9 +742,6 @@ class Translations$settings$en {
 
   /// en: 'Dark'
   String get dark => 'Dark';
-
-  /// en: 'Auto'
-  String get auto => 'Auto';
 
   /// en: 'Save location and download concurrency'
   String get downloadsOverview => 'Save location and download concurrency';
@@ -724,8 +763,6 @@ class Translations$settings$en {
       Translations$settings$downloadDirectoryDialog$en.internal(_root);
   late final Translations$settings$bypassSniDialog$en bypassSniDialog =
       Translations$settings$bypassSniDialog$en.internal(_root);
-  late final Translations$settings$columnsPerRowDialog$en columnsPerRowDialog =
-      Translations$settings$columnsPerRowDialog$en.internal(_root);
   late final Translations$settings$maxSegmentsPerTaskDialog$en
   maxSegmentsPerTaskDialog =
       Translations$settings$maxSegmentsPerTaskDialog$en.internal(_root);
@@ -780,6 +817,9 @@ class Translations$discovery$en {
 
   /// en: 'Copy image'
   String get copyImage => 'Copy image';
+
+  /// en: 'Couldn't copy image'
+  String get copyImageFailed => 'Couldn\'t copy image';
 
   /// en: 'Search this artist'
   String get searchAuthor => 'Search this artist';
@@ -900,9 +940,6 @@ class Translations$discovery$en {
   /// en: 'Common tags'
   String get commonTags => 'Common tags';
 
-  /// en: 'Show more'
-  String get moreTags => 'Show more';
-
   /// en: 'Source'
   String get tagSource => 'Source';
 
@@ -918,8 +955,14 @@ class Translations$discovery$en {
   /// en: 'Add'
   String get addTagAction => 'Add';
 
+  /// en: 'Edit'
+  String get editTagAction => 'Edit';
+
   /// en: 'Delete'
   String get deleteTag => 'Delete';
+
+  /// en: 'Delete “$name”?'
+  String deleteTagConfirm({required Object name}) => 'Delete “${name}”?';
 
   /// en: 'Add tag'
   String get addTag => 'Add tag';
@@ -946,8 +989,20 @@ class Translations$discovery$en {
   /// en: 'Enter one nonempty tag without spaces.'
   String get invalidTag => 'Enter one nonempty tag without spaces.';
 
-  /// en: 'Search tags'
-  String get queryHint => 'Search tags';
+  /// en: 'Search $source'
+  String searchSource({required Object source}) => 'Search ${source}';
+
+  /// en: 'This source has no common tags'
+  String get noCommonTags => 'This source has no common tags';
+
+  /// en: 'Category'
+  String get category => 'Category';
+
+  /// en: 'All'
+  String get allCategories => 'All';
+
+  /// en: 'All'
+  String get allTagsAction => 'All';
 
   /// en: 'Some tags are not verified for this source. You can still search.'
   String get unverifiedTag =>
@@ -962,9 +1017,6 @@ class Translations$discovery$en {
   /// en: 'Online suggestions unavailable; local suggestions are still available.'
   String get localFallback =>
       'Online suggestions unavailable; local suggestions are still available.';
-
-  /// en: 'Retry common tags'
-  String get retryTags => 'Retry common tags';
 
   /// en: 'Artist'
   String get artist => 'Artist';
@@ -1036,6 +1088,9 @@ class Translations$webChallenge$en {
 
   /// en: 'Web verification'
   String get title => 'Web verification';
+
+  /// en: '$source verification'
+  String pageTitle({required Object source}) => '${source} verification';
 
   /// en: 'Open web verification'
   String get open => 'Open web verification';
@@ -1485,9 +1540,6 @@ class Translations$frost$en {
   /// en: 'Exit full screen'
   String get exitFullscreen => 'Exit full screen';
 
-  /// en: 'Reload'
-  String get reload => 'Reload';
-
   /// en: 'Open in browser'
   String get openInBrowser => 'Open in browser';
 
@@ -1560,39 +1612,11 @@ class Translations$frost$en {
   /// en: 'Remove'
   String get remove => 'Remove';
 
-  /// en: 'Forward'
-  String get forward => 'Forward';
-
-  /// en: 'Stop'
-  String get stop => 'Stop';
-
   /// en: 'Playback position'
   String get seek => 'Playback position';
 
-  /// en: 'Send'
-  String get send => 'Send';
-
-  /// en: 'Attach'
-  String get attach => 'Attach';
-
-  /// en: 'Reading settings'
-  String get readerSettings => 'Reading settings';
-
-  /// en: 'Text size'
-  String get textSize => 'Text size';
-
-  /// en: 'Line spacing'
-  String get lineSpacing => 'Line spacing';
-
-  /// en: 'Reading progress'
-  String get readingProgress => 'Reading progress';
-
   /// en: 'Show $count replies'
   String showReplies({required Object count}) => 'Show ${count} replies';
-
-  /// en: '$count of $limit characters'
-  String characterCount({required Object count, required Object limit}) =>
-      '${count} of ${limit} characters';
 
   /// en: '$count more images'
   String moreMedia({required Object count}) => '${count} more images';
@@ -1621,6 +1645,12 @@ class Translations$navigation$en {
 
   /// en: 'Search'
   String get search => 'Search';
+
+  /// en: 'Tags'
+  String get tags => 'Tags';
+
+  /// en: 'Back to first page'
+  String get backToFirst => 'Back to first page';
 
   /// en: 'Downloads'
   String get downloads => 'Downloads';
@@ -1994,9 +2024,6 @@ class Translations$settings$sections$en {
 
   /// en: 'Network'
   String get network => 'Network';
-
-  /// en: 'General'
-  String get general => 'General';
 
   /// en: 'Downloads'
   String get downloads => 'Downloads';
@@ -2386,18 +2413,6 @@ class Translations$settings$bypassSniDialog$en {
   String get title => 'Bypass SNI';
 }
 
-// Path: settings.columnsPerRowDialog
-class Translations$settings$columnsPerRowDialog$en {
-  Translations$settings$columnsPerRowDialog$en.internal(this._root);
-
-  final Translations _root; // ignore: unused_field
-
-  // Translations
-
-  /// en: 'Images per row'
-  String get title => 'Images per row';
-}
-
 // Path: settings.maxSegmentsPerTaskDialog
 class Translations$settings$maxSegmentsPerTaskDialog$en {
   Translations$settings$maxSegmentsPerTaskDialog$en.internal(this._root);
@@ -2461,7 +2476,6 @@ extension on Translations {
     return switch (path) {
           'generic.ok' => 'OK',
           'generic.cancel' => 'Cancel',
-          'generic.clear' => 'Clear',
           'generic.confirm' => 'Confirm',
           'generic.enabled' => 'Enabled',
           'generic.disabled' => 'Disabled',
@@ -2472,8 +2486,12 @@ extension on Translations {
           'generic.loading' => 'Loading',
           'generic.loadFailed' => 'Load failed',
           'generic.retry' => 'Retry',
+          'generic.refresh' => 'Refresh',
           'generic.noMoreData' => 'No more items',
           'generic.notFound' => 'Not found',
+          'generic.backToBrowse' => 'Back to Browse',
+          'generic.notFoundMessage' =>
+            'This page does not exist, or its link is incomplete.',
           'booruError.invalidRequest' => 'The request is invalid.',
           'booruError.unsupportedCapability' =>
             'This source does not support the requested operation.',
@@ -2543,6 +2561,7 @@ extension on Translations {
           'postDetail.titleWithId' => ({required Object id}) => 'Post: ${id}',
           'postDetail.tags' => 'Tags',
           'postDetail.details' => 'Details',
+          'postDetail.post' => 'Post',
           'postDetail.actions' => 'Actions',
           'postDetail.rating' => 'Rating',
           'postDetail.fileType' => 'File type',
@@ -2589,6 +2608,7 @@ extension on Translations {
           'downloads.startedAt' => 'Started',
           'downloads.browse' => 'Browse',
           'downloads.all' => 'All',
+          'downloads.viewAll' => 'View all',
           'downloads.pause' => 'Pause',
           'downloads.resume' => 'Resume',
           'downloads.pauseAll' => 'Pause all',
@@ -2597,6 +2617,7 @@ extension on Translations {
           'downloads.clearCompleted' => 'Clear completed',
           'downloads.openDirectory' => 'Open download directory',
           'downloads.openPost' => 'Open post',
+          'downloads.open' => 'Open',
           'downloads.batch' => 'Batch download',
           'downloads.batchProgress' =>
             ({required Object completed, required Object total}) =>
@@ -2632,6 +2653,17 @@ extension on Translations {
           'downloads.actionFailed' => 'Download action failed',
           'downloads.expand' => 'Expand',
           'downloads.collapse' => 'Collapse',
+          'downloads.noActive' => 'Nothing is downloading',
+          'downloads.noCompleted' => 'No completed downloads yet',
+          'downloads.partialFailed' =>
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('en'))(
+                  n,
+                  one: '${count} action failed',
+                  other: '${count} actions failed',
+                ),
+          'downloads.copyPath' => 'Copy path',
           'downloads.messages.storagePermanentlyDenied' =>
             'You have permanently denied storage permissions.\nPlease manually enable storage permissions in settings.',
           'downloads.messages.storageDenied' =>
@@ -2674,20 +2706,21 @@ extension on Translations {
           'settings.downloadDirectory' => 'Download directory',
           'settings.defaultToPlatformSettings' =>
             'Default to platform settings',
-          'settings.columnsPerRow' => 'Images per row',
+          'settings.thumbnailSize' => 'Thumbnail size',
+          'settings.thumbnailSmall' => 'Small',
+          'settings.thumbnailMedium' => 'Medium',
+          'settings.thumbnailLarge' => 'Large',
           'settings.maxConcurrentDownloads' => 'Concurrent downloads',
           'settings.maxSegmentsPerTask' => 'Segments per task',
           'settings.platformDefault' => 'Platform default',
           'settings.system' => 'System',
           'settings.light' => 'Light',
           'settings.dark' => 'Dark',
-          'settings.auto' => 'Auto',
           'settings.downloadsOverview' =>
             'Save location and download concurrency',
           'settings.sections.sourcesAndAccounts' => 'Sources & accounts',
           'settings.sections.accounts' => 'Accounts',
           'settings.sections.network' => 'Network',
-          'settings.sections.general' => 'General',
           'settings.sections.downloads' => 'Downloads',
           'settings.source.defaultSource' => 'Default source',
           'settings.source.supportedRatings' => 'Supported ratings',
@@ -2832,7 +2865,6 @@ extension on Translations {
           'settings.downloadDirectoryDialog.messages.pathNotWritable' =>
             'Directory path is not writable.',
           'settings.bypassSniDialog.title' => 'Bypass SNI',
-          'settings.columnsPerRowDialog.title' => 'Images per row',
           'settings.maxSegmentsPerTaskDialog.title' =>
             'Max segments per download task',
           'discovery.mode' => 'Mode',
@@ -2849,6 +2881,7 @@ extension on Translations {
           'discovery.copyLink' => 'Copy link',
           'discovery.copyQueryLink' => 'Copy query link',
           'discovery.copyImage' => 'Copy image',
+          'discovery.copyImageFailed' => 'Couldn\'t copy image',
           'discovery.searchAuthor' => 'Search this artist',
           'discovery.mediaAnimation' => 'Animated',
           'discovery.mediaVideo' => 'Video',
@@ -2894,13 +2927,15 @@ extension on Translations {
           'discovery.noRecentSearches' => 'No recent searches',
           'discovery.myTags' => 'My tags',
           'discovery.commonTags' => 'Common tags',
-          'discovery.moreTags' => 'Show more',
           'discovery.tagSource' => 'Source',
           'discovery.allTagSources' => 'All sources',
           'discovery.manageTags' => 'Custom tags',
           'discovery.manageTagsAction' => 'Manage',
           'discovery.addTagAction' => 'Add',
+          'discovery.editTagAction' => 'Edit',
           'discovery.deleteTag' => 'Delete',
+          'discovery.deleteTagConfirm' =>
+            ({required Object name}) => 'Delete “${name}”?',
           'discovery.addTag' => 'Add tag',
           'discovery.noCustomTags' => 'No custom tags yet',
           'discovery.customTagsHint' =>
@@ -2910,14 +2945,18 @@ extension on Translations {
           'discovery.canonicalTag' => 'Source tag',
           'discovery.displayName' => 'Display name (optional)',
           'discovery.invalidTag' => 'Enter one nonempty tag without spaces.',
-          'discovery.queryHint' => 'Search tags',
+          'discovery.searchSource' =>
+            ({required Object source}) => 'Search ${source}',
+          'discovery.noCommonTags' => 'This source has no common tags',
+          'discovery.category' => 'Category',
+          'discovery.allCategories' => 'All',
+          'discovery.allTagsAction' => 'All',
           'discovery.unverifiedTag' =>
             'Some tags are not verified for this source. You can still search.',
           'discovery.verifiedTag' => 'Verified for this source',
           'discovery.noSuggestions' => 'No suggestions',
           'discovery.localFallback' =>
             'Online suggestions unavailable; local suggestions are still available.',
-          'discovery.retryTags' => 'Retry common tags',
           'discovery.artist' => 'Artist',
           'discovery.character' => 'Character',
           'discovery.copyright' => 'Series',
@@ -2937,6 +2976,8 @@ extension on Translations {
           'mediaError.decodeFailed' =>
             'The downloaded image could not be decoded. Retry will clear this image’s cache and download it again.',
           'webChallenge.title' => 'Web verification',
+          'webChallenge.pageTitle' =>
+            ({required Object source}) => '${source} verification',
           'webChallenge.open' => 'Open web verification',
           'webChallenge.windowTitle' =>
             ({required Object source}) =>
@@ -3105,6 +3146,9 @@ extension on Translations {
           'frost.hidePassword' => 'Hide password',
           'frost.chooseDate' => 'Choose date',
           'frost.chooseTime' => 'Choose time',
+          _ => null,
+        } ??
+        switch (path) {
           'frost.increment' => 'Increase',
           'frost.decrement' => 'Decrease',
           'frost.reorderHandle' => 'Reorder',
@@ -3117,12 +3161,8 @@ extension on Translations {
           'frost.unmute' => 'Unmute',
           'frost.fullscreen' => 'Full screen',
           'frost.exitFullscreen' => 'Exit full screen',
-          'frost.reload' => 'Reload',
           'frost.openInBrowser' => 'Open in browser',
           'frost.minimize' => 'Minimize',
-          _ => null,
-        } ??
-        switch (path) {
           'frost.maximize' => 'Maximize',
           'frost.restore' => 'Restore',
           'frost.close' => 'Close',
@@ -3151,20 +3191,9 @@ extension on Translations {
           'frost.taskFailed' => 'Failed',
           'frost.taskCancelled' => 'Cancelled',
           'frost.remove' => 'Remove',
-          'frost.forward' => 'Forward',
-          'frost.stop' => 'Stop',
           'frost.seek' => 'Playback position',
-          'frost.send' => 'Send',
-          'frost.attach' => 'Attach',
-          'frost.readerSettings' => 'Reading settings',
-          'frost.textSize' => 'Text size',
-          'frost.lineSpacing' => 'Line spacing',
-          'frost.readingProgress' => 'Reading progress',
           'frost.showReplies' =>
             ({required Object count}) => 'Show ${count} replies',
-          'frost.characterCount' =>
-            ({required Object count, required Object limit}) =>
-                '${count} of ${limit} characters',
           'frost.moreMedia' =>
             ({required Object count}) => '${count} more images',
           'frost.navigationCount' =>
@@ -3174,6 +3203,8 @@ extension on Translations {
           'frost.listSeparator' => ', ',
           'navigation.browse' => 'Browse',
           'navigation.search' => 'Search',
+          'navigation.tags' => 'Tags',
+          'navigation.backToFirst' => 'Back to first page',
           'navigation.downloads' => 'Downloads',
           'navigation.settings' => 'Settings',
           'navigation.browseEmpty' => 'Browse your favorite sources',

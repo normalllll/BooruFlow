@@ -1,7 +1,7 @@
 import 'package:booruflow/app/icons.g.dart';
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/features/booru/web_challenge_logic.dart';
-import 'package:booruflow/features/discovery/collection_logic.dart'
+import 'package:booruflow/features/browse/collection_logic.dart'
     show NoSupportedRatings;
 import 'package:booruflow/intl/number_format.dart';
 import 'package:booruflow/intl/translations.g.dart';
@@ -10,13 +10,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frost_ui/frost_ui.dart';
 
-// Search and result-query headers share one upper bound; allocation remains
-// continuous inside the shared Toolbar after reserving the trailing actions.
-const appSearchMiddleMaxWidth = 640.0;
-
 const appIcons = FrostIconSet(
   back: FrostIconData.glyph(BooruFlowIcons.arrowLeft),
-  forward: FrostIconData.glyph(BooruFlowIcons.arrowRight),
   close: FrostIconData.glyph(BooruFlowIcons.x),
   more: FrostIconData.glyph(BooruFlowIcons.ellipsis),
   chevronLeft: FrostIconData.glyph(BooruFlowIcons.chevronLeft),
@@ -70,8 +65,7 @@ const appIcons = FrostIconSet(
   eye: FrostIconData.glyph(BooruFlowIcons.eye),
   eyeOff: FrostIconData.glyph(BooruFlowIcons.eyeOff),
   user: FrostIconData.glyph(BooruFlowIcons.userRound),
-  send: FrostIconData.glyph(BooruFlowIcons.send),
-  attach: FrostIconData.glyph(BooruFlowIcons.paperclip),
+  forward: FrostIconData.glyph(BooruFlowIcons.arrowRight),
   textFormat: FrostIconData.glyph(BooruFlowIcons.type),
 );
 
@@ -84,6 +78,9 @@ final appFrostConfig = FrostConfig(
   ),
   icons: appIcons,
   labels: appFrostLabels,
+  // A full grid of pulsing placeholders flashes in step; a still fill is calm
+  // and costs no frames while images load.
+  skeleton: const FrostSkeletonStyle(effect: FrostSkeletonEffect.solid),
   errors: FrostErrorPresenter(
     message: (context, error) => switch (error) {
       AppActionFailure(:final message) => message,
@@ -184,8 +181,6 @@ FrostLabels appFrostLabels(BuildContext context) {
     unmute: labels.unmute,
     fullscreen: labels.fullscreen,
     exitFullscreen: labels.exitFullscreen,
-    reload: labels.reload,
-    openInBrowser: labels.openInBrowser,
     minimize: labels.minimize,
     maximize: labels.maximize,
     restore: labels.restore,
@@ -215,20 +210,8 @@ FrostLabels appFrostLabels(BuildContext context) {
     taskFailed: labels.taskFailed,
     taskCancelled: labels.taskCancelled,
     remove: labels.remove,
-    forward: labels.forward,
-    stop: labels.stop,
     seek: labels.seek,
-    send: labels.send,
-    attach: labels.attach,
-    readerSettings: labels.readerSettings,
-    textSize: labels.textSize,
-    lineSpacing: labels.lineSpacing,
-    readingProgress: labels.readingProgress,
     showReplies: (count) => labels.showReplies(count: formatCount(count)),
-    characterCount: (count, limit) => labels.characterCount(
-      count: formatCount(count),
-      limit: formatCount(limit),
-    ),
     moreMedia: (count) => labels.moreMedia(count: formatCount(count)),
   );
 }

@@ -1,7 +1,6 @@
 generic:
   ok: OK
   cancel: キャンセル
-  clear: クリア
   confirm: 確認
   enabled: 有効
   disabled: 無効
@@ -10,8 +9,11 @@ generic:
   loading: 読み込み中
   loadFailed: 読み込みに失敗しました
   retry: 再試行
+  refresh: 更新
   noMoreData: これ以上データはありません
   notFound: 見つかりませんでした
+  backToBrowse: "閲覧に戻る"
+  notFoundMessage: "ページが存在しないか、リンクが不完全です。"
 
 booruError:
   invalidRequest: リクエストが無効です。
@@ -68,6 +70,7 @@ postDetail:
   titleWithId: "投稿: $id"
   tags: タグ
   details: 詳細
+  post: 投稿
   actions: 操作
   rating: レーティング
   fileType: ファイル形式
@@ -113,6 +116,7 @@ downloads:
   startedAt: "開始日時"
   browse: "閲覧する"
   all: "すべて"
+  viewAll: "すべて表示"
   pause: "一時停止"
   resume: "再開"
   pauseAll: "すべて一時停止"
@@ -121,6 +125,7 @@ downloads:
   clearCompleted: "完了済みを削除"
   openDirectory: "ダウンロード先を開く"
   openPost: "作品を開く"
+  open: 開く
   batch: "一括ダウンロード"
   batchProgress: "$completed / $total"
   path: "保存先"
@@ -154,6 +159,11 @@ downloads:
   actionFailed: ダウンロード操作に失敗しました
   expand: 展開
   collapse: 折りたたむ
+  noActive: "ダウンロード中のタスクはありません"
+  noCompleted: "完了したダウンロードはまだありません"
+  partialFailed(plural, param=n):
+    other: "$count 件の操作に失敗しました"
+  copyPath: "パスをコピー"
   messages:
     storagePermanentlyDenied: ストレージのアクセス許可が永久に拒否されました。\n設定で手動でストレージのアクセス許可を有効にしてください。  # Android
     storageDenied: ストレージのアクセス許可が拒否されました。  # Android
@@ -188,21 +198,22 @@ settings:
   bypassSni: SNI をバイパス
   downloadDirectory: "ダウンロード先"
   defaultToPlatformSettings: "システムの既定値を使用"
-  columnsPerRow: "1 行の画像数"
+  thumbnailSize: "サムネイルのサイズ"
+  thumbnailSmall: "小"
+  thumbnailMedium: "中"
+  thumbnailLarge: "大"
   maxConcurrentDownloads: "同時ダウンロード"
   maxSegmentsPerTask: "タスクごとの分割数"
   platformDefault: "システムの既定値"
   system: "システム"
   light: "ライト"
   dark: "ダーク"
-  auto: 自動
   downloadsOverview: 保存先と同時ダウンロード数
 
   sections:
     sourcesAndAccounts: サイトとアカウント
     accounts: アカウント
     network: ネットワーク
-    general: 一般
     downloads: ダウンロード
 
   source:
@@ -325,9 +336,6 @@ settings:
   bypassSniDialog:
     title: SNI をバイパス
 
-  columnsPerRowDialog:
-    title: "1 行の画像数"
-
   maxSegmentsPerTaskDialog:
     title: "タスクごとの最大分割数"
 
@@ -346,6 +354,7 @@ discovery:
   copyLink: "リンクをコピー"
   copyQueryLink: "検索リンクをコピー"
   copyImage: "画像をコピー"
+  copyImageFailed: "画像をコピーできませんでした"
   searchAuthor: "この絵師を検索"
   mediaAnimation: "アニメ"
   mediaVideo: "動画"
@@ -385,13 +394,14 @@ discovery:
   noRecentSearches: "検索履歴はありません"
   myTags: "自分のタグ"
   commonTags: "よく使われるタグ"
-  moreTags: "もっと見る"
   tagSource: "対象サイト"
   allTagSources: "すべてのサイト"
   manageTags: "カスタムタグ"
   manageTagsAction: "管理"
   addTagAction: "追加"
+  editTagAction: "編集"
   deleteTag: "削除"
+  deleteTagConfirm: "「$name」を削除しますか？"
   addTag: "タグを追加"
   noCustomTags: "カスタムタグはまだありません"
   customTagsHint: "よく使うタグに覚えやすい名前を付けると、検索で見つけやすくなります。"
@@ -400,12 +410,15 @@ discovery:
   canonicalTag: "サイトのタグ"
   displayName: "表示名（任意）"
   invalidTag: "空白を含まないタグを1つ入力してください。"
-  queryHint: "タグを検索"
+  searchSource: "$source を検索"
+  noCommonTags: "このソースには人気タグがありません"
+  category: "カテゴリ"
+  allCategories: "すべて"
+  allTagsAction: "すべて"
   unverifiedTag: "このサイトで未確認のタグがあります。そのまま検索できます。"
   verifiedTag: "このサイトで確認済み"
   noSuggestions: "候補がありません"
   localFallback: "オンライン候補を取得できません。ローカル候補を利用できます。"
-  retryTags: "よく使われるタグを再取得"
   artist: "作者"
   character: "キャラクター"
   copyright: "作品"
@@ -427,6 +440,7 @@ mediaError:
 
 webChallenge:
   title: ウェブ認証
+  pageTitle: "$source の認証"
   open: ウェブ認証を開く
   windowTitle: "$source · 認証後にウィンドウを閉じてください"
   instructions: ページの人間確認を手動で完了してから、戻るかウィンドウを閉じてください。認証データを保存し、画像ソースを再読み込みします。
@@ -567,7 +581,6 @@ frost:
   unmute: "ミュートを解除"
   fullscreen: "全画面表示"
   exitFullscreen: "全画面表示を終了"
-  reload: "再読み込み"
   openInBrowser: "ブラウザーで開く"
   minimize: "最小化"
   maximize: "最大化"
@@ -591,17 +604,8 @@ frost:
   taskFailed: "失敗"
   taskCancelled: キャンセル済み
   remove: "削除"
-  forward: "進む"
-  stop: "停止"
   seek: "再生位置"
-  send: "送信"
-  attach: "添付"
-  readerSettings: "表示設定"
-  textSize: "文字サイズ"
-  lineSpacing: "行間"
-  readingProgress: "読書の進捗"
   showReplies: "$count件の返信を表示"
-  characterCount: "$limit文字中$count文字"
   moreMedia: "ほか$count枚"
   navigationCount: "$count件"
   navigationProgress: "進捗$progress%"
@@ -610,6 +614,8 @@ frost:
 navigation:
   browse: "閲覧"
   search: "検索"
+  tags: "タグ"
+  backToFirst: "最初のページに戻る"
   downloads: "ダウンロード"
   settings: "設定"
   browseEmpty: "お気に入りのサイトを閲覧"

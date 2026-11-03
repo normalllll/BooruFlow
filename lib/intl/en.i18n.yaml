@@ -1,7 +1,6 @@
 generic:
   ok: OK
   cancel: Cancel
-  clear: Clear
   confirm: Confirm
   enabled: Enabled
   disabled: Disabled
@@ -10,8 +9,11 @@ generic:
   loading: Loading
   loadFailed: Load failed
   retry: Retry
+  refresh: Refresh
   noMoreData: "No more items"
   notFound: Not found
+  backToBrowse: "Back to Browse"
+  notFoundMessage: "This page does not exist, or its link is incomplete."
 
 booruError:
   invalidRequest: The request is invalid.
@@ -68,6 +70,7 @@ postDetail:
   titleWithId: "Post: $id"
   tags: Tags
   details: Details
+  post: Post
   actions: Actions
   rating: Rating
   fileType: File type
@@ -113,6 +116,7 @@ downloads:
   startedAt: "Started"
   browse: "Browse"
   all: "All"
+  viewAll: "View all"
   pause: "Pause"
   resume: "Resume"
   pauseAll: "Pause all"
@@ -121,6 +125,7 @@ downloads:
   clearCompleted: "Clear completed"
   openDirectory: "Open download directory"
   openPost: "Open post"
+  open: Open
   batch: "Batch download"
   batchProgress: "$completed / $total"
   path: "Save path"
@@ -154,6 +159,12 @@ downloads:
   actionFailed: Download action failed
   expand: Expand
   collapse: Collapse
+  noActive: "Nothing is downloading"
+  noCompleted: "No completed downloads yet"
+  partialFailed(plural, param=n):
+    one: "$count action failed"
+    other: "$count actions failed"
+  copyPath: "Copy path"
   messages:
     storagePermanentlyDenied: You have permanently denied storage permissions.\nPlease manually enable storage permissions in settings.  # Android
     storageDenied: You have denied storage permissions.  # Android
@@ -188,21 +199,22 @@ settings:
   bypassSni: Bypass SNI
   downloadDirectory: Download directory
   defaultToPlatformSettings: Default to platform settings
-  columnsPerRow: "Images per row"
+  thumbnailSize: "Thumbnail size"
+  thumbnailSmall: "Small"
+  thumbnailMedium: "Medium"
+  thumbnailLarge: "Large"
   maxConcurrentDownloads: "Concurrent downloads"
   maxSegmentsPerTask: "Segments per task"
   platformDefault: Platform default
   system: "System"
   light: "Light"
   dark: "Dark"
-  auto: Auto
   downloadsOverview: Save location and download concurrency
 
   sections:
     sourcesAndAccounts: Sources & accounts
     accounts: Accounts
     network: Network
-    general: General
     downloads: Downloads
 
   source:
@@ -325,9 +337,6 @@ settings:
   bypassSniDialog:
     title: Bypass SNI
 
-  columnsPerRowDialog:
-    title: "Images per row"
-
   maxSegmentsPerTaskDialog:
     title: Max segments per download task
 
@@ -346,6 +355,7 @@ discovery:
   copyLink: "Copy link"
   copyQueryLink: "Copy query link"
   copyImage: "Copy image"
+  copyImageFailed: "Couldn't copy image"
   searchAuthor: "Search this artist"
   mediaAnimation: "Animated"
   mediaVideo: "Video"
@@ -385,13 +395,14 @@ discovery:
   noRecentSearches: "No recent searches"
   myTags: "My tags"
   commonTags: "Common tags"
-  moreTags: "Show more"
   tagSource: "Source"
   allTagSources: "All sources"
   manageTags: "Custom tags"
   manageTagsAction: "Manage"
   addTagAction: "Add"
+  editTagAction: "Edit"
   deleteTag: "Delete"
+  deleteTagConfirm: "Delete “$name”?"
   addTag: "Add tag"
   noCustomTags: "No custom tags yet"
   customTagsHint: "Give frequently used tags a memorable name to find them more easily in search."
@@ -400,12 +411,15 @@ discovery:
   canonicalTag: "Source tag"
   displayName: "Display name (optional)"
   invalidTag: "Enter one nonempty tag without spaces."
-  queryHint: "Search tags"
+  searchSource: "Search $source"
+  noCommonTags: "This source has no common tags"
+  category: "Category"
+  allCategories: "All"
+  allTagsAction: "All"
   unverifiedTag: "Some tags are not verified for this source. You can still search."
   verifiedTag: "Verified for this source"
   noSuggestions: "No suggestions"
   localFallback: "Online suggestions unavailable; local suggestions are still available."
-  retryTags: "Retry common tags"
   artist: "Artist"
   character: "Character"
   copyright: "Series"
@@ -427,6 +441,7 @@ mediaError:
 
 webChallenge:
   title: Web verification
+  pageTitle: "$source verification"
   open: Open web verification
   windowTitle: "$source · Close this window after verification"
   instructions: Complete the page's verification manually, then go back or close the window. The app will save the verification data and reload the source.
@@ -567,7 +582,6 @@ frost:
   unmute: "Unmute"
   fullscreen: "Full screen"
   exitFullscreen: "Exit full screen"
-  reload: "Reload"
   openInBrowser: "Open in browser"
   minimize: "Minimize"
   maximize: "Maximize"
@@ -591,17 +605,8 @@ frost:
   taskFailed: "Failed"
   taskCancelled: Cancelled
   remove: "Remove"
-  forward: "Forward"
-  stop: "Stop"
   seek: "Playback position"
-  send: "Send"
-  attach: "Attach"
-  readerSettings: "Reading settings"
-  textSize: "Text size"
-  lineSpacing: "Line spacing"
-  readingProgress: "Reading progress"
   showReplies: "Show $count replies"
-  characterCount: "$count of $limit characters"
   moreMedia: "$count more images"
   navigationCount: "$count items"
   navigationProgress: "$progress% complete"
@@ -610,6 +615,8 @@ frost:
 navigation:
   browse: "Browse"
   search: "Search"
+  tags: "Tags"
+  backToFirst: "Back to first page"
   downloads: "Downloads"
   settings: "Settings"
   browseEmpty: "Browse your favorite sources"

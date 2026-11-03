@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' show Tristate;
 
 import 'package:booruflow/app/app_router.dart';
@@ -8,14 +9,14 @@ import 'package:booruflow/core/settings/settings_service.dart';
 import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/features/booru/services/booru_service.dart';
 import 'package:booruflow/features/booru/web_challenge_page.dart';
-import 'package:booruflow/features/discovery/collection_logic.dart';
+import 'package:booruflow/features/browse/collection_logic.dart';
 import 'package:booruflow/features/downloads/download_notifications.dart';
-import 'package:booruflow/features/downloads/downloads_page.dart';
 import 'package:booruflow/features/downloads/logic.dart';
 import 'package:booruflow/features/downloads/models/booru_download_item.dart';
+import 'package:booruflow/features/downloads/widgets/download_task_details.dart';
 import 'package:booruflow/features/downloads/widgets/download_task_widgets.dart';
 import 'package:booruflow/features/search/logic.dart';
-import 'package:booruflow/features/search/user_tags_page.dart';
+import 'package:booruflow/features/tags/my_tags_page.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_navigation.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
@@ -31,7 +32,7 @@ import 'package:frost_ui/frost_ui.dart';
 
 import 'features/discovery/search_interaction_test.dart'
     show testSource, SearchRepositoryFake;
-import 'features/downloads/downloads_v2_test.dart' show task;
+import 'features/downloads/download_tasks_test.dart' show task;
 import 'features/downloads/support.dart' show TestDownloadManager;
 
 final class _MemoryStore implements SettingsServiceStore {
@@ -66,6 +67,13 @@ Future<void> pumpIncomingPage(WidgetTester tester, Finder page) async {
     reason: 'Inspect the first frame that actually mounts the incoming page.',
   );
 }
+
+Finder _captionButton(String label) => find.ancestor(
+  of: find.byWidgetPredicate(
+    (widget) => widget is Semantics && widget.properties.label == label,
+  ),
+  matching: find.byType(IconButton),
+);
 
 void main() {
   const channel = MethodChannel('frost_window');
@@ -124,7 +132,13 @@ void main() {
               (_, _) async => const PostPage(items: [], exhausted: true),
             ),
           ],
-          child: BooruFlowApp(checkUpdates: false, builder: builder),
+          child: BooruFlowApp(
+            windowController: FrostWindowController(
+              minimumSize: const Size(320, 480),
+            ),
+            checkUpdates: false,
+            builder: builder,
+          ),
         ),
       ),
     );
@@ -134,15 +148,19 @@ void main() {
   }
 
   testWidgets(
-    'search middle stays next to its source with intact actions at 1024, 1440 and 1920',
+    'title bar search keeps its query, caret and focus across 1024, 1440 and 1920',
     (tester) async {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
       await mount(tester);
-      AppRouter.router.go('/search');
+      AppRouter.router.go('/tags');
       await tester.pumpAndSettle();
-      final initial = tester.state(find.byType(EditableText));
-      final input = tester.widget<EditableText>(find.byType(EditableText));
+      final titleEditor = find.descendant(
+        of: find.byType(FrostCaptionSearch),
+        matching: find.byType(EditableText),
+      );
+      final initial = tester.state(titleEditor);
+      final input = tester.widget<EditableText>(titleEditor);
       input.focusNode.requestFocus();
       await tester.pumpAndSettle();
       input.controller.value = const TextEditingValue(
@@ -153,27 +171,15 @@ void main() {
       for (final width in [1024.0, 1025.0, 1440.0, 1920.0]) {
         tester.view.physicalSize = Size(width, 900);
         await tester.pump();
-        final header = find.byType(FrostPageHeader);
-        expect(tester.widget<FrostPageHeader>(header).middleMaxWidth, 640);
-        final field = tester.getRect(
-          find.byWidgetPredicate((w) => w is FrostTextField),
+        expect(
+          find.descendant(
+            of: find.byType(FrostPageHeader),
+            matching: find.byType(FrostSearchInput),
+          ),
+          findsNothing,
+          reason: 'the page header carries no search beside the sidebar',
         );
-        final source = tester.getRect(
-          find.descendant(of: header, matching: find.byType(FrostTitleMenu)),
-        );
-        expect(field.width, inInclusiveRange(360, 640));
-        if (width >= 1440) expect(field.width, 640);
-        expect(field.left - source.right, FrostGap.related);
-        final more = find
-            .descendant(
-              of: header,
-              matching: find.byWidgetPredicate(
-                (w) => w is FrostTooltip && w.message == t.frost.more,
-              ),
-            )
-            .hitTestable();
-        expect(tester.getRect(more).left, greaterThanOrEqualTo(field.right));
-        expect(tester.state(find.byType(EditableText)), same(initial));
+        expect(tester.state(titleEditor), same(initial));
         expect(input.controller.text, 'retained query');
         expect(input.controller.selection.extentOffset, 5);
         expect(input.focusNode.hasFocus, isTrue);
@@ -182,7 +188,7 @@ void main() {
     variant: TargetPlatformVariant.only(TargetPlatform.windows),
   );
   testWidgets(
-    'downloads Inspector tooltips survive filters, batch reveals and shell changes',
+    'downloads tooltips survive expanded rows, batch reveals and shell changes',
     (tester) async {
       tester.view.physicalSize = const Size(1440, 1000);
       tester.view.devicePixelRatio = 1;
@@ -200,11 +206,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('running.png'));
       await tester.pumpAndSettle();
-      expect(find.byType(FrostInspector), findsOneWidget);
-      expect(
-        tester.widget<FrostInspector>(find.byType(FrostInspector)).open,
-        isTrue,
-      );
+      expect(find.byType(DownloadTaskDetails), findsOneWidget);
       final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await mouse.addPointer(location: Offset.zero);
       addTearDown(mouse.removePointer);
@@ -222,7 +224,10 @@ void main() {
         of: find.text('running.png'),
         matching: find.byType(DownloadTaskTile),
       );
-      await hover(row);
+      // Pointer actions belong to the row, not to the details below it.
+      Finder rowOnly(Finder tile) =>
+          find.descendant(of: tile, matching: find.byType(FrostSwipeActions));
+      await hover(rowOnly(row));
       for (final label in [t.downloads.pause, t.frost.more]) {
         await hover(
           find
@@ -236,18 +241,6 @@ void main() {
               .first,
         );
       }
-      final picker = find
-          .byType(FrostPicker<DownloadFilter>)
-          .hitTestable()
-          .last;
-      tester.widget<FrostPicker<DownloadFilter>>(picker).onChanged!(
-        DownloadFilter.failed,
-      );
-      await tester.pumpAndSettle();
-      tester.widget<FrostPicker<DownloadFilter>>(picker).onChanged!(
-        DownloadFilter.all,
-      );
-      await tester.pumpAndSettle();
       final batch = find.byWidgetPredicate(
         (w) => w is FrostListRow && w.title.contains(t.downloads.batch),
       );
@@ -272,14 +265,16 @@ void main() {
         );
         await tester.pumpAndSettle();
       }
-      AppRouter.router.go('/search');
+      AppRouter.router.go('/tags');
       await tester.pumpAndSettle();
       AppRouter.router.go('/downloads');
       await tester.pumpAndSettle();
       await hover(
-        find.ancestor(
-          of: find.text('running.png'),
-          matching: find.byType(DownloadTaskTile),
+        rowOnly(
+          find.ancestor(
+            of: find.text('running.png'),
+            matching: find.byType(DownloadTaskTile),
+          ),
         ),
       );
       expect(tester.takeException(), isNull);
@@ -307,7 +302,7 @@ void main() {
       expect(
         tester
             .widgetList<DownloadTaskTile>(find.byType(DownloadTaskTile))
-            .where((w) => w.selected)
+            .where((w) => w.expanded)
             .single
             .task
             .snapshot
@@ -371,26 +366,32 @@ void main() {
     variant: TargetPlatformVariant.only(TargetPlatform.android),
   );
   testWidgets(
-    'R15 retains one destination bar while real secondary routes cover its full viewport',
+    'one destination bar stays while real secondary routes cover its full viewport',
     (tester) async {
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
-      await mount(tester);
+      // The floating downloads entry is the bar-layout widget the shell
+      // retains across destinations and content pages.
+      await mount(
+        tester,
+        downloads: [task('secondary', DownloadStatus.running)],
+      );
       await tester.pumpAndSettle();
       final target = find.byType(DownloadFlightTarget);
       final state = tester.state(target);
-      final root = find.byType(FrostShellDestination);
+      // A destination root stays built, offstage, below the content pages.
+      final root = find.byType(FrostShellDestination, skipOffstage: false);
       final rootElement = root.evaluate().single;
       final barRect = tester.getRect(target);
-      for (final path in ['/search', '/downloads', '/settings', '/']) {
+      for (final path in ['/tags', '/downloads', '/settings', '/']) {
         AppRouter.router.go(path);
         await tester.pumpAndSettle();
         expect(root.evaluate().single, same(rootElement));
         expect(tester.state(target), same(state));
         expect(tester.getRect(target), barRect);
       }
-      const page = ValueKey('R15 secondary viewport');
+      const page = ValueKey('secondary viewport');
       AppRouter.pushContent<void>(
         tester.element(root),
         const SizedBox.expand(
@@ -520,7 +521,7 @@ void main() {
   for (final width in [390.0, 720.0, 1024.0, 1440.0]) {
     for (final dark in [false, true]) {
       testWidgets(
-        'B1 first frame and four destinations width=$width dark=$dark',
+        'first frame and three destinations width=$width dark=$dark',
         (tester) async {
           tester.view.physicalSize = Size(width, 900);
           tester.view.devicePixelRatio = 1;
@@ -534,27 +535,25 @@ void main() {
           final shell = tester.widget<FrostShell>(find.byType(FrostShell));
           expect(shell.destinations.map((item) => item.label), [
             'Browse',
-            'Search',
-            'Downloads',
+            'Tags',
             'Settings',
           ]);
-          expect(shell.sidebarStyle, isA<FrostSidebarStyle>());
-          expect(shell.metrics.railWidth, 56);
-          expect(shell.metrics.expandedWidth, 220);
-          expect(find.byType(FrostCaptionButtons), findsOneWidget);
+          expect(_captionButton(t.frost.close), findsOneWidget);
+          // A landscape window has the sidebar and the one Back is the title
+          // bar's, disabled on a root page. A portrait window has the bottom
+          // bar, and a root page has no Back.
+          final sidebar = width >= 900;
           final back = find.bySemanticsLabel(t.frost.back);
-          expect(back, width >= 600 ? findsOneWidget : findsNothing);
-          if (width >= 600) {
-            expect(tester.getCenter(back).dx, closeTo(28, .01));
-            if (width >= 600) {
-              final browse = find.byWidgetPredicate(
-                (w) => w is FrostNavItem && w.label == 'Browse',
-              );
-              final icon = find
-                  .descendant(of: browse, matching: find.byType(FrostIcon))
-                  .first;
-              expect(tester.getCenter(icon).dx, closeTo(28, .01));
-            }
+          if (sidebar) {
+            expect(back, findsOneWidget);
+            expect(tester.getCenter(back).dx, closeTo(30, .01));
+            final browse = find.byWidgetPredicate(
+              (w) => w is FrostNavItem && w.label == 'Browse',
+            );
+            final icon = find
+                .descendant(of: browse, matching: find.byType(FrostIcon))
+                .first;
+            expect(tester.getCenter(icon).dx, closeTo(30, .01));
             expect(
               tester
                   .getSemantics(back)
@@ -563,14 +562,14 @@ void main() {
                   .isEnabled,
               Tristate.isFalse,
             );
+          } else {
+            expect(back, findsNothing);
           }
           expect(find.byType(FrostCompactBackButton), findsNothing);
-          expect(tester.getSize(find.byType(FrostCaptionButtons)).height, 40);
-          expect(tester.getRect(find.byType(FrostPageHeader)).top, 40);
-          expect(
-            tester.getSize(find.byType(FrostPageHeader)).height,
-            width < 600 ? 48 : 52,
-          );
+          expect(tester.getSize(_captionButton(t.frost.close)).height, 40);
+          final pageHeader = tester.getRect(find.byType(FrostPageHeader));
+          expect(pageHeader.top, 40);
+          expect(pageHeader.height, width < 600 ? 48 : 52);
           expect(find.text('BooruFlow'), findsOneWidget);
           expect(
             FrostThemeTokens.of(
@@ -578,29 +577,55 @@ void main() {
             ).brightness,
             dark ? Brightness.dark : Brightness.light,
           );
-          if (width < 600) {
-            await tester.tap(find.text('Search'));
-          } else {
-            await tester.tap(
-              find.byWidgetPredicate(
-                (widget) => widget is FrostNavItem && widget.label == 'Search',
-              ),
-            );
-          }
+          await tester.tap(
+            sidebar
+                ? find.byWidgetPredicate(
+                    (widget) =>
+                        widget is FrostNavItem && widget.label == 'Tags',
+                  )
+                : find.text('Tags').hitTestable(),
+          );
           await tester.pumpAndSettle();
           expect(
             AppRouter.router.routeInformationProvider.value.uri.path,
-            '/search',
+            '/tags',
           );
           expect(
             tester.widget<FrostShell>(find.byType(FrostShell)).selectedIndex,
             1,
           );
+          // The search is the title bar's while it is in the title row,
+          // otherwise the page's.
           final header = find.byType(FrostPageHeader);
           expect(
-            find.descendant(of: header, matching: find.byType(FrostTokenField)),
-            findsOneWidget,
+            find.descendant(
+              of: header,
+              matching: find.byType(FrostSearchInput),
+            ),
+            sidebar ? findsNothing : findsOneWidget,
           );
+          expect(
+            find.byType(FrostCaptionSearch),
+            sidebar ? findsOneWidget : findsNothing,
+          );
+          if (!sidebar) {
+            // The hidden title bar search leaves a request to the inline one.
+            ProviderScope.containerOf(
+              tester.element(header),
+            ).read(pendingSearchProvider.notifier).request('dog');
+            await tester.pumpAndSettle();
+            expect(
+              find.byWidgetPredicate(
+                (w) => w is EditableText && w.controller.text.contains('dog'),
+                skipOffstage: false,
+              ),
+              findsOneWidget,
+            );
+            expect(
+              find.descendant(of: header, matching: find.byType(EditableText)),
+              findsOneWidget,
+            );
+          }
           expect(tester.takeException(), isNull);
           await tester.pumpWidget(const SizedBox());
           await tester.pumpAndSettle();
@@ -611,7 +636,7 @@ void main() {
   }
 
   testWidgets(
-    'B1 sidebar preference and live appearance survive shell navigation',
+    'sidebar preference and live appearance survive shell navigation',
     (tester) async {
       tester.view.physicalSize = const Size(1440, 900);
       tester.view.devicePixelRatio = 1;
@@ -625,8 +650,8 @@ void main() {
         final icon = find
             .descendant(of: browse, matching: find.byType(FrostIcon))
             .first;
-        expect(tester.getCenter(back).dx, closeTo(28, .01));
-        expect(tester.getCenter(icon).dx, closeTo(28, .01));
+        expect(tester.getCenter(back).dx, closeTo(30, .01));
+        expect(tester.getCenter(icon).dx, closeTo(30, .01));
       }
 
       expectIconColumn();
@@ -709,7 +734,7 @@ void main() {
           return paragraph.localToGlobal(Offset(first.left, first.top)).dx;
         }
 
-        AppRouter.router.go('/search');
+        AppRouter.router.go('/tags');
         await tester.pumpAndSettle();
         final source = find
             .descendant(
@@ -725,7 +750,12 @@ void main() {
           closeTo(tester.getRect(recent).left, .01),
         );
         expect(textLeft(source), closeTo(textLeft(recent), .25));
-        expect(textLeft(recent), closeTo(240, .25));
+        // Tags fills the content area, so its text starts at the area's
+        // keyline, as on the other destinations.
+        // The sidebar is as wide as its longest destination label (Settings);
+        // Downloads is the entry below them.
+        final keyline = textLeft(recent);
+        expect(keyline, closeTo(width < 1200 ? 84 : 234, .25));
         AppRouter.router.go('/downloads');
         await tester.pumpAndSettle();
         final title = find
@@ -740,14 +770,15 @@ void main() {
           closeTo(tester.getRect(active).left, .01),
         );
         expect(textLeft(title), closeTo(textLeft(active), .25));
-        expect(textLeft(active), closeTo(240, .25));
+        // Downloads fills the content area too.
+        expect(textLeft(active), closeTo(keyline, .25));
         expect(tester.takeException(), isNull);
       },
       variant: TargetPlatformVariant.only(TargetPlatform.windows),
     );
   }
   testWidgets(
-    'B1 four languages update navigation and the current header without navigation reset',
+    'four languages update navigation and the current header without navigation reset',
     (tester) async {
       await mount(tester);
       for (final language in [1, 2, 3, 0]) {
@@ -777,17 +808,32 @@ void main() {
   );
   for (final platform in [TargetPlatform.linux, TargetPlatform.macOS]) {
     testWidgets(
-      'B1 $platform places content below the single integrated title row',
+      '$platform places content below the single integrated title row',
       (tester) async {
         tester.view.physicalSize = const Size(1440, 900);
         tester.view.devicePixelRatio = 1;
         addTearDown(tester.view.reset);
         await mount(tester);
         expect(
-          find.byType(FrostCaptionButtons),
+          _captionButton(t.frost.close),
           platform == TargetPlatform.macOS ? findsNothing : findsOneWidget,
         );
-        expect(tester.getRect(find.byType(FrostPageHeader)).top, 40);
+        final headerTop = tester.getRect(find.byType(FrostPageHeader)).top;
+        if (platform == TargetPlatform.macOS) {
+          final host = tester.widget<FrostWindowHost>(
+            find.byType(FrostWindowHost),
+          );
+          expect(
+            headerTop,
+            greaterThan(host.controller.state.nativeControls.bottom),
+          );
+          expect(
+            tester.getRect(find.byKey(const ValueKey('frost-shell-back'))).top,
+            greaterThanOrEqualTo(headerTop),
+          );
+        } else {
+          expect(headerTop, 40);
+        }
         expect(
           tester
               .getRect(
@@ -822,7 +868,10 @@ void main() {
           tester.view.devicePixelRatio = 1;
           addTearDown(tester.view.reset);
           await mount(tester);
-          final horizontal = width >= 600;
+          final pointer =
+              platform != TargetPlatform.android &&
+              platform != TargetPlatform.iOS;
+          final horizontal = width >= 480 && width / 900 >= (pointer ? 1 : 1.3);
           Finder back() => find
               .byWidgetPredicate(
                 (w) => w is FrostTooltip && w.message == t.frost.back,
@@ -848,7 +897,7 @@ void main() {
             isTrue,
             reason: 'Back exists on the first routed frame',
           );
-          await pumpIncomingPage(tester, find.byType(UserTagsPage));
+          await pumpIncomingPage(tester, find.byType(MyTagsPage));
           expect(
             find.byType(FrostCompactBackButton),
             horizontal ? findsNothing : findsOneWidget,
@@ -859,8 +908,8 @@ void main() {
           expect(shell.showsMobileNavigation, isTrue);
           expect(shell.atDestinationRoot, isFalse);
           expect(shell.selectedIndex, 1);
-          if (width < 600) {
-            for (final label in ['Browse', 'Search', 'Downloads', 'Settings']) {
+          if (!horizontal) {
+            for (final label in ['Browse', 'Tags', 'Settings']) {
               expect(find.text(label).hitTestable(), findsNothing);
             }
           }
@@ -895,4 +944,134 @@ void main() {
       );
     }
   }
+
+  testWidgets('the title bar search shows the shortcut that focuses it', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await mount(tester);
+    final search = find.byType(FrostCaptionSearch);
+    final hint = find.descendant(
+      of: search,
+      matching: find.text(
+        const FrostShortcut(
+          LogicalKeyboardKey.keyK,
+          primary: true,
+        ).hintLabel(tester.element(search)),
+      ),
+    );
+    expect(hint, findsOneWidget);
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyK);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(
+      find.descendant(
+        of: search,
+        matching: find.byWidgetPredicate(
+          (w) => w is EditableText && w.focusNode.hasFocus,
+        ),
+      ),
+      findsOneWidget,
+    );
+    expect(hint, findsNothing);
+    expect(tester.takeException(), isNull);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.windows));
+
+  group('Escape', () {
+    Future<void> open(WidgetTester tester, Widget page) async {
+      unawaited(
+        AppRouter.pushContent<void>(
+          tester.element(find.byType(FrostPageHeader).first),
+          page,
+        ),
+      );
+      await tester.pump();
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> escape(WidgetTester tester) async {
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+    }
+
+    bool atRoot(WidgetTester tester) =>
+        !tester.widget<FrostShell>(find.byType(FrostShell)).canGoBack;
+
+    testWidgets('goes back one page at a time and stops at the root', (
+      tester,
+    ) async {
+      await mount(tester);
+      await open(tester, const FrostPageHeader(title: Text('First')));
+      await open(tester, const FrostPageHeader(title: Text('Second')));
+      await escape(tester);
+      expect(find.text('Second'), findsNothing);
+      expect(find.text('First'), findsOneWidget);
+      await escape(tester);
+      expect(find.text('First'), findsNothing);
+      expect(atRoot(tester), isTrue);
+      await escape(tester);
+      expect(atRoot(tester), isTrue);
+      expect(AppRouter.currentUri.path, '/');
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('drops the focus of a field before leaving the page', (
+      tester,
+    ) async {
+      final controller = TextEditingController();
+      final focus = FocusNode();
+      addTearDown(controller.dispose);
+      addTearDown(focus.dispose);
+      await mount(tester);
+      await open(
+        tester,
+        Column(
+          children: [
+            const FrostPageHeader(title: Text('Form')),
+            FrostTextField(controller: controller, focusNode: focus),
+          ],
+        ),
+      );
+      focus.requestFocus();
+      await tester.pump();
+      expect(focus.hasFocus, isTrue);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pump();
+      expect(focus.hasFocus, isFalse);
+      expect(find.text('Form'), findsOneWidget);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.text('Form'), findsNothing);
+      expect(atRoot(tester), isTrue);
+    });
+
+    testWidgets('closes an open menu before leaving the page', (tester) async {
+      await mount(tester);
+      await open(
+        tester,
+        FrostPageHeader(
+          leading: [
+            FrostTitleMenu(
+              title: 'Menu',
+              entries: [FrostMenuAction('Entry', onSelected: () {})],
+            ),
+          ],
+        ),
+      );
+      await tester.tap(find.text('Menu'));
+      await tester.pumpAndSettle();
+      expect(find.text('Entry'), findsOneWidget);
+      await escape(tester);
+      expect(find.text('Entry'), findsNothing);
+      expect(find.text('Menu'), findsOneWidget);
+      await escape(tester);
+      expect(find.text('Menu'), findsNothing);
+      expect(atRoot(tester), isTrue);
+    });
+  });
 }

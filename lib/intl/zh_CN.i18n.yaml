@@ -1,7 +1,6 @@
 generic:
   ok: 确定
   cancel: 取消
-  clear: 清除
   confirm: 确认
   enabled: 启用
   disabled: 停用
@@ -10,8 +9,11 @@ generic:
   loading: 正在加载
   loadFailed: 加载失败
   retry: 重试
+  refresh: 刷新
   noMoreData: 没有更多数据
   notFound: 未找到内容
+  backToBrowse: "返回浏览"
+  notFoundMessage: "页面不存在，或链接不完整。"
 
 booruError:
   invalidRequest: 请求参数无效。
@@ -68,6 +70,7 @@ postDetail:
   titleWithId: "帖子: $id"
   tags: 标签
   details: 详细信息
+  post: 帖子
   actions: 操作
   rating: 分级
   fileType: 文件类型
@@ -113,6 +116,7 @@ downloads:
   startedAt: "开始于"
   browse: "去浏览"
   all: "全部"
+  viewAll: "查看全部"
   pause: "暂停"
   resume: "继续"
   pauseAll: "全部暂停"
@@ -121,6 +125,7 @@ downloads:
   clearCompleted: "清除已完成"
   openDirectory: "打开下载目录"
   openPost: "打开作品"
+  open: 打开
   batch: "批量下载"
   batchProgress: "$completed / $total"
   path: "保存路径"
@@ -154,6 +159,11 @@ downloads:
   actionFailed: 下载操作失败
   expand: 展开
   collapse: 收起
+  noActive: "没有进行中的任务"
+  noCompleted: "还没有已完成的下载"
+  partialFailed(plural, param=n):
+    other: "$count 项操作失败"
+  copyPath: "复制路径"
   messages:
     storagePermanentlyDenied: 你已永久拒绝存储权限。\n请在设置中手动启用存储权限。  # Android
     storageDenied: 你已拒绝存储权限。  # Android
@@ -188,21 +198,22 @@ settings:
   bypassSni: 绕过 SNI
   downloadDirectory: 下载目录
   defaultToPlatformSettings: 使用平台默认设置
-  columnsPerRow: 每行列数
+  thumbnailSize: "缩略图大小"
+  thumbnailSmall: "小"
+  thumbnailMedium: "中"
+  thumbnailLarge: "大"
   maxConcurrentDownloads: "同时下载"
   maxSegmentsPerTask: "每个任务的分段数"
   platformDefault: 平台默认
   system: "跟随系统"
   light: "浅色"
   dark: "深色"
-  auto: 自动
   downloadsOverview: 保存位置与下载并发
 
   sections:
     sourcesAndAccounts: 图源与账号
     accounts: 账号
     network: 网络
-    general: 通用
     downloads: 下载
 
   source:
@@ -325,9 +336,6 @@ settings:
   bypassSniDialog:
     title: 绕过 SNI
 
-  columnsPerRowDialog:
-    title: 每行列数
-
   maxSegmentsPerTaskDialog:
     title: 每个下载任务的最大分段数
 
@@ -346,6 +354,7 @@ discovery:
   copyLink: "复制链接"
   copyQueryLink: "复制查询链接"
   copyImage: "复制图片"
+  copyImageFailed: "复制图片失败"
   searchAuthor: "搜索此画师"
   mediaAnimation: "动图"
   mediaVideo: "视频"
@@ -385,13 +394,14 @@ discovery:
   noRecentSearches: "暂无最近搜索"
   myTags: "我的标签"
   commonTags: "常用标签"
-  moreTags: "查看更多"
   tagSource: "适用图源"
   allTagSources: "通用"
   manageTags: "标签管理"
   manageTagsAction: "管理"
   addTagAction: "添加"
+  editTagAction: "编辑"
   deleteTag: "删除"
+  deleteTagConfirm: "删除“$name”？"
   addTag: "添加标签"
   noCustomTags: "还没有自定义标签"
   customTagsHint: "给常用标签起个好记的名字，搜索时更容易找到。"
@@ -400,12 +410,15 @@ discovery:
   canonicalTag: "图源标签"
   displayName: "显示名称（可选）"
   invalidTag: "请输入一个非空且不含空格的标签。"
-  queryHint: "搜索标签"
+  searchSource: "搜索 $source"
+  noCommonTags: "当前图源没有常用标签"
+  category: "分类"
+  allCategories: "全部"
+  allTagsAction: "全部"
   unverifiedTag: "部分标签尚未在当前图源验证，仍可提交搜索。"
   verifiedTag: "已在当前图源验证"
   noSuggestions: "没有建议"
   localFallback: "在线补全暂不可用，仍可使用本地建议。"
-  retryTags: "重试常用标签"
   artist: "画师"
   character: "角色"
   copyright: "作品"
@@ -427,6 +440,7 @@ mediaError:
 
 webChallenge:
   title: 网页验证
+  pageTitle: "$source 验证"
   open: 打开网页验证
   windowTitle: "$source · 完成验证后关闭窗口"
   instructions: 请手动完成网页中的人机验证，完成后返回或关闭窗口。应用会保存验证数据并重新加载图源。
@@ -567,7 +581,6 @@ frost:
   unmute: "取消静音"
   fullscreen: "全屏"
   exitFullscreen: "退出全屏"
-  reload: "重新加载"
   openInBrowser: "在浏览器中打开"
   minimize: "最小化"
   maximize: "最大化"
@@ -591,17 +604,8 @@ frost:
   taskFailed: "失败"
   taskCancelled: 已取消
   remove: "移除"
-  forward: "前进"
-  stop: "停止"
   seek: "播放位置"
-  send: "发送"
-  attach: "添加附件"
-  readerSettings: "阅读设置"
-  textSize: "字号"
-  lineSpacing: "行距"
-  readingProgress: "阅读进度"
   showReplies: "显示 $count 条回复"
-  characterCount: "$count / $limit 字"
   moreMedia: "还有 $count 张图片"
   navigationCount: "$count 项"
   navigationProgress: "已完成 $progress%"
@@ -610,6 +614,8 @@ frost:
 navigation:
   browse: "浏览"
   search: "搜索"
+  tags: "标签"
+  backToFirst: "回到第一页"
   downloads: "下载"
   settings: "设置"
   browseEmpty: "浏览喜欢的图源"
