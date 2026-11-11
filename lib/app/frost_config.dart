@@ -151,7 +151,8 @@ FrostLabels appFrostLabels(BuildContext context) {
     expandNavigation: labels.expandNavigation,
     collapseNavigation: labels.collapseNavigation,
     navigationStatus: (count, progressPercent) => [
-      if (count > 0) labels.navigationCount(count: formatCount(count)),
+      if (count > 0)
+        labels.navigationCount(n: count, count: formatCount(count)),
       if (progressPercent != null)
         labels.navigationProgress(progress: formatCount(progressPercent)),
     ].join(labels.listSeparator),
@@ -211,7 +212,8 @@ FrostLabels appFrostLabels(BuildContext context) {
     taskCancelled: labels.taskCancelled,
     remove: labels.remove,
     seek: labels.seek,
-    showReplies: (count) => labels.showReplies(count: formatCount(count)),
-    moreMedia: (count) => labels.moreMedia(count: formatCount(count)),
+    showReplies: (count) =>
+        labels.showReplies(n: count, count: formatCount(count)),
+    moreMedia: (count) => labels.moreMedia(n: count, count: formatCount(count)),
   );
 }

@@ -284,11 +284,21 @@ class Translations$postDetail$en {
   /// en: 'Post not found'
   String get notFound => 'Post not found';
 
-  /// en: '$count parent'
-  String parentCount({required Object count}) => '${count} parent';
+  /// en: '(one) {$count parent} (other) {$count parents}'
+  String parentCount({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(
+        n,
+        one: '${count} parent',
+        other: '${count} parents',
+      );
 
-  /// en: '$count children'
-  String childCount({required Object count}) => '${count} children';
+  /// en: '(one) {$count child} (other) {$count children}'
+  String childCount({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(
+        n,
+        one: '${count} child',
+        other: '${count} children',
+      );
 
   /// en: 'Zoom in'
   String get zoomIn => 'Zoom in';
@@ -459,11 +469,29 @@ class Translations$downloads$en {
   /// en: 'Delete'
   String get remove => 'Delete';
 
-  /// en: 'Downloading $count items'
-  String activeTasks({required Object count}) => 'Downloading ${count} items';
+  /// en: '(one) {Downloading $count item} (other) {Downloading $count items}'
+  String activeTasks({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(
+        n,
+        one: 'Downloading ${count} item',
+        other: 'Downloading ${count} items',
+      );
 
-  /// en: '$count downloads failed'
-  String failedTasks({required Object count}) => '${count} downloads failed';
+  /// en: '(one) {$count download failed} (other) {$count downloads failed}'
+  String failedTasks({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(
+        n,
+        one: '${count} download failed',
+        other: '${count} downloads failed',
+      );
+
+  /// en: '(one) {$count download cancelled} (other) {$count downloads cancelled}'
+  String cancelledTasks({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(
+        n,
+        one: '${count} download cancelled',
+        other: '${count} downloads cancelled',
+      );
 
   /// en: 'Retry all'
   String get retryAll => 'Retry all';
@@ -1237,8 +1265,13 @@ class Translations$batchDownload$en {
   /// en: 'Fetch images'
   String get start => 'Fetch images';
 
-  /// en: '/ up to $count images'
-  String fetchLimit({required Object count}) => '/ up to ${count} images';
+  /// en: '(one) {/ up to $count image} (other) {/ up to $count images}'
+  String fetchLimit({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(
+        n,
+        one: '/ up to ${count} image',
+        other: '/ up to ${count} images',
+      );
 
   /// en: 'Images found so far'
   String get fetching => 'Images found so far';
@@ -1354,9 +1387,13 @@ class Translations$batchDownload$en {
   /// en: 'Follow download progress in the download list.'
   String get queueHint => 'Follow download progress in the download list.';
 
-  /// en: '$count images could not be added.'
-  String failedHint({required Object count}) =>
-      '${count} images could not be added.';
+  /// en: '(one) {$count image could not be added.} (other) {$count images could not be added.}'
+  String failedHint({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(
+        n,
+        one: '${count} image could not be added.',
+        other: '${count} images could not be added.',
+      );
 
   /// en: 'Retry failed items'
   String get retryFailed => 'Retry failed items';
@@ -1378,8 +1415,13 @@ class Translations$batchDownload$en {
   /// en: 'First N'
   String get first => 'First N';
 
-  /// en: '$count images added'
-  String addedCount({required Object count}) => '${count} images added';
+  /// en: '(one) {$count image added} (other) {$count images added}'
+  String addedCount({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(
+        n,
+        one: '${count} image added',
+        other: '${count} images added',
+      );
 
   /// en: 'Save to “$folder”'
   String savedTo({required Object folder}) => 'Save to “${folder}”';
@@ -1615,14 +1657,29 @@ class Translations$frost$en {
   /// en: 'Playback position'
   String get seek => 'Playback position';
 
-  /// en: 'Show $count replies'
-  String showReplies({required Object count}) => 'Show ${count} replies';
+  /// en: '(one) {Show $count reply} (other) {Show $count replies}'
+  String showReplies({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(
+        n,
+        one: 'Show ${count} reply',
+        other: 'Show ${count} replies',
+      );
 
-  /// en: '$count more images'
-  String moreMedia({required Object count}) => '${count} more images';
+  /// en: '(one) {$count more image} (other) {$count more images}'
+  String moreMedia({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(
+        n,
+        one: '${count} more image',
+        other: '${count} more images',
+      );
 
-  /// en: '$count items'
-  String navigationCount({required Object count}) => '${count} items';
+  /// en: '(one) {$count item} (other) {$count items}'
+  String navigationCount({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(
+        n,
+        one: '${count} item',
+        other: '${count} items',
+      );
 
   /// en: '$progress% complete'
   String navigationProgress({required Object progress}) =>
@@ -1780,8 +1837,13 @@ class Translations$settingsDetails$en {
   /// en: 'Route cache'
   String get routeCache => 'Route cache';
 
-  /// en: '$count hosts'
-  String hostCount({required Object count}) => '${count} hosts';
+  /// en: '(one) {$count host} (other) {$count hosts}'
+  String hostCount({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(
+        n,
+        one: '${count} host',
+        other: '${count} hosts',
+      );
 
   /// en: 'Updated $time'
   String updatedAt({required Object time}) => 'Updated ${time}';
@@ -2537,9 +2599,21 @@ extension on Translations {
           'postDetail.fullscreen' => 'View fullscreen',
           'postDetail.notFound' => 'Post not found',
           'postDetail.parentCount' =>
-            ({required Object count}) => '${count} parent',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('en'))(
+                  n,
+                  one: '${count} parent',
+                  other: '${count} parents',
+                ),
           'postDetail.childCount' =>
-            ({required Object count}) => '${count} children',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('en'))(
+                  n,
+                  one: '${count} child',
+                  other: '${count} children',
+                ),
           'postDetail.zoomIn' => 'Zoom in',
           'postDetail.zoomOut' => 'Zoom out',
           'postDetail.originalFailed' => 'Original image failed to load',
@@ -2591,9 +2665,29 @@ extension on Translations {
           'downloads.redownload' => 'Download again',
           'downloads.remove' => 'Delete',
           'downloads.activeTasks' =>
-            ({required Object count}) => 'Downloading ${count} items',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('en'))(
+                  n,
+                  one: 'Downloading ${count} item',
+                  other: 'Downloading ${count} items',
+                ),
           'downloads.failedTasks' =>
-            ({required Object count}) => '${count} downloads failed',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('en'))(
+                  n,
+                  one: '${count} download failed',
+                  other: '${count} downloads failed',
+                ),
+          'downloads.cancelledTasks' =>
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('en'))(
+                  n,
+                  one: '${count} download cancelled',
+                  other: '${count} downloads cancelled',
+                ),
           'downloads.retryAll' => 'Retry all',
           'downloads.today' => 'Today',
           'downloads.yesterday' => 'Yesterday',
@@ -3034,7 +3128,13 @@ extension on Translations {
           'batchDownload.positiveInteger' => 'Enter a positive whole number.',
           'batchDownload.start' => 'Fetch images',
           'batchDownload.fetchLimit' =>
-            ({required Object count}) => '/ up to ${count} images',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('en'))(
+                  n,
+                  one: '/ up to ${count} image',
+                  other: '/ up to ${count} images',
+                ),
           'batchDownload.fetching' => 'Images found so far',
           'batchDownload.progress' =>
             ({required Object current, required Object total}) =>
@@ -3093,7 +3193,13 @@ extension on Translations {
           'batchDownload.queueHint' =>
             'Follow download progress in the download list.',
           'batchDownload.failedHint' =>
-            ({required Object count}) => '${count} images could not be added.',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('en'))(
+                  n,
+                  one: '${count} image could not be added.',
+                  other: '${count} images could not be added.',
+                ),
           'batchDownload.retryFailed' => 'Retry failed items',
           'batchDownload.queued' =>
             ({required Object added, required Object failed}) =>
@@ -3105,7 +3211,13 @@ extension on Translations {
           'batchDownload.back' => 'Back',
           'batchDownload.first' => 'First N',
           'batchDownload.addedCount' =>
-            ({required Object count}) => '${count} images added',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('en'))(
+                  n,
+                  one: '${count} image added',
+                  other: '${count} images added',
+                ),
           'batchDownload.savedTo' =>
             ({required Object folder}) => 'Save to “${folder}”',
           'batchDownload.viewDownloads' => 'View downloads',
@@ -3145,10 +3257,10 @@ extension on Translations {
           'frost.showPassword' => 'Show password',
           'frost.hidePassword' => 'Hide password',
           'frost.chooseDate' => 'Choose date',
-          'frost.chooseTime' => 'Choose time',
           _ => null,
         } ??
         switch (path) {
+          'frost.chooseTime' => 'Choose time',
           'frost.increment' => 'Increase',
           'frost.decrement' => 'Decrease',
           'frost.reorderHandle' => 'Reorder',
@@ -3193,11 +3305,29 @@ extension on Translations {
           'frost.remove' => 'Remove',
           'frost.seek' => 'Playback position',
           'frost.showReplies' =>
-            ({required Object count}) => 'Show ${count} replies',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('en'))(
+                  n,
+                  one: 'Show ${count} reply',
+                  other: 'Show ${count} replies',
+                ),
           'frost.moreMedia' =>
-            ({required Object count}) => '${count} more images',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('en'))(
+                  n,
+                  one: '${count} more image',
+                  other: '${count} more images',
+                ),
           'frost.navigationCount' =>
-            ({required Object count}) => '${count} items',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('en'))(
+                  n,
+                  one: '${count} item',
+                  other: '${count} items',
+                ),
           'frost.navigationProgress' =>
             ({required Object progress}) => '${progress}% complete',
           'frost.listSeparator' => ', ',
@@ -3247,7 +3377,13 @@ extension on Translations {
           'settingsDetails.change' => 'Change',
           'settingsDetails.routeCache' => 'Route cache',
           'settingsDetails.hostCount' =>
-            ({required Object count}) => '${count} hosts',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('en'))(
+                  n,
+                  one: '${count} host',
+                  other: '${count} hosts',
+                ),
           'settingsDetails.updatedAt' =>
             ({required Object time}) => 'Updated ${time}',
           'settingsDetails.sourceStatus' => 'Source status',

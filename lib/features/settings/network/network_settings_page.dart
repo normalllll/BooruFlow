@@ -3,6 +3,7 @@ import 'package:booruflow/features/settings/network/network_logic.dart';
 import 'package:booruflow/features/settings/network/proxy_logic.dart';
 import 'package:booruflow/features/settings/network/widgets/network_status_panel.dart';
 import 'package:booruflow/features/settings/network/widgets/proxy_settings_panel.dart';
+import 'package:booruflow/intl/number_format.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/action_runner_builder.dart';
 import 'package:booruflow/shared/app_toast.dart';
@@ -40,7 +41,10 @@ class _NetworkSettingsPageState extends ConsumerState<NetworkSettingsPage> {
     if (routes == null) return null;
     final time = DateTime.tryParse(routes.fetchedAtIso8601 ?? '')?.toLocal();
     return [
-      t.settingsDetails.hostCount(count: routes.routes.length),
+      t.settingsDetails.hostCount(
+        n: routes.routes.length,
+        count: formatCount(routes.routes.length),
+      ),
       if (time != null)
         t.settingsDetails.updatedAt(
           time: DateFormat.Hm(

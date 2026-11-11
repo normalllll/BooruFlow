@@ -259,6 +259,7 @@ class _DownloadsPageState extends ConsumerState<DownloadsPage>
     final buckets = <String, List<BooruDownloadItem>>{};
     if (section == _activeSection) {
       // Failed tasks lead and cancelled ones close; the rest keep their order.
+      // Cancelled tasks transfer nothing, so they are not listed as active.
       bool cancelled(BooruDownloadItem item) =>
           item.snapshot.status == DownloadStatus.cancelled &&
           !downloadFailed(item.snapshot);
@@ -270,8 +271,8 @@ class _DownloadsPageState extends ConsumerState<DownloadsPage>
         ...visible.where(
           (item) => !downloadFailed(item.snapshot) && !cancelled(item),
         ),
-        ...visible.where(cancelled),
       ];
+      buckets['cancelled'] = [...visible.where(cancelled)];
     } else {
       for (final item in visible) {
         final local = item.snapshot.updatedAt.toLocal();
@@ -280,22 +281,27 @@ class _DownloadsPageState extends ConsumerState<DownloadsPage>
       }
     }
     final dates = section == _activeSection
-        ? ['failed', 'active']
+        ? ['failed', 'active', 'cancelled']
         : (buckets.keys.toList()..sort((a, b) => b.compareTo(a)));
+    // The groups are told apart only while there is more than one of them.
+    final captioned =
+        section == _activeSection &&
+        dates.where((bucket) => buckets[bucket]!.isNotEmpty).length > 1;
     final result = <_Entry>[];
     for (final bucket in dates) {
       final items = buckets[bucket]!;
       if (items.isEmpty) continue;
-      // Failures are told apart only while there is something else to tell them
-      // from.
-      if (section == _activeSection && buckets['failed']!.isNotEmpty) {
+      if (captioned) {
+        final count = formatCount(items.length);
         result.add(
-          _CaptionEntry(
-            bucket,
-            bucket == 'failed'
-                ? t.downloads.failedTasks(count: formatCount(items.length))
-                : t.downloads.active,
-          ),
+          _CaptionEntry(bucket, switch (bucket) {
+            'failed' => t.downloads.failedTasks(n: items.length, count: count),
+            'cancelled' => t.downloads.cancelledTasks(
+              n: items.length,
+              count: count,
+            ),
+            _ => t.downloads.active,
+          }),
         );
       }
       if (section == _completedSection) {

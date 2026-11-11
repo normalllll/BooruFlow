@@ -260,9 +260,17 @@ class _Translations$postDetail$ja extends Translations$postDetail$en {
   @override
   String get notFound => '作品が見つかりません';
   @override
-  String parentCount({required Object count}) => '${count} 親作品';
+  String parentCount({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('ja'))(
+        n,
+        other: '${count} 親作品',
+      );
   @override
-  String childCount({required Object count}) => '${count} 子作品';
+  String childCount({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('ja'))(
+        n,
+        other: '${count} 子作品',
+      );
   @override
   String get zoomIn => '拡大';
   @override
@@ -391,9 +399,23 @@ class _Translations$downloads$ja extends Translations$downloads$en {
   @override
   String get remove => '削除';
   @override
-  String activeTasks({required Object count}) => '${count} 件をダウンロード中';
+  String activeTasks({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('ja'))(
+        n,
+        other: '${count} 件をダウンロード中',
+      );
   @override
-  String failedTasks({required Object count}) => '${count} 件のダウンロードに失敗';
+  String failedTasks({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('ja'))(
+        n,
+        other: '${count} 件のダウンロードに失敗',
+      );
+  @override
+  String cancelledTasks({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('ja'))(
+        n,
+        other: '${count} 件をキャンセル済み',
+      );
   @override
   String get retryAll => 'すべて再試行';
   @override
@@ -952,7 +974,11 @@ class _Translations$batchDownload$ja extends Translations$batchDownload$en {
   @override
   String get start => '画像を取得';
   @override
-  String fetchLimit({required Object count}) => '/ 最大 ${count} 枚';
+  String fetchLimit({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('ja'))(
+        n,
+        other: '/ 最大 ${count} 枚',
+      );
   @override
   String get fetching => '見つかった画像';
   @override
@@ -1026,7 +1052,11 @@ class _Translations$batchDownload$ja extends Translations$batchDownload$en {
   @override
   String get queueHint => 'ダウンロードの進捗はダウンロード一覧で確認できます。';
   @override
-  String failedHint({required Object count}) => '${count} 枚を追加できませんでした。';
+  String failedHint({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('ja'))(
+        n,
+        other: '${count} 枚を追加できませんでした。',
+      );
   @override
   String get retryFailed => '失敗した画像を再試行';
   @override
@@ -1042,7 +1072,11 @@ class _Translations$batchDownload$ja extends Translations$batchDownload$en {
   @override
   String get first => '先頭 N 枚';
   @override
-  String addedCount({required Object count}) => '${count} 枚を追加しました';
+  String addedCount({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('ja'))(
+        n,
+        other: '${count} 枚を追加しました',
+      );
   @override
   String savedTo({required Object folder}) => '保存先「${folder}」';
   @override
@@ -1206,11 +1240,23 @@ class _Translations$frost$ja extends Translations$frost$en {
   @override
   String get seek => '再生位置';
   @override
-  String showReplies({required Object count}) => '${count}件の返信を表示';
+  String showReplies({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('ja'))(
+        n,
+        other: '${count}件の返信を表示',
+      );
   @override
-  String moreMedia({required Object count}) => 'ほか${count}枚';
+  String moreMedia({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('ja'))(
+        n,
+        other: 'ほか${count}枚',
+      );
   @override
-  String navigationCount({required Object count}) => '${count}件';
+  String navigationCount({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('ja'))(
+        n,
+        other: '${count}件',
+      );
   @override
   String navigationProgress({required Object progress}) => '進捗${progress}%';
   @override
@@ -1330,7 +1376,11 @@ class _Translations$settingsDetails$ja extends Translations$settingsDetails$en {
   @override
   String get routeCache => 'ルートキャッシュ';
   @override
-  String hostCount({required Object count}) => '${count} ホスト';
+  String hostCount({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('ja'))(
+        n,
+        other: '${count} ホスト',
+      );
   @override
   String updatedAt({required Object time}) => '更新 ${time}';
   @override
@@ -1928,9 +1978,13 @@ extension on TranslationsJa {
           'postDetail.fullscreen' => '全画面で表示',
           'postDetail.notFound' => '作品が見つかりません',
           'postDetail.parentCount' =>
-            ({required Object count}) => '${count} 親作品',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('ja'))(n, other: '${count} 親作品'),
           'postDetail.childCount' =>
-            ({required Object count}) => '${count} 子作品',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('ja'))(n, other: '${count} 子作品'),
           'postDetail.zoomIn' => '拡大',
           'postDetail.zoomOut' => '縮小',
           'postDetail.originalFailed' => '元画像を読み込めませんでした',
@@ -1979,9 +2033,20 @@ extension on TranslationsJa {
           'downloads.redownload' => '再ダウンロード',
           'downloads.remove' => '削除',
           'downloads.activeTasks' =>
-            ({required Object count}) => '${count} 件をダウンロード中',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('ja'))(n, other: '${count} 件をダウンロード中'),
           'downloads.failedTasks' =>
-            ({required Object count}) => '${count} 件のダウンロードに失敗',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('ja'))(
+                  n,
+                  other: '${count} 件のダウンロードに失敗',
+                ),
+          'downloads.cancelledTasks' =>
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('ja'))(n, other: '${count} 件をキャンセル済み'),
           'downloads.retryAll' => 'すべて再試行',
           'downloads.today' => '今日',
           'downloads.yesterday' => '昨日',
@@ -2389,7 +2454,9 @@ extension on TranslationsJa {
           'batchDownload.positiveInteger' => '1 以上の整数を入力してください。',
           'batchDownload.start' => '画像を取得',
           'batchDownload.fetchLimit' =>
-            ({required Object count}) => '/ 最大 ${count} 枚',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('ja'))(n, other: '/ 最大 ${count} 枚'),
           'batchDownload.fetching' => '見つかった画像',
           'batchDownload.progress' =>
             ({required Object current, required Object total}) =>
@@ -2440,7 +2507,12 @@ extension on TranslationsJa {
             'この画面を閉じてもアプリの実行中は追加を続けます。同じボタンから結果を確認できます。',
           'batchDownload.queueHint' => 'ダウンロードの進捗はダウンロード一覧で確認できます。',
           'batchDownload.failedHint' =>
-            ({required Object count}) => '${count} 枚を追加できませんでした。',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('ja'))(
+                  n,
+                  other: '${count} 枚を追加できませんでした。',
+                ),
           'batchDownload.retryFailed' => '失敗した画像を再試行',
           'batchDownload.queued' =>
             ({required Object added, required Object failed}) =>
@@ -2452,7 +2524,9 @@ extension on TranslationsJa {
           'batchDownload.back' => '戻る',
           'batchDownload.first' => '先頭 N 枚',
           'batchDownload.addedCount' =>
-            ({required Object count}) => '${count} 枚を追加しました',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('ja'))(n, other: '${count} 枚を追加しました'),
           'batchDownload.savedTo' =>
             ({required Object folder}) => '保存先「${folder}」',
           'batchDownload.viewDownloads' => 'ダウンロードを表示',
@@ -2492,10 +2566,10 @@ extension on TranslationsJa {
           'frost.showPassword' => 'パスワードを表示',
           'frost.hidePassword' => 'パスワードを隠す',
           'frost.chooseDate' => '日付を選択',
-          'frost.chooseTime' => '時刻を選択',
           _ => null,
         } ??
         switch (path) {
+          'frost.chooseTime' => '時刻を選択',
           'frost.increment' => '増やす',
           'frost.decrement' => '減らす',
           'frost.reorderHandle' => '並べ替え',
@@ -2538,9 +2612,18 @@ extension on TranslationsJa {
           'frost.taskCancelled' => 'キャンセル済み',
           'frost.remove' => '削除',
           'frost.seek' => '再生位置',
-          'frost.showReplies' => ({required Object count}) => '${count}件の返信を表示',
-          'frost.moreMedia' => ({required Object count}) => 'ほか${count}枚',
-          'frost.navigationCount' => ({required Object count}) => '${count}件',
+          'frost.showReplies' =>
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('ja'))(n, other: '${count}件の返信を表示'),
+          'frost.moreMedia' =>
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('ja'))(n, other: 'ほか${count}枚'),
+          'frost.navigationCount' =>
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('ja'))(n, other: '${count}件'),
           'frost.navigationProgress' =>
             ({required Object progress}) => '進捗${progress}%',
           'frost.listSeparator' => '、',
@@ -2586,7 +2669,9 @@ extension on TranslationsJa {
           'settingsDetails.change' => '変更',
           'settingsDetails.routeCache' => 'ルートキャッシュ',
           'settingsDetails.hostCount' =>
-            ({required Object count}) => '${count} ホスト',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('ja'))(n, other: '${count} ホスト'),
           'settingsDetails.updatedAt' =>
             ({required Object time}) => '更新 ${time}',
           'settingsDetails.sourceStatus' => '画像ソースの状態',

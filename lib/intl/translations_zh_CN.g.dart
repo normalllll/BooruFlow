@@ -260,9 +260,17 @@ class Translations$postDetail$zh_CN extends Translations$postDetail$en {
   @override
   String get notFound => '找不到这个作品';
   @override
-  String parentCount({required Object count}) => '${count} 个父作品';
+  String parentCount({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('zh'))(
+        n,
+        other: '${count} 个父作品',
+      );
   @override
-  String childCount({required Object count}) => '${count} 个子作品';
+  String childCount({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('zh'))(
+        n,
+        other: '${count} 个子作品',
+      );
   @override
   String get zoomIn => '放大';
   @override
@@ -391,9 +399,23 @@ class Translations$downloads$zh_CN extends Translations$downloads$en {
   @override
   String get remove => '删除';
   @override
-  String activeTasks({required Object count}) => '正在下载 ${count} 项';
+  String activeTasks({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('zh'))(
+        n,
+        other: '正在下载 ${count} 项',
+      );
   @override
-  String failedTasks({required Object count}) => '${count} 项下载失败';
+  String failedTasks({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('zh'))(
+        n,
+        other: '${count} 项下载失败',
+      );
+  @override
+  String cancelledTasks({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('zh'))(
+        n,
+        other: '${count} 项已取消',
+      );
   @override
   String get retryAll => '全部重试';
   @override
@@ -947,7 +969,11 @@ class Translations$batchDownload$zh_CN extends Translations$batchDownload$en {
   @override
   String get start => '获取图片';
   @override
-  String fetchLimit({required Object count}) => '/ 最多 ${count} 张';
+  String fetchLimit({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('zh'))(
+        n,
+        other: '/ 最多 ${count} 张',
+      );
   @override
   String get fetching => '已找到的图片';
   @override
@@ -1018,7 +1044,11 @@ class Translations$batchDownload$zh_CN extends Translations$batchDownload$en {
   @override
   String get queueHint => '图片下载进度可在下载列表中查看。';
   @override
-  String failedHint({required Object count}) => '${count} 张未能加入队列。';
+  String failedHint({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('zh'))(
+        n,
+        other: '${count} 张未能加入队列。',
+      );
   @override
   String get retryFailed => '重试失败项';
   @override
@@ -1034,7 +1064,11 @@ class Translations$batchDownload$zh_CN extends Translations$batchDownload$en {
   @override
   String get first => '前 N 张';
   @override
-  String addedCount({required Object count}) => '已加入 ${count} 张';
+  String addedCount({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('zh'))(
+        n,
+        other: '已加入 ${count} 张',
+      );
   @override
   String savedTo({required Object folder}) => '保存到“${folder}”';
   @override
@@ -1198,11 +1232,23 @@ class Translations$frost$zh_CN extends Translations$frost$en {
   @override
   String get seek => '播放位置';
   @override
-  String showReplies({required Object count}) => '显示 ${count} 条回复';
+  String showReplies({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('zh'))(
+        n,
+        other: '显示 ${count} 条回复',
+      );
   @override
-  String moreMedia({required Object count}) => '还有 ${count} 张图片';
+  String moreMedia({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('zh'))(
+        n,
+        other: '还有 ${count} 张图片',
+      );
   @override
-  String navigationCount({required Object count}) => '${count} 项';
+  String navigationCount({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('zh'))(
+        n,
+        other: '${count} 项',
+      );
   @override
   String navigationProgress({required Object progress}) => '已完成 ${progress}%';
   @override
@@ -1322,7 +1368,11 @@ class Translations$settingsDetails$zh_CN
   @override
   String get routeCache => '路由缓存';
   @override
-  String hostCount({required Object count}) => '${count} 个主机';
+  String hostCount({required num n, required Object count}) =>
+      (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('zh'))(
+        n,
+        other: '${count} 个主机',
+      );
   @override
   String updatedAt({required Object time}) => '更新于 ${time}';
   @override
@@ -1916,9 +1966,13 @@ extension on TranslationsZhCn {
           'postDetail.fullscreen' => '全屏查看',
           'postDetail.notFound' => '找不到这个作品',
           'postDetail.parentCount' =>
-            ({required Object count}) => '${count} 个父作品',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('zh'))(n, other: '${count} 个父作品'),
           'postDetail.childCount' =>
-            ({required Object count}) => '${count} 个子作品',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('zh'))(n, other: '${count} 个子作品'),
           'postDetail.zoomIn' => '放大',
           'postDetail.zoomOut' => '缩小',
           'postDetail.originalFailed' => '原图加载失败',
@@ -1967,9 +2021,17 @@ extension on TranslationsZhCn {
           'downloads.redownload' => '重新下载',
           'downloads.remove' => '删除',
           'downloads.activeTasks' =>
-            ({required Object count}) => '正在下载 ${count} 项',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('zh'))(n, other: '正在下载 ${count} 项'),
           'downloads.failedTasks' =>
-            ({required Object count}) => '${count} 项下载失败',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('zh'))(n, other: '${count} 项下载失败'),
+          'downloads.cancelledTasks' =>
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('zh'))(n, other: '${count} 项已取消'),
           'downloads.retryAll' => '全部重试',
           'downloads.today' => '今天',
           'downloads.yesterday' => '昨天',
@@ -2363,7 +2425,9 @@ extension on TranslationsZhCn {
           'batchDownload.positiveInteger' => '请输入大于 0 的整数。',
           'batchDownload.start' => '获取图片',
           'batchDownload.fetchLimit' =>
-            ({required Object count}) => '/ 最多 ${count} 张',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('zh'))(n, other: '/ 最多 ${count} 张'),
           'batchDownload.fetching' => '已找到的图片',
           'batchDownload.progress' =>
             ({required Object current, required Object total}) =>
@@ -2408,7 +2472,9 @@ extension on TranslationsZhCn {
           'batchDownload.backgroundHint' => '可以关闭窗口。应用运行期间会继续入队，再次点击此入口可查看结果。',
           'batchDownload.queueHint' => '图片下载进度可在下载列表中查看。',
           'batchDownload.failedHint' =>
-            ({required Object count}) => '${count} 张未能加入队列。',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('zh'))(n, other: '${count} 张未能加入队列。'),
           'batchDownload.retryFailed' => '重试失败项',
           'batchDownload.queued' =>
             ({required Object added, required Object failed}) =>
@@ -2420,7 +2486,9 @@ extension on TranslationsZhCn {
           'batchDownload.back' => '返回',
           'batchDownload.first' => '前 N 张',
           'batchDownload.addedCount' =>
-            ({required Object count}) => '已加入 ${count} 张',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('zh'))(n, other: '已加入 ${count} 张'),
           'batchDownload.savedTo' =>
             ({required Object folder}) => '保存到“${folder}”',
           'batchDownload.viewDownloads' => '查看下载',
@@ -2459,10 +2527,10 @@ extension on TranslationsZhCn {
           'frost.showPassword' => '显示密码',
           'frost.hidePassword' => '隐藏密码',
           'frost.chooseDate' => '选择日期',
-          'frost.chooseTime' => '选择时间',
           _ => null,
         } ??
         switch (path) {
+          'frost.chooseTime' => '选择时间',
           'frost.increment' => '增加',
           'frost.decrement' => '减少',
           'frost.reorderHandle' => '调整顺序',
@@ -2505,9 +2573,18 @@ extension on TranslationsZhCn {
           'frost.taskCancelled' => '已取消',
           'frost.remove' => '移除',
           'frost.seek' => '播放位置',
-          'frost.showReplies' => ({required Object count}) => '显示 ${count} 条回复',
-          'frost.moreMedia' => ({required Object count}) => '还有 ${count} 张图片',
-          'frost.navigationCount' => ({required Object count}) => '${count} 项',
+          'frost.showReplies' =>
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('zh'))(n, other: '显示 ${count} 条回复'),
+          'frost.moreMedia' =>
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('zh'))(n, other: '还有 ${count} 张图片'),
+          'frost.navigationCount' =>
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('zh'))(n, other: '${count} 项'),
           'frost.navigationProgress' =>
             ({required Object progress}) => '已完成 ${progress}%',
           'frost.listSeparator' => '，',
@@ -2552,7 +2629,9 @@ extension on TranslationsZhCn {
           'settingsDetails.change' => '更改',
           'settingsDetails.routeCache' => '路由缓存',
           'settingsDetails.hostCount' =>
-            ({required Object count}) => '${count} 个主机',
+            ({required num n, required Object count}) =>
+                (_root.$meta.cardinalResolver ??
+                PluralResolvers.cardinal('zh'))(n, other: '${count} 个主机'),
           'settingsDetails.updatedAt' =>
             ({required Object time}) => '更新于 ${time}',
           'settingsDetails.sourceStatus' => '图源状态',

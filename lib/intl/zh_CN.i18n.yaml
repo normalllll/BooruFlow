@@ -48,8 +48,10 @@ postList:
 postDetail:
   fullscreen: 全屏查看
   notFound: "找不到这个作品"
-  parentCount: "$count 个父作品"
-  childCount: "$count 个子作品"
+  parentCount(plural, param=n):
+    other: "$count 个父作品"
+  childCount(plural, param=n):
+    other: "$count 个子作品"
   zoomIn: "放大"
   zoomOut: "缩小"
   originalFailed: "原图加载失败"
@@ -103,8 +105,12 @@ downloads:
   locationMissing: "找不到文件或文件夹"
   redownload: "重新下载"
   remove: 删除
-  activeTasks: "正在下载 $count 项"
-  failedTasks: "$count 项下载失败"
+  activeTasks(plural, param=n):
+    other: "正在下载 $count 项"
+  failedTasks(plural, param=n):
+    other: "$count 项下载失败"
+  cancelledTasks(plural, param=n):
+    other: "$count 项已取消"
   retryAll: "全部重试"
   today: "今天"
   yesterday: "昨天"
@@ -483,7 +489,8 @@ batchDownload:
   limitLabel: 最多获取
   positiveInteger: 请输入大于 0 的整数。
   start: 获取图片
-  fetchLimit: "/ 最多 $count 张"
+  fetchLimit(plural, param=n):
+    other: "/ 最多 $count 张"
   fetching: 已找到的图片
   progress: "$current / $total"
   fetchProgress: "已获取 $current 张，最多 $limit 张"
@@ -517,7 +524,8 @@ batchDownload:
   added: 个任务已加入下载队列
   backgroundHint: 可以关闭窗口。应用运行期间会继续入队，再次点击此入口可查看结果。
   queueHint: 图片下载进度可在下载列表中查看。
-  failedHint: "$count 张未能加入队列。"
+  failedHint(plural, param=n):
+    other: "$count 张未能加入队列。"
   retryFailed: 重试失败项
   queued: "批量任务：已加入 $added 张，入队失败 $failed 张。"
   completed: "批量下载结束：已保存 $saved 张，失败或取消 $failed 张。"
@@ -526,7 +534,8 @@ batchDownload:
 
   first: "前 N 张"
 
-  addedCount: "已加入 $count 张"
+  addedCount(plural, param=n):
+    other: "已加入 $count 张"
 
   savedTo: "保存到“$folder”"
 
@@ -605,9 +614,12 @@ frost:
   taskCancelled: 已取消
   remove: "移除"
   seek: "播放位置"
-  showReplies: "显示 $count 条回复"
-  moreMedia: "还有 $count 张图片"
-  navigationCount: "$count 项"
+  showReplies(plural, param=n):
+    other: "显示 $count 条回复"
+  moreMedia(plural, param=n):
+    other: "还有 $count 张图片"
+  navigationCount(plural, param=n):
+    other: "$count 项"
   navigationProgress: "已完成 $progress%"
   listSeparator: "，"
 
@@ -656,7 +668,8 @@ settingsDetails:
   custom: "自定义"
   change: "更改"
   routeCache: "路由缓存"
-  hostCount: "$count 个主机"
+  hostCount(plural, param=n):
+    other: "$count 个主机"
   updatedAt: "更新于 $time"
   sourceStatus: "图源状态"
   apiAndImages: "API 与图片可用"

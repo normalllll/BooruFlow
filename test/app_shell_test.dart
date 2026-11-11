@@ -764,7 +764,7 @@ void main() {
               matching: find.text(t.downloads.title),
             )
             .first;
-        final active = find.text(t.downloads.activeTasks(count: '1'));
+        final active = find.text(t.downloads.activeTasks(n: 1, count: '1'));
         expect(
           tester.getRect(title).left,
           closeTo(tester.getRect(active).left, .01),

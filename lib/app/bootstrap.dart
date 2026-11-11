@@ -47,6 +47,7 @@ Future<void> bootstrap({
   await SettingsService.initialize();
   await BooruService.instance.initialize(packageInfo.version);
 
+  configurePluralRules();
   final appLocale = applyLanguagePreference(SettingsService.language);
   await TagTranslationsService.loadAll();
   TagTranslationsService.update(

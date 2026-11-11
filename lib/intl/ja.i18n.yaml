@@ -48,8 +48,10 @@ postList:
 postDetail:
   fullscreen: 全画面で表示
   notFound: "作品が見つかりません"
-  parentCount: "$count 親作品"
-  childCount: "$count 子作品"
+  parentCount(plural, param=n):
+    other: "$count 親作品"
+  childCount(plural, param=n):
+    other: "$count 子作品"
   zoomIn: "拡大"
   zoomOut: "縮小"
   originalFailed: "元画像を読み込めませんでした"
@@ -103,8 +105,12 @@ downloads:
   locationMissing: "ファイルまたはフォルダーが見つかりません"
   redownload: "再ダウンロード"
   remove: 削除
-  activeTasks: "$count 件をダウンロード中"
-  failedTasks: "$count 件のダウンロードに失敗"
+  activeTasks(plural, param=n):
+    other: "$count 件をダウンロード中"
+  failedTasks(plural, param=n):
+    other: "$count 件のダウンロードに失敗"
+  cancelledTasks(plural, param=n):
+    other: "$count 件をキャンセル済み"
   retryAll: "すべて再試行"
   today: "今日"
   yesterday: "昨日"
@@ -483,7 +489,8 @@ batchDownload:
   limitLabel: 取得する画像の上限
   positiveInteger: 1 以上の整数を入力してください。
   start: 画像を取得
-  fetchLimit: "/ 最大 $count 枚"
+  fetchLimit(plural, param=n):
+    other: "/ 最大 $count 枚"
   fetching: 見つかった画像
   progress: "$current / $total"
   fetchProgress: "最大 $limit 枚のうち $current 枚を取得"
@@ -517,7 +524,8 @@ batchDownload:
   added: ダウンロードキューに追加したタスク
   backgroundHint: この画面を閉じてもアプリの実行中は追加を続けます。同じボタンから結果を確認できます。
   queueHint: ダウンロードの進捗はダウンロード一覧で確認できます。
-  failedHint: "$count 枚を追加できませんでした。"
+  failedHint(plural, param=n):
+    other: "$count 枚を追加できませんでした。"
   retryFailed: 失敗した画像を再試行
   queued: "一括処理：$added 枚をキューに追加、$failed 枚の追加に失敗。"
   completed: "一括ダウンロード終了：$saved 枚を保存、$failed 枚が失敗またはキャンセル。"
@@ -526,7 +534,8 @@ batchDownload:
 
   first: "先頭 N 枚"
 
-  addedCount: "$count 枚を追加しました"
+  addedCount(plural, param=n):
+    other: "$count 枚を追加しました"
 
   savedTo: "保存先「$folder」"
 
@@ -605,9 +614,12 @@ frost:
   taskCancelled: キャンセル済み
   remove: "削除"
   seek: "再生位置"
-  showReplies: "$count件の返信を表示"
-  moreMedia: "ほか$count枚"
-  navigationCount: "$count件"
+  showReplies(plural, param=n):
+    other: "$count件の返信を表示"
+  moreMedia(plural, param=n):
+    other: "ほか$count枚"
+  navigationCount(plural, param=n):
+    other: "$count件"
   navigationProgress: "進捗$progress%"
   listSeparator: "、"
 
@@ -656,7 +668,8 @@ settingsDetails:
   custom: "カスタム"
   change: "変更"
   routeCache: "ルートキャッシュ"
-  hostCount: "$count ホスト"
+  hostCount(plural, param=n):
+    other: "$count ホスト"
   updatedAt: "更新 $time"
   sourceStatus: "画像ソースの状態"
   apiAndImages: "API と画像を利用可能"

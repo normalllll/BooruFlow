@@ -907,13 +907,67 @@ void main() {
     expect(find.text('cancelled.png').hitTestable(), findsNothing);
     await tester.tap(tab(t.downloads.all));
     await tester.pumpAndSettle();
-    // Failures lead under a caption with their count; the rest follow under
-    // the Active caption.
-    expect(find.text(t.downloads.failedTasks(count: '1')), findsOneWidget);
+    // Failures lead under a caption with their count, tasks in flight follow
+    // under the Active caption, and cancelled ones close under their own.
+    expect(
+      find.text(t.downloads.failedTasks(n: 1, count: '1')),
+      findsOneWidget,
+    );
     expect(find.text(t.downloads.active), findsWidgets);
+    final cancelledCaption = find.text(
+      t.downloads.cancelledTasks(n: 1, count: '1'),
+    );
+    expect(cancelledCaption, findsOneWidget);
+    expect(
+      tester.getTopLeft(cancelledCaption).dy,
+      greaterThan(tester.getTopLeft(find.text('running.png')).dy),
+    );
+    expect(
+      tester.getTopLeft(cancelledCaption).dy,
+      lessThan(tester.getTopLeft(find.text('cancelled.png')).dy),
+    );
     // A cancelled task keeps Retry and Delete.
     await tester.tap(find.text('cancelled.png'));
     await tester.pumpAndSettle();
     expect(button(t.generic.retry), findsWidgets);
+  });
+
+  testWidgets('cancelled tasks are not captioned as active', (tester) async {
+    tester.view.physicalSize = const Size(1000, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          downloadManagerProvider.overrideWithValue(TestDownloadManager()),
+          downloadItemsProvider.overrideWith(
+            () => TestDownloadItems([
+              task('broken', DownloadStatus.failed),
+              task('cancelled', DownloadStatus.cancelled),
+              task('done', DownloadStatus.downloaded),
+            ]),
+          ),
+        ],
+        child: browseTestApp(const DownloadsPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    // Active names only the tab, no caption in the list.
+    final inTabs = find.descendant(
+      of: find.byType(FrostTabBar),
+      matching: find.text(t.downloads.active),
+    );
+    expect(
+      find.text(t.downloads.active).evaluate().length,
+      inTabs.evaluate().length,
+    );
+    expect(
+      find.text(t.downloads.failedTasks(n: 1, count: '1')),
+      findsOneWidget,
+    );
+    expect(
+      find.text(t.downloads.cancelledTasks(n: 1, count: '1')),
+      findsOneWidget,
+    );
   });
 }

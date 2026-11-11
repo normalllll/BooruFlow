@@ -187,7 +187,10 @@ class _BatchDownloadDialogState extends ConsumerState<BatchDownloadDialog> {
                   numeric: true,
                 ),
                 FrostText(
-                  strings.fetchLimit(count: formatCount(state.limit)),
+                  strings.fetchLimit(
+                    n: state.limit,
+                    count: formatCount(state.limit),
+                  ),
                   role: FrostTextRole.subheadline,
                   tone: FrostTextTone.secondary,
                   numeric: true,
@@ -246,7 +249,10 @@ class _BatchDownloadDialogState extends ConsumerState<BatchDownloadDialog> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       FrostText(
-                        strings.addedCount(count: formatCount(state.enqueued)),
+                        strings.addedCount(
+                          n: state.enqueued,
+                          count: formatCount(state.enqueued),
+                        ),
                         role: FrostTextRole.headline,
                         numeric: true,
                       ),
@@ -269,6 +275,7 @@ class _BatchDownloadDialogState extends ConsumerState<BatchDownloadDialog> {
               FrostInlineBanner(
                 tone: FrostBannerTone.caution,
                 message: strings.failedHint(
+                  n: state.failed.length,
                   count: formatCount(state.failed.length),
                 ),
                 actionLabel: strings.retryFailed,

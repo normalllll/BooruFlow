@@ -714,7 +714,8 @@ void main() {
   });
 
   group('total progress', () {
-    String summary(int n) => t.downloads.activeTasks(count: formatCount(n));
+    String summary(int n) =>
+        t.downloads.activeTasks(n: n, count: formatCount(n));
 
     testWidgets('shows while tasks are running, in the active section', (
       tester,

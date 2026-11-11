@@ -650,7 +650,7 @@ void main() {
       await pump(tester);
       expect(
         find.text(
-          '${t.postDetail.parentCount(count: '1')} · ${t.postDetail.childCount(count: '2')}',
+          '${t.postDetail.parentCount(n: 1, count: '1')} · ${t.postDetail.childCount(n: 2, count: '2')}',
         ),
         findsOneWidget,
       );

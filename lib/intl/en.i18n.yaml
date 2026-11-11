@@ -48,8 +48,12 @@ postList:
 postDetail:
   fullscreen: View fullscreen
   notFound: "Post not found"
-  parentCount: "$count parent"
-  childCount: "$count children"
+  parentCount(plural, param=n):
+    one: "$count parent"
+    other: "$count parents"
+  childCount(plural, param=n):
+    one: "$count child"
+    other: "$count children"
   zoomIn: "Zoom in"
   zoomOut: "Zoom out"
   originalFailed: "Original image failed to load"
@@ -103,8 +107,15 @@ downloads:
   locationMissing: "File or folder not found"
   redownload: "Download again"
   remove: Delete
-  activeTasks: "Downloading $count items"
-  failedTasks: "$count downloads failed"
+  activeTasks(plural, param=n):
+    one: "Downloading $count item"
+    other: "Downloading $count items"
+  failedTasks(plural, param=n):
+    one: "$count download failed"
+    other: "$count downloads failed"
+  cancelledTasks(plural, param=n):
+    one: "$count download cancelled"
+    other: "$count downloads cancelled"
   retryAll: "Retry all"
   today: "Today"
   yesterday: "Yesterday"
@@ -484,7 +495,9 @@ batchDownload:
   limitLabel: Maximum images to fetch
   positiveInteger: Enter a positive whole number.
   start: Fetch images
-  fetchLimit: "/ up to $count images"
+  fetchLimit(plural, param=n):
+    one: "/ up to $count image"
+    other: "/ up to $count images"
   fetching: Images found so far
   progress: "$current / $total"
   fetchProgress: "Fetched $current of at most $limit images"
@@ -518,7 +531,9 @@ batchDownload:
   added: Tasks added to the download queue
   backgroundHint: You can close this window. Submission continues while the app is running; reopen here to see its result.
   queueHint: Follow download progress in the download list.
-  failedHint: "$count images could not be added."
+  failedHint(plural, param=n):
+    one: "$count image could not be added."
+    other: "$count images could not be added."
   retryFailed: Retry failed items
   queued: "Batch: $added added to queue, $failed failed to add."
   completed: "Batch finished: $saved saved, $failed failed or cancelled."
@@ -527,7 +542,9 @@ batchDownload:
 
   first: "First N"
 
-  addedCount: "$count images added"
+  addedCount(plural, param=n):
+    one: "$count image added"
+    other: "$count images added"
 
   savedTo: "Save to “$folder”"
 
@@ -606,9 +623,15 @@ frost:
   taskCancelled: Cancelled
   remove: "Remove"
   seek: "Playback position"
-  showReplies: "Show $count replies"
-  moreMedia: "$count more images"
-  navigationCount: "$count items"
+  showReplies(plural, param=n):
+    one: "Show $count reply"
+    other: "Show $count replies"
+  moreMedia(plural, param=n):
+    one: "$count more image"
+    other: "$count more images"
+  navigationCount(plural, param=n):
+    one: "$count item"
+    other: "$count items"
   navigationProgress: "$progress% complete"
   listSeparator: ", "
 
@@ -657,7 +680,9 @@ settingsDetails:
   custom: "Custom"
   change: "Change"
   routeCache: "Route cache"
-  hostCount: "$count hosts"
+  hostCount(plural, param=n):
+    one: "$count host"
+    other: "$count hosts"
   updatedAt: "Updated $time"
   sourceStatus: "Source status"
   apiAndImages: "API and images available"

@@ -586,8 +586,9 @@ class _RelatedPosts extends StatelessWidget {
         .length;
     final relationships = [
       if (post.parentId != null)
-        t.postDetail.parentCount(count: formatCount(1)),
-      if (children > 0) t.postDetail.childCount(count: formatCount(children)),
+        t.postDetail.parentCount(n: 1, count: formatCount(1)),
+      if (children > 0)
+        t.postDetail.childCount(n: children, count: formatCount(children)),
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

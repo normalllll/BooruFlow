@@ -48,8 +48,10 @@ postList:
 postDetail:
   fullscreen: 全螢幕檢視
   notFound: "找不到這個作品"
-  parentCount: "$count 個父作品"
-  childCount: "$count 個子作品"
+  parentCount(plural, param=n):
+    other: "$count 個父作品"
+  childCount(plural, param=n):
+    other: "$count 個子作品"
   zoomIn: "放大"
   zoomOut: "縮小"
   originalFailed: "原圖載入失敗"
@@ -103,8 +105,12 @@ downloads:
   locationMissing: "找不到檔案或資料夾"
   redownload: "重新下載"
   remove: 刪除
-  activeTasks: "正在下載 $count 項"
-  failedTasks: "$count 項下載失敗"
+  activeTasks(plural, param=n):
+    other: "正在下載 $count 項"
+  failedTasks(plural, param=n):
+    other: "$count 項下載失敗"
+  cancelledTasks(plural, param=n):
+    other: "$count 項已取消"
   retryAll: "全部重試"
   today: "今天"
   yesterday: "昨天"
@@ -483,7 +489,8 @@ batchDownload:
   limitLabel: 最多取得
   positiveInteger: 請輸入大於 0 的整數。
   start: 取得圖片
-  fetchLimit: "/ 最多 $count 張"
+  fetchLimit(plural, param=n):
+    other: "/ 最多 $count 張"
   fetching: 已找到的圖片
   progress: "$current / $total"
   fetchProgress: "已取得 $current 張，最多 $limit 張"
@@ -517,7 +524,8 @@ batchDownload:
   added: 個任務已加入下載佇列
   backgroundHint: 可以關閉視窗。應用程式執行期間會繼續加入佇列，再次按一下此入口可查看結果。
   queueHint: 圖片下載進度可在下載清單中查看。
-  failedHint: "$count 張未能加入佇列。"
+  failedHint(plural, param=n):
+    other: "$count 張未能加入佇列。"
   retryFailed: 重試失敗項目
   queued: "批次任務：已加入 $added 張，加入失敗 $failed 張。"
   completed: "批次下載結束：已儲存 $saved 張，失敗或取消 $failed 張。"
@@ -526,7 +534,8 @@ batchDownload:
 
   first: "前 N 張"
 
-  addedCount: "已加入 $count 張"
+  addedCount(plural, param=n):
+    other: "已加入 $count 張"
 
   savedTo: "儲存至「$folder」"
 
@@ -605,9 +614,12 @@ frost:
   taskCancelled: 已取消
   remove: "移除"
   seek: "播放位置"
-  showReplies: "顯示 $count 則回覆"
-  moreMedia: "還有 $count 張圖片"
-  navigationCount: "$count 項"
+  showReplies(plural, param=n):
+    other: "顯示 $count 則回覆"
+  moreMedia(plural, param=n):
+    other: "還有 $count 張圖片"
+  navigationCount(plural, param=n):
+    other: "$count 項"
   navigationProgress: "已完成 $progress%"
   listSeparator: "，"
 
@@ -656,7 +668,8 @@ settingsDetails:
   custom: "自訂"
   change: "更改"
   routeCache: "路由快取"
-  hostCount: "$count 個主機"
+  hostCount(plural, param=n):
+    other: "$count 個主機"
   updatedAt: "更新於 $time"
   sourceStatus: "圖源狀態"
   apiAndImages: "API 與圖片可用"

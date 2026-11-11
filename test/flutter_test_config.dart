@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:booruflow/intl/locale_preferences.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -18,6 +19,7 @@ class _StrictWidgetBinding extends AutomatedTestWidgetsFlutterBinding {
 
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   await initializeDateFormatting();
+  configurePluralRules();
   final binding = _StrictWidgetBinding();
   setUp(binding.errors.clear);
   tearDown(() {

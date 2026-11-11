@@ -1,5 +1,25 @@
 import 'package:booruflow/intl/translations.g.dart';
 
+/// Gives Slang the plural rule it lacks for Chinese, which has one form for
+/// every count. English and Japanese use Slang's own rules.
+void configurePluralRules() {
+  LocaleSettings.setPluralResolverSync(
+    language: 'zh',
+    cardinalResolver: _single,
+    ordinalResolver: _single,
+  );
+}
+
+String _single(
+  num n, {
+  String? zero,
+  String? one,
+  String? two,
+  String? few,
+  String? many,
+  String? other,
+}) => other!;
+
 AppLocale appLocaleForLanguagePreference(int? language) {
   return switch (language) {
     null => AppLocaleUtils.findDeviceLocale(),

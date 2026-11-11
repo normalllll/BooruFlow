@@ -68,7 +68,10 @@ class _DownloadTransferSummaryState
     final line = idle
         ? t.downloads.noActive
         : [
-            t.downloads.activeTasks(count: formatCount(summary.count)),
+            t.downloads.activeTasks(
+              n: summary.count,
+              count: formatCount(summary.count),
+            ),
             if (summary.rate case final rate?) downloadRate(rate),
             ?summary.remaining,
           ].join(' · ');
