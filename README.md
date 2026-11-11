@@ -37,15 +37,13 @@ Download packages from [GitHub Releases](https://github.com/normalllll/BooruFlow
 
 Android ARM32 and x86_64 packages are also available. Check the release assets for the packages included in each version.
 
-Linux DEB/RPM packages declare their runtime dependencies. The portable archive requires GTK 3, libstdc++, libmpv, and libepoxy to be installed separately; see the [Linux dependency instructions](DEVELOPMENT.md#ci-and-releases). The macOS build target above is a technical minimum; use systems within Flutter's and the OS vendor's maintained support range.
+Linux DEB/RPM packages declare their runtime dependencies. The portable archive requires GTK 3, libstdc++, libmpv, and libepoxy to be installed separately. The macOS build target above is a technical minimum; use systems within Flutter's and the OS vendor's maintained support range.
 
 On iOS, supported images and videos are saved to Photos; archives and formats that Photos cannot reliably preserve are saved to Files. Individual photo saves request add-only access, while batch downloads that create and reuse albums require full Photos access.
 
 ## Contributing
 
 Report bugs or suggest features in [Issues](https://github.com/normalllll/BooruFlow/issues). For bugs, include your platform, image source, and steps to reproduce. Code, design, and translation contributions are welcome.
-
-See the [development guide](DEVELOPMENT.md) for building, testing, and release instructions.
 
 ## Community
 

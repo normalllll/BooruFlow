@@ -22,17 +22,28 @@ missing outputs; no provider or database source changes are required.
 Stop and rebuild a running app after regenerating the bridge: hot reload cannot
 replace its native Rust library. Do not hand-edit generated Dart/Rust files.
 
+## UI automation and sample data
+
+- `tool/automation_entry.dart` is the Debug entrypoint for the
+  flutter-ui-automation skill: it enables the Flutter Driver extension with the
+  app's test commands and starts the app on sample data.
+- `tool/sample_main.dart` runs the app on the sample data in `lib/dev/`
+  (`flutter run -d windows -t tool/sample_main.dart`).
+
+Both keep storage in a fresh temporary directory and never read or write the
+real profile. Release builds do not include the sample data.
+
 ## UI icon and branding resources
 
 UI icon SVG sources live in `tool/icons/svg`; they are not runtime assets.
 Allocations in `tool/icons/codepoints.csv` are append-only. Preserve retired
-rows/codepoints; R18's six allocations remain E900–E905.
+rows and their codepoints.
 
 Prepare the fixed generator environment using
 [`tool/icon_font/README.md`](icon_font/README.md), then run:
 
 ```powershell
-./tool/generate_ui_icons.ps1 -Dart <flutter sdk>/bin/cache/dart-sdk/bin/dart.exe
+./tool/generate_ui_icons.ps1 -Dart <flutter-sdk>/bin/cache/dart-sdk/bin/dart.exe
 ```
 
 Use the generator's add/retire

@@ -37,7 +37,7 @@
 
 Android 另提供 ARM32 和 x86_64 安装包，各版本可用包以发行版附件为准。
 
-Linux DEB/RPM 包声明了运行库依赖；便携压缩包需要另外安装 GTK 3、libstdc++、libmpv 和 libepoxy，参见 [Linux 依赖说明](DEVELOPMENT.md#ci-and-releases)。上述 macOS 构建目标是技术下限；实际使用应处于 Flutter 和系统厂商仍维护的支持范围内。
+Linux DEB/RPM 包声明了运行库依赖；便携压缩包需要另外安装 GTK 3、libstdc++、libmpv 和 libepoxy。上述 macOS 构建目标是技术下限；实际使用应处于 Flutter 和系统厂商仍维护的支持范围内。
 
 iOS 会将支持的图片与视频保存到“照片”，压缩包和“照片”无法可靠保留的格式则保存到“文件”。单张保存只申请添加照片权限；需要创建和复用相簿的批量下载才申请完整照片访问。
 
@@ -46,8 +46,6 @@ iOS 会将支持的图片与视频保存到“照片”，压缩包和“照片�
 ## 参与贡献
 
 欢迎在 [Issues](https://github.com/normalllll/BooruFlow/issues) 报告问题或提出建议。报告问题时，请提供平台、图源和复现步骤。也欢迎贡献代码、设计和翻译。
-
-构建、测试和发布说明见[开发指南](DEVELOPMENT.md)。
 
 ## 社区
 

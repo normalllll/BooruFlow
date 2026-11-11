@@ -1,0 +1,22 @@
+{
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "$hook = Join-Path $env:CLAUDE_PROJECT_DIR '../frost_ui/tool/hooks/guard_full_tests.ps1'; if (Test-Path $hook) { & $hook; exit $LASTEXITCODE }",
+            "timeout": 10,
+            "statusMessage": "Checking test scope"
+          }
+        ]
+      }
+    ]
+  }
+}

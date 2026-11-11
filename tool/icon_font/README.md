@@ -21,7 +21,7 @@ All direct/transitive versions are pinned; do not install into system Python.
 
 Inputs use a 24x24 viewport, 1.75 stroke, round caps/joins, opaque monochrome.
 Strokes become closed filled paths with unioned overlaps and preserved holes.
-The viewport clips overflow, matching the previous SVG presentation. A square
+The viewport clips overflow. A square
 1536-unit em preserves canvas origin and advance width; bounds are not stretched.
 Checks use actual curve extrema, not the larger quadratic control-point box.
 

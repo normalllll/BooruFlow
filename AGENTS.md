@@ -1,34 +1,31 @@
 # Repository instructions
 
-General engineering, UI, and Flutter/Riverpod conventions live in the global
-`~/.codex/AGENTS.md`. This file adds what is specific to BooruFlow.
+BooruFlow builds on frost_ui, which is expected in a sibling checkout at
+`../frost_ui`.
 
 ## frost_ui
 
-- frost_ui (`../frost_ui`, branch `v0.2.0`) is the UI foundation. Adaptive, motion,
-  material, and layout behavior belongs in its components; change it there when
-  a page needs different shared behavior, and keep BooruFlow pages as
-  compositions of those components.
-- An app-side escape from frost_ui starts with a `frost-escape:` header naming
-  the user approval and its boundary.
+- Treat the frost_ui and frost_window sources, tests and tools as read-only.
+  Follow `../frost_ui/docs/APP_WORKFLOW.md` for pacing, tests, running the app
+  and screenshots. Request Frost changes through
+  `../frost_ui/docs/requests/README.md`.
+- Widgets the app paints or lays out itself live in `lib/ui/custom/` and start
+  with `// app-owned: <feature>`. Use `// frost-escape: <request ID>` only for
+  other exceptions the owner has approved.
 
-## Validation and commits
+## Tests and UI automation
 
-- By default, run static analysis, formatting checks, and diff checks appropriate
-  to the change. Code generation runs as needed; tests and application builds run
-  only when explicitly requested. At handoff, list the checks that ran; name an
-  unrun check only if it blocks acceptance.
-- Keep unpushed commits in a linear history; rebase rather than merge when
-  reconciling them.
+- Run the tests affected by a change with
+  `dart ../frost_ui/tool/affected_tests.dart <base> --repo . --run`.
+- `tool/automation_entry.dart` is the Debug entrypoint for the flutter-ui-automation
+  skill; add missing hooks there, not to `lib/main.dart`. It runs on the sample
+  data of `tool/sample_main.dart` in an isolated profile.
 
-## Flutter UI automation
+## Commits
 
-- Use the installed `flutter-ui-automation` skill for Flutter screenshots,
-  recordings and runtime interaction. Read its SKILL.md and follow
-  [the project harness](tool/automation/README.md).
-- Use a dedicated background test instance, internal Driver events and scoped
-  HWND capture. Preserve the user's foreground window, mouse and keyboard.
-- Keep native presentation-fence failures explicit. Do not silently fall back
-  to Computer Use, lower-fidelity media or application PNGs as native evidence.
-- When a prerequisite or backend is missing, complete the authorized setup, or
-  report what is missing and stop that workflow.
+- Do not add AI attribution to commit messages or pull request descriptions.
+
+## Project documentation
+
+- [DEVELOPMENT.md](DEVELOPMENT.md) covers the toolchain, dependencies and
+  checks; [tool/README.md](tool/README.md) the bridge, icon and branding tools.

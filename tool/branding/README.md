@@ -1,6 +1,6 @@
 # Application icon
 
-`app_icon_source.png` is the supplied transparent master artwork. Keep it as the
+`app_icon_source.png` is the transparent master artwork. Keep it as the
 source of truth; platform exports are committed so builds do not require Python.
 
 To regenerate from the repository root, using Python 3.9+ and Pillow:
@@ -10,7 +10,7 @@ python -m pip install Pillow
 python tool/generate_app_icons.py
 ```
 
-- Windows: `windows/runner/resources/app_icon.ico`, one 256×256 entry as requested.
+- Windows: `windows/runner/resources/app_icon.ico`, one 256×256 entry.
 - Android: existing launcher resources in all five density directories, including
   foreground, opaque background and monochrome layers. Foreground padding allows
   adaptive launcher masks without changing the artwork.

@@ -57,3 +57,6 @@ rust/Cargo.lock
 # Native Apple dependency lock files are local build outputs.
 Podfile.lock
 Package.resolved
+
+# Claude Code personal settings
+.claude/settings.local.json
