@@ -113,13 +113,41 @@ Future<void> _moveDocumentsBoxes(Directory documents, Directory private) async {
       if (await File(target).exists()) {
         target = '$target.${DateTime.now().microsecondsSinceEpoch}';
       }
-      // Both directories belong to the same iOS app container. Atomic rename
-      // preserves bytes; a failure stops initialization rather than losing data.
-      await source.rename(target);
+      await _moveFile(source, target);
     }
     final lock = File(p.join(documents.path, '$name.lock'));
     if (await lock.exists()) await lock.delete();
   }
+}
+
+// Rename keeps bytes atomic on one volume. Documents may sit on another drive,
+// so a failed rename copies to a temporary name, renames it into place and only
+// then deletes the source; any failure stops initialization, losing no data.
+Future<void> _moveFile(File source, String target) async {
+  try {
+    await source.rename(target);
+  } on FileSystemException {
+    final temporary = await source.copy('$target.partial');
+    await temporary.rename(target);
+    await source.delete();
+  }
+}
+
+/// Older versions nested their data in `<support>/BooruFlow`, although the
+/// support directory already belongs to this application. Lifts every entry
+/// one level up; an entry whose name is already taken stays where it is.
+Future<void> flattenLegacySupportFolder(Directory support) async {
+  final nested = Directory(p.join(support.path, 'BooruFlow'));
+  if (!await nested.exists()) return;
+  await for (final entry in nested.list(followLinks: false)) {
+    final target = p.join(support.path, p.basename(entry.path));
+    if (await FileSystemEntity.type(target, followLinks: false) !=
+        FileSystemEntityType.notFound) {
+      continue;
+    }
+    await entry.rename(target);
+  }
+  if (await nested.list().isEmpty) await nested.delete();
 }
 
 Future<void> upgradeDownloadDatabase(

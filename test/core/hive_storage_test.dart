@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:booruflow/core/hive_storage.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:path/path.dart' as p;
@@ -12,7 +11,6 @@ void main() {
   late Directory documents;
   late Directory support;
   Future<void> initialize() => initializeHiveStorage(
-    platform: TargetPlatform.iOS,
     documentsDirectory: documents,
     supportDirectory: support,
   );
@@ -27,7 +25,7 @@ void main() {
   });
 
   test(
-    'iOS migration preserves real boxes and keeps downloaded files visible',
+    'boxes move out of Documents, keeping their data and leaving downloaded files',
     () async {
       const names = [
         'settings',
@@ -88,7 +86,7 @@ void main() {
       final oldBytes = await File(
         p.join(documents.path, 'booru_credentials.hive'),
       ).readAsBytes();
-      final private = Directory(p.join(support.path, 'BooruFlow', 'hive'));
+      final private = Directory(p.join(support.path, 'hive'));
       Hive.init(private.path);
       box = await Hive.openBox<dynamic>('booru_credentials');
       await box.put('value', 'current');
@@ -108,6 +106,34 @@ void main() {
         ).readAsBytes(),
         oldBytes,
       );
+    },
+  );
+
+  test(
+    'data nested in an app-named folder moves up, an earlier private Hive folder included',
+    () async {
+      final nested = Directory(p.join(support.path, 'BooruFlow'));
+      final oldPrivate = Directory(p.join(nested.path, 'hive'));
+      Hive.init(oldPrivate.path);
+      final box = await Hive.openBox<dynamic>('settings');
+      await box.put('value', 'private');
+      await Hive.close();
+      await File(
+        p.join(oldPrivate.path, 'legacy-upgrade-version'),
+      ).writeAsString('1');
+      await File(p.join(nested.path, 'downloads.db')).writeAsBytes([7, 8]);
+      Hive.init(documents.path);
+      await (await Hive.openBox<dynamic>('settings')).put('value', 'stale');
+      await Hive.close();
+      await initialize();
+      expect(nested.existsSync(), false);
+      expect(await File(p.join(support.path, 'downloads.db')).readAsBytes(), [
+        7,
+        8,
+      ]);
+      final settings = await Hive.openBox<dynamic>('settings');
+      expect(settings.path, startsWith(p.join(support.path, 'hive')));
+      expect(settings.get('value'), 'private');
     },
   );
 }
