@@ -7,7 +7,12 @@ import FlutterMacOS
 // AppKit neither autosaves nor restores its frame.
 class MainFlutterWindow: NSWindow {
   override func awakeFromNib() {
-    let flutterViewController = FlutterViewController()
+    // A FlutterViewController that creates its own engine starts it only once
+    // its window is on screen, and this window waits for Dart to show it. Run
+    // the engine first so Dart can place and show the hidden window.
+    let engine = FlutterEngine(name: "main", project: nil, allowHeadlessExecution: true)
+    engine.run(withEntrypoint: nil)
+    let flutterViewController = FlutterViewController(engine: engine, nibName: nil, bundle: nil)
     let windowFrame = frame
     contentViewController = flutterViewController
     // Flutter's initial preferred size is zero; retain the nib's window frame
