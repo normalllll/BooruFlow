@@ -33,6 +33,11 @@ replace its native Rust library. Do not hand-edit generated Dart/Rust files.
 Both keep storage in a fresh temporary directory and never read or write the
 real profile. Release builds do not include the sample data.
 
+For screenshots of real sources, start the automation entrypoint with
+`--real-data` (desktop launch arguments) or
+`--dart-define=BOORUFLOW_REAL_DATA=true` (`flutter run` on iOS and Android). It
+still uses the temporary profile.
+
 ## UI icon and branding resources
 
 UI icon SVG sources live in `tool/icons/svg`; they are not runtime assets.

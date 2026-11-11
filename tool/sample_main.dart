@@ -13,14 +13,16 @@ import 'package:path_provider_platform_interface/path_provider_platform_interfac
 
 Future<void> main() => startSample();
 
-/// Starts the app on sample data. Shared with `tool/automation_entry.dart`.
-Future<void> startSample() async {
+/// Starts the app on sample data. Shared with `tool/automation_entry.dart`,
+/// which passes [sampleData] false to browse the real sources in the same
+/// isolated profile.
+Future<void> startSample({bool sampleData = true}) async {
   // One directory, emptied at each start, so runs do not pile up.
   final root = Directory('${Directory.systemTemp.path}/booruflow_sample');
   if (root.existsSync()) root.deleteSync(recursive: true);
   root.createSync(recursive: true);
   PathProviderPlatform.instance = _SamplePaths(root);
-  await bootstrap(overrides: sampleOverrides);
+  await bootstrap(overrides: sampleData ? sampleOverrides : const []);
 }
 
 class _SamplePaths extends PathProviderPlatform {

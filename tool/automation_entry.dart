@@ -121,7 +121,10 @@ const _keys = {
   'ArrowUp': LogicalKeyboardKey.arrowUp,
 };
 
-Future<void> main() async {
+// `--real-data` browses the real sources instead of the sample data, still in
+// the isolated profile. iOS and Android get no entrypoint arguments, so
+// `flutter run` there passes `--dart-define=BOORUFLOW_REAL_DATA=true`.
+Future<void> main(List<String> args) async {
   enableFlutterDriverExtension(
     enableTextEntryEmulation: false,
     handler: (message) async {
@@ -140,21 +143,21 @@ Future<void> main() async {
             _num(request['x']).toDouble(),
             _num(request['y']).toDouble(),
           );
+          // A phone or tablet taps with a finger; a mouse there would switch the
+          // app to pointer mode for the rest of the run.
+          final kind = Platform.isIOS || Platform.isAndroid
+              ? PointerDeviceKind.touch
+              : PointerDeviceKind.mouse;
           GestureBinding.instance.handlePointerEvent(
             PointerDownEvent(
               pointer: 9001,
-              kind: PointerDeviceKind.mouse,
+              kind: kind,
               device: 9,
               position: at,
             ),
           );
           GestureBinding.instance.handlePointerEvent(
-            PointerUpEvent(
-              pointer: 9001,
-              kind: PointerDeviceKind.mouse,
-              device: 9,
-              position: at,
-            ),
+            PointerUpEvent(pointer: 9001, kind: kind, device: 9, position: at),
           );
           await _frame();
           return jsonEncode(_state());
@@ -186,6 +189,12 @@ Future<void> main() async {
           final key = _keys[request['key']]!;
           await simulateKeyDownEvent(key);
           await simulateKeyUpEvent(key);
+          await _frame();
+          return jsonEncode(_state());
+        case 'unfocus':
+          FocusManager.instance.primaryFocus?.unfocus();
+          // A keyboard left by an earlier run has no field to close it.
+          await SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
           await _frame();
           return jsonEncode(_state());
         case 'errors':
@@ -262,7 +271,8 @@ Future<void> main() async {
     _errors.add(details.exceptionAsString());
     present(details);
   };
-  await startSample();
+  const realData = bool.fromEnvironment('BOORUFLOW_REAL_DATA');
+  await startSample(sampleData: !realData && !args.contains('--real-data'));
   // The iOS Simulator session checks the app's bundle identifier.
   _bundleId = (await PackageInfo.fromPlatform()).packageName;
 }
