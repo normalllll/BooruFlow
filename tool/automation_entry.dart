@@ -11,6 +11,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_driver/driver_extension.dart';
 import 'package:flutter_test/flutter_test.dart'
     show simulateKeyDownEvent, simulateKeyUpEvent;
+import 'package:package_info_plus/package_info_plus.dart';
 
 import 'sample_main.dart' show startSample;
 
@@ -80,7 +81,11 @@ Map<String, Object?> _state() => {
           'hwnd': _window(),
           'isForeground': _foreground() == _window(),
         }
-      : {'platform': Platform.operatingSystem, 'pid': pid},
+      : {
+          'platform': Platform.operatingSystem,
+          'pid': pid,
+          'bundleId': ?_bundleId,
+        },
 };
 
 Future<void> _frame() async {
@@ -258,7 +263,11 @@ Future<void> main() async {
     present(details);
   };
   await startSample();
+  // The iOS Simulator session checks the app's bundle identifier.
+  _bundleId = (await PackageInfo.fromPlatform()).packageName;
 }
+
+String? _bundleId;
 
 final _errors = <String>[];
 
