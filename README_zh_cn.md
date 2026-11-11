@@ -56,12 +56,12 @@ iOS 会将支持的图片与视频保存到“照片”，压缩包和“照片�
 
 ### 桌面端
 
-| ![Yande.re 搜索 muryo 的瀑布页](screenshots/desktop/img0.webp) | ![搜索结果第二张图片的详情页](screenshots/desktop/img1.webp) |
+| ![Yande.re 图片 1244387 的详情页](screenshots/desktop/img0.webp) | ![下载任务](screenshots/desktop/img1.webp) |
 |--------------------------------------------------------|--------------------------------------------------------|
 
 ### 移动端
 
-| ![Anime-Pictures 首页](screenshots/mobile/img0.webp) | ![Yande.re 搜索输入页，键盘收起](screenshots/mobile/img1.webp) |
+| ![Anime-Pictures 浏览页](screenshots/mobile/img0.webp) | ![Yande.re 图片 1272425 的详情页](screenshots/mobile/img1.webp) |
 |------------------------------------------------------|------------------------------------------------------|
 
 ## 许可证

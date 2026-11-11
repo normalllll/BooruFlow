@@ -54,12 +54,12 @@ Report bugs or suggest features in [Issues](https://github.com/normalllll/BooruF
 
 ### Desktop
 
-| ![Yande.re search results for muryo](screenshots/desktop/img0.webp) | ![Details of the second search result](screenshots/desktop/img1.webp) |
+| ![Details of Yande.re post 1244387](screenshots/desktop/img0.webp) | ![Download tasks](screenshots/desktop/img1.webp) |
 |--------------------------------------------------------|--------------------------------------------------------|
 
 ### Mobile
 
-| ![Anime-Pictures home](screenshots/mobile/img0.webp) | ![Yande.re search page with the keyboard hidden](screenshots/mobile/img1.webp) |
+| ![Anime-Pictures browsing](screenshots/mobile/img0.webp) | ![Details of Yande.re post 1272425](screenshots/mobile/img1.webp) |
 |------------------------------------------------------|------------------------------------------------------|
 
 ## License
