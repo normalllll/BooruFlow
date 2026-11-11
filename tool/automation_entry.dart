@@ -72,12 +72,15 @@ int _window() {
 
 bool _mouseAdded = false;
 
+// The window handle lookups go through user32 and exist only on Windows.
 Map<String, Object?> _state() => {
-  'native': {
-    'pid': pid,
-    'hwnd': _window(),
-    'isForeground': _foreground() == _window(),
-  },
+  'native': Platform.isWindows
+      ? {
+          'pid': pid,
+          'hwnd': _window(),
+          'isForeground': _foreground() == _window(),
+        }
+      : {'platform': Platform.operatingSystem, 'pid': pid},
 };
 
 Future<void> _frame() async {
