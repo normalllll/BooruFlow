@@ -324,6 +324,7 @@ class _BrowsePageState extends ConsumerState<BrowsePage>
     final sources = ref.watch(booruSourcesProvider);
     final inlineSearch = !FrostShell.titleContentInCaptionOf(context);
     Widget header(PostListSource collection) => FrostPageHeader(
+      title: FrostText(t.navigation.browse),
       middle: inlineSearch
           ? InlineSearch(sourceId: sourceId, controller: _search)
           : null,

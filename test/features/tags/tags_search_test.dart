@@ -636,10 +636,15 @@ void main() {
       find.descendant(of: header, matching: find.byType(FrostTitleMenu)),
       findsOneWidget,
     );
+    // The title row names the page; the header keeps an unpainted copy for
+    // screen readers.
     expect(
-      find.descendant(of: header, matching: find.text(t.navigation.tags)),
-      findsNothing,
-      reason: 'the destination is named by the sidebar, not again here',
+      find.ancestor(
+        of: find.descendant(of: header, matching: find.text(t.navigation.tags)),
+        matching: find.byWidgetPredicate((w) => w is Opacity && w.opacity == 0),
+      ),
+      findsOneWidget,
+      reason: 'the destination is not drawn again in the header',
     );
     expect(
       find.descendant(

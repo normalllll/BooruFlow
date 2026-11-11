@@ -155,11 +155,16 @@ class PostWideLayout extends StatelessWidget {
   const PostWideLayout({
     required this.stage,
     required this.information,
+    this.title,
     this.stageKey,
     super.key,
   });
   final Widget stage;
   final Widget information;
+
+  /// The page title the shell's title row shows; the header itself only keeps
+  /// it for screen readers there.
+  final String? title;
   final GlobalKey? stageKey;
 
   @override
@@ -186,7 +191,9 @@ class PostWideLayout extends StatelessWidget {
               fit: StackFit.expand,
               children: [
                 FrostPinnedChrome(
-                  chrome: const SizedBox.shrink(),
+                  chrome: title == null
+                      ? const SizedBox.shrink()
+                      : FrostPageHeader(title: FrostText(title!)),
                   body: CustomScrollView(
                     slivers: [
                       const FrostChromeSpacer(),

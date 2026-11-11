@@ -316,15 +316,13 @@ void main() {
         expect(frostUsesCustomTitleBar, isTrue);
         expect(calls.any((call) => call.method == 'configure'), isTrue);
         if (platform == TargetPlatform.macOS) {
-          // The native strip clears the traffic lights; Back belongs to the
-          // sidebar below that strip rather than beside the native buttons.
-          expect(
-            pageRect.top,
-            greaterThan(controller.state.nativeControls.bottom),
-          );
+          // Back sits in the title row right after the traffic lights; the
+          // page starts below that row.
+          final native = controller.state.nativeControls;
+          expect(pageRect.top, greaterThan(native.bottom));
           final backRect = tester.getRect(back);
-          expect(backRect.top, greaterThanOrEqualTo(pageRect.top));
-          expect(backRect.right, lessThanOrEqualTo(pageRect.left));
+          expect(backRect.bottom, lessThanOrEqualTo(pageRect.top));
+          expect(backRect.left, greaterThanOrEqualTo(native.right));
         } else {
           expect(pageRect.top, 40);
           expect(

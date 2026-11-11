@@ -322,10 +322,17 @@ void main() {
         find.descendant(of: inPage, matching: _button(t.frost.back)),
         findsNothing,
       );
+      // The information column's header carries the post's title, which a
+      // shell's title row shows instead; without a shell it shows it itself.
       expect(
-        find.descendant(of: inPage, matching: find.byType(FrostPageHeader)),
-        findsNothing,
-        reason: 'wide detail has no header row at all',
+        find.descendant(
+          of: find.descendant(
+            of: inPage,
+            matching: find.byType(FrostPageHeader),
+          ),
+          matching: find.text('#102'),
+        ),
+        findsOneWidget,
       );
       expect(tester.takeException(), isNull);
     },

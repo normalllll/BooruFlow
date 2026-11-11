@@ -823,14 +823,14 @@ void main() {
           final host = tester.widget<FrostWindowHost>(
             find.byType(FrostWindowHost),
           );
-          expect(
-            headerTop,
-            greaterThan(host.controller.state.nativeControls.bottom),
+          final native = host.controller.state.nativeControls;
+          expect(headerTop, greaterThan(native.bottom));
+          // Back shares the title row with the traffic lights, after them.
+          final back = tester.getRect(
+            find.byKey(const ValueKey('frost-shell-back')),
           );
-          expect(
-            tester.getRect(find.byKey(const ValueKey('frost-shell-back'))).top,
-            greaterThanOrEqualTo(headerTop),
-          );
+          expect(back.bottom, lessThanOrEqualTo(headerTop));
+          expect(back.left, greaterThanOrEqualTo(native.right));
         } else {
           expect(headerTop, 40);
         }
@@ -1009,7 +1009,9 @@ void main() {
       await open(tester, const FrostPageHeader(title: Text('Second')));
       await escape(tester);
       expect(find.text('Second'), findsNothing);
-      expect(find.text('First'), findsOneWidget);
+      // The title row shows the page title; the header keeps a copy for
+      // screen readers.
+      expect(find.text('First'), findsWidgets);
       await escape(tester);
       expect(find.text('First'), findsNothing);
       expect(atRoot(tester), isTrue);
@@ -1042,7 +1044,7 @@ void main() {
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await tester.pump();
       expect(focus.hasFocus, isFalse);
-      expect(find.text('Form'), findsOneWidget);
+      expect(find.text('Form'), findsWidgets);
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));

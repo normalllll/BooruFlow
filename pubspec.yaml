@@ -19,7 +19,7 @@ dependencies:
     git:
       url: &frost https://github.com/normalllll/frost_ui.git
       path: packages/frost_ui
-      ref: &frost_ref 1bdd8165c32ae5cbcf7a4851a79818699f97ccde
+      ref: &frost_ref 68613955b369905fa0ea8c7221ae987614d8dea5
   frost_data:
     git: {url: *frost, path: packages/frost_data, ref: *frost_ref}
   pasteboard: ^0.5.0

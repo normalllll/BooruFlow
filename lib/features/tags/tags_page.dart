@@ -120,6 +120,7 @@ class _TagsPageState extends ConsumerState<TagsPage> {
     final inline = !FrostShell.titleContentInCaptionOf(context);
     return AppPage(
       header: FrostPageHeader(
+        title: FrostText(t.navigation.tags),
         // As on Browse: the source leads the header, and the search follows it
         // where the title bar has no room for it.
         leading: [

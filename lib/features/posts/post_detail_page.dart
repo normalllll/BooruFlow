@@ -524,6 +524,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) => old.dispose());
     }
     return PostWideLayout(
+      title: '#${_collection[_index].id}',
       stageKey: _stageKey(_collection[_index]),
       stage: _stageOf(_index, stacked: false),
       information: _informationOf(_index),

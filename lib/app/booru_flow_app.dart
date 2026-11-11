@@ -164,7 +164,11 @@ class _BooruFlowAppState extends ConsumerState<BooruFlowApp> {
                         child: Overlay.wrap(
                           child: FrostWindowHost(
                             controller: widget.windowController,
-                            title: '${AppInfo.name} · $pageTitle',
+                            // Page first, as each platform's window lists and
+                            // task switchers show it.
+                            title: pageTitle == AppInfo.name
+                                ? AppInfo.name
+                                : '$pageTitle — ${AppInfo.name}',
                             backdrop: effective == BackgroundMaterial.mica
                                 ? FrostWindowBackdrop.mica
                                 : FrostWindowBackdrop.none,
