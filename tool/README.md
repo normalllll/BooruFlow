@@ -22,6 +22,34 @@ missing outputs; no provider or database source changes are required.
 Stop and rebuild a running app after regenerating the bridge: hot reload cannot
 replace its native Rust library. Do not hand-edit generated Dart/Rust files.
 
+## History check
+
+Enable the repository hooks once per clone:
+
+```bash
+git config core.hooksPath tool/hooks
+```
+
+`pre-commit` checks the staged diff, `commit-msg` the message, and `pre-push`
+the commits the push would send. A failing hook stops the commit or push
+before anything leaves the machine; CI does not run this check. Run the push
+check by hand on the commits that are not on the upstream yet, or on any
+range:
+
+```bash
+dart tool/check_history.dart
+dart tool/check_history.dart --range <base>..<tip>
+```
+
+The check rejects merge commits, leftover `fixup!` commits, subjects that are
+not Conventional Commits, files that `.gitignore` or `.git/info/exclude`
+excludes, and text that belongs to a plan or conversation: plan and stage
+labels, spec section numbers, request IDs outside `// frost-escape:` lines,
+review and decision history, and paths on this machine. It also flags a `fix:`
+commit that changes a file an unpushed `feat:` or `refactor:` commit created;
+fold such a fix into that commit with `git commit --fixup`. When a finding is
+wrong, the maintainer decides whether to push past it.
+
 ## UI automation and sample data
 
 - `tool/automation_entry.dart` is the Debug entrypoint for the

@@ -21,6 +21,20 @@ BooruFlow builds on frost_ui, which is expected in a sibling checkout at
   skill; add missing hooks there, not to `lib/main.dart`. It runs on the sample
   data of `tool/sample_main.dart` in an isolated profile.
 
+## Commit content
+
+- Code, test names, file names and commit messages describe the code, never
+  the plan, review or conversation that produced it. Specs, plans and handoff
+  notes stay in the ignored `docs/` folder or in `../frost_ui/docs/`; do not
+  commit, quote or link them.
+- `// app-owned: <feature>` and `// frost-escape: <request ID>` are the only
+  places where a feature tag or request ID may appear.
+- A fix to a commit that is not on `origin/main` yet goes into that commit with
+  `git commit --fixup`. Pushed history is linear.
+- Enable the hooks once per clone with `git config core.hooksPath tool/hooks`.
+  They run `dart tool/check_history.dart` on each commit and push. Never pass
+  `--no-verify`; if the check flags correct text, stop and report it.
+
 ## Commits
 
 - Do not add AI attribution to commit messages or pull request descriptions.

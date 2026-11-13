@@ -1,0 +1,4 @@
+#!/bin/sh
+# Checks the commits being pushed. Git passes the remote name in $1 and the
+# refs on stdin. See tool/README.md, "History check".
+exec dart tool/check_history.dart --pre-push "$1"

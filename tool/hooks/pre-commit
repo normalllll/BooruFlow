@@ -1,0 +1,3 @@
+#!/bin/sh
+# Checks the staged diff. See tool/README.md, "History check".
+exec dart tool/check_history.dart --staged
