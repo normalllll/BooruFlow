@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' show lerpDouble;
 
 import 'package:booruflow/app/frost_config.dart';
 import 'package:booruflow/features/posts/widgets/post_detail_controls.dart';
@@ -25,6 +26,13 @@ bool postDetailStacked(BuildContext context, Size space) =>
 
 /// The corners of a stage: a stacked one meets the screen edges.
 double postStageRadius({required bool stacked}) => stacked ? 0 : FrostRadius.lg;
+
+/// The height of a stacked stage in [space]: its width over [aspectRatio], up to
+/// the part of the page a long image may take.
+double postStackedStageHeight(Size space, double aspectRatio) => math.min(
+  space.width / aspectRatio,
+  math.max(_minimumStageHeight, space.height * _stageHeightFraction),
+);
 
 /// The window around the media: its artwork where there is some, else the page.
 class PostDetailBackdrop extends StatelessWidget {
@@ -91,63 +99,273 @@ class PostInformationSliver extends StatelessWidget {
   );
 }
 
-/// One post in a stacked page: the media edge to edge at the top, scrolling
-/// away with its information. [onMetrics] hears each change of its position.
+/// The same information as one box, for a place that cross-fades it as a whole.
+class PostInformationBox extends StatelessWidget {
+  const PostInformationBox({
+    required this.primary,
+    this.actions,
+    this.sections = const [],
+    super.key,
+  });
+  final Widget primary;
+  final Widget? actions;
+  final List<Widget> sections;
+
+  Widget _block(Widget child, double gap) => RepaintBoundary(
+    key: child.key == null ? null : ValueKey(child.key),
+    child: Padding(
+      padding: EdgeInsets.only(top: gap),
+      child: child,
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) => FrostContentColumn(
+    child: Padding(
+      padding: const EdgeInsets.symmetric(vertical: FrostGap.section),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _block(primary, 0),
+          if (actions case final actions?) _block(actions, _actionsGap),
+          for (final section in sections) _block(section, _blockGap),
+        ],
+      ),
+    ),
+  );
+}
+
+/// A post with a single stage: the media edge to edge at the top, scrolling
+/// away with its information.
 class PostStackedScroll extends StatelessWidget {
   const PostStackedScroll({
     required this.stage,
     required this.information,
-    this.stageKey,
-    this.onMetrics,
     super.key,
   });
   final Widget stage;
   final Widget information;
-  final GlobalKey? stageKey;
-  final ValueChanged<ScrollMetrics>? onMetrics;
 
-  bool _report(ScrollMetrics metrics, int depth) {
-    if (depth == 0 && metrics.axis == Axis.vertical) onMetrics?.call(metrics);
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, box) => CustomScrollView(
+      primary: false,
+      slivers: [
+        SliverToBoxAdapter(
+          child: MediaQuery.removePadding(
+            context: context,
+            removeBottom: true,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: math.max(
+                  _minimumStageHeight,
+                  box.maxHeight * _stageHeightFraction,
+                ),
+              ),
+              child: stage,
+            ),
+          ),
+        ),
+        MediaQuery.removePadding(
+          context: context,
+          removeTop: true,
+          child: information,
+        ),
+        SliverToBoxAdapter(
+          child: SizedBox(height: MediaQuery.paddingOf(context).bottom),
+        ),
+      ],
+    ),
+  );
+}
+
+/// The stacked post detail: one vertical scroll whose first part is the stage
+/// area, a row of stages that pages sideways with the finger, then the
+/// information of the post the pages last settled on.
+///
+/// The stage area is as high as the stage in front of it; while pages move it
+/// is the blend of the two stages either side of the fractional page, so the
+/// information below follows the image continuously. [onSettled] hears the
+/// page the row comes to rest on; the information and everything else that
+/// belongs to a post changes then, not midway.
+class PostStackedLayout extends StatefulWidget {
+  const PostStackedLayout({
+    required this.pages,
+    required this.itemCount,
+    required this.stageBuilder,
+    required this.ratioOf,
+    required this.information,
+    required this.informationIdentity,
+    this.ratios,
+    this.menu = const [],
+    this.onSettled,
+    super.key,
+  });
+  final PageController pages;
+  final int itemCount;
+  final IndexedWidgetBuilder stageBuilder;
+
+  /// The aspect ratio the stage at an index presents right now.
+  final double Function(int index) ratioOf;
+
+  /// Notifies when any [ratioOf] value changes.
+  final Listenable? ratios;
+  final Widget information;
+
+  /// What the information is of; a new one cross-fades in.
+  final Object informationIdentity;
+  final List<FrostMenuEntry> menu;
+  final ValueChanged<int>? onSettled;
+
+  @override
+  State<PostStackedLayout> createState() => _PostStackedLayoutState();
+}
+
+class _PostStackedLayoutState extends State<PostStackedLayout> {
+  final _scroll = ScrollController();
+  late final _past = _PastStage(_isPastStage);
+  late Listenable _heights;
+  Size _space = Size.zero;
+  double _header = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _scroll.addListener(_past.refresh);
+    _bind();
+  }
+
+  void _bind() {
+    _heights = Listenable.merge([widget.pages, ?widget.ratios])
+      ..addListener(_past.refresh);
+  }
+
+  @override
+  void didUpdateWidget(PostStackedLayout oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.pages != widget.pages || oldWidget.ratios != widget.ratios) {
+      _heights.removeListener(_past.refresh);
+      _bind();
+    }
+  }
+
+  @override
+  void dispose() {
+    _heights.removeListener(_past.refresh);
+    _scroll.dispose();
+    _past.dispose();
+    super.dispose();
+  }
+
+  /// The stage area's height: the blend of the stages either side of the page.
+  double _stageHeight() {
+    final count = widget.itemCount;
+    if (count == 0 || _space.isEmpty) return 0;
+    final pages = widget.pages;
+    final shown = pages.hasClients ? pages.page : null;
+    final page = (shown ?? pages.initialPage.toDouble()).clamp(
+      0.0,
+      count - 1.0,
+    );
+    final before = page.floor(), after = math.min(before + 1, count - 1);
+    double height(int index) =>
+        postStackedStageHeight(_space, widget.ratioOf(index));
+    return lerpDouble(height(before), height(after), page - before)!;
+  }
+
+  /// Whether the stage has scrolled out from under the header.
+  bool _isPastStage() =>
+      _scroll.hasClients && _scroll.offset >= _stageHeight() - _header;
+
+  bool _pageScrolled(ScrollNotification notification) {
+    if (notification is ScrollEndNotification &&
+        notification.depth == 0 &&
+        notification.metrics.axis == Axis.horizontal &&
+        notification.metrics is PageMetrics) {
+      final page = (notification.metrics as PageMetrics).page;
+      if (page != null && (page - page.round()).abs() < .001) {
+        widget.onSettled?.call(page.round());
+      }
+    }
     return false;
   }
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, box) => NotificationListener<ScrollMetricsNotification>(
-      onNotification: (n) => _report(n.metrics, n.depth),
-      child: NotificationListener<ScrollNotification>(
-        onNotification: (n) => _report(n.metrics, n.depth),
-        child: CustomScrollView(
-          primary: false,
-          slivers: [
-            SliverToBoxAdapter(
-              child: MediaQuery.removePadding(
-                context: context,
-                removeBottom: true,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxHeight: math.max(
-                      _minimumStageHeight,
-                      box.maxHeight * _stageHeightFraction,
+  Widget build(BuildContext context) {
+    _header =
+        MediaQuery.paddingOf(context).top + FrostPageHeader.verticalHeight;
+    final pages = NotificationListener<ScrollNotification>(
+      onNotification: _pageScrolled,
+      child: PageView.builder(
+        key: const ValueKey('post-detail-pages'),
+        controller: widget.pages,
+        // The pages beside the one shown are built ahead, so a neighbour's
+        // image is already on its way when it slides into view.
+        allowImplicitScrolling: true,
+        itemCount: widget.itemCount,
+        itemBuilder: widget.stageBuilder,
+      ),
+    );
+    return LayoutBuilder(
+      builder: (context, box) {
+        _space = box.biggest;
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            CustomScrollView(
+              controller: _scroll,
+              slivers: [
+                SliverToBoxAdapter(
+                  child: MediaQuery.removePadding(
+                    context: context,
+                    removeBottom: true,
+                    child: AnimatedBuilder(
+                      animation: _heights,
+                      child: pages,
+                      builder: (context, child) =>
+                          SizedBox(height: _stageHeight(), child: child),
                     ),
                   ),
-                  child: KeyedSubtree(key: stageKey, child: stage),
                 ),
-              ),
+                SliverToBoxAdapter(
+                  child: MediaQuery.removePadding(
+                    context: context,
+                    removeTop: true,
+                    child: FrostLayoutCrossfade(
+                      layoutIdentity: widget.informationIdentity,
+                      child: widget.information,
+                    ),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: SizedBox(height: MediaQuery.paddingOf(context).bottom),
+                ),
+              ],
             ),
-            MediaQuery.removePadding(
-              context: context,
-              removeTop: true,
-              child: information,
-            ),
-            SliverToBoxAdapter(
-              child: SizedBox(height: MediaQuery.paddingOf(context).bottom),
-            ),
+            PostMediaHeader(pastStage: _past, menu: widget.menu),
           ],
-        ),
-      ),
-    ),
-  );
+        );
+      },
+    );
+  }
+}
+
+/// Whether the stage is behind the header: read from the scroll whenever it is
+/// asked, and announced only when it changes.
+class _PastStage extends ChangeNotifier implements ValueListenable<bool> {
+  _PastStage(this._read);
+  final bool Function() _read;
+  bool _announced = false;
+
+  @override
+  bool get value => _read();
+
+  void refresh() {
+    final now = _read();
+    if (now == _announced) return;
+    _announced = now;
+    notifyListeners();
+  }
 }
 
 /// A stage beside a column of information that scrolls on its own.

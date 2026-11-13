@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' show PointerDeviceKind;
+
 import 'package:booruflow/app/ambient_artwork.dart';
 import 'package:booruflow/app/frost_config.dart';
 import 'package:booruflow/core/settings/background.dart';
@@ -17,11 +18,11 @@ import 'package:booruflow/features/posts/widgets/post_video.dart';
 import 'package:booruflow/intl/number_format.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_navigation.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frost_ui/frost_ui.dart';
+
 import 'detail_session.dart';
 import 'displayed_media_frame.dart';
 import 'stage_image_presentation.dart';
@@ -38,9 +39,15 @@ class PostDetailPage extends ConsumerStatefulWidget {
 /// How many posts from the loaded end paging starts loading the next page.
 const _prefetchAhead = 3;
 
-class _PostDetailPageState extends ConsumerState<PostDetailPage> {
+class _PostDetailPageState extends ConsumerState<PostDetailPage>
+    with TickerProviderStateMixin {
   late List<Post> _collection;
+
+  /// The post the page shows: the page the stacked pages last settled on.
   late int _index;
+
+  /// The page the stacked pages are heading to; [_index] once they settle.
+  late int _target;
   // Each page has its own frame: a neighbour coming into view must not take
   // over what the current post's actions copy.
   final _displayedFrames = <String, DisplayedMediaFrame>{};
@@ -54,9 +61,9 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
   /// The stacked pages; null while the layout is wide.
   PageController? _pages;
 
-  /// Whether the current page has scrolled its stage out from under the header.
-  final _pastStage = ValueNotifier(false);
-  final _scrolledPast = <String, bool>{};
+  /// The ratio each visited stage presents, following that stage's own spring,
+  /// so the stacked stage area is as high as the stage it holds.
+  late final _ratios = _ShownRatios(this, () => context);
   late final PostDetailSession _session;
   final _detailSubscriptions = <ProviderSubscription<AsyncValue<Post>>>[];
   final _familySubscriptions = <ProviderSubscription<AsyncValue<List<Post>>>>[];
@@ -78,10 +85,39 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
 
   final _previews = <String, ImageProvider>{};
   final _presentations = <String, StageImagePresentation>{};
-  StageImagePresentation _presentation(Post post) => _presentations.putIfAbsent(
-    post.postKey,
-    () => StageImagePresentation(post: post, preview: _previews[post.postKey]),
-  );
+  StageImagePresentation _presentation(Post post) =>
+      _presentations.putIfAbsent(post.postKey, () {
+        final presentation = StageImagePresentation(
+          post: post,
+          preview: _previews[post.postKey],
+        );
+        _measurePreview(post, presentation);
+        return presentation;
+      });
+
+  /// Takes the shape of a preview whose pixels are already decoded into the
+  /// work's geometry, before any stage exists: the stacked stage area is laid
+  /// out ahead of the stage and must start at the height the stage presents.
+  /// A preview that is still arriving is left to its stage, which reports the
+  /// ratio it presents to the stage area, so both change together.
+  void _measurePreview(Post post, StageImagePresentation presentation) {
+    final preview = presentation.preview;
+    if (preview == null) return;
+    final stream = preview.resolve(ImageConfiguration.empty);
+    late final ImageStreamListener listener;
+    listener = ImageStreamListener((info, synchronousCall) {
+      if (synchronousCall) {
+        presentation.geometry.decoded(
+          post.postKey,
+          info.image.width / info.image.height,
+        );
+      }
+      info.dispose();
+      stream.removeListener(listener);
+    }, onError: (_, _) => stream.removeListener(listener));
+    stream.addListener(listener);
+  }
+
   Post? _member;
   Post get _current => _member ?? _collection[_index];
   late final _ambient = ref.read(ambientArtworkProvider.notifier);
@@ -96,7 +132,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
   void initState() {
     super.initState();
     _collection = widget.args.collection;
-    _index = widget.args.initialIndex;
+    _index = _target = widget.args.initialIndex;
     _session = PostDetailSession(
       initial: _collection[_index],
       knownPosts: _collection,
@@ -128,7 +164,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
       frame.dispose();
     }
     _pages?.dispose();
-    _pastStage.dispose();
+    _ratios.dispose();
     for (final presentation in _presentations.values) {
       presentation.dispose();
     }
@@ -178,12 +214,13 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
       unawaited(_loadAndSelect(index));
       return;
     }
-    if (index < 0 || index >= _collection.length || index == _index) return;
+    if (index < 0 || index >= _collection.length || index == _target) return;
     final pages = _pages;
     if (pages == null || !pages.hasClients) {
       _show(index);
     } else if (animate && !MediaQuery.disableAnimationsOf(context)) {
-      // The pages report the change as they pass the middle.
+      // The pages report the change once they come to rest.
+      _target = index;
       unawaited(
         pages.animateToPage(
           index,
@@ -192,17 +229,21 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
         ),
       );
     } else {
+      _target = index;
       pages.jumpToPage(index);
     }
   }
 
+  /// Switches to the post at [index]: the page it settled on, or the one a
+  /// key, a button or the viewer chose.
   void _show(int index) {
-    if (index == _index || index >= _collection.length) return;
+    if (index >= _collection.length) return;
+    _target = index;
+    if (index == _index) return;
     setState(() {
       _index = index;
       _member = null;
     });
-    _pastStage.value = _scrolledPast[_collection[index].postKey] ?? false;
     _session.select(_collection[index]);
     _selectAmbient(_collection[index]);
     widget.args.onIndexChanged?.call(index);
@@ -242,8 +283,8 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
       return KeyEventResult.ignored;
     }
     final next = switch (event.logicalKey) {
-      LogicalKeyboardKey.arrowLeft => _index - 1,
-      LogicalKeyboardKey.arrowRight => _index + 1,
+      LogicalKeyboardKey.arrowLeft => _target - 1,
+      LogicalKeyboardKey.arrowRight => _target + 1,
       _ => null,
     };
     if (next == null) return KeyEventResult.ignored;
@@ -313,11 +354,36 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
       });
   Post _postAt(int index) => index == _index ? _current : _collection[index];
 
+  /// The post a stage shows: the loaded detail once there is one.
+  Post _stagePost(int index) {
+    final initial = _postAt(index);
+    return _session.detail(initial).value ?? initial;
+  }
+
+  /// The ratio the stage at [index] presents; before it has shown one, the one
+  /// its work's geometry holds.
+  double _ratioOf(int index) {
+    final post = _stagePost(index);
+    return _ratios.shown(post.postKey) ??
+        _presentation(post).geometry.aspectRatio;
+  }
+
+  /// Where a download of [post] flies from: the stage on screen and the image
+  /// it displays, or null while either is missing.
+  ({Rect rect, ImageProvider image})? _flightSource(Post post) {
+    final image = _previews[post.postKey];
+    final stage = _stageKey(_collection[_index]).currentContext;
+    final box = stage?.findRenderObject();
+    if (image == null || box is! RenderBox || !box.attached || !box.hasSize) {
+      return null;
+    }
+    return (rect: box.localToGlobal(Offset.zero) & box.size, image: image);
+  }
+
   /// The stage of the post at [index]; the buttons sit on the fixed stage slot,
   /// not on the media, whose rectangle changes with every post's ratio.
   Widget _stageOf(int index, {required bool stacked}) {
-    final initial = _postAt(index);
-    final post = _session.detail(initial).value ?? initial;
+    final post = _stagePost(index);
     final current = index == _index;
     // A page that is only passing by never flies back to the grid.
     final heroTag = current && post.postKey == widget.args.post.postKey
@@ -330,8 +396,8 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
       hasMore: _hasMore,
       swipes: !stacked,
       onSelect: _select,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
+      child: _WidthBuilder(
+        builder: (context, width) {
           Widget cover(VoidCallback? play) => PostMedia(
             displayedFrame: _frame(post),
             presentation: _presentation(post),
@@ -344,15 +410,18 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
             // Tall natural images never request an original-pixel decode.
             decodeWidth: math.max(
               1,
-              (constraints.maxWidth * MediaQuery.devicePixelRatioOf(context))
-                  .ceil(),
+              (width * MediaQuery.devicePixelRatioOf(context)).ceil(),
             ),
             preview: _previews[post.postKey],
             stageRadius: radius,
-            stageBuilder: (_, ratio, frame) => FrostMediaStage(
-              key: ValueKey(post.postKey),
-              aspectRatio: ratio,
-              child: frame,
+            stageBuilder: (_, ratio, frame) => _RatioReport(
+              ratio: ratio,
+              onRatio: (ratio) => _ratios.report(post.postKey, ratio),
+              child: FrostMediaStage(
+                key: ValueKey(post.postKey),
+                aspectRatio: ratio,
+                child: frame,
+              ),
             ),
             onImageReady: (image) {
               if (image == null || !mounted) return;
@@ -388,10 +457,14 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
             cover: cover,
             onFullscreen: (position, muted) =>
                 _open(post, playbackPosition: position, muted: muted),
-            stage: (ratio, player) => FrostMediaStage(
-              key: ValueKey(post.postKey),
-              aspectRatio: ratio,
-              child: FrostMediaFrame(radius: radius, child: player),
+            stage: (ratio, player) => _RatioReport(
+              ratio: ratio,
+              onRatio: (ratio) => _ratios.report(post.postKey, ratio),
+              child: FrostMediaStage(
+                key: ValueKey(post.postKey),
+                aspectRatio: ratio,
+                child: FrostMediaFrame(radius: radius, child: player),
+              ),
             ),
           );
         },
@@ -399,7 +472,9 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
     );
   }
 
-  Widget _informationOf(int index) {
+  /// The information of the post at [index]: a sliver beside the stage, a box
+  /// below it, where it cross-fades from one post to the next.
+  Widget _informationOf(int index, {required bool stacked}) {
     final initial = _postAt(index);
     final key = (sourceId: initial.sourceId, postId: initial.id);
     final detail = _session.detail(initial);
@@ -407,112 +482,93 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
     final loading = detail.request.isLoading && initial.data.tags.isEmpty;
     final family = _session.family(_collection[index]);
     final failure = detail.request.error;
-    return PostInformationSliver(
-      primary: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (failure != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: FrostGap.group),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  FrostInlineBanner(
-                    tone: FrostBannerTone.negative,
-                    message: describeBooruError(
-                      failure,
-                      includeDiagnostics: false,
-                    ),
-                    actionLabel: t.frost.retry,
-                    onAction: () {
-                      ref.invalidate(postAttributionDetailProvider(key));
-                      _session.retry(post);
-                    },
+    final primary = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (failure != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: FrostGap.group),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                FrostInlineBanner(
+                  tone: FrostBannerTone.negative,
+                  message: describeBooruError(
+                    failure,
+                    includeDiagnostics: false,
                   ),
-                  if (booruErrorDetails(failure) case final details?)
-                    FrostErrorDetails.quiet(details: details),
-                ],
-              ),
+                  actionLabel: t.frost.retry,
+                  onAction: () {
+                    ref.invalidate(postAttributionDetailProvider(key));
+                    _session.retry(post);
+                  },
+                ),
+                if (booruErrorDetails(failure) case final details?)
+                  FrostErrorDetails.quiet(details: details),
+              ],
             ),
-          PostPrimaryInformation(
-            key: const ValueKey('primary'),
-            post: post,
-            loading: loading,
           ),
-        ],
-      ),
-      actions: PostDetailActions(
-        key: const ValueKey('actions'),
-        displayedFrame: _frame(post),
-        post: post,
-        onOpen: () => _presentation(post).requestOriginal(post),
-        presentation: _presentation(post),
-        moreEntries: _menu(post),
-      ),
-      sections: [
-        if (family != null && (family.error != null || family.keys.length > 1))
-          _RelatedPosts(
-            key: ValueKey(('family', family.root)),
-            post: post,
-            family: family,
-            session: _session,
-            onSelected: _selectRelated,
-          ),
-        if (loading || post.data.tags.isNotEmpty)
-          PostTagsSection(
-            key: const ValueKey('tags'),
-            post: post,
-            query: widget.args.query,
-          ).frostSkeleton(loading),
-        PostInformationSection(key: const ValueKey('information'), post: post),
+        PostPrimaryInformation(
+          key: const ValueKey('primary'),
+          post: post,
+          loading: loading,
+        ),
       ],
     );
-  }
-
-  void _stageScrolled(Post page, ScrollMetrics metrics) {
-    void update() {
-      if (!mounted) return;
-      final stage = _stageKey(page).currentContext?.findRenderObject();
-      if (stage is! RenderBox || !stage.hasSize) return;
-      final header =
-          MediaQuery.paddingOf(context).top + FrostPageHeader.verticalHeight;
-      final past = metrics.extentBefore >= stage.size.height - header;
-      _scrolledPast[page.postKey] = past;
-      if (page.postKey == _collection[_index].postKey) _pastStage.value = past;
-    }
-
-    // Metrics also arrive during layout, before the header may rebuild.
-    if (SchedulerBinding.instance.schedulerPhase ==
-        SchedulerPhase.persistentCallbacks) {
-      SchedulerBinding.instance.addPostFrameCallback((_) => update());
-    } else {
-      update();
-    }
+    final actions = PostDetailActions(
+      key: const ValueKey('actions'),
+      displayedFrame: _frame(post),
+      post: post,
+      onOpen: () => _presentation(post).requestOriginal(post),
+      presentation: _presentation(post),
+      flightSource: () => _flightSource(post),
+      moreEntries: _menu(post),
+    );
+    final sections = [
+      if (family != null && (family.error != null || family.keys.length > 1))
+        _RelatedPosts(
+          key: ValueKey(('family', family.root)),
+          post: post,
+          family: family,
+          session: _session,
+          onSelected: _selectRelated,
+        ),
+      if (loading || post.data.tags.isNotEmpty)
+        PostTagsSection(
+          key: const ValueKey('tags'),
+          post: post,
+          query: widget.args.query,
+        ).frostSkeleton(loading),
+      PostInformationSection(key: const ValueKey('information'), post: post),
+    ];
+    return stacked
+        ? PostInformationBox(
+            primary: primary,
+            actions: actions,
+            sections: sections,
+          )
+        : PostInformationSliver(
+            primary: primary,
+            actions: actions,
+            sections: sections,
+          );
   }
 
   Widget _stacked(Post post) {
     final pages = _pages ??= PageController(initialPage: _index);
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        PageView.builder(
-          key: const ValueKey('post-detail-pages'),
-          controller: pages,
-          itemCount: _collection.length,
-          onPageChanged: _show,
-          itemBuilder: (context, index) {
-            final page = _collection[index];
-            return PostStackedScroll(
-              key: ValueKey(('post-detail-page', page.postKey)),
-              stageKey: _stageKey(page),
-              stage: _stageOf(index, stacked: true),
-              information: _informationOf(index),
-              onMetrics: (metrics) => _stageScrolled(page, metrics),
-            );
-          },
-        ),
-        PostMediaHeader(pastStage: _pastStage, menu: _menu(post)),
-      ],
+    return PostStackedLayout(
+      pages: pages,
+      itemCount: _collection.length,
+      stageBuilder: (context, index) => KeyedSubtree(
+        key: _stageKey(_collection[index]),
+        child: _stageOf(index, stacked: true),
+      ),
+      ratioOf: _ratioOf,
+      ratios: _ratios,
+      information: _informationOf(_index, stacked: true),
+      informationIdentity: _collection[_index].postKey,
+      menu: _menu(post),
+      onSettled: _show,
     );
   }
 
@@ -520,14 +576,14 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
     final old = _pages;
     if (old != null) {
       _pages = null;
-      _pastStage.value = false;
+      _target = _index;
       WidgetsBinding.instance.addPostFrameCallback((_) => old.dispose());
     }
     return PostWideLayout(
       title: '#${_collection[_index].id}',
       stageKey: _stageKey(_collection[_index]),
       stage: _stageOf(_index, stacked: false),
-      information: _informationOf(_index),
+      information: _informationOf(_index, stacked: false),
     );
   }
 
@@ -563,6 +619,124 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
       child: Focus(autofocus: true, onKeyEvent: _key, child: layout),
     );
   }
+}
+
+/// Builds from the width it is given and rebuilds only when that width, the
+/// pixel ratio or its own builder changes: not when only the height does, as
+/// the stacked stage area's does every frame while it follows the images.
+class _WidthBuilder extends StatefulWidget {
+  const _WidthBuilder({required this.builder});
+  final Widget Function(BuildContext context, double width) builder;
+  @override
+  State<_WidthBuilder> createState() => _WidthBuilderState();
+}
+
+class _WidthBuilderState extends State<_WidthBuilder> {
+  Widget? _built;
+  double? _width, _pixelRatio;
+
+  @override
+  void didUpdateWidget(_WidthBuilder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _built = null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pixelRatio = MediaQuery.devicePixelRatioOf(context);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (_built == null ||
+            _width != constraints.maxWidth ||
+            _pixelRatio != pixelRatio) {
+          _width = constraints.maxWidth;
+          _pixelRatio = pixelRatio;
+          _built = widget.builder(context, constraints.maxWidth);
+        }
+        return _built!;
+      },
+    );
+  }
+}
+
+/// The ratio each stage presents, by post. A stage follows a new ratio on the
+/// standard spring; so does the value here, which keeps the stacked stage
+/// area as high as the stage it holds while that happens. Notifies as it moves.
+class _ShownRatios extends ChangeNotifier {
+  _ShownRatios(this._vsync, this._context);
+  final TickerProvider _vsync;
+  final BuildContext Function() _context;
+  final _controllers = <String, AnimationController>{};
+
+  /// The ratio shown for [postKey], or null before its stage has reported one.
+  double? shown(String postKey) => _controllers[postKey]?.value;
+
+  void report(String postKey, double ratio) {
+    final controller = _controllers[postKey];
+    if (controller == null) {
+      _controllers[postKey] = AnimationController.unbounded(
+        vsync: _vsync,
+        value: ratio,
+      )..addListener(notifyListeners);
+      notifyListeners();
+    } else {
+      unawaited(
+        FrostMotion.springTo(
+          _context(),
+          controller,
+          ratio,
+          FrostMotion.standard,
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final controller in _controllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+}
+
+/// Reports the ratio its stage presents, outside the build that changed it:
+/// the stage area listens and must not be marked dirty from within a build.
+class _RatioReport extends StatefulWidget {
+  const _RatioReport({
+    required this.ratio,
+    required this.onRatio,
+    required this.child,
+  });
+  final double ratio;
+  final ValueChanged<double> onRatio;
+  final Widget child;
+  @override
+  State<_RatioReport> createState() => _RatioReportState();
+}
+
+class _RatioReportState extends State<_RatioReport> {
+  @override
+  void initState() {
+    super.initState();
+    _report();
+  }
+
+  @override
+  void didUpdateWidget(_RatioReport oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.ratio != widget.ratio) _report();
+  }
+
+  void _report() {
+    final ratio = widget.ratio, report = widget.onRatio;
+    scheduleMicrotask(() {
+      if (mounted) report(ratio);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 class _RelatedPosts extends StatelessWidget {
