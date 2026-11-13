@@ -22,9 +22,7 @@ class AppLoadingContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => switch (_shape) {
-    _LoadingShape.tags => Wrap(
-      spacing: FrostGap.related,
-      runSpacing: FrostGap.related,
+    _LoadingShape.tags => FrostWrap(
       children: [
         for (final label in labels)
           FrostTag(label: label, dataColor: dataColor),
