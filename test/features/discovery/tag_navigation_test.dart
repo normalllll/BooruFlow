@@ -9,11 +9,11 @@ import 'package:booruflow/features/settings/settings_page.dart';
 import 'package:booruflow/features/tags/my_tags_page.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_navigation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:hive_ce/hive.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'search_interaction_test.dart' show testSource;
 
@@ -57,7 +57,7 @@ void main() {
               config: appFrostConfig,
               appearance: FrostAppearance.initial(
                 FrostPalettes.pink,
-              ).copyWith(mode: ThemeMode.dark),
+              ).copyWith(mode: FrostThemeMode.dark),
               routerConfig: AppRouter.router,
             ),
           ),

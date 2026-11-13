@@ -4,7 +4,7 @@ import 'package:booruflow/features/settings/network/network_logic.dart';
 import 'package:booruflow/features/settings/network/widgets/network_status_panel.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
@@ -83,8 +83,8 @@ void main() {
         addTearDown(tester.view.resetDevicePixelRatio);
         await tester.pumpWidget(panel(scale: scale));
         await tester.pumpAndSettle();
-        expect(find.byType(TabBar), findsNothing);
-        expect(find.byType(TabBarView), findsNothing);
+        expect(find.byType(FrostTabBar), findsNothing);
+        expect(find.byType(FrostTabView), findsNothing);
         for (final id in ['yande', 'danbooru', 'wallhaven']) {
           expect(find.byKey(ValueKey('source-details-$id')), findsOneWidget);
         }

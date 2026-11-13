@@ -7,7 +7,7 @@ import 'package:booruflow/features/settings/settings_page.dart';
 import 'package:booruflow/features/update/logic.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
@@ -88,7 +88,7 @@ void main() {
         findsOneWidget,
       );
       expect(find.text(t.settingsDetails.systemDnsShort), findsOneWidget);
-      expect(find.byType(FrostPicker<ThemeMode>), findsNothing);
+      expect(find.byType(FrostPicker<FrostThemeMode>), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );

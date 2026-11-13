@@ -2,13 +2,12 @@ import 'package:booruflow/app/frost_config.dart';
 import 'package:booruflow/core/settings/settings_service.dart';
 import 'package:booruflow/features/settings/appearance_settings.dart';
 import 'package:booruflow/intl/translations.g.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
 class _Store implements SettingsServiceStore {
   @override

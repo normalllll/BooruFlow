@@ -7,11 +7,12 @@ import 'package:booruflow/features/settings/network/widgets/network_status_panel
 import 'package:booruflow/features/settings/network/widgets/proxy_settings_panel.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/api/web_challenge.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:material_ui/material_ui.dart';
+
 import '../../support/browse_support.dart' show browseTestApp;
 import '../discovery/search_interaction_test.dart' show testSource;
 import 'network_status_panel_test.dart' show snapshot, result;

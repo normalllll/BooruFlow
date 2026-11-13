@@ -4,7 +4,7 @@ import 'package:booruflow/features/downloads/logic.dart';
 import 'package:booruflow/features/downloads/models/booru_download_item.dart';
 import 'package:booruflow/features/downloads/widgets/download_task_widgets.dart';
 import 'package:booruflow/intl/translations.g.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';

@@ -3,7 +3,7 @@ import 'package:booruflow/core/settings/settings_service.dart';
 import 'package:booruflow/features/settings/appearance_settings.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/ui/custom/download_flight.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';

@@ -159,7 +159,7 @@ void main() {
     tester.view.physicalSize = const Size(1147, 717);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    final tabs = TabController(length: 2, vsync: const TestVSync());
+    final tabs = FrostTabController(length: 2, vsync: const TestVSync());
     addTearDown(tabs.dispose);
     await tester.pumpWidget(
       browseTestApp(
@@ -192,7 +192,7 @@ void main() {
     tester.view.physicalSize = const Size(1147, 717);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    final tabs = TabController(length: 2, vsync: const TestVSync());
+    final tabs = FrostTabController(length: 2, vsync: const TestVSync());
     addTearDown(tabs.dispose);
     await tester.pumpWidget(
       browseTestApp(
@@ -248,7 +248,7 @@ void main() {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    final tabs = TabController(length: 2, vsync: const TestVSync());
+    final tabs = FrostTabController(length: 2, vsync: const TestVSync());
     addTearDown(tabs.dispose);
     final primary = ScrollController();
     addTearDown(primary.dispose);

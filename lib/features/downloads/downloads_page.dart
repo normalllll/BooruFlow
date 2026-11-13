@@ -107,7 +107,7 @@ class _DownloadsPageState extends ConsumerState<DownloadsPage>
   final _completionTimers = <String, Timer>{};
   final _held = <String, BooruDownloadItem>{};
   late List<BooruDownloadItem> _items;
-  late final TabController _tabs;
+  late final FrostTabController _tabs;
   final _entries = <List<_Entry>>[[], []];
   String? _expandedId;
   bool _busy = false;
@@ -126,7 +126,7 @@ class _DownloadsPageState extends ConsumerState<DownloadsPage>
     _items = ref.read(downloadItemsProvider);
     _expandedId = widget.taskId;
     // All is where the page opens, and where a linked task is revealed.
-    _tabs = TabController(length: 3, vsync: this, initialIndex: _allTab)
+    _tabs = FrostTabController(length: 3, vsync: this, initialIndex: _allTab)
       ..addListener(() => setState(() {}));
     _sync();
     _scheduleReveal();

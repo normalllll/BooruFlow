@@ -23,12 +23,12 @@ import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/ui/custom/download_flight.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'features/discovery/search_interaction_test.dart'
     show testSource, SearchRepositoryFake;
@@ -68,11 +68,8 @@ Future<void> pumpIncomingPage(WidgetTester tester, Finder page) async {
   );
 }
 
-Finder _captionButton(String label) => find.ancestor(
-  of: find.byWidgetPredicate(
-    (widget) => widget is Semantics && widget.properties.label == label,
-  ),
-  matching: find.byType(IconButton),
+Finder _captionButton(String label) => find.byWidgetPredicate(
+  (widget) => widget is FrostTooltip && widget.message == label,
 );
 
 void main() {
@@ -259,7 +256,7 @@ void main() {
       await tester.tap(batch);
       await tester.pumpAndSettle();
       expect(row.hitTestable(), findsOneWidget);
-      for (final mode in [ThemeMode.dark, ThemeMode.light]) {
+      for (final mode in [FrostThemeMode.dark, FrostThemeMode.light]) {
         await SettingsService.saveAppearance(
           SettingsService.appearance.copyWith(mode: mode),
         );
@@ -528,7 +525,7 @@ void main() {
           addTearDown(tester.view.reset);
           await SettingsService.saveAppearance(
             SettingsService.appearance.copyWith(
-              mode: dark ? ThemeMode.dark : ThemeMode.light,
+              mode: dark ? FrostThemeMode.dark : FrostThemeMode.light,
             ),
           );
           await mount(tester);
@@ -670,7 +667,7 @@ void main() {
       expect(store.values['sidebarExpanded'], false);
       final before = AppRouter.router.routeInformationProvider.value.uri;
       await SettingsService.saveAppearance(
-        SettingsService.appearance.copyWith(mode: ThemeMode.dark),
+        SettingsService.appearance.copyWith(mode: FrostThemeMode.dark),
       );
       await SettingsService.saveBackground(
         const BackgroundSettings(material: BackgroundMaterial.off),

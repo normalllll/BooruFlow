@@ -144,20 +144,20 @@ class _AppearanceSettingsState extends ConsumerState<AppearanceSettings> {
           children: [
             FrostListRow(
               title: t.settingsDetails.mode,
-              trailing: FrostPicker<ThemeMode>.segmented(
+              trailing: FrostPicker<FrostThemeMode>.segmented(
                 label: t.settings.theme,
                 value: appearance.mode,
                 options: [
                   FrostPickerOption(
-                    value: ThemeMode.light,
+                    value: FrostThemeMode.light,
                     label: t.settings.light,
                   ),
                   FrostPickerOption(
-                    value: ThemeMode.dark,
+                    value: FrostThemeMode.dark,
                     label: t.settings.dark,
                   ),
                   FrostPickerOption(
-                    value: ThemeMode.system,
+                    value: FrostThemeMode.system,
                     label: t.settings.system,
                   ),
                 ],
@@ -176,7 +176,7 @@ class _AppearanceSettingsState extends ConsumerState<AppearanceSettings> {
                     FrostPickerOption(value: tone, label: _toneLabel(tone)),
                 ],
                 // The system tone applies while the mode follows the system.
-                onChanged: _saving || appearance.mode == ThemeMode.system
+                onChanged: _saving || appearance.mode == FrostThemeMode.system
                     ? null
                     : (tone) => _save(
                         _brightness == Brightness.light

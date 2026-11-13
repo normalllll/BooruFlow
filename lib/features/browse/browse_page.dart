@@ -27,7 +27,7 @@ class BrowsePage extends ConsumerStatefulWidget {
 class _BrowsePageState extends ConsumerState<BrowsePage>
     with TickerProviderStateMixin, CollectionActions<BrowsePage> {
   final _search = FrostPageHeaderSearchController();
-  TabController? _tabs;
+  FrostTabController? _tabs;
   List<FeedKind> _tabModes = const [];
 
   // One list per section, created when the section is first shown and kept
@@ -249,7 +249,7 @@ class _BrowsePageState extends ConsumerState<BrowsePage>
 
   /// One tab controller per set of sections; it follows the feed selection and
   /// selects the feed when a tab is chosen.
-  TabController _syncTabs(List<FeedKind> modes, int selected) {
+  FrostTabController _syncTabs(List<FeedKind> modes, int selected) {
     final current = _tabs;
     if (current != null && listEquals(modes, _tabModes)) {
       if (current.index != selected) {
@@ -268,7 +268,7 @@ class _BrowsePageState extends ConsumerState<BrowsePage>
       WidgetsBinding.instance.addPostFrameCallback((_) => current.dispose());
     }
     _tabModes = modes;
-    final tabs = TabController(
+    final tabs = FrostTabController(
       length: modes.length,
       vsync: this,
       initialIndex: selected,

@@ -2,9 +2,10 @@ import 'package:booruflow/features/booru/services/booru_service.dart';
 import 'package:booruflow/features/search/inline_search.dart';
 import 'package:booruflow/features/search/query.dart';
 import 'package:booruflow/shared/app_page.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
 import 'search_interaction_test.dart'
     show searchTestApp, SearchRepositoryFake, testSource;
 

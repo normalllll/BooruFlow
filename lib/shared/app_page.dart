@@ -93,7 +93,7 @@ class AppSectionPage extends StatefulWidget {
 
   /// A control of the selected section, after the tabs.
   final Widget? trailing;
-  final TabController controller;
+  final FrostTabController controller;
   final AppSection Function(BuildContext context, int index) sectionBuilder;
   final double maxWidth;
 
@@ -182,7 +182,7 @@ class _AppSectionPageState extends State<AppSectionPage> {
             PointerDeviceKind.unknown,
           },
         ),
-        child: TabBarView(
+        child: FrostTabView(
           controller: widget.controller,
           children: [
             for (var index = 0; index < widget.controller.length; index++)

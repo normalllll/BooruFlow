@@ -115,9 +115,9 @@ class SettingsService {
     _map[_appearanceKey],
     FrostPalettes.pink,
     fallbackMode: switch (themeMode) {
-      0 => ThemeMode.light,
-      1 => ThemeMode.dark,
-      _ => ThemeMode.system,
+      0 => FrostThemeMode.light,
+      1 => FrostThemeMode.dark,
+      _ => FrostThemeMode.system,
     },
   );
   static bool customAccentSelected(Brightness brightness) {

@@ -4,10 +4,10 @@ import 'dart:ui' as ui;
 import 'package:booruflow/app/frost_config.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
 const channel = MethodChannel('frost_window');
 const codec = StandardMethodCodec();
@@ -37,11 +37,8 @@ Future<void> nativeEvent(String method, [Object? arguments]) {
   return completed.future;
 }
 
-Finder caption(String label) => find.ancestor(
-  of: find.byWidgetPredicate(
-    (widget) => widget is Semantics && widget.properties.label == label,
-  ),
-  matching: find.byType(IconButton),
+Finder caption(String label) => find.byWidgetPredicate(
+  (widget) => widget is FrostTooltip && widget.message == label,
 );
 
 void main() {
@@ -267,8 +264,11 @@ void main() {
     expect(tester.getRect(caption('Close')).right, 1000);
     expect(find.byTooltip('Close'), findsOneWidget);
     expect(
-      tester.getSemantics(caption('Close')).getSemanticsData().label,
-      contains('Close'),
+      find.descendant(
+        of: caption('Close'),
+        matching: find.bySemanticsLabel('Close'),
+      ),
+      findsOneWidget,
     );
     final oldMax = regions().singleWhere((r) => r[4] == 'maximize');
     expect(

@@ -5,11 +5,12 @@ import 'package:booruflow/features/booru/services/booru_service.dart';
 import 'package:booruflow/features/settings/settings_page.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
+
 import '../../support/browse_support.dart' show browseTestApp;
 import '../discovery/search_interaction_test.dart' show testSource;
 
@@ -95,7 +96,7 @@ void main() {
           await tester.pumpAndSettle();
           expect(find.text(t.settings.source.supportedRatings), findsOneWidget);
           expect(find.text(t.settings.source.safetyRating), findsNothing);
-          expect(find.byType(TabBar), findsNothing);
+          expect(find.byType(FrostTabBar), findsNothing);
           expect(find.byType(EditableText), findsNothing);
           expect(SettingsService.ratings, [ContentRating.explicit]);
           expect(tester.takeException(), isNull);
@@ -125,9 +126,9 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text(t.settings.dark));
       await tester.pumpAndSettle();
-      expect(SettingsService.appearance.mode, ThemeMode.dark);
+      expect(SettingsService.appearance.mode, FrostThemeMode.dark);
       await SettingsService.initialize(store: store);
-      expect(SettingsService.appearance.mode, ThemeMode.dark);
+      expect(SettingsService.appearance.mode, FrostThemeMode.dark);
       expect(SettingsService.language, 1);
       expect(tester.takeException(), isNull);
     },
@@ -141,17 +142,20 @@ void main() {
       await tester.pumpWidget(mount(const SettingsPage()));
       await tester.pumpAndSettle();
       expect(find.text(t.settingsV2.appearance), findsOneWidget);
-      expect(find.byType(FrostPicker<ThemeMode>), findsNothing);
+      expect(find.byType(FrostPicker<FrostThemeMode>), findsNothing);
       expect(find.byType(EditableText), findsNothing);
       tester.view.physicalSize = const Size(1440, 900);
       await tester.pumpAndSettle();
-      final picker = tester.state(find.byType(FrostPicker<ThemeMode>));
+      final picker = tester.state(find.byType(FrostPicker<FrostThemeMode>));
       tester.view.physicalSize = const Size(390, 900);
       await tester.pumpAndSettle();
       tester.view.physicalSize = const Size(1024, 900);
       await tester.pumpAndSettle();
       expect(
-        identical(tester.state(find.byType(FrostPicker<ThemeMode>)), picker),
+        identical(
+          tester.state(find.byType(FrostPicker<FrostThemeMode>)),
+          picker,
+        ),
         true,
       );
       expect(tester.takeException(), isNull);

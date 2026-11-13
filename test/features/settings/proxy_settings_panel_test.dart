@@ -6,10 +6,10 @@ import 'package:booruflow/features/settings/network/proxy_logic.dart';
 import 'package:booruflow/features/settings/network/widgets/proxy_settings_panel.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../support/browse_support.dart' show browseTestApp;
 

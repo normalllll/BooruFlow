@@ -28,12 +28,12 @@ import 'package:booruflow/src/rust/api/booru_engine.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/api/web_challenge.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:frost_ui/media.dart';
+import 'package:material_ui/material_ui.dart';
 
 // ---------------------------------------------------------------------------
 // Fakes
@@ -509,7 +509,7 @@ void main() {
           _sections(tester).selectedIndex,
           SettingsSection.appearance.index,
         );
-        expect(find.byType(FrostPicker<ThemeMode>), findsOneWidget);
+        expect(find.byType(FrostPicker<FrostThemeMode>), findsOneWidget);
         expect(tester.takeException(), isNull);
       },
       variant: TargetPlatformVariant.only(TargetPlatform.windows),
@@ -543,7 +543,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.byType(FrostPicker<ThemeMode>), findsNothing);
+      expect(find.byType(FrostPicker<FrostThemeMode>), findsNothing);
       expect(tester.takeException(), isNull);
     }, variant: TargetPlatformVariant.only(TargetPlatform.android));
 
@@ -636,7 +636,7 @@ void main() {
         (tester) async {
           await SettingsService.saveAppearance(
             SettingsService.appearance.copyWith(
-              mode: ThemeMode.system,
+              mode: FrostThemeMode.system,
               lightTone: FrostTone.cool,
             ),
           );
@@ -1071,7 +1071,7 @@ void main() {
       (
         'appearance',
         '/settings/appearance',
-        (_) => find.byType(FrostPicker<ThemeMode>),
+        (_) => find.byType(FrostPicker<FrostThemeMode>),
       ),
       (
         'sources with a detail open',

@@ -3,9 +3,9 @@ import 'package:booruflow/app/frost_config.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
 const nativeFailure = BooruError(
   code: BooruErrorCode.internal,

@@ -187,9 +187,9 @@ class _SettingsNavigation extends ConsumerWidget {
     final update = ref.watch(updateCheckProvider).result;
     String? value(SettingsSection section) => switch (section) {
       SettingsSection.appearance => switch (settings.appearance.mode) {
-        ThemeMode.light => t.settings.light,
-        ThemeMode.dark => t.settings.dark,
-        ThemeMode.system => t.settings.system,
+        FrostThemeMode.light => t.settings.light,
+        FrostThemeMode.dark => t.settings.dark,
+        FrostThemeMode.system => t.settings.system,
       },
       SettingsSection.browsing =>
         sources
@@ -217,7 +217,11 @@ class _SettingsNavigation extends ConsumerWidget {
     );
     return SingleChildScrollView(
       primary: false,
-      padding: const EdgeInsets.symmetric(vertical: FrostGap.inline),
+      // The list runs beneath the bottom navigation and ends above it.
+      padding: EdgeInsets.only(
+        top: FrostGap.inline,
+        bottom: FrostGap.inline + MediaQuery.paddingOf(context).bottom,
+      ),
       child: FrostContentColumn(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

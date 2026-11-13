@@ -9,11 +9,11 @@ import 'package:booruflow/features/search/inline_search.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../support/browse_support.dart';
 import '../discovery/search_interaction_test.dart' show testSource;
@@ -189,39 +189,45 @@ void main() {
     expect(find.byType(FrostFilterChip), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
-  testWidgets('phone source label keeps the content keyline', (tester) async {
+  group('with bundled fonts', () {
     // Real bundled metrics matter here; Ahem makes Latin labels artificially
     // wide and cannot establish production text visibility at a phone width.
-    await (FontLoader(
-      'Noto Sans JP',
-    )..addFont(rootBundle.load('assets/fonts/NotoSansJP-Subset.ttf'))).load();
-    await (FontLoader(
-      'Noto Sans SC',
-    )..addFont(rootBundle.load('assets/fonts/NotoSansSC-Subset.ttf'))).load();
-    tester.view.physicalSize = const Size(390, 844);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-    final base = testSource('danbooru');
-    BooruService.instance.useSourcesForTesting([
-      BooruSource(
-        sourceId: base.sourceId,
-        displayName: 'Danbooru',
-        protocol: base.protocol,
-        enabledByDefault: true,
-        isAiSource: false,
-        capabilities: base.capabilities,
-      ),
-    ]);
-    await tester.pumpWidget(
-      loaderApp(const BrowsePage(), empty, platform: TargetPlatform.android),
-    );
-    await tester.pumpAndSettle();
-    final label = find.descendant(
-      of: find.byType(FrostTitleMenu),
-      matching: find.text('Danbooru'),
-    );
-    expect(tester.getTopLeft(label).dx, 16);
-    expect(tester.takeException(), isNull);
+    // Loading them outside the test keeps the system-fonts relayout frame
+    // they announce from outliving the test's widget tree.
+    setUpAll(() async {
+      for (final family in ['JP', 'SC']) {
+        await (FontLoader('Noto Sans $family')..addFont(
+              rootBundle.load('assets/fonts/NotoSans$family-Subset.ttf'),
+            ))
+            .load();
+      }
+    });
+    testWidgets('phone source label keeps the content keyline', (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final base = testSource('danbooru');
+      BooruService.instance.useSourcesForTesting([
+        BooruSource(
+          sourceId: base.sourceId,
+          displayName: 'Danbooru',
+          protocol: base.protocol,
+          enabledByDefault: true,
+          isAiSource: false,
+          capabilities: base.capabilities,
+        ),
+      ]);
+      await tester.pumpWidget(
+        loaderApp(const BrowsePage(), empty, platform: TargetPlatform.android),
+      );
+      await tester.pumpAndSettle();
+      final label = find.descendant(
+        of: find.byType(FrostTitleMenu),
+        matching: find.text('Danbooru'),
+      );
+      expect(tester.getTopLeft(label).dx, 16);
+      expect(tester.takeException(), isNull);
+    });
   });
   testWidgets(
     'fresh settings load all sources with latest feed and no explicit ratings',

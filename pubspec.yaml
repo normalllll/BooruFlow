@@ -5,13 +5,11 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 0.13.0+40
 
 environment:
-  sdk: ^3.12.1
+  sdk: ^3.13.0
   flutter: ">=3.47.0"
 
 dependencies:
   flutter:
-    sdk: flutter
-  flutter_localizations:
     sdk: flutter
 
   # frost_ui brings its native window plugin (frost_window) from the same checkout.
@@ -19,7 +17,7 @@ dependencies:
     git:
       url: &frost https://github.com/normalllll/frost_ui.git
       path: packages/frost_ui
-      ref: &frost_ref 68613955b369905fa0ea8c7221ae987614d8dea5
+      ref: &frost_ref 04b065210cca9497f740e3c805aa3e1b9af47587
   frost_data:
     git: {url: *frost, path: packages/frost_data, ref: *frost_ref}
   pasteboard: ^0.5.0
@@ -55,6 +53,7 @@ dependencies:
 dev_dependencies:
   flutter_driver:
     sdk: flutter
+  material_ui: ^1.11.0
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0

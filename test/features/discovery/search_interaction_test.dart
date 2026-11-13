@@ -9,13 +9,12 @@ import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_navigation.dart';
 import 'package:booruflow/shared/app_page.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 
 BooruSource testSource(String id) => BooruSource(
   sourceId: id,

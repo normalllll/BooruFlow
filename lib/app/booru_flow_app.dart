@@ -13,7 +13,6 @@ import 'package:booruflow/shared/app_toast.dart';
 import 'package:booruflow/ui/custom/download_flight.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frost_ui/frost_ui.dart';
 
@@ -123,11 +122,6 @@ class _BooruFlowAppState extends ConsumerState<BooruFlowApp> {
         routerConfig: AppRouter.router,
         locale: appLocaleForLanguagePreference(settings.language).flutterLocale,
         supportedLocales: AppLocaleUtils.supportedLocales,
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
         builder: (context, child) {
           final frame = FrostLayoutScope(
             child: FrostWindowTitleScope(

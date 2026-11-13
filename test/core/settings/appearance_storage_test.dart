@@ -20,10 +20,10 @@ final class _MemoryStore implements SettingsServiceStore {
 
 void main() {
   for (final (legacy, expected) in [
-    (0, ThemeMode.light),
-    (1, ThemeMode.dark),
-    (2, ThemeMode.system),
-    (null, ThemeMode.system),
+    (0, FrostThemeMode.light),
+    (1, FrostThemeMode.dark),
+    (2, FrostThemeMode.system),
+    (null, FrostThemeMode.system),
   ]) {
     test('legacy appearance fallback $legacy', () async {
       await SettingsService.initialize(
@@ -40,7 +40,7 @@ void main() {
       final store = _MemoryStore({'themeMode': 1});
       await SettingsService.initialize(store: store);
       final appearance = FrostAppearance.initial(FrostPalettes.pink).copyWith(
-        mode: ThemeMode.light,
+        mode: FrostThemeMode.light,
         lightTone: FrostTone.warm,
         darkTone: FrostTone.cool,
       );
@@ -70,7 +70,7 @@ void main() {
       'reduceTransparency': 'invalid',
     });
     await SettingsService.initialize(store: store);
-    expect(SettingsService.appearance.mode, ThemeMode.light);
+    expect(SettingsService.appearance.mode, FrostThemeMode.light);
     expect(SettingsService.background.material, BackgroundMaterial.ambient);
     expect(store.values.containsKey('appearance'), false);
     expect(store.values.containsKey('reduceTransparency'), false);

@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:booruflow/features/booru/models/web_challenge_failure.dart';
 import 'package:booruflow/features/booru/services/web_challenge_service.dart';
 import 'package:booruflow/src/rust/api/web_challenge.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 const candidate = WebChallengeCandidate(
   cookies: [],
