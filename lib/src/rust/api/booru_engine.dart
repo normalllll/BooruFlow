@@ -11,7 +11,7 @@ import 'booru_models.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'web_challenge.dart';
 
-// These functions are ignored because they are not marked as `pub`: `context`, `stream_media_inner`, `unsupported`, `verify_and_commit_challenge`
+// These functions are ignored because they are not marked as `pub`: `context`, `media_from_post`, `stream_media_inner`, `unsupported`, `verify_and_commit_challenge`
 // These functions are ignored because they have generic arguments: `download_to_file`
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<BooruEngine>>
@@ -88,6 +88,13 @@ abstract class BooruEngine implements RustOpaqueInterface {
     required MediaVariantKind variant,
     required String url,
     required bool allowDiskCache,
+  });
+
+  /// Prepare a download from a post the caller already holds. Only a post
+  /// without a usable file for `variant` is fetched again.
+  Future<PreparedDownload> preparePostDownload({
+    required BooruPost post,
+    required MediaVariantKind variant,
   });
 
   /// Resolve credentials only for the native video decoder. Image requests keep

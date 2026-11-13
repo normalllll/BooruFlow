@@ -20,6 +20,9 @@ List<FrostMenuEntry> postMenuEntries({
   required BuildContext context,
   required Post post,
   required VoidCallback download,
+
+  /// False for a post that is saved or already being downloaded.
+  bool downloadEnabled = true,
 }) {
   final labels = Translations.of(context);
   final webUrl = post.webUrl;
@@ -45,7 +48,8 @@ List<FrostMenuEntry> postMenuEntries({
     FrostMenuAction(
       labels.postDetail.download,
       leading: FrostGlyph.icon(appIcons.download),
-      onSelected: download,
+      enabled: downloadEnabled,
+      onSelected: downloadEnabled ? download : null,
     ),
     FrostMenuAction(
       labels.discovery.copyLink,

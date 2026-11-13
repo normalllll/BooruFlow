@@ -1,5 +1,6 @@
 export 'models/download_enums.dart';
 export 'models/download_exception.dart';
+export 'models/download_identity.dart';
 export 'models/download_job.dart';
 export 'models/download_request_options.dart';
 export 'models/download_summary.dart';

@@ -182,7 +182,6 @@ downloads:
     downloadRetryWith: "重試下載任務： $name"
     downloadStartWith: "開始下載任務： $name"
 
-    downloadCompletedWith: "下載任務完成： $name"
     downloadFailedWith: "下載任務失敗： $name"
     saveFailedWith: "儲存失敗： 任務 $name"
 

@@ -1535,9 +1535,6 @@ class _Translations$downloads$messages$ja
   @override
   String downloadStartWith({required Object name}) => 'ダウンロードタスクを開始: ${name}';
   @override
-  String downloadCompletedWith({required Object name}) =>
-      'ダウンロード完了: タスク ${name}';
-  @override
   String downloadFailedWith({required Object name}) => 'ダウンロード失敗: タスク ${name}';
   @override
   String saveFailedWith({required Object name}) => '保存失敗: タスク ${name}';
@@ -2129,8 +2126,6 @@ extension on TranslationsJa {
             ({required Object name}) => 'ダウンロードタスクを再試行: ${name}',
           'downloads.messages.downloadStartWith' =>
             ({required Object name}) => 'ダウンロードタスクを開始: ${name}',
-          'downloads.messages.downloadCompletedWith' =>
-            ({required Object name}) => 'ダウンロード完了: タスク ${name}',
           'downloads.messages.downloadFailedWith' =>
             ({required Object name}) => 'ダウンロード失敗: タスク ${name}',
           'downloads.messages.saveFailedWith' =>

@@ -1523,8 +1523,6 @@ class Translations$downloads$messages$zh_TW
   @override
   String downloadStartWith({required Object name}) => '開始下載任務： ${name}';
   @override
-  String downloadCompletedWith({required Object name}) => '下載任務完成： ${name}';
-  @override
   String downloadFailedWith({required Object name}) => '下載任務失敗： ${name}';
   @override
   String saveFailedWith({required Object name}) => '儲存失敗： 任務 ${name}';
@@ -2109,8 +2107,6 @@ extension on TranslationsZhTw {
             ({required Object name}) => '重試下載任務： ${name}',
           'downloads.messages.downloadStartWith' =>
             ({required Object name}) => '開始下載任務： ${name}',
-          'downloads.messages.downloadCompletedWith' =>
-            ({required Object name}) => '下載任務完成： ${name}',
           'downloads.messages.downloadFailedWith' =>
             ({required Object name}) => '下載任務失敗： ${name}',
           'downloads.messages.saveFailedWith' =>

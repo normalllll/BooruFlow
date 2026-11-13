@@ -113,6 +113,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   BooruError dco_decode_box_autoadd_booru_error(dynamic raw);
 
   @protected
+  BooruPost dco_decode_box_autoadd_booru_post(dynamic raw);
+
+  @protected
   Checksum dco_decode_box_autoadd_checksum(dynamic raw);
 
   @protected
@@ -485,6 +488,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   BooruError sse_decode_box_autoadd_booru_error(SseDeserializer deserializer);
+
+  @protected
+  BooruPost sse_decode_box_autoadd_booru_post(SseDeserializer deserializer);
 
   @protected
   Checksum sse_decode_box_autoadd_checksum(SseDeserializer deserializer);
@@ -944,6 +950,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_booru_error(
     BooruError self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_booru_post(
+    BooruPost self,
     SseSerializer serializer,
   );
 

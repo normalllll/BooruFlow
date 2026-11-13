@@ -63,23 +63,73 @@ class SessionDownloads extends _$SessionDownloads {
   }
 }
 
+/// What keeps each post file from being downloaded again. Cards and detail
+/// actions read their own entry, so they rebuild only when it changes.
+@riverpod
+Map<DownloadIdentity, DownloadBlock> downloadBlocks(Ref ref) {
+  final items = ref.watch(downloadItemsProvider);
+  final blocks = <DownloadIdentity, DownloadBlock>{};
+  for (final item in items) {
+    final task = item.snapshot;
+    final identity = task.identity;
+    final block = task.block;
+    if (identity == null || block == null) continue;
+    if (block == DownloadBlock.saved || !blocks.containsKey(identity)) {
+      blocks[identity] = block;
+    }
+  }
+  for (final identity in ref.watch(booruDownloadsProvider).pending) {
+    blocks.putIfAbsent(identity, () => DownloadBlock.inProgress);
+  }
+  return Map.unmodifiable(blocks);
+}
+
+/// The tasks in the activity count, and the taps whose task is not listed
+/// yet, which already count.
+({List<BooruDownloadItem> active, Set<DownloadIdentity> claimed})
+_activeDownloads(Ref ref) {
+  final items = ref.watch(downloadItemsProvider);
+  final listed = {
+    for (final item in items)
+      if (item.snapshot.block != null) ?item.snapshot.identity,
+  };
+  return (
+    active: items
+        .where(
+          (item) => switch (item.snapshot.status) {
+            DownloadStatus.queued ||
+            DownloadStatus.running ||
+            DownloadStatus.paused => true,
+            _ => item.snapshot.saveState == SaveState.saving,
+          },
+        )
+        .toList(),
+    claimed: ref
+        .watch(booruDownloadsProvider)
+        .pending
+        .where((identity) => !listed.contains(identity))
+        .toSet(),
+  );
+}
+
+/// The downloads in the activity count. A flight in the air is left out of
+/// the count only while the download it carries is in it.
+@riverpod
+Set<DownloadIdentity> countedDownloads(Ref ref) {
+  final (:active, :claimed) = _activeDownloads(ref);
+  return {...claimed, for (final item in active) ?item.snapshot.identity};
+}
+
 /// Weighted determinate progress; unknown sizes keep the count but no ring.
+/// A tap whose task is not listed yet already counts.
 @riverpod
 ({int count, double? progress}) downloadActivity(Ref ref) {
-  final active = ref
-      .watch(downloadItemsProvider)
-      .where(
-        (item) => switch (item.snapshot.status) {
-          DownloadStatus.queued ||
-          DownloadStatus.running ||
-          DownloadStatus.paused => true,
-          _ => item.snapshot.saveState == SaveState.saving,
-        },
-      )
-      .toList();
-  if (active.isEmpty) return (count: 0, progress: null);
-  if (active.any((item) => (item.snapshot.totalBytes ?? 0) <= 0)) {
-    return (count: active.length, progress: null);
+  final (:active, :claimed) = _activeDownloads(ref);
+  final count = active.length + claimed.length;
+  if (count == 0) return (count: 0, progress: null);
+  if (active.isEmpty ||
+      active.any((item) => (item.snapshot.totalBytes ?? 0) <= 0)) {
+    return (count: count, progress: null);
   }
   final total = active.fold<int>(
     0,
@@ -90,7 +140,7 @@ class SessionDownloads extends _$SessionDownloads {
     (sum, item) =>
         sum + item.snapshot.receivedBytes.clamp(0, item.snapshot.totalBytes!),
   );
-  return (count: active.length, progress: (received / total).clamp(0.0, 1.0));
+  return (count: count, progress: (received / total).clamp(0.0, 1.0));
 }
 
 /// Presentation rates come from consecutive engine snapshots, never an assumed

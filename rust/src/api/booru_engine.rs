@@ -7,7 +7,7 @@ use crate::api::booru_models::{
     PostPage, RouteCacheState, SearchRequest,
 };
 use crate::api::web_challenge::{WebChallengeCandidate, WebChallengeOperation, WebChallengeState};
-use crate::booru::adapter::{BooruAdapter, RequestContext};
+use crate::booru::adapter::{BooruAdapter, PreparedMedia, RequestContext};
 use crate::booru::adapters::anime_pictures::AnimePicturesAdapter;
 use crate::booru::adapters::danbooru::DanbooruAdapter;
 use crate::booru::adapters::gelbooru::GelbooruAdapter;
@@ -20,7 +20,7 @@ use crate::booru::media::download::open_prepared_unthrottled;
 use crate::booru::media::download_control::{cancelled, DownloadControl};
 use crate::booru::media::request::prepared_download;
 use crate::booru::media::transcode::avif_to_png;
-use crate::booru::model::{PostId, SearchQuery};
+use crate::booru::model::{MediaVariant, PostId, SearchQuery};
 use crate::booru::network::NetworkRuntime;
 use crate::booru::registry::SourceRegistry;
 use crate::booru::source::{builtin_sources, ProtocolFamily};
@@ -531,6 +531,29 @@ impl BooruEngine {
         Ok(prepared)
     }
 
+    /// Prepare a download from a post the caller already holds. Only a post
+    /// without a usable file for `variant` is fetched again.
+    pub async fn prepare_post_download(
+        &self,
+        post: BooruPost,
+        variant: MediaVariantKind,
+    ) -> BooruResult<PreparedDownload> {
+        let adapter = self.registry.get(&post.source_id)?;
+        let Some(media) = media_from_post(&post, variant) else {
+            return self
+                .prepare_download(post.source_id, post.post_id, variant)
+                .await;
+        };
+        let url = reqwest::Url::parse(&media.url)
+            .map_err(|_| BooruError::invalid_response(&post.source_id))?;
+        // Validates the allowed hosts exactly like a freshly fetched post would.
+        let headers = self.runtime.prepared_headers(adapter.definition(), &url)?;
+        let prepared = PreparedMedia { media, headers };
+        let mut prepared = prepared_download(&post.source_id, &post.post_id, variant, prepared)?;
+        prepared.headers.clear();
+        Ok(prepared)
+    }
+
     /// Resolve credentials only for the native video decoder. Image requests keep
     /// their headers private in Rust. Callers must not log or persist this result.
     pub fn prepare_video_request(&self, mut request: MediaRequest) -> BooruResult<MediaRequest> {
@@ -958,6 +981,41 @@ impl BooruEngine {
     }
 }
 
+/// The file `variant` of a post that already lists it, with the post-level
+/// original facts filling what the variant leaves out. None when the post has
+/// no usable file of that kind, which means the caller must fetch it again.
+fn media_from_post(post: &BooruPost, variant: MediaVariantKind) -> Option<MediaVariant> {
+    let media = post.media.iter().find(|item| item.kind == variant)?;
+    if reqwest::Url::parse(&media.url).is_err() {
+        return None;
+    }
+    let original = variant == MediaVariantKind::Original;
+    let post_size = original
+        .then_some(post.original_file_size_decimal.as_deref())
+        .flatten();
+    Some(MediaVariant {
+        kind: media.kind,
+        url: media.url.clone(),
+        width: media.width,
+        height: media.height,
+        byte_length: media
+            .byte_length_decimal
+            .as_deref()
+            .or(post_size)
+            .and_then(|value| value.parse().ok()),
+        media_type: media.media_type,
+        extension: media.extension.clone().or_else(|| {
+            original
+                .then(|| post.original_file_extension.clone())
+                .flatten()
+        }),
+        checksum: media
+            .checksum
+            .clone()
+            .or_else(|| original.then(|| post.original_checksum.clone()).flatten()),
+    })
+}
+
 fn unsupported(source_id: &str) -> BooruError {
     BooruError::new(
         BooruErrorCode::UnsupportedCapability,
@@ -971,6 +1029,74 @@ mod tests {
     use super::*;
     use crate::api::booru_models::{ContentRating, NetworkFallbackMode};
     use std::collections::BTreeSet;
+
+    fn post_with(media: Vec<crate::api::booru_models::MediaVariant>) -> BooruPost {
+        BooruPost {
+            source_id: "danbooru".to_owned(),
+            width: None,
+            height: None,
+            original_file_size_decimal: Some("2048".to_owned()),
+            original_file_extension: Some("png".to_owned()),
+            original_checksum: None,
+            author: None,
+            post_id: "42".to_owned(),
+            post_key: "danbooru:42".to_owned(),
+            web_url: None,
+            rating: ContentRating::General,
+            score: None,
+            created_at_iso8601: None,
+            source_url: None,
+            tags: vec![],
+            media,
+            flags: Default::default(),
+        }
+    }
+
+    fn api_media(kind: MediaVariantKind, url: &str) -> crate::api::booru_models::MediaVariant {
+        crate::api::booru_models::MediaVariant {
+            kind,
+            url: url.to_owned(),
+            width: None,
+            height: None,
+            byte_length_decimal: None,
+            media_type: None,
+            extension: None,
+            checksum: None,
+        }
+    }
+
+    #[tokio::test]
+    async fn post_with_original_media_prepares_without_a_request() {
+        // The engine has no network access in tests: success proves no fetch.
+        let engine = engine();
+        let post = post_with(vec![api_media(
+            MediaVariantKind::Original,
+            "https://cdn.donmai.us/original/ab/cd/file.png",
+        )]);
+        let prepared = engine
+            .prepare_post_download(post, MediaVariantKind::Original)
+            .await
+            .unwrap();
+        assert_eq!(
+            prepared.url,
+            "https://cdn.donmai.us/original/ab/cd/file.png"
+        );
+        assert_eq!(prepared.filename, "42.png");
+        assert_eq!(prepared.expected_bytes_decimal.as_deref(), Some("2048"));
+        assert!(prepared.headers.is_empty());
+    }
+
+    #[test]
+    fn post_without_a_usable_original_needs_a_fetch() {
+        let post = post_with(vec![api_media(
+            MediaVariantKind::Sample,
+            "https://cdn.donmai.us/sample/a.jpg",
+        )]);
+        assert!(media_from_post(&post, MediaVariantKind::Original).is_none());
+        let broken = post_with(vec![api_media(MediaVariantKind::Original, "not a url")]);
+        assert!(media_from_post(&broken, MediaVariantKind::Original).is_none());
+        assert!(media_from_post(&post, MediaVariantKind::Sample).is_some());
+    }
 
     #[tokio::test]
     async fn empty_search_and_autocomplete_do_not_reach_network() {

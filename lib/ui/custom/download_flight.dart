@@ -7,9 +7,24 @@ import 'package:frost_ui/frost_ui.dart';
 
 // The App-owned exception specified by the rebuild plan. Geometry is measured
 // from the real navigation target, never estimated from sidebar internals.
+//
+// A flight is a long gesture, not a page transition, so it runs on a timed
+// curve instead of the page-level spring: it leaves slowly, speeds into the
+// target and settles into one small bounce there.
 const _flightArcFraction = .25;
 const _flightMaximumArc = 160.0;
-const _flightFadeStart = .8;
+const _flightShortestDuration = Duration(milliseconds: 400);
+const _flightLongestDuration = Duration(milliseconds: 600);
+// The distances over which the duration grows from shortest to longest.
+const _flightShortDistance = 240.0;
+const _flightLongDistance = 900.0;
+// The first stretch of the flight shrinks the card to a small thumbnail; the
+// last one shrinks that to the icon it lands on.
+const _flightThumbnailEnd = .3;
+// The small thumbnail (FrostThumbnailSize.small) the card shrinks to.
+const _flightThumbnailExtent = 48.0;
+const _flightIconStart = .65;
+const _flightFadeStart = .9;
 const _landingAmplitude = .06;
 
 class DownloadFlightHost extends StatefulWidget {
@@ -26,33 +41,57 @@ class DownloadFlightHostState extends State<DownloadFlightHost>
   final target = GlobalKey();
   final landed = ValueNotifier<int>(0);
 
-  /// Whether a flight is on its way, so a floating entry that shows only with
-  /// downloads is there to receive it.
-  final flying = ValueNotifier<bool>(false);
+  /// The claim each flight in the air carries (null for none). A floating
+  /// entry that shows only with downloads is there to receive them, and the
+  /// entry's count leaves out the downloads whose flight has not landed yet.
+  final inAir = ValueNotifier<List<Object?>>(const []);
   final _flights = <_Flight>[];
-  void fly({required Rect source, required ImageProvider image}) {
+
+  /// Starts a flight of [image] from [source] (global) to the target. False
+  /// when none can start: reduced motion, or no target to land on. [claim]
+  /// names the download the flight carries.
+  bool fly({
+    required Rect source,
+    required ImageProvider image,
+    Object? claim,
+  }) {
+    final destination = target.currentContext?.findRenderObject();
     if (!mounted ||
         MediaQuery.disableAnimationsOf(context) ||
-        target.currentContext == null) {
-      return;
+        destination is! RenderBox ||
+        !destination.attached) {
+      return false;
     }
-    final controller = AnimationController.unbounded(vsync: this);
-    final flight = _Flight(source, image, controller);
+    final distance = destination.hasSize
+        ? (destination.localToGlobal(destination.size.center(Offset.zero)) -
+                  source.center)
+              .distance
+        : _flightLongDistance;
+    final controller = AnimationController(
+      vsync: this,
+      duration:
+          _flightShortestDuration +
+          (_flightLongestDuration - _flightShortestDuration) *
+              ((distance - _flightShortDistance) /
+                      (_flightLongDistance - _flightShortDistance))
+                  .clamp(0.0, 1.0),
+    );
+    final flight = _Flight(source, image, controller, claim);
     setState(() => _flights.add(flight));
-    flying.value = true;
-    FrostMotion.springTo(
-      context,
-      controller,
-      1,
-      FrostMotion.standard,
-    ).whenCompleteOrCancel(() {
+    inAir.value = _claims;
+    controller.forward().whenCompleteOrCancel(() {
       if (!mounted || !_flights.contains(flight)) return;
       setState(() => _flights.remove(flight));
       controller.dispose();
-      flying.value = _flights.isNotEmpty;
+      inAir.value = _claims;
       landed.value++;
     });
+    return true;
   }
+
+  List<Object?> get _claims => List.unmodifiable([
+    for (final flight in _flights) flight.claim,
+  ]);
 
   @override
   void dispose() {
@@ -62,7 +101,7 @@ class DownloadFlightHostState extends State<DownloadFlightHost>
       flight.progress.dispose();
     }
     landed.dispose();
-    flying.dispose();
+    inAir.dispose();
     super.dispose();
   }
 
@@ -87,7 +126,11 @@ class DownloadFlightHostState extends State<DownloadFlightHost>
                       !host.attached) {
                     return const SizedBox.shrink();
                   }
-                  final t = flight.progress.value.clamp(0.0, 1.0);
+                  // Time drives the size and the fade; the way along the arc
+                  // accelerates, so the card slows at the start and speeds
+                  // into the target.
+                  final time = flight.progress.value.clamp(0.0, 1.0);
+                  final t = Curves.easeInQuad.transform(time);
                   final start = host.globalToLocal(flight.source.center);
                   final end = host.globalToLocal(
                     destination.localToGlobal(
@@ -106,10 +149,25 @@ class DownloadFlightHostState extends State<DownloadFlightHost>
                       start * ((1 - t) * (1 - t)) +
                       control * (2 * (1 - t) * t) +
                       end * (t * t);
+                  final thumbnail = Size.square(
+                    math.min(
+                      _flightThumbnailExtent,
+                      flight.source.shortestSide,
+                    ),
+                  );
                   final size = Size.lerp(
-                    flight.source.size,
+                    Size.lerp(
+                      flight.source.size,
+                      thumbnail,
+                      Curves.easeOutCubic.transform(
+                        (time / _flightThumbnailEnd).clamp(0.0, 1.0),
+                      ),
+                    ),
                     Size.square(FrostControlSize.compact.iconSize),
-                    t,
+                    Curves.easeInCubic.transform(
+                      ((time - _flightIconStart) / (1 - _flightIconStart))
+                          .clamp(0.0, 1.0),
+                    ),
                   )!;
                   return Stack(
                     children: [
@@ -120,9 +178,9 @@ class DownloadFlightHostState extends State<DownloadFlightHost>
                           height: size.height,
                         ),
                         child: Opacity(
-                          opacity: t <= _flightFadeStart
+                          opacity: time <= _flightFadeStart
                               ? 1
-                              : (1 - t) / (1 - _flightFadeStart),
+                              : (1 - time) / (1 - _flightFadeStart),
                           child: ClipPath(
                             clipper: ShapeBorderClipper(
                               shape: FrostRadius.shape(context, FrostRadius.sm),
@@ -147,7 +205,8 @@ class DownloadFlightHostState extends State<DownloadFlightHost>
 }
 
 class _Flight {
-  _Flight(this.source, this.image, this.progress);
+  _Flight(this.source, this.image, this.progress, this.claim);
+  final Object? claim;
   final Rect source;
   final ImageProvider image;
   final AnimationController progress;
@@ -185,14 +244,18 @@ class _DownloadFlightTargetState extends State<DownloadFlightTarget>
 
   void _bounce() {
     if (!mounted || MediaQuery.disableAnimationsOf(context)) return;
-    // One small positive lobe, starting at the current value. Consecutive
-    // arrivals share the running confirmation instead of stacking impulses.
+    // One bounce of the small confirmation spring, starting at the current
+    // value. Consecutive arrivals share the running bounce instead of
+    // stacking impulses.
     if (_scale.isAnimating) return;
-    final spring = FrostMotion.snappy;
-    final velocity =
-        _landingAmplitude * math.e * math.sqrt(spring.stiffness / spring.mass);
     _scale.animateWith(
-      SpringSimulation(spring, _scale.value, 1, velocity, snapToEnd: true),
+      SpringSimulation(
+        FrostMotion.bouncy,
+        _scale.value,
+        1,
+        _bounceVelocity(FrostMotion.bouncy, _landingAmplitude),
+        snapToEnd: true,
+      ),
     );
   }
 
@@ -210,4 +273,17 @@ class _DownloadFlightTargetState extends State<DownloadFlightTarget>
     scale: _scale,
     child: KeyedSubtree(key: _host?.target, child: widget.child),
   );
+}
+
+/// The velocity from which an underdamped [spring] at rest at its target
+/// first peaks [amplitude] away from it.
+double _bounceVelocity(SpringDescription spring, double amplitude) {
+  final omega = math.sqrt(spring.stiffness / spring.mass);
+  final zeta = spring.damping / (2 * math.sqrt(spring.stiffness * spring.mass));
+  final decay = zeta * omega;
+  final damped = omega * math.sqrt(1 - zeta * zeta);
+  final peak = math.atan2(damped, decay) / damped;
+  return amplitude *
+      damped /
+      (math.exp(-decay * peak) * math.sin(damped * peak));
 }

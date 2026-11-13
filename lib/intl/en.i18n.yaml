@@ -188,7 +188,6 @@ downloads:
     downloadRetryWith: "Retry download task $name"
     downloadStartWith: "Start download task $name"
 
-    downloadCompletedWith: "Download completed for task $name"
     downloadFailedWith: "Download failed for task $name"
     saveFailedWith: "Saving failed for task $name"
 

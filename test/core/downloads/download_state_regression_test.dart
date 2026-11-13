@@ -315,7 +315,7 @@ void main() {
     expect(await store.listTasks(), isEmpty);
   });
 
-  test('one media item transfers once; the other job waits', () async {
+  test('one media item transfers once; no second job is queued', () async {
     await make(2);
     DownloadJob same(String? batch) => DownloadJob.create(
       resourceId: 1,
@@ -328,12 +328,110 @@ void main() {
       batchId: batch,
     );
     final single = same(null), batched = same('b1');
-    await manager.enqueue([single, batched]);
+    // Single and batch jobs for one post and variant share one identity.
+    expect(await manager.enqueue([single, batched]), 1);
     expect(engine.running.keys, [single.id]);
-    expect(await status(batched), DownloadStatus.queued);
+    expect(await store.getTask(batched.id), isNull);
     engine.complete(single.id);
     await _settle();
-    expect(engine.running.keys, [batched.id]);
+    expect(engine.running, isEmpty);
+    // Once saved it still blocks, in either direction.
+    await expectLater(
+      manager.enqueue([batched]),
+      throwsA(isA<DuplicateDownloadException>()),
+    );
+    await expectLater(
+      manager.enqueue([same(null)]),
+      throwsA(isA<DuplicateDownloadException>()),
+    );
+  });
+
+  test('a batch enqueue and a single add of one post race to one task', () async {
+    await make(2);
+    DownloadJob same(String? batch) => DownloadJob.create(
+      resourceId: 1,
+      sourceId: 'yande',
+      postId: '7',
+      variantIndex: 0,
+      url: Uri.parse('https://cdn.example/7.png'),
+      filename: '7.png',
+      saveTarget: const SaveTarget.downloadsFolder(),
+      batchId: batch,
+    );
+    final results = await Future.wait([
+      manager.enqueue([same('b1')]).then<Object>((count) => count).catchError(
+        (Object error) => error,
+      ),
+      manager.enqueue([same(null)]).then<Object>((count) => count).catchError(
+        (Object error) => error,
+      ),
+    ]);
+    expect(results.whereType<int>(), [1]);
+    expect(results.whereType<DuplicateDownloadException>(), hasLength(1));
+    expect(await store.listTasks(), hasLength(1));
+    // saveBytes takes the same step, so two of them cannot both pass either.
+    Future<Object> save() => manager
+        .saveBytes(
+          resourceId: 5,
+          variantIndex: 0,
+          bytes: Uint8List(3),
+          sourceUrl: Uri.parse('https://cdn.example/5.png'),
+          filename: '5.png',
+        )
+        .then<Object>((file) => file)
+        .catchError((Object error) => error);
+    final saves = await Future.wait([save(), save()]);
+    expect(saves.whereType<DownloadedFile>(), hasLength(1));
+    expect(saves.whereType<DuplicateDownloadException>(), hasLength(1));
+  });
+
+  group('a post file that failed or was cancelled can be downloaded again', () {
+    DownloadJob post(String? batch) => DownloadJob.create(
+      resourceId: 1,
+      sourceId: 'yande',
+      postId: '7',
+      variantIndex: 0,
+      url: Uri.parse('https://cdn.example/7.png'),
+      filename: '7.png',
+      saveTarget: const SaveTarget.downloadsFolder(),
+      batchId: batch,
+    );
+
+    test('after a cancel', () async {
+      await make(2);
+      final first = post(null);
+      await manager.enqueue([first]);
+      await manager.cancel(first.id);
+      await _settle();
+      expect(await status(first), DownloadStatus.cancelled);
+      final batched = post('b1');
+      expect(await manager.enqueue([batched]), 1);
+      expect(await status(batched), DownloadStatus.running);
+    });
+
+    test('after a failure', () async {
+      await make(2);
+      final first = post(null);
+      await store.upsertJob(first);
+      await store.updateStatus(first.id, DownloadStatus.failed);
+      expect(await manager.enqueue([post('b1')]), 1);
+    });
+
+    test('but not while it is paused or downloaded', () async {
+      await make(2);
+      final first = post(null);
+      await store.upsertJob(first);
+      await store.updateStatus(first.id, DownloadStatus.paused);
+      await expectLater(
+        manager.enqueue([post('b1')]),
+        throwsA(isA<DuplicateDownloadException>()),
+      );
+      await store.updateStatus(first.id, DownloadStatus.downloaded);
+      await expectLater(
+        manager.enqueue([post('b2')]),
+        throwsA(isA<DuplicateDownloadException>()),
+      );
+    });
   });
 
   test('a saved task releases its temporary files', () async {

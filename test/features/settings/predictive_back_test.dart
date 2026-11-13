@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:booruflow/core/settings/logic.dart';
 import 'package:booruflow/core/settings/settings_service.dart';
 import 'package:booruflow/features/settings/appearance_settings.dart';
@@ -107,7 +109,14 @@ void main() {
       host.currentState!.landed.value++;
       await tester.pump();
       expect(value(), 1);
-      var maximum = 1.0;
+      var maximum = 1.0, minimum = 1.0, lobes = 0;
+      var above = false;
+      // The bouncy spring rings below rest by a bounded fraction of its lobe.
+      final spring = FrostMotion.bouncy;
+      final damping =
+          spring.damping / (2 * math.sqrt(spring.stiffness * spring.mass));
+      final undershoot =
+          .06 * math.exp(-math.pi * damping / math.sqrt(1 - damping * damping));
       for (var frame = 0; frame < 80; frame++) {
         if (frame < 12) {
           final before = value();
@@ -116,11 +125,16 @@ void main() {
           expect(value(), closeTo(before, .0001));
         }
         await tester.pump(const Duration(milliseconds: 8));
-        maximum = value() > maximum ? value() : maximum;
-        expect(value(), inInclusiveRange(1, 1.061));
+        maximum = math.max(maximum, value());
+        minimum = math.min(minimum, value());
+        if (value() > 1.0005 && !above) lobes++;
+        above = value() > 1.0005;
+        expect(value(), inInclusiveRange(1 - undershoot - .0005, 1.061));
       }
       await tester.pumpAndSettle();
       expect(maximum, greaterThan(1.04));
+      expect(lobes, 1);
+      expect(minimum, lessThanOrEqualTo(1));
       expect(value(), 1);
     },
   );

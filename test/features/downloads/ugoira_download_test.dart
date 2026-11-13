@@ -23,18 +23,17 @@ class _Engine implements BooruEngine {
   _Engine(this.extension);
   String extension;
   @override
-  Future<PreparedDownload> prepareDownload({
-    required String sourceId,
-    required String postId,
+  Future<PreparedDownload> preparePostDownload({
+    required BooruPost post,
     required MediaVariantKind variant,
   }) async => PreparedDownload(
-    sourceId: sourceId,
-    postId: postId,
+    sourceId: post.sourceId,
+    postId: post.postId,
     variant: variant,
     url: 'https://cdn.example/original.$extension',
     headers: const [],
     allowedMediaKinds: const [],
-    filename: '$postId.$extension',
+    filename: '${post.postId}.$extension',
     expectedBytesDecimal: '100',
   );
   @override

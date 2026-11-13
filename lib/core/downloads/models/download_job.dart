@@ -1,5 +1,8 @@
 import 'dart:convert';
+
 import 'package:booruflow/src/rust/api/booru_download.dart' show UgoiraExport;
+
+import 'download_identity.dart';
 import 'download_request_options.dart';
 import 'save_target.dart';
 
@@ -79,6 +82,12 @@ class DownloadJob {
   final String? title;
   final String? batchId;
   final DateTime createdAt;
+
+  DownloadIdentity get identity => DownloadIdentity(
+    sourceId: sourceId,
+    postId: postId,
+    variantIndex: variantIndex,
+  );
 
   DownloadJob copyWith({
     String? id,

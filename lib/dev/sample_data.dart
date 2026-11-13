@@ -18,7 +18,7 @@ import 'package:booruflow/features/settings/network/services/proxy_connection.da
 import 'package:booruflow/features/update/logic.dart';
 import 'package:booruflow/src/rust/api/booru_auth.dart';
 import 'package:booruflow/src/rust/api/booru_download.dart'
-    show MediaFetchEvent;
+    show MediaFetchEvent, PreparedDownload;
 import 'package:booruflow/src/rust/api/booru_engine.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/api/web_challenge.dart';
@@ -216,11 +216,14 @@ class SampleEngine implements BooruEngine {
     canvas.drawRect(
       const Rect.fromLTWH(0, 0, width, height),
       Paint()
-        ..shader =
-            ui.Gradient.linear(Offset.zero, const Offset(width, height), [
-              Color.lerp(color, const Color(0xffffffff), .5)!,
-              Color.lerp(color, const Color(0xff000000), .22)!,
-            ]),
+        ..shader = ui.Gradient.linear(
+          Offset.zero,
+          const Offset(width, height),
+          [
+            Color.lerp(color, const Color(0xffffffff), .5)!,
+            Color.lerp(color, const Color(0xff000000), .22)!,
+          ],
+        ),
     );
     canvas.drawCircle(
       const Offset(width * .5, height * .4),
@@ -243,9 +246,8 @@ class SampleEngine implements BooruEngine {
     final picture = recorder.endRecording();
     final image = await picture.toImage(width.toInt(), height.toInt());
     try {
-      return (await image.toByteData(
-        format: ui.ImageByteFormat.png,
-      ))!.buffer.asUint8List();
+      return (await image.toByteData(format: ui.ImageByteFormat.png))!.buffer
+          .asUint8List();
     } finally {
       image.dispose();
       picture.dispose();
@@ -280,6 +282,35 @@ class SampleEngine implements BooruEngine {
     verified: sourceId == 'danbooru',
     revision: 1,
   );
+
+  @override
+  Future<PreparedDownload> prepareDownload({
+    required String sourceId,
+    required String postId,
+    required MediaVariantKind variant,
+  }) async => preparePostDownload(
+    post: await getPost(sourceId: sourceId, postId: postId),
+    variant: variant,
+  );
+
+  @override
+  Future<PreparedDownload> preparePostDownload({
+    required BooruPost post,
+    required MediaVariantKind variant,
+  }) async {
+    final file = post.media.firstWhere((media) => media.kind == variant);
+    return PreparedDownload(
+      sourceId: post.sourceId,
+      postId: post.postId,
+      variant: variant,
+      url: file.url,
+      headers: const [],
+      expectedBytesDecimal: file.byteLengthDecimal,
+      allowedMediaKinds: const [MediaKind.image],
+      filename: '${post.postId}.${file.extension_}',
+    );
+  }
+
   /// Popular feeds answer with the sample posts, so their availability probe
   /// reports them as available.
   @override
@@ -323,9 +354,9 @@ class _SampleNetworkStatus extends NetworkStatus {
 
 class _SampleProxySettings extends ProxySettings {
   @override
-  ProxySettingsState build() => ProxySettingsState.fromUrl(
-    'http://127.0.0.1:7890',
-  ).copyWith(reachable: true);
+  ProxySettingsState build() =>
+      ProxySettingsState.fromUrl('http://127.0.0.1:7890')
+          .copyWith(reachable: true);
 }
 
 final _data = SampleData();
@@ -343,7 +374,12 @@ final List<Override> sampleOverrides = [
       () => ref.read(downloadItemsProvider.notifier) as SampleDownloadItems,
     ),
   ),
-  booruDownloadsProvider.overrideWithValue(SampleBooruDownloads()),
+  booruDownloadsProvider.overrideWith(
+    (ref) => SampleBooruDownloads(
+      service: ref.watch(booruServiceProvider),
+      manager: ref.watch(downloadManagerProvider),
+    ),
+  ),
   networkProbeBackendProvider.overrideWith(
     (ref) => NetworkProbeBackend(
       sources: ref.watch(booruServiceProvider).sources,

@@ -35,7 +35,7 @@ BooruDownloadItem _download(String postId, DownloadStatus status) =>
         sourceId: 'yande',
         postId: postId,
         resourceId: 1,
-        variantIndex: 0,
+        variantIndex: MediaVariantKind.original.index,
         title: '#$postId',
         filename: '$postId.png',
         status: status,
@@ -111,23 +111,30 @@ void main() {
 
     Finder labelled(String label) =>
         find.byWidgetPredicate((w) => w is FrostButton && w.label == label);
+    // The saved mark is a status, not a button.
+    Finder savedMark() => find.byWidgetPredicate(
+      (w) => w is FrostBadge && w.label == t.downloads.downloaded,
+    );
 
     for (final (name, platform) in [
       ('pointer', TargetPlatform.windows),
       ('touch', TargetPlatform.android),
     ]) {
-      testWidgets('$name: a downloaded post shows the check without hover', (
-        tester,
-      ) async {
-        await mountCard(
-          tester,
-          platform: platform,
-          downloads: [_download('1', DownloadStatus.downloaded)],
-        );
-        await tester.pump(const Duration(milliseconds: 300));
-        expect(labelled(t.downloads.downloaded), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      });
+      testWidgets(
+        '$name: a downloaded post shows a check mark that is not a button',
+        (tester) async {
+          await mountCard(
+            tester,
+            platform: platform,
+            downloads: [_download('1', DownloadStatus.downloaded)],
+          );
+          await tester.pump(const Duration(milliseconds: 300));
+          expect(savedMark(), findsOneWidget);
+          expect(labelled(t.downloads.downloaded), findsNothing);
+          expect(labelled(t.postDetail.download), findsNothing);
+          expect(tester.takeException(), isNull);
+        },
+      );
 
       testWidgets('$name: another post\'s download does not mark the card', (
         tester,
@@ -138,7 +145,7 @@ void main() {
           downloads: [_download('2', DownloadStatus.downloaded)],
         );
         await tester.pump(const Duration(milliseconds: 300));
-        expect(labelled(t.downloads.downloaded), findsNothing);
+        expect(savedMark(), findsNothing);
       });
     }
 
@@ -152,7 +159,7 @@ void main() {
         );
         await tester.pump(const Duration(milliseconds: 300));
         expect(labelled(t.postDetail.download), findsOneWidget);
-        expect(labelled(t.downloads.downloaded), findsNothing);
+        expect(savedMark(), findsNothing);
       },
     );
 
@@ -168,10 +175,10 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       expect(labelled(t.postDetail.download), findsOneWidget);
-      expect(labelled(t.downloads.downloaded), findsNothing);
+      expect(savedMark(), findsNothing);
     });
 
-    testWidgets('a download still in progress does not mark the card', (
+    testWidgets('a download in progress offers no action and no mark', (
       tester,
     ) async {
       await mountCard(
@@ -180,7 +187,20 @@ void main() {
         downloads: [_download('1', DownloadStatus.running)],
       );
       await tester.pump(const Duration(milliseconds: 300));
-      expect(labelled(t.downloads.downloaded), findsNothing);
+      expect(savedMark(), findsNothing);
+      expect(labelled(t.postDetail.download), findsNothing);
+    });
+
+    testWidgets('a failed download leaves the action available', (
+      tester,
+    ) async {
+      await mountCard(
+        tester,
+        platform: TargetPlatform.android,
+        downloads: [_download('1', DownloadStatus.failed)],
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(labelled(t.postDetail.download), findsOneWidget);
     });
   });
 

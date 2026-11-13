@@ -1,15 +1,17 @@
 import 'dart:async';
 
 import 'package:booruflow/app/frost_config.dart';
+import 'package:booruflow/core/downloads/download_models.dart'
+    show DownloadBlock;
 import 'package:booruflow/core/media/image_clipboard.dart';
 import 'package:booruflow/features/downloads/logic.dart';
+import 'package:booruflow/features/downloads/services/booru_downloads.dart';
 import 'package:booruflow/features/posts/displayed_media_frame.dart';
 import 'package:booruflow/features/posts/media_presentation.dart';
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/features/posts/post_actions.dart';
 import 'package:booruflow/features/posts/stage_image_presentation.dart';
 import 'package:booruflow/intl/translations.g.dart';
-import 'package:booruflow/shared/action_runner_builder.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frost_ui/frost_ui.dart';
@@ -128,47 +130,57 @@ class ViewerBottomBar extends ConsumerWidget {
   final ValueChanged<bool> onZoom;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => Padding(
-    padding: const EdgeInsets.all(FrostGap.related),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (postMediaFormat(post) != PostMediaFormat.video) ...[
-          FrostButton.iconOnMedia(
-            label: t.postDetail.zoomOut,
-            icon: appIcons.zoomOut,
-            onPressed: scale > 1 ? () => onZoom(false) : null,
-          ),
-          const SizedBox(width: FrostGap.related),
-          FrostButton.iconOnMedia(
-            label: t.postDetail.zoomIn,
-            icon: appIcons.zoomIn,
-            onPressed: scale < maxScale ? () => onZoom(true) : null,
-          ),
-        ],
-        if (presentation.canUpgrade(post)) ...[
-          const SizedBox(width: FrostGap.group),
-          FrostButton.iconOnMedia(
-            label: t.postDetail.viewOriginal,
-            icon: appIcons.fullscreen,
-            state: presentation.loadingOriginal(post)
-                ? const FrostActionState.running()
-                : FrostActionState.idle,
-            onPressed: () => presentation.requestOriginal(post),
-          ),
-        ],
-        const SizedBox(width: FrostGap.group),
-        ActionRunnerBuilder(
-          builder: (context, runner) => FrostButton.iconOnMedia(
-            label: t.postDetail.download,
-            icon: appIcons.download,
-            state: runner.state,
-            onPressed: () => unawaited(
-              runner.run(() => ref.read(booruDownloadsProvider).add(post)),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final block = ref.watch(
+      downloadBlocksProvider.select(
+        (blocks) => blocks[BooruDownloads.identityOf(post)],
+      ),
+    );
+    return Padding(
+      padding: const EdgeInsets.all(FrostGap.related),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (postMediaFormat(post) != PostMediaFormat.video) ...[
+            FrostButton.iconOnMedia(
+              label: t.postDetail.zoomOut,
+              icon: appIcons.zoomOut,
+              onPressed: scale > 1 ? () => onZoom(false) : null,
             ),
+            const SizedBox(width: FrostGap.related),
+            FrostButton.iconOnMedia(
+              label: t.postDetail.zoomIn,
+              icon: appIcons.zoomIn,
+              onPressed: scale < maxScale ? () => onZoom(true) : null,
+            ),
+          ],
+          if (presentation.canUpgrade(post)) ...[
+            const SizedBox(width: FrostGap.group),
+            FrostButton.iconOnMedia(
+              label: t.postDetail.viewOriginal,
+              icon: appIcons.fullscreen,
+              state: presentation.loadingOriginal(post)
+                  ? const FrostActionState.running()
+                  : FrostActionState.idle,
+              onPressed: () => presentation.requestOriginal(post),
+            ),
+          ],
+          const SizedBox(width: FrostGap.group),
+          // The viewer never flies: the downloads entry sits under it. It says
+          // so with the added toast, and a post already taken offers no download.
+          FrostButton.iconOnMedia(
+            label: switch (block) {
+              DownloadBlock.saved => t.downloads.downloaded,
+              DownloadBlock.inProgress => t.downloads.downloading,
+              null => t.postDetail.download,
+            },
+            icon: appIcons.download,
+            onPressed: block == null
+                ? () => unawaited(ref.read(booruDownloadsProvider).add(post))
+                : null,
           ),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 }

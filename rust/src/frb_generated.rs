@@ -40,7 +40,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.14.0-beta.2";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1973762664;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1396656763;
 
 // Section: executor
 
@@ -1192,6 +1192,70 @@ fn wire__crate__api__booru_engine__BooruEngine_prepare_media_url_impl(
                     )?;
                     std::result::Result::Ok(output_ok)
                 })())
+            }
+        },
+    )
+}
+fn wire__crate__api__booru_engine__BooruEngine_prepare_post_download_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "BooruEngine_prepare_post_download",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<BooruEngine>,
+            >>::sse_decode(&mut deserializer);
+            let api_post = <crate::api::booru_models::BooruPost>::sse_decode(&mut deserializer);
+            let api_variant =
+                <crate::api::booru_models::MediaVariantKind>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, crate::booru::error::BooruError>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok =
+                            crate::api::booru_engine::BooruEngine::prepare_post_download(
+                                &*api_that_guard,
+                                api_post,
+                                api_variant,
+                            )
+                            .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
             }
         },
     )
@@ -4147,155 +4211,161 @@ fn pde_ffi_dispatcher_primary_impl(
             rust_vec_len,
             data_len,
         ),
-        21 => wire__crate__api__booru_engine__BooruEngine_prepare_video_request_impl(
+        21 => wire__crate__api__booru_engine__BooruEngine_prepare_post_download_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        22 => wire__crate__api__booru_engine__BooruEngine_probe_source_connection_impl(
+        22 => wire__crate__api__booru_engine__BooruEngine_prepare_video_request_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        23 => wire__crate__api__booru_engine__BooruEngine_refresh_route_cache_impl(
+        23 => wire__crate__api__booru_engine__BooruEngine_probe_source_connection_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        24 => wire__crate__api__booru_engine__BooruEngine_related_posts_impl(
+        24 => wire__crate__api__booru_engine__BooruEngine_refresh_route_cache_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        25 => wire__crate__api__booru_engine__BooruEngine_restore_web_challenges_impl(
+        25 => wire__crate__api__booru_engine__BooruEngine_related_posts_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        26 => wire__crate__api__booru_engine__BooruEngine_resume_download_impl(
+        26 => wire__crate__api__booru_engine__BooruEngine_restore_web_challenges_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        27 => wire__crate__api__booru_engine__BooruEngine_route_cache_state_impl(
+        27 => wire__crate__api__booru_engine__BooruEngine_resume_download_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        28 => wire__crate__api__booru_engine__BooruEngine_run_windows_web_challenge_impl(
+        28 => wire__crate__api__booru_engine__BooruEngine_route_cache_state_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        29 => wire__crate__api__booru_engine__BooruEngine_search_impl(
+        29 => wire__crate__api__booru_engine__BooruEngine_run_windows_web_challenge_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        30 => wire__crate__api__booru_engine__BooruEngine_search_web_url_impl(
+        30 => wire__crate__api__booru_engine__BooruEngine_search_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        31 => wire__crate__api__booru_engine__BooruEngine_set_credentials_impl(
+        31 => wire__crate__api__booru_engine__BooruEngine_search_web_url_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        32 => wire__crate__api__booru_engine__BooruEngine_set_web_session_impl(
+        32 => wire__crate__api__booru_engine__BooruEngine_set_credentials_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        33 => wire__crate__api__booru_engine__BooruEngine_stream_media_impl(
+        33 => wire__crate__api__booru_engine__BooruEngine_set_web_session_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        34 => wire__crate__api__booru_engine__BooruEngine_verify_auth_impl(
+        34 => wire__crate__api__booru_engine__BooruEngine_stream_media_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        35 => wire__crate__api__booru_engine__BooruEngine_web_challenge_state_impl(
+        35 => wire__crate__api__booru_engine__BooruEngine_verify_auth_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        36 => wire__crate__api__booru_models__auth_kind_default_impl(
+        36 => wire__crate__api__booru_engine__BooruEngine_web_challenge_state_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        37 => wire__crate__api__booru_auth__auth_status_default_impl(
+        37 => wire__crate__api__booru_models__auth_kind_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        38 => wire__crate__api__booru_models__checksum_algorithm_default_impl(
+        38 => wire__crate__api__booru_auth__auth_status_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        39 => wire__crate__api__booru_models__content_rating_default_impl(
+        39 => wire__crate__api__booru_models__checksum_algorithm_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        40 => wire__crate__api__booru_models__media_type_from_mime_impl(
+        40 => wire__crate__api__booru_models__content_rating_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        41 => {
+        41 => wire__crate__api__booru_models__media_type_from_mime_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        42 => {
             wire__crate__api__booru_models__media_type_kind_impl(port, ptr, rust_vec_len, data_len)
         }
-        42 => wire__crate__api__booru_models__media_variant_kind_default_impl(
+        43 => wire__crate__api__booru_models__media_variant_kind_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        43 => wire__crate__api__booru_models__network_fallback_mode_default_impl(
+        44 => wire__crate__api__booru_models__network_fallback_mode_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        44 => wire__crate__api__booru_models__post_flags_default_impl(
+        45 => wire__crate__api__booru_models__post_flags_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        45 => wire__crate__api__booru_models__post_key_impl(port, ptr, rust_vec_len, data_len),
-        46 => wire__crate__api__booru_auth__source_credentials_default_impl(
+        46 => wire__crate__api__booru_models__post_key_impl(port, ptr, rust_vec_len, data_len),
+        47 => wire__crate__api__booru_auth__source_credentials_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        47 => wire__crate__api__booru_models__tag_category_default_impl(
+        48 => wire__crate__api__booru_models__tag_category_default_impl(
             port,
             ptr,
             rust_vec_len,

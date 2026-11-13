@@ -125,16 +125,26 @@ final class DefaultDownloadManager implements DownloadManager {
       return 0;
     }
     await _ensurePermission(normalizedJobs);
-    var enqueued = 0;
-    for (final job in normalizedJobs) {
-      final activeTask = await _activeTaskForJob(job);
-      if (activeTask != null) {
-        continue;
+    // The identity check and the write are one step: concurrent calls, a
+    // batch and a single download included, cannot both pass the check.
+    final enqueued = await _exclusive(() async {
+      var added = 0;
+      final taken = {
+        for (final task in await _activeStore.listTasks())
+          if (task.block != null) ?task.identity,
+      };
+      for (final job in normalizedJobs) {
+        // A post file is taken by any single or batch task, however it was
+        // queued.
+        if (!taken.add(job.identity)) {
+          continue;
+        }
+        _jobs[job.id] = job;
+        await _activeStore.upsertJob(job);
+        added += 1;
       }
-      _jobs[job.id] = job;
-      await _activeStore.upsertJob(job);
-      enqueued += 1;
-    }
+      return added;
+    });
 
     if (enqueued == 0) {
       throw const DuplicateDownloadException();
@@ -219,15 +229,15 @@ final class DefaultDownloadManager implements DownloadManager {
       thumbnailUrl: thumbnailUrl,
     );
     await _ensurePermission([job]);
-    final activeTask = await _activeTaskForJob(job);
-    if (activeTask != null) {
-      throw const DuplicateDownloadException();
-    }
-
-    await validateDownloadedBytes(bytes, validation: job.validation);
-    _jobs[job.id] = job;
-    await _activeStore.upsertJob(job);
-    await _activeStore.updateStatus(job.id, DownloadStatus.running);
+    await _exclusive(() async {
+      if (await _isTaken(job)) {
+        throw const DuplicateDownloadException();
+      }
+      await validateDownloadedBytes(bytes, validation: job.validation);
+      _jobs[job.id] = job;
+      await _activeStore.upsertJob(job);
+      await _activeStore.updateStatus(job.id, DownloadStatus.running);
+    });
     await _activeStore.updateProgress(
       job.id,
       receivedBytes: bytes.lengthInBytes,
@@ -904,21 +914,19 @@ final class DefaultDownloadManager implements DownloadManager {
     );
   }
 
-  bool _isActiveDownloadTask(DownloadTaskSnapshot task) {
-    return task.status == DownloadStatus.queued ||
-        task.status == DownloadStatus.running ||
-        task.status == DownloadStatus.paused ||
-        task.saveState == SaveState.pending ||
-        task.saveState == SaveState.saving;
+  Future<void> _exclusiveTail = Future.value();
+
+  /// Runs [body] after every earlier exclusive step has finished.
+  Future<T> _exclusive<T>(Future<T> Function() body) {
+    final previous = _exclusiveTail;
+    final done = Completer<void>();
+    _exclusiveTail = done.future;
+    return previous.then((_) => body()).whenComplete(done.complete);
   }
 
-  Future<DownloadTaskSnapshot?> _activeTaskForJob(DownloadJob job) async {
-    final task = await _activeStore.getTask(job.id);
-    if (task != null && _isActiveDownloadTask(task)) {
-      return task;
-    }
-
-    return null;
+  Future<bool> _isTaken(DownloadJob job) async {
+    final tasks = await _activeStore.listTasks(resourceId: job.resourceId);
+    return downloadBlockFor(job.identity, tasks) != null;
   }
 
   SaveTarget _defaultSaveTarget([SaveTarget? requested]) {

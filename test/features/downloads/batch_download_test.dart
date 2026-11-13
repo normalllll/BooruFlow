@@ -60,6 +60,36 @@ class _Downloads extends BooruDownloads {
   }
 }
 
+/// A manager whose single download of post 1 is saved already.
+class _TakenManager extends TestDownloadManager {
+  @override
+  Future<List<DownloadTaskSnapshot>> listTasks({
+    int? resourceId,
+    DownloadStatus? status,
+    SaveState? saveState,
+  }) async => [
+    DownloadTaskSnapshot(
+      id: 'single-1',
+      sourceId: 'yande',
+      postId: '1',
+      resourceId: 1,
+      variantIndex: MediaVariantKind.original.index,
+      title: '#1',
+      filename: '1.png',
+      status: DownloadStatus.downloaded,
+      saveState: SaveState.saved,
+      receivedBytes: 1,
+      totalBytes: 1,
+      progress: 1,
+      localPath: null,
+      error: null,
+      log: null,
+      createdAt: DateTime(2026),
+      updatedAt: DateTime(2026),
+    ),
+  ];
+}
+
 BatchDownloadRequest request(CollectionLoader loader) => BatchDownloadRequest(
   sourceName: 'Yande.re',
   key: CollectionKey(
@@ -127,6 +157,33 @@ void main() {
       subscription.close();
     },
   );
+  test('a post a single download already took is not queued again', () async {
+    final manager = _TakenManager(), downloads = _Downloads();
+    final container = ProviderContainer.test(
+      overrides: [
+        booruSessionProvider.overrideWith(_Session.new),
+        downloadManagerProvider.overrideWithValue(manager),
+        booruDownloadsProvider.overrideWithValue(downloads),
+      ],
+    );
+    final input = request(
+      (_, _) async => PostPage(items: [data('1'), data('2')], exhausted: true),
+    );
+    final subscription = container.listen(
+      batchDownloadProvider(input),
+      (_, _) {},
+    );
+    final logic = container.read(batchDownloadProvider(input).notifier);
+    await logic.fetch(2);
+    logic.setFolder('October');
+    await logic.enqueue(location);
+    final result = container.read(batchDownloadProvider(input));
+    expect(result.phase, BatchPhase.finished);
+    expect(result.failed, isEmpty);
+    expect(downloads.prepared, ['2']);
+    expect(manager.jobs.map((job) => job.postId), ['2']);
+    subscription.close();
+  });
   test(
     'partial preparation failure retains successes and retries only failed posts',
     () async {

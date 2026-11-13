@@ -247,12 +247,125 @@ abstract class _$SessionDownloads extends $Notifier<List<BooruDownloadItem>> {
   }
 }
 
+/// What keeps each post file from being downloaded again. Cards and detail
+/// actions read their own entry, so they rebuild only when it changes.
+
+@ProviderFor(downloadBlocks)
+final downloadBlocksProvider = DownloadBlocksProvider._();
+
+/// What keeps each post file from being downloaded again. Cards and detail
+/// actions read their own entry, so they rebuild only when it changes.
+
+final class DownloadBlocksProvider
+    extends
+        $FunctionalProvider<
+          Map<DownloadIdentity, DownloadBlock>,
+          Map<DownloadIdentity, DownloadBlock>,
+          Map<DownloadIdentity, DownloadBlock>
+        >
+    with $Provider<Map<DownloadIdentity, DownloadBlock>> {
+  /// What keeps each post file from being downloaded again. Cards and detail
+  /// actions read their own entry, so they rebuild only when it changes.
+  DownloadBlocksProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'downloadBlocksProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$downloadBlocksHash();
+
+  @$internal
+  @override
+  $ProviderElement<Map<DownloadIdentity, DownloadBlock>> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  Map<DownloadIdentity, DownloadBlock> create(Ref ref) {
+    return downloadBlocks(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Map<DownloadIdentity, DownloadBlock> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride:
+          $SyncValueProvider<Map<DownloadIdentity, DownloadBlock>>(value),
+    );
+  }
+}
+
+String _$downloadBlocksHash() => r'eb9cab817617622e10fdf65e4e2ccfb1f7e65781';
+
+/// The downloads in the activity count. A flight in the air is left out of
+/// the count only while the download it carries is in it.
+
+@ProviderFor(countedDownloads)
+final countedDownloadsProvider = CountedDownloadsProvider._();
+
+/// The downloads in the activity count. A flight in the air is left out of
+/// the count only while the download it carries is in it.
+
+final class CountedDownloadsProvider
+    extends
+        $FunctionalProvider<
+          Set<DownloadIdentity>,
+          Set<DownloadIdentity>,
+          Set<DownloadIdentity>
+        >
+    with $Provider<Set<DownloadIdentity>> {
+  /// The downloads in the activity count. A flight in the air is left out of
+  /// the count only while the download it carries is in it.
+  CountedDownloadsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'countedDownloadsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$countedDownloadsHash();
+
+  @$internal
+  @override
+  $ProviderElement<Set<DownloadIdentity>> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  Set<DownloadIdentity> create(Ref ref) {
+    return countedDownloads(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Set<DownloadIdentity> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Set<DownloadIdentity>>(value),
+    );
+  }
+}
+
+String _$countedDownloadsHash() => r'891c3f23320f4b879ecbbc55c76eeaaf0fa17c11';
+
 /// Weighted determinate progress; unknown sizes keep the count but no ring.
+/// A tap whose task is not listed yet already counts.
 
 @ProviderFor(downloadActivity)
 final downloadActivityProvider = DownloadActivityProvider._();
 
 /// Weighted determinate progress; unknown sizes keep the count but no ring.
+/// A tap whose task is not listed yet already counts.
 
 final class DownloadActivityProvider
     extends
@@ -263,6 +376,7 @@ final class DownloadActivityProvider
         >
     with $Provider<({int count, double? progress})> {
   /// Weighted determinate progress; unknown sizes keep the count but no ring.
+  /// A tap whose task is not listed yet already counts.
   DownloadActivityProvider._()
     : super(
         from: null,
@@ -299,7 +413,7 @@ final class DownloadActivityProvider
   }
 }
 
-String _$downloadActivityHash() => r'e14a4b73e79b4be3922ac658512b780c9d721b44';
+String _$downloadActivityHash() => r'892f33566d3806b0eea52676d0aff21977234948';
 
 /// Presentation rates come from consecutive engine snapshots, never an assumed
 /// connection speed. No persistence or competing task state is introduced.

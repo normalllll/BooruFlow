@@ -1,7 +1,12 @@
+import 'dart:async';
+
 import 'package:booruflow/app/frost_config.dart';
+import 'package:booruflow/core/downloads/download_models.dart'
+    show DownloadBlock;
 import 'package:booruflow/core/media/image_clipboard.dart';
 import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/features/downloads/logic.dart';
+import 'package:booruflow/features/downloads/services/booru_downloads.dart';
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/features/posts/post_actions.dart';
 import 'package:booruflow/features/search/logic.dart';
@@ -11,9 +16,9 @@ import 'package:booruflow/features/tags/tag_presentation.dart';
 import 'package:booruflow/features/tags/tag_translations_service.dart';
 import 'package:booruflow/intl/number_format.dart';
 import 'package:booruflow/intl/translations.g.dart';
-import 'package:booruflow/shared/action_runner_builder.dart';
 import 'package:booruflow/shared/app_navigation.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:booruflow/ui/custom/download_flight.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frost_ui/frost_ui.dart';
@@ -109,10 +114,16 @@ class PostDetailActions extends ConsumerWidget {
     required this.moreEntries,
     this.displayedFrame,
     this.presentation,
+    this.flightSource,
     super.key,
   });
   final Post post;
   final VoidCallback onOpen;
+
+  /// Where the download flies from and what it shows, when the page has the
+  /// artwork on screen. Without one, or when it returns null, the download
+  /// does not fly and the added toast confirms it.
+  final ({Rect rect, ImageProvider image})? Function()? flightSource;
 
   /// Full screen, links and the other entries of the more menu.
   final List<FrostMenuEntry> moreEntries;
@@ -135,25 +146,55 @@ class PostDetailActions extends ConsumerWidget {
         );
       });
 
-  Widget _download(WidgetRef ref, {required bool text}) => ActionRunnerBuilder(
-    builder: (context, runner) {
-      Future<void> add() =>
-          runner.run(() => ref.read(booruDownloadsProvider).add(post));
-      return text
-          ? FrostButton.prominent(
-              label: t.postDetail.download,
-              icon: appIcons.download,
-              onPressed: add,
-              state: runner.state,
-            )
-          : FrostButton.iconFilled(
-              label: t.postDetail.download,
-              icon: appIcons.download,
-              onPressed: add,
-              state: runner.state,
-            );
-    },
-  );
+  /// Claims the post first; only a claimed post flies. Without a flight the
+  /// added toast says it was added. The add then runs in the background.
+  void _startDownload(BuildContext context, WidgetRef ref) {
+    final host = DownloadFlightHost.maybeOf(context);
+    unawaited(
+      ref
+          .read(booruDownloadsProvider)
+          .add(
+            post,
+            flight: host == null
+                ? null
+                : () {
+                    final source = flightSource?.call();
+                    return source != null &&
+                        host.fly(
+                          source: source.rect,
+                          image: source.image,
+                          claim: BooruDownloads.identityOf(post),
+                        );
+                  },
+          ),
+    );
+  }
+
+  Widget _download(BuildContext context, WidgetRef ref, {required bool text}) {
+    // A post that is saved or being downloaded offers no second download.
+    final block = ref.watch(
+      downloadBlocksProvider.select(
+        (blocks) => blocks[BooruDownloads.identityOf(post)],
+      ),
+    );
+    final label = switch (block) {
+      DownloadBlock.saved => t.downloads.downloaded,
+      DownloadBlock.inProgress => t.downloads.downloading,
+      null => t.postDetail.download,
+    };
+    final onPressed = block == null ? () => _startDownload(context, ref) : null;
+    return text
+        ? FrostButton.prominent(
+            label: label,
+            icon: appIcons.download,
+            onPressed: onPressed,
+          )
+        : FrostButton.iconFilled(
+            label: label,
+            icon: appIcons.download,
+            onPressed: onPressed,
+          );
+  }
 
   Widget _row(
     BuildContext context,
@@ -187,7 +228,7 @@ class PostDetailActions extends ConsumerWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _download(ref, text: downloadText),
+        _download(context, ref, text: downloadText),
         const SizedBox(width: FrostGap.related),
         if (!folded) ...[
           if (_canOpenOriginal)

@@ -2057,10 +2057,6 @@ class Translations$downloads$messages$en {
   String downloadStartWith({required Object name}) =>
       'Start download task ${name}';
 
-  /// en: 'Download completed for task $name'
-  String downloadCompletedWith({required Object name}) =>
-      'Download completed for task ${name}';
-
   /// en: 'Download failed for task $name'
   String downloadFailedWith({required Object name}) =>
       'Download failed for task ${name}';
@@ -2776,8 +2772,6 @@ extension on Translations {
             ({required Object name}) => 'Retry download task ${name}',
           'downloads.messages.downloadStartWith' =>
             ({required Object name}) => 'Start download task ${name}',
-          'downloads.messages.downloadCompletedWith' =>
-            ({required Object name}) => 'Download completed for task ${name}',
           'downloads.messages.downloadFailedWith' =>
             ({required Object name}) => 'Download failed for task ${name}',
           'downloads.messages.saveFailedWith' =>

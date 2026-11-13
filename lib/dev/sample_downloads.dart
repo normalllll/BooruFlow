@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:booruflow/core/downloads/download_manager_contract.dart';
 import 'package:booruflow/core/downloads/download_models.dart';
 import 'package:booruflow/features/downloads/logic.dart';
@@ -261,16 +263,110 @@ class SampleDownloadItems extends DownloadItems {
         ),
     ];
   }
+
+  void replace(DownloadTaskSnapshot task) {
+    state = [
+      for (final item in state)
+        if (item.snapshot.id == task.id)
+          BooruDownloadItem(snapshot: task, post: item.post)
+        else
+          item,
+    ];
+  }
 }
 
-/// Queues jobs into the sample list; nothing is downloaded.
+DownloadTaskSnapshot _advanced(
+  DownloadTaskSnapshot task, {
+  required DownloadStatus status,
+  required SaveState saveState,
+  required int receivedBytes,
+  required int totalBytes,
+}) => DownloadTaskSnapshot(
+  id: task.id,
+  resourceId: task.resourceId,
+  variantIndex: task.variantIndex,
+  title: task.title,
+  filename: task.filename,
+  sourceId: task.sourceId,
+  postId: task.postId,
+  thumbnailUrl: task.thumbnailUrl,
+  status: status,
+  saveState: saveState,
+  receivedBytes: receivedBytes,
+  totalBytes: totalBytes,
+  progress: receivedBytes / totalBytes,
+  localPath: saveState == SaveState.saved
+      ? 'D:/Pictures/BooruFlow/${task.sourceId}/${task.filename}'
+      : null,
+  error: null,
+  log: null,
+  createdAt: task.createdAt,
+  updatedAt: DateTime.now(),
+  batchId: task.batchId,
+  batchName: task.batchName,
+  ugoiraExport: task.ugoiraExport,
+);
+
+/// Queues jobs into the sample list and plays each one through to saved over
+/// a couple of seconds; nothing is fetched.
 class SampleDownloadManager implements DownloadManager {
   SampleDownloadManager(this.items);
   final SampleDownloadItems Function() items;
+  final _changes = StreamController<List<DownloadTaskSnapshot>>.broadcast();
+  final _timers = <Timer>[];
+
+  static const _steps = 8;
+  static const _total = 2726297;
+
+  void _publish() {
+    if (!_changes.isClosed) _changes.add(items().snapshots);
+  }
+
   @override
   Future<int> enqueue(List<DownloadJob> jobs) async {
     items().append(jobs);
+    _publish();
+    for (final job in jobs) {
+      for (var step = 0; step <= _steps; step++) {
+        _timers.add(
+          Timer(Duration(milliseconds: 300 + step * 250), () {
+            final task = items().snapshots
+                .where((task) => task.id == job.id)
+                .firstOrNull;
+            if (task == null) return;
+            final done = step == _steps;
+            items().replace(
+              _advanced(
+                task,
+                status: done
+                    ? DownloadStatus.downloaded
+                    : DownloadStatus.running,
+                saveState: done ? SaveState.saved : SaveState.none,
+                receivedBytes: _total * step ~/ _steps,
+                totalBytes: _total,
+              ),
+            );
+            _publish();
+          }),
+        );
+      }
+    }
     return jobs.length;
+  }
+
+  @override
+  Future<void> initialize() async {}
+  @override
+  Future<void> ensureReadyForDownloads() async {}
+  @override
+  Stream<List<DownloadTaskSnapshot>> watchTasks({int? resourceId}) =>
+      _changes.stream;
+  @override
+  Future<void> dispose() async {
+    for (final timer in _timers) {
+      timer.cancel();
+    }
+    await _changes.close();
   }
 
   @override
@@ -305,25 +401,5 @@ class SampleDownloadManager implements DownloadManager {
 }
 
 class SampleBooruDownloads extends BooruDownloads {
-  @override
-  Future<void> initialize() async {}
-  @override
-  void beginBatch(String batchId) {}
-  @override
-  void endBatch(String batchId) {}
-  @override
-  Future<DownloadJob> prepare(
-    Post post, {
-    String? batchId,
-    SaveTarget? saveTarget,
-  }) async => DownloadJob.create(
-    resourceId: post.resourceId,
-    sourceId: post.sourceId,
-    postId: post.id,
-    variantIndex: MediaVariantKind.original.index,
-    url: Uri.parse(post.originalMedia.url),
-    filename: '${post.id}.png',
-    saveTarget: saveTarget!,
-    batchId: batchId,
-  );
+  SampleBooruDownloads({super.service, super.manager});
 }

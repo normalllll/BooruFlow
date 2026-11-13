@@ -1,6 +1,11 @@
+import 'dart:async';
+
 import 'package:booruflow/app/frost_config.dart';
+import 'package:booruflow/core/downloads/download_models.dart'
+    show DownloadBlock;
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/features/downloads/logic.dart';
+import 'package:booruflow/features/downloads/services/booru_downloads.dart';
 import 'package:booruflow/features/posts/media_presentation.dart';
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/features/posts/post_actions.dart';
@@ -9,6 +14,7 @@ import 'package:booruflow/src/rust/booru/error.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frost_ui/frost_ui.dart';
+
 import 'rust_extended_network_image_provider.dart';
 
 enum PostMediaRecoveryStyle { failure, unsupported, overlay, banner }
@@ -143,67 +149,81 @@ class PostMediaRecovery extends ConsumerWidget {
     );
   }
 
-  Widget _unsupportedPlaceholder(BuildContext context, WidgetRef ref) =>
-      LayoutBuilder(
-        builder: (context, constraints) {
-          final tiny =
-              constraints.maxHeight <
-              FrostControlSize.large.height(context) + FrostGap.section;
-          return Center(
-            child: FrostSurface(
-              role: FrostSurfaceRole.module,
-              borderRadius: FrostRadius.borderRadius(FrostRadius.lg),
-              child: Padding(
-                padding: const EdgeInsets.all(FrostGap.related),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    FrostIcon(appIcons.imageError),
-                    if (onPlay case final play?)
-                      FrostButton.iconOnMedia(
-                        icon: appIcons.play,
-                        label: t.frost.play,
-                        onPressed: play,
-                      ),
-                    if (!tiny) ...[
-                      const SizedBox(height: FrostGap.related),
-                      FrostText(
-                        t.mediaError.previewUnsupported,
-                        role: FrostTextRole.footnote,
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                    if (purpose != PostMediaPurpose.thumbnail) ...[
-                      const SizedBox(height: FrostGap.related),
-                      Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: FrostGap.related,
-                        runSpacing: FrostGap.inline,
-                        children: [
-                          FrostButton(
-                            label: t.frost.openInBrowser,
-                            icon: appIcons.externalLink,
-                            size: FrostControlSize.compact,
-                            onPressed: () =>
-                                openPostMediaInBrowser(context, post),
-                          ),
-                          FrostButton(
-                            label: t.mediaError.downloadOriginal,
-                            icon: appIcons.download,
-                            size: FrostControlSize.compact,
-                            onPressed: () =>
-                                ref.read(booruDownloadsProvider).add(post),
-                          ),
-                        ],
-                      ),
-                    ],
+  Widget _unsupportedPlaceholder(BuildContext context, WidgetRef ref) {
+    // A post that is saved or being downloaded offers no second download.
+    final block = ref.watch(
+      downloadBlocksProvider.select(
+        (blocks) => blocks[BooruDownloads.identityOf(post)],
+      ),
+    );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final tiny =
+            constraints.maxHeight <
+            FrostControlSize.large.height(context) + FrostGap.section;
+        return Center(
+          child: FrostSurface(
+            role: FrostSurfaceRole.module,
+            borderRadius: FrostRadius.borderRadius(FrostRadius.lg),
+            child: Padding(
+              padding: const EdgeInsets.all(FrostGap.related),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FrostIcon(appIcons.imageError),
+                  if (onPlay case final play?)
+                    FrostButton.iconOnMedia(
+                      icon: appIcons.play,
+                      label: t.frost.play,
+                      onPressed: play,
+                    ),
+                  if (!tiny) ...[
+                    const SizedBox(height: FrostGap.related),
+                    FrostText(
+                      t.mediaError.previewUnsupported,
+                      role: FrostTextRole.footnote,
+                      textAlign: TextAlign.center,
+                    ),
                   ],
-                ),
+                  if (purpose != PostMediaPurpose.thumbnail) ...[
+                    const SizedBox(height: FrostGap.related),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: FrostGap.related,
+                      runSpacing: FrostGap.inline,
+                      children: [
+                        FrostButton(
+                          label: t.frost.openInBrowser,
+                          icon: appIcons.externalLink,
+                          size: FrostControlSize.compact,
+                          onPressed: () =>
+                              openPostMediaInBrowser(context, post),
+                        ),
+                        FrostButton(
+                          label: switch (block) {
+                            DownloadBlock.saved => t.downloads.downloaded,
+                            DownloadBlock.inProgress => t.downloads.downloading,
+                            null => t.mediaError.downloadOriginal,
+                          },
+                          icon: appIcons.download,
+                          size: FrostControlSize.compact,
+                          onPressed: block == null
+                              ? () => unawaited(
+                                  ref.read(booruDownloadsProvider).add(post),
+                                )
+                              : null,
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
               ),
             ),
-          );
-        },
-      );
+          ),
+        );
+      },
+    );
+  }
 
   Widget _overlay(BuildContext context, WidgetRef ref) => Align(
     alignment: Alignment.center,

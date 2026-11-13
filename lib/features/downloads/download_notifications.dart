@@ -26,13 +26,24 @@ Future<void> openDownloads({String? taskId, GoRouter? router}) {
 
 void openDownloadTask(String id) => unawaited(openDownloads(taskId: id));
 
-void notifyDownloadAdded({required String taskId, required String name}) =>
-    FrostToast.success(
-      t.verificationPage.downloadAdded,
-      description: name,
-      actionLabel: t.verificationPage.view,
-      onAction: () => openDownloadTask(taskId),
-    );
+/// [resolveTask] finds the task when the toast shows before it exists.
+void notifyDownloadAdded({
+  String? taskId,
+  required String name,
+  String? Function()? resolveTask,
+}) => FrostToast.success(
+  t.verificationPage.downloadAdded,
+  description: name,
+  actionLabel: t.verificationPage.view,
+  onAction: () {
+    final id = taskId ?? resolveTask?.call();
+    if (id == null) {
+      unawaited(openDownloads());
+    } else {
+      openDownloadTask(id);
+    }
+  },
+);
 
 /// Bind each notice to its own task. A save failure must retry saving, rather
 /// than restarting an already completed transfer. Exceptions stay in app UI.

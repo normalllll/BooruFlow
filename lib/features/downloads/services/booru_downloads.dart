@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:booruflow/core/downloads/download_manager.dart';
 import 'package:booruflow/core/downloads/download_models.dart';
 import 'package:booruflow/core/settings/settings_service.dart';
@@ -15,12 +16,16 @@ import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:path/path.dart' as path;
 
 class BooruDownloads {
-  BooruDownloads({BooruService? service})
+  BooruDownloads({BooruService? service, this._manager})
     : _service = service ?? BooruService.instance;
 
   static final instance = BooruDownloads();
 
   final BooruService _service;
+  final DownloadManager? _manager;
+
+  /// The app's manager unless one was given, which tests do.
+  DownloadManager get _downloads => _manager ?? downloadManager;
   final _submittingBatches = <String>{};
   final _reportedBatches = <String>{};
 
@@ -40,15 +45,15 @@ class BooruDownloads {
   Future<void> initialize() => _initializing ??= _initialize();
 
   Future<void> _initialize() async {
-    await initializeDownloadManager();
-    final initial = await downloadManager.listTasks();
+    await _downloads.initialize();
+    final initial = await _downloads.listTasks();
     for (final batch in initial.map((task) => task.batchId).nonNulls.toSet()) {
       if (initial.where((task) => task.batchId == batch).every(_settled)) {
         _reportedBatches.add(batch);
       }
     }
     _replaceItems(initial, notifyTransitions: false);
-    _subscription = downloadManager.watchTasks().listen((snapshots) {
+    _subscription = _downloads.watchTasks().listen((snapshots) {
       _pendingSnapshots = snapshots;
       // Sample rather than debounce: continuous progress must still reach UI.
       _itemsUpdate ??= Timer(const Duration(milliseconds: 200), () {
@@ -60,12 +65,69 @@ class BooruDownloads {
     });
   }
 
-  Future<bool> add(Post post) async {
+  /// Post files a tap has claimed whose task is not yet in [currentItems].
+  final _pending = <DownloadIdentity>{};
+  Set<DownloadIdentity> get pending => Set.unmodifiable(_pending);
+
+  static DownloadIdentity identityOf(Post post) => DownloadIdentity(
+    sourceId: post.sourceId,
+    postId: post.id,
+    variantIndex: MediaVariantKind.original.index,
+  );
+
+  /// Why [identity] cannot be downloaded again, or null when it can. A claimed
+  /// tap counts at once, before its task exists.
+  DownloadBlock? blockFor(DownloadIdentity identity) =>
+      _pending.contains(identity)
+      ? DownloadBlock.inProgress
+      : downloadBlockFor(identity, _currentItems.map((item) => item.snapshot));
+
+  /// Claims [identity] for a download about to be queued. False when it is
+  /// blocked or already claimed; nothing changes then. The claim counts at
+  /// once, before its task exists, and stays until [release].
+  bool claim(DownloadIdentity identity) {
+    if (blockFor(identity) != null) return false;
+    _pending.add(identity);
+    _publishItems();
+    return true;
+  }
+
+  void release(DownloadIdentity identity) {
+    if (_pending.remove(identity)) _publishItems();
+  }
+
+  /// The id of the task that holds [identity], if it is listed.
+  String? taskIdFor(DownloadIdentity identity) => _currentItems
+      .map((item) => item.snapshot)
+      .where((task) => task.identity == identity && task.block != null)
+      .map((task) => task.id)
+      .firstOrNull;
+
+  /// Downloads the original of [post] from the data in hand. The post is
+  /// claimed synchronously, and only then does [flight] start its flight, so
+  /// a post that is blocked or already claimed neither flies nor downloads
+  /// twice. Unless the flight started (it returns true), the "added" toast
+  /// shows at once when [announce] is set; a later failure shows the failure
+  /// toast. False when blocked or failed.
+  Future<bool> add(
+    Post post, {
+    bool announce = true,
+    bool Function()? flight,
+  }) async {
+    final identity = identityOf(post);
+    if (!claim(identity)) return false;
+    final flew = flight?.call() ?? false;
+    if (announce && !flew) {
+      notifyDownloadAdded(
+        name: '#${post.id}',
+        resolveTask: () => taskIdFor(identity),
+      );
+    }
     try {
       await initialize();
       final job = await prepare(post);
-      await downloadManager.enqueue([job]);
-      notifyDownloadAdded(taskId: job.id, name: '#${post.id}');
+      await _downloads.enqueue([job]);
+      await refreshItems();
       return true;
     } on DuplicateDownloadException {
       AppToast.show(t.downloads.messages.downloadTaskExists);
@@ -77,6 +139,8 @@ class BooruDownloads {
         retry: () => add(post),
       );
       return false;
+    } finally {
+      release(identity);
     }
   }
 
@@ -86,9 +150,10 @@ class BooruDownloads {
     String? batchId,
     SaveTarget? saveTarget,
   }) async {
-    final prepared = await _service.engine.prepareDownload(
-      sourceId: post.sourceId,
-      postId: post.id,
+    // The post in hand already lists its original file; only a post without
+    // one is fetched again.
+    final prepared = await _service.engine.preparePostDownload(
+      post: post.data,
       variant: MediaVariantKind.original,
     );
     final uri = Uri.parse(prepared.url);
@@ -161,7 +226,7 @@ class BooruDownloads {
         .firstOrNull;
     try {
       await initialize();
-      await downloadManager.retry(jobId);
+      await _downloads.retry(jobId);
       AppToast.show(
         t.downloads.messages.downloadRetryWith(name: name ?? jobId),
       );
@@ -175,13 +240,13 @@ class BooruDownloads {
 
   Future<void> retryAll() async {
     await initialize();
-    final tasks = await downloadManager.listTasks();
+    final tasks = await _downloads.listTasks();
     for (final task in tasks) {
       if (task.status == DownloadStatus.failed ||
           task.status == DownloadStatus.cancelled ||
           task.saveState == SaveState.failed) {
         try {
-          await downloadManager.retry(task.id);
+          await _downloads.retry(task.id);
         } catch (_) {
           // One broken task must not prevent the remaining tasks from retrying.
         }
@@ -189,7 +254,7 @@ class BooruDownloads {
     }
   }
 
-  Future<void> cancel(String jobId) => downloadManager.cancel(jobId);
+  Future<void> cancel(String jobId) => _downloads.cancel(jobId);
 
   Future<void> dispose() async {
     await _subscription?.cancel();
@@ -198,7 +263,26 @@ class BooruDownloads {
     _itemsUpdate = null;
     _pendingSnapshots = null;
     await _itemsController.close();
-    await downloadManager.dispose();
+    await _downloads.dispose();
+  }
+
+  /// Re-emits the items so listeners see a change in [pending].
+  void _publishItems() {
+    if (!_itemsController.isClosed) _itemsController.add(_currentItems);
+  }
+
+  /// Reads the tasks now, so a task just enqueued is listed without waiting
+  /// for the sampled stream.
+  Future<void> refreshItems() async {
+    try {
+      final tasks = await _downloads.listTasks();
+      _itemsUpdate?.cancel();
+      _itemsUpdate = null;
+      _pendingSnapshots = null;
+      _replaceItems(tasks, notifyTransitions: true);
+    } catch (_) {
+      // The sampled stream delivers the same state shortly after.
+    }
   }
 
   void _replaceItems(
@@ -217,15 +301,9 @@ class BooruDownloads {
         final previous = _lastStates[snapshot.id];
         final current = (snapshot.status, snapshot.saveState);
         if (previous != current && snapshot.batchId == null) {
-          if (snapshot.saveState == SaveState.saved) {
-            AppToast.success(
-              t.downloads.messages.downloadCompletedWith(
-                name: snapshot.filename,
-              ),
-            );
-          } else if (snapshot.status == DownloadStatus.failed ||
+          if (snapshot.status == DownloadStatus.failed ||
               snapshot.saveState == SaveState.failed) {
-            notifyDownloadFailure(task: snapshot, manager: downloadManager);
+            notifyDownloadFailure(task: snapshot, manager: _downloads);
           }
         }
       }

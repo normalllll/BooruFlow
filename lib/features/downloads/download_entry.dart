@@ -49,28 +49,38 @@ class DownloadEntryButton extends ConsumerWidget {
   /// Whether the button shows without any download record: the sidebar's does.
   final bool alwaysShown;
 
-  static final _noFlight = ValueNotifier<bool>(false);
+  static final _noFlights = ValueNotifier<List<Object?>>(const []);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final activity = ref.watch(downloadActivityProvider);
+    final counted = ref.watch(countedDownloadsProvider);
     final hasRecords = ref.watch(
       downloadItemsProvider.select((items) => items.isNotEmpty),
     );
-    final flying = DownloadFlightHost.maybeOf(context)?.flying ?? _noFlight;
-    return ValueListenableBuilder<bool>(
-      valueListenable: flying,
-      builder: (context, flightOnItsWay, _) => DownloadFlightTarget(
-        child: alwaysShown || hasRecords || flightOnItsWay
-            ? FrostShellTaskButton(
-                icon: appIcons.download,
-                label: t.navigation.downloads,
-                badge: activity.count,
-                progress: activity.progress,
-                // No action of its own: the shell opens the entry's panel.
-                onPressed: null,
-              )
-            : const SizedBox.shrink(),
+    final inAir = DownloadFlightHost.maybeOf(context)?.inAir ?? _noFlights;
+    return ValueListenableBuilder<List<Object?>>(
+      valueListenable: inAir,
+      builder: (context, flights, _) => DownloadFlightTarget(
+        // The entry enters with a scale and fade. A download whose flight is
+        // still in the air is not counted: the badge rises as it lands. Only
+        // a flight whose download is in the count is left out, so a released
+        // claim or a task that has already finished takes nothing off.
+        child: FrostPresence(
+          visible: alwaysShown || hasRecords || flights.isNotEmpty,
+          child: FrostShellTaskButton(
+            icon: appIcons.download,
+            label: t.navigation.downloads,
+            badge: math.max(
+              activity.count -
+                  flights.where(counted.contains).length,
+              0,
+            ),
+            progress: activity.progress,
+            // No action of its own: the shell opens the entry's panel.
+            onPressed: null,
+          ),
+        ),
       ),
     );
   }

@@ -10,6 +10,7 @@ import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/features/browse/collection_logic.dart';
 import 'package:booruflow/features/downloads/logic.dart';
+import 'package:booruflow/features/downloads/services/booru_downloads.dart';
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/intl/number_format.dart';
 import 'package:booruflow/intl/translations.g.dart';
@@ -301,6 +302,14 @@ class BatchDownload extends _$BatchDownload {
     final downloads = ref.read(booruDownloadsProvider);
     final manager = ref.read(downloadManagerProvider);
     final accepted = <String>{};
+    final claimed = <DownloadIdentity>{};
+    // The queued tasks are listed before their claims go.
+    Future<void> releaseClaims() async {
+      await downloads.refreshItems();
+      claimed.forEach(downloads.release);
+      claimed.clear();
+    }
+
     final previouslyEnqueued = state.enqueued;
     var processed = 0;
     state = state.copyWith(
@@ -316,11 +325,18 @@ class BatchDownload extends _$BatchDownload {
       if (!ref.mounted) return;
       // Query persisted identities before retrying, including completed tasks.
       // An interrupted enqueue response must never reset a successful task.
-      final existing = (await manager.listTasks())
-          .map((task) => task.id)
-          .toSet();
+      final tasks = await manager.listTasks();
       if (!ref.mounted) return;
+      final existing = {for (final task in tasks) task.id};
+      // A post another download already took, single or batch, is not queued
+      // again; the batch counts it as done.
+      final taken = {
+        for (final task in tasks)
+          if (task.block != null) ?task.identity,
+      };
       for (var start = 0; start < candidates.length; start += 20) {
+        // A claim keeps a card or detail download of the same post out while
+        // the chunk is prepared and queued.
         final chunk = candidates.skip(start).take(20).toList();
         final prepared = <(Post, DownloadJob)>[];
         for (final post in chunk) {
@@ -330,9 +346,13 @@ class BatchDownload extends _$BatchDownload {
             variantIndex: MediaVariantKind.original.index,
             batchId: _batchId,
           );
-          if (existing.contains(id)) {
+          final identity = BooruDownloads.identityOf(post);
+          if (existing.contains(id) ||
+              taken.contains(identity) ||
+              !downloads.claim(identity)) {
             accepted.add(post.postKey);
           } else {
+            claimed.add(identity);
             try {
               final job =
                   _prepared[post.postKey] ??
@@ -361,6 +381,10 @@ class BatchDownload extends _$BatchDownload {
             await manager.enqueue(prepared.map((entry) => entry.$2).toList());
             if (!ref.mounted) return;
             accepted.addAll(prepared.map((entry) => entry.$1.postKey));
+          } on DuplicateDownloadException {
+            // Every post of the chunk was taken meanwhile.
+            if (!ref.mounted) return;
+            accepted.addAll(prepared.map((entry) => entry.$1.postKey));
           } catch (error) {
             if (!ref.mounted) return;
             state = state.copyWith(error: error);
@@ -382,11 +406,13 @@ class BatchDownload extends _$BatchDownload {
             break;
           }
         }
+        await releaseClaims();
         state = state.copyWith(enqueued: previouslyEnqueued + accepted.length);
       }
     } catch (error) {
       if (ref.mounted) state = state.copyWith(error: error);
     } finally {
+      claimed.forEach(downloads.release);
       final failures = candidates
           .where((post) => !accepted.contains(post.postKey))
           .toList();

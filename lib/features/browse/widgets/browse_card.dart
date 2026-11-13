@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:booruflow/app/frost_config.dart';
-import 'package:booruflow/core/downloads/models/download_enums.dart';
+import 'package:booruflow/core/downloads/download_models.dart'
+    show DownloadBlock;
 import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/features/downloads/logic.dart';
+import 'package:booruflow/features/downloads/services/booru_downloads.dart';
 import 'package:booruflow/features/posts/media_presentation.dart';
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/features/posts/post_actions.dart';
@@ -54,15 +58,29 @@ class _BrowseCardState extends ConsumerState<BrowseCard> {
     }
   }
 
-  Future<void> _download() async {
-    final host = DownloadFlightHost.maybeOf(context);
-    final box = context.findRenderObject()! as RenderBox;
-    final source = box.localToGlobal(Offset.zero) & box.size;
+  /// Claims the post first; only a claimed post flies. The add then runs in
+  /// the background.
+  void _download() {
+    final post = widget.post;
     final preview = _decodedPreview;
-    final added = await ref.read(booruDownloadsProvider).add(widget.post);
-    if (mounted && added && preview != null) {
-      host?.fly(source: source, image: preview);
-    }
+    final host = DownloadFlightHost.maybeOf(context);
+    unawaited(
+      ref
+          .read(booruDownloadsProvider)
+          .add(
+            post,
+            flight: preview == null || host == null
+                ? null
+                : () {
+                    final box = context.findRenderObject()! as RenderBox;
+                    return host.fly(
+                      source: box.localToGlobal(Offset.zero) & box.size,
+                      image: preview,
+                      claim: BooruDownloads.identityOf(post),
+                    );
+                  },
+          ),
+    );
   }
 
   @override
@@ -101,15 +119,11 @@ class _BrowseCardState extends ConsumerState<BrowseCard> {
             ?.displayName ??
         post.sourceId;
     final title = '$sourceName · #${post.id}';
-    // Selecting the flag keeps a card from rebuilding on unrelated progress.
-    final downloaded = ref.watch(
-      downloadItemsProvider.select(
-        (items) => items.any(
-          (item) =>
-              item.sourceId == post.sourceId &&
-              item.postId == post.id &&
-              item.snapshot.status == DownloadStatus.downloaded,
-        ),
+    // Selecting this post's entry keeps a card from rebuilding on unrelated
+    // progress.
+    final block = ref.watch(
+      downloadBlocksProvider.select(
+        (blocks) => blocks[BooruDownloads.identityOf(post)],
       ),
     );
     final downloadButton = FrostButton.iconOnMedia(
@@ -155,23 +169,26 @@ class _BrowseCardState extends ConsumerState<BrowseCard> {
                   ? FrostBadgeStyle.solid
                   : FrostBadgeStyle.tinted,
             ),
-      // A downloaded post keeps its mark; otherwise the action waits for hover
-      // where hover is available and is always shown elsewhere.
-      topEnd: downloaded
-          ? FrostButton.iconOnMedia(
-              label: labels.downloads.downloaded,
-              icon: appIcons.check,
-              size: FrostControlSize.compact,
-              onPressed: _download,
-            )
-          : hover
-          ? Builder(
-              builder: (context) => FrostPresence(
-                visible: FrostClickSurface.hoveredOf(context),
-                child: downloadButton,
-              ),
-            )
-          : downloadButton,
+      // A saved post keeps a mark that is not an action, and one being
+      // downloaded offers nothing; otherwise the action waits for hover where
+      // hover is available and is always shown elsewhere.
+      topEnd: switch (block) {
+        DownloadBlock.saved => FrostBadge(
+          label: labels.downloads.downloaded,
+          icon: appIcons.check,
+          tone: FrostBadgeTone.onMedia,
+        ),
+        DownloadBlock.inProgress => null,
+        null =>
+          hover
+              ? Builder(
+                  builder: (context) => FrostPresence(
+                    visible: FrostClickSurface.hoveredOf(context),
+                    child: downloadButton,
+                  ),
+                )
+              : downloadButton,
+      },
       bottomEnd: resolution == null
           ? null
           : FrostBadge(label: resolution, tone: FrostBadgeTone.onMedia),
@@ -183,6 +200,7 @@ class _BrowseCardState extends ConsumerState<BrowseCard> {
               context: context,
               post: post,
               download: _download,
+              downloadEnabled: block == null,
             ),
             if (widget.onRefresh case final refresh?) ...[
               const FrostMenuDivider(),

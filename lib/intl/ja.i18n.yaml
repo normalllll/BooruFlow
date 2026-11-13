@@ -182,7 +182,6 @@ downloads:
     downloadRetryWith: "ダウンロードタスクを再試行: $name"
     downloadStartWith: "ダウンロードタスクを開始: $name"
 
-    downloadCompletedWith: "ダウンロード完了: タスク $name"
     downloadFailedWith: "ダウンロード失敗: タスク $name"
     saveFailedWith: "保存失敗: タスク $name"
 
