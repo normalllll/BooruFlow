@@ -97,12 +97,25 @@ class _BooruFlowAppState extends ConsumerState<BooruFlowApp> {
 
   @override
   Widget build(BuildContext context) {
-    final settings = ref.watch(settingsProvider);
-    final artwork = ref.watch(ambientArtworkProvider);
-    final config = appFrostConfig.copyWith(
-      predictiveBack: settings.predictiveBack,
+    // Everything below the root rebuilds with it, so it watches only the
+    // settings it applies; the window artwork is watched by the backdrop alone.
+    final config = appFrostConfigFor(
+      predictiveBack: ref.watch(
+        settingsProvider.select((value) => value.predictiveBack),
+      ),
     );
-    final material = settings.background.material;
+    final appearance = ref.watch(
+      settingsProvider.select((value) => value.appearance),
+    );
+    final language = ref.watch(
+      settingsProvider.select((value) => value.language),
+    );
+    final material = ref.watch(
+      settingsProvider.select((value) => value.background.material),
+    );
+    final intensity = ref.watch(
+      settingsProvider.select((value) => value.background.intensity),
+    );
     ref.listen(settingsProvider.select((value) => value.language), (
       _,
       language,
@@ -118,9 +131,9 @@ class _BooruFlowAppState extends ConsumerState<BooruFlowApp> {
       child: FrostApp.router(
         config: config,
         title: AppInfo.name,
-        appearance: settings.appearance,
+        appearance: appearance,
         routerConfig: AppRouter.router,
-        locale: appLocaleForLanguagePreference(settings.language).flutterLocale,
+        locale: appLocaleForLanguagePreference(language).flutterLocale,
         supportedLocales: AppLocaleUtils.supportedLocales,
         builder: (context, child) {
           final frame = FrostLayoutScope(
@@ -166,20 +179,27 @@ class _BooruFlowAppState extends ConsumerState<BooruFlowApp> {
                             backdrop: effective == BackgroundMaterial.mica
                                 ? FrostWindowBackdrop.mica
                                 : FrostWindowBackdrop.none,
-                            child: FrostAmbientBackdropHost(
-                              image: effective == BackgroundMaterial.ambient
-                                  ? artwork
-                                  : null,
-                              fallback: effective == BackgroundMaterial.ambient
-                                  ? FrostAmbientFallback.accentWash
-                                  : FrostAmbientFallback.none,
-                              intensity: effective == BackgroundMaterial.off
-                                  ? 0
-                                  : settings.background.intensity / 100,
+                            child: Consumer(
                               child: AppWindow(
                                 controller: widget.windowController,
                                 child: DownloadFlightHost(child: page!),
                               ),
+                              builder: (context, ref, window) =>
+                                  FrostAmbientBackdropHost(
+                                    image:
+                                        effective == BackgroundMaterial.ambient
+                                        ? ref.watch(ambientArtworkProvider)
+                                        : null,
+                                    fallback:
+                                        effective == BackgroundMaterial.ambient
+                                        ? FrostAmbientFallback.accentWash
+                                        : FrostAmbientFallback.none,
+                                    intensity:
+                                        effective == BackgroundMaterial.off
+                                        ? 0
+                                        : intensity / 100,
+                                    child: window!,
+                                  ),
                             ),
                           ),
                         ),

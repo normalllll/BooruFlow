@@ -123,6 +123,16 @@ final appFrostConfig = FrostConfig(
   ),
 );
 
+final _appFrostConfigWithoutPredictiveBack = appFrostConfig.copyWith(
+  predictiveBack: false,
+);
+
+/// [appFrostConfig] with the predictive-back setting applied. FrostScope
+/// compares configurations by identity, so each setting maps to one shared
+/// instance; a fresh copy would rebuild every widget that reads the config.
+FrostConfig appFrostConfigFor({required bool predictiveBack}) =>
+    predictiveBack ? appFrostConfig : _appFrostConfigWithoutPredictiveBack;
+
 FrostLabels appFrostLabels(BuildContext context) {
   final labels = Translations.of(context).frost;
   return FrostLabels(
