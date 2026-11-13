@@ -77,6 +77,8 @@ class AboutPage extends ConsumerWidget {
           Align(
             alignment: AlignmentDirectional.centerStart,
             child: ActionRunnerBuilder(
+              // A toast reports the result.
+              showsResult: false,
               builder: (context, runner) => FrostButton(
                 label: t.settingsV2.checkUpdates,
                 icon: appIcons.refresh,

@@ -110,6 +110,8 @@ class _WebChallengeDataPanelState extends ConsumerState<WebChallengeDataPanel> {
       final action = widget.savedOnly
           ? ActionRunnerBuilder(
               key: ValueKey('clear-web-data-${source.sourceId}'),
+              // The row's status reports the result.
+              showsResult: false,
               builder: (context, runner) => FrostButton.plain(
                 label: t.webChallenge.clear,
                 size: FrostControlSize.compact,

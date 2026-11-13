@@ -195,6 +195,8 @@ class _ProxySettingsPanelState extends ConsumerState<ProxySettingsPanel> {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             ActionRunnerBuilder(
+              // The status dot beside the button reports the result.
+              showsResult: false,
               builder: (context, runner) => FrostButton(
                 label: n.checkCompact,
                 tooltip: n.proxyProbe,

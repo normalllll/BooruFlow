@@ -134,6 +134,8 @@ class _NetworkSettingsPageState extends ConsumerState<NetworkSettingsPage> {
                 null => null,
               },
               trailing: ActionRunnerBuilder(
+                // The route cache description and the status errors report it.
+                showsResult: false,
                 builder: (context, runner) => FrostButton(
                   label: t.settingsDetails.refresh,
                   icon: appIcons.refresh,

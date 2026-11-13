@@ -160,6 +160,8 @@ class _AccountEditorState extends ConsumerState<AccountEditor> {
         AppActionGroup(
           children: [
             ActionRunnerBuilder(
+              // The toast and the error details report the result.
+              showsResult: false,
               builder: (context, runner) => FrostButton(
                 label: t.settings.account.verify,
                 icon: appIcons.refresh,

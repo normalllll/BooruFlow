@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:booruflow/app/app_router.dart';
 import 'package:booruflow/app/frost_config.dart';
 import 'package:booruflow/features/booru/booru_logic.dart';
@@ -86,6 +87,8 @@ class _WebChallengeButtonState extends ConsumerState<WebChallengeButton> {
       );
     }
     return ActionRunnerBuilder(
+      // The verified data and the failure toast report the result.
+      showsResult: false,
       builder: (context, runner) {
         final onPressed = action == null ? null : () => runner.run(action);
         return widget.compact

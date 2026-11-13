@@ -104,6 +104,8 @@ class _NetworkStatusPanelState extends ConsumerState<NetworkStatusPanel> {
                 ),
               ),
               ActionRunnerBuilder(
+                // The status rows and errors report the result.
+                showsResult: false,
                 builder: (context, runner) => FrostButton.quiet(
                   label: n.checkAllSources,
                   tooltip: n.checkAllSources,
@@ -187,6 +189,8 @@ class _NetworkStatusPanelState extends ConsumerState<NetworkStatusPanel> {
                 runSpacing: FrostGap.related,
                 children: [
                   ActionRunnerBuilder(
+                    // The status rows and errors report the result.
+                    showsResult: false,
                     builder: (context, runner) => FrostButton(
                       label: n.checkCompact,
                       icon: appIcons.refresh,
@@ -201,6 +205,8 @@ class _NetworkStatusPanelState extends ConsumerState<NetworkStatusPanel> {
                     ),
                   ),
                   ActionRunnerBuilder(
+                    // The status rows and errors report the result.
+                    showsResult: false,
                     builder: (context, runner) => FrostButton(
                       label: n.refreshRoutes,
                       icon: appIcons.refresh,
