@@ -257,10 +257,8 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage>
 
   /// This page's own artwork; until it resolves, the grid frame it opened with
   /// rather than whatever the window showed before.
-  ImageProvider? _backdrop(Post post) {
-    ref.watch(ambientArtworkProvider);
-    return _ambient.imageOf(this) ?? _openingPreview(post);
-  }
+  ImageProvider? _backdrop(Post post) =>
+      _ambient.imageOf(this) ?? _openingPreview(post);
 
   void _selectRelated(Post post) {
     if (post.postKey == _current.postKey) return;
@@ -601,9 +599,15 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage>
           key: const ValueKey('post-detail-layout'),
           fit: StackFit.expand,
           children: [
-            PostDetailBackdrop(
-              image: ambient ? _backdrop(post) : null,
-              stageKey: _stageKey(post),
+            // Only the backdrop follows the window's artwork as it resolves.
+            Consumer(
+              builder: (context, ref, _) {
+                ref.watch(ambientArtworkProvider);
+                return PostDetailBackdrop(
+                  image: ambient ? _backdrop(post) : null,
+                  stageKey: _stageKey(post),
+                );
+              },
             ),
             FrostLayoutCrossfade(
               layoutIdentity: stacked,
