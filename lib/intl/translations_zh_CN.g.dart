@@ -7,6 +7,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:slang/generated.dart';
+
 import 'translations.g.dart';
 
 // Path: <root>
@@ -1919,10 +1920,12 @@ extension on TranslationsZhCn {
           'generic.confirm' => '确认',
           'generic.enabled' => '启用',
           'generic.disabled' => '停用',
-          'generic.copiedWithValue' =>
-            ({required Object value}) => '已复制到剪贴板: ${value}',
-          'generic.errorWithValue' =>
-            ({required Object value}) => '发生错误: ${value}',
+          'generic.copiedWithValue' => ({
+            required Object value,
+          }) => '已复制到剪贴板: ${value}',
+          'generic.errorWithValue' => ({
+            required Object value,
+          }) => '发生错误: ${value}',
           'generic.loading' => '正在加载',
           'generic.loadFailed' => '加载失败',
           'generic.retry' => '重试',
@@ -1953,14 +1956,15 @@ extension on TranslationsZhCn {
           'update.checkUpdateFailed' => '检查更新失败，请检查你的网络连接。',
           'update.selectDownloadUrlFailed' =>
             '找不到下载链接。\n请访问项目页面手动更新，或在项目 Issue 页面寻求帮助。',
-          'update.newVersionFound' =>
-            ({required Object version}) =>
-                '发现新版本: ${version}。请转到“关于”页面并点击“下载更新”。',
+          'update.newVersionFound' => ({
+            required Object version,
+          }) => '发现新版本: ${version}。请转到“关于”页面并点击“下载更新”。',
           'update.noNewVersionFound' => '没有新版本。',
           'postList.short' => '首页',
           'postList.title' => '首页',
-          'postList.titleWithTags' =>
-            ({required Object tags}) => '带有标签的帖子: ${tags}',
+          'postList.titleWithTags' => ({
+            required Object tags,
+          }) => '带有标签的帖子: ${tags}',
           'postDetail.fullscreen' => '全屏查看',
           'postDetail.notFound' => '找不到这个作品',
           'postDetail.parentCount' =>
@@ -2034,12 +2038,15 @@ extension on TranslationsZhCn {
           'downloads.today' => '今天',
           'downloads.yesterday' => '昨天',
           'downloads.transferRate' => ({required Object value}) => '${value}/s',
-          'downloads.remainingSeconds' =>
-            ({required Object count}) => '约 ${count} 秒',
-          'downloads.remainingMinutes' =>
-            ({required Object count}) => '约 ${count} 分钟',
-          'downloads.remainingHours' =>
-            ({required Object count}) => '约 ${count} 小时',
+          'downloads.remainingSeconds' => ({
+            required Object count,
+          }) => '约 ${count} 秒',
+          'downloads.remainingMinutes' => ({
+            required Object count,
+          }) => '约 ${count} 分钟',
+          'downloads.remainingHours' => ({
+            required Object count,
+          }) => '约 ${count} 小时',
           'downloads.format' => '格式',
           'downloads.startedAt' => '开始于',
           'downloads.browse' => '去浏览',
@@ -2055,9 +2062,10 @@ extension on TranslationsZhCn {
           'downloads.openPost' => '打开作品',
           'downloads.open' => '打开',
           'downloads.batch' => '批量下载',
-          'downloads.batchProgress' =>
-            ({required Object completed, required Object total}) =>
-                '${completed} / ${total}',
+          'downloads.batchProgress' => ({
+            required Object completed,
+            required Object total,
+          }) => '${completed} / ${total}',
           'downloads.path' => '保存路径',
           'downloads.taskDetails' => '任务详情',
           'downloads.viewLog' => '日志',
@@ -2105,14 +2113,18 @@ extension on TranslationsZhCn {
           'downloads.messages.photosDenied' => '你已拒绝照片权限。',
           'downloads.messages.downloadTaskExists' => '下载任务已存在。',
           'downloads.messages.imageFileExists' => '图片文件已存在。',
-          'downloads.messages.downloadRetryWith' =>
-            ({required Object name}) => '重试下载任务: ${name}',
-          'downloads.messages.downloadStartWith' =>
-            ({required Object name}) => '开始下载任务: ${name}',
-          'downloads.messages.downloadFailedWith' =>
-            ({required Object name}) => '下载任务失败: ${name}',
-          'downloads.messages.saveFailedWith' =>
-            ({required Object name}) => '保存失败: 任务 ${name}',
+          'downloads.messages.downloadRetryWith' => ({
+            required Object name,
+          }) => '重试下载任务: ${name}',
+          'downloads.messages.downloadStartWith' => ({
+            required Object name,
+          }) => '开始下载任务: ${name}',
+          'downloads.messages.downloadFailedWith' => ({
+            required Object name,
+          }) => '下载任务失败: ${name}',
+          'downloads.messages.saveFailedWith' => ({
+            required Object name,
+          }) => '保存失败: 任务 ${name}',
           'about.title' => '关于',
           'about.projectUrl' => '项目网址',
           'about.publishPage' => '发布页面',
@@ -2166,8 +2178,9 @@ extension on TranslationsZhCn {
           'settings.account.username' => '用户名',
           'settings.account.userId' => '用户 ID',
           'settings.account.apiKey' => 'API 密钥',
-          'settings.account.statusValue' =>
-            ({required Object status}) => '状态 · ${status}',
+          'settings.account.statusValue' => ({
+            required Object status,
+          }) => '状态 · ${status}',
           'settings.account.statuses.notConfigured' => '尚未配置',
           'settings.account.statuses.configuredUnverified' => '已配置，尚未验证',
           'settings.account.statuses.verified' => '已验证',
@@ -2199,27 +2212,26 @@ extension on TranslationsZhCn {
           'settings.network.sourceProbeHelp' =>
             '绿色：API 和图片均可用；黄色：部分通过；红色：检测失败。各图源并行检测，最多约 26 秒。',
           'settings.network.dnsProvider' => 'DNS 服务',
-          'settings.network.sourceSummary' =>
-            ({required Object available, required Object issues}) =>
-                '${available} 个可用 · ${issues} 个异常',
+          'settings.network.sourceSummary' => ({
+            required Object available,
+            required Object issues,
+          }) => '${available} 个可用 · ${issues} 个异常',
           'settings.network.servicesTitle' => '全部图源状态',
           'settings.network.servicesHint' =>
             'IP 解析与 API 可用性分别检测；API 可用不代表所有图片均可下载。',
           'settings.network.noFallback' =>
             'DNS 提供商用于下方的路由刷新。系统 DNS 模式不使用缓存 IP；绕过 SNI 模式使用缓存 IP，失败时不自动切换。',
-          'settings.network.checkProgress' =>
-            ({
-              required Object done,
-              required Object total,
-              required Object checked,
-              required Object sources,
-            }) => 'DNS 已完成 ${done}/${total} · API 已检测 ${checked}/${sources}',
-          'settings.network.checkSummary' =>
-            ({
-              required Object available,
-              required Object total,
-              required Object failed,
-            }) => 'API 可用 ${available}/${total} · DNS 失败 ${failed} 项',
+          'settings.network.checkProgress' => ({
+            required Object done,
+            required Object total,
+            required Object checked,
+            required Object sources,
+          }) => 'DNS 已完成 ${done}/${total} · API 已检测 ${checked}/${sources}',
+          'settings.network.checkSummary' => ({
+            required Object available,
+            required Object total,
+            required Object failed,
+          }) => 'API 可用 ${available}/${total} · DNS 失败 ${failed} 项',
           'settings.network.loadingStatus' => '正在读取缓存状态',
           'settings.network.apiChecking' => 'API：检测中',
           'settings.network.apiAvailable' => 'API：可用',
@@ -2231,8 +2243,9 @@ extension on TranslationsZhCn {
           'settings.network.dnsCached' => '使用已缓存 IP · 尚未重新检测',
           'settings.network.dnsFailed' => '解析失败 · 当前无可用路由',
           'settings.network.dnsQueued' => '等待解析',
-          'settings.network.ipCachedAt' =>
-            ({required Object time}) => 'IP 已缓存 · 更新于 ${time}',
+          'settings.network.ipCachedAt' => ({
+            required Object time,
+          }) => 'IP 已缓存 · 更新于 ${time}',
           'settings.network.ipNotCached' => 'IP 已解析 · 尚未写入缓存',
           'settings.network.connectionMode' => '连接模式',
           'settings.network.proxyUrl' => '代理 URL',
@@ -2241,8 +2254,9 @@ extension on TranslationsZhCn {
             '当前使用自定义代理，保留正常 SNI 和证书校验，不叠加“绕过 SNI”。连接模式在停用自定义代理后生效。',
           'settings.network.proxyApply' => '应用',
           'settings.network.proxyDisable' => '停用代理',
-          'settings.network.proxyActive' =>
-            ({required Object endpoint}) => '已应用：${endpoint}（尚不代表连接成功）',
+          'settings.network.proxyActive' => ({
+            required Object endpoint,
+          }) => '已应用：${endpoint}（尚不代表连接成功）',
           'settings.network.proxyInactive' => '未使用',
           'settings.network.proxyPending' => '修改尚未应用，请点击“应用代理设置”。',
           'settings.network.proxyHelp' =>
@@ -2256,9 +2270,10 @@ extension on TranslationsZhCn {
           'settings.network.apply' => '应用网络设置',
           'settings.network.refreshRoutes' => '刷新路由',
           'settings.network.routeCacheUnavailable' => '无法获取路由缓存',
-          'settings.network.routeCacheStatus' =>
-            ({required Object hosts, required Object revision}) =>
-                '${hosts} 个主机 · 修订 ${revision}',
+          'settings.network.routeCacheStatus' => ({
+            required Object hosts,
+            required Object revision,
+          }) => '${hosts} 个主机 · 修订 ${revision}',
           'settings.network.applied' => '网络设置已应用',
           'settings.network.invalidSettings' => '网络设置无效',
           'settings.network.routeRefreshFailed' => '路由刷新失败',
@@ -2296,11 +2311,13 @@ extension on TranslationsZhCn {
           'discovery.mediaAnimation' => '动图',
           'discovery.mediaVideo' => '视频',
           'discovery.mediaCollection' => '关联图片',
-          'discovery.retryIn' =>
-            ({required Object seconds}) => '${seconds} 秒后重试',
+          'discovery.retryIn' => ({
+            required Object seconds,
+          }) => '${seconds} 秒后重试',
           'discovery.searchResults' => '搜索结果',
-          'discovery.searchTermsTitle' =>
-            ({required Object count}) => '搜索${count}个词条',
+          'discovery.searchTermsTitle' => ({
+            required Object count,
+          }) => '搜索${count}个词条',
           'discovery.allAvailable' => '全部可用内容',
           'discovery.defaultRatingsHint' => '不选时显示当前图源能访问的全部内容。',
           'discovery.resetFilters' => '恢复默认',
@@ -2340,8 +2357,9 @@ extension on TranslationsZhCn {
           'discovery.addTagAction' => '添加',
           'discovery.editTagAction' => '编辑',
           'discovery.deleteTag' => '删除',
-          'discovery.deleteTagConfirm' =>
-            ({required Object name}) => '删除“${name}”？',
+          'discovery.deleteTagConfirm' => ({
+            required Object name,
+          }) => '删除“${name}”？',
           'discovery.addTag' => '添加标签',
           'discovery.noCustomTags' => '还没有自定义标签',
           'discovery.customTagsHint' => '给常用标签起个好记的名字，搜索时更容易找到。',
@@ -2350,8 +2368,9 @@ extension on TranslationsZhCn {
           'discovery.canonicalTag' => '图源标签',
           'discovery.displayName' => '显示名称（可选）',
           'discovery.invalidTag' => '请输入一个非空且不含空格的标签。',
-          'discovery.searchSource' =>
-            ({required Object source}) => '搜索 ${source}',
+          'discovery.searchSource' => ({
+            required Object source,
+          }) => '搜索 ${source}',
           'discovery.noCommonTags' => '当前图源没有常用标签',
           'discovery.category' => '分类',
           'discovery.allCategories' => '全部',
@@ -2377,11 +2396,13 @@ extension on TranslationsZhCn {
           'mediaError.copyDetails' => '复制详情',
           'mediaError.decodeFailed' => '下载的图片无法解码。重试会清除这张图片的缓存并重新下载。',
           'webChallenge.title' => '网页验证',
-          'webChallenge.pageTitle' =>
-            ({required Object source}) => '${source} 验证',
+          'webChallenge.pageTitle' => ({
+            required Object source,
+          }) => '${source} 验证',
           'webChallenge.open' => '打开网页验证',
-          'webChallenge.windowTitle' =>
-            ({required Object source}) => '${source} · 完成验证后关闭窗口',
+          'webChallenge.windowTitle' => ({
+            required Object source,
+          }) => '${source} · 完成验证后关闭窗口',
           'webChallenge.instructions' =>
             '请手动完成网页中的人机验证，完成后返回或关闭窗口。应用会保存验证数据并重新加载图源。',
           'webChallenge.finish' => '完成验证并返回',
@@ -2425,12 +2446,14 @@ extension on TranslationsZhCn {
                 (_root.$meta.cardinalResolver ??
                 PluralResolvers.cardinal('zh'))(n, other: '/ 最多 ${count} 张'),
           'batchDownload.fetching' => '已找到的图片',
-          'batchDownload.progress' =>
-            ({required Object current, required Object total}) =>
-                '${current} / ${total}',
-          'batchDownload.fetchProgress' =>
-            ({required Object current, required Object limit}) =>
-                '已获取 ${current} 张，最多 ${limit} 张',
+          'batchDownload.progress' => ({
+            required Object current,
+            required Object total,
+          }) => '${current} / ${total}',
+          'batchDownload.fetchProgress' => ({
+            required Object current,
+            required Object limit,
+          }) => '已获取 ${current} 张，最多 ${limit} 张',
           'batchDownload.stopHint' => '随时可以停止，并使用已找到的图片。',
           'batchDownload.stop' => '停止获取',
           'batchDownload.found' => '张图片可以下载',
@@ -2445,8 +2468,9 @@ extension on TranslationsZhCn {
           'batchDownload.fetchFailed' => '获取未完成。已保留结果，可重试或使用已有图片。',
           'batchDownload.countLabel' => '下载数量',
           'batchDownload.all' => '全部',
-          'batchDownload.countRange' =>
-            ({required Object max}) => '请输入 1～${max}',
+          'batchDownload.countRange' => ({
+            required Object max,
+          }) => '请输入 1～${max}',
           'batchDownload.orderHint' => '按当前搜索结果顺序下载前 N 张图片。',
           'batchDownload.folderLabel' => '文件夹名',
           'batchDownload.folderHint' => '例如：九月收藏',
@@ -2458,12 +2482,14 @@ extension on TranslationsZhCn {
           'batchDownload.photos' => '照片库',
           'batchDownload.photosHint' =>
             'iOS 将本次图片保存为源站文件夹下的相册，复用相册需要照片库完整访问权限。',
-          'batchDownload.enqueue' =>
-            ({required Object count}) => '加入下载队列 · ${count} 张',
+          'batchDownload.enqueue' => ({
+            required Object count,
+          }) => '加入下载队列 · ${count} 张',
           'batchDownload.enqueueing' => '正在加入下载队列',
-          'batchDownload.preparing' =>
-            ({required Object current, required Object total}) =>
-                '正在准备 ${current} / ${total} 张图片',
+          'batchDownload.preparing' => ({
+            required Object current,
+            required Object total,
+          }) => '正在准备 ${current} / ${total} 张图片',
           'batchDownload.added' => '个任务已加入下载队列',
           'batchDownload.backgroundHint' => '可以关闭窗口。应用运行期间会继续入队，再次点击此入口可查看结果。',
           'batchDownload.queueHint' => '图片下载进度可在下载列表中查看。',
@@ -2472,12 +2498,14 @@ extension on TranslationsZhCn {
                 (_root.$meta.cardinalResolver ??
                 PluralResolvers.cardinal('zh'))(n, other: '${count} 张未能加入队列。'),
           'batchDownload.retryFailed' => '重试失败项',
-          'batchDownload.queued' =>
-            ({required Object added, required Object failed}) =>
-                '批量任务：已加入 ${added} 张，入队失败 ${failed} 张。',
-          'batchDownload.completed' =>
-            ({required Object saved, required Object failed}) =>
-                '批量下载结束：已保存 ${saved} 张，失败或取消 ${failed} 张。',
+          'batchDownload.queued' => ({
+            required Object added,
+            required Object failed,
+          }) => '批量任务：已加入 ${added} 张，入队失败 ${failed} 张。',
+          'batchDownload.completed' => ({
+            required Object saved,
+            required Object failed,
+          }) => '批量下载结束：已保存 ${saved} 张，失败或取消 ${failed} 张。',
           'batchDownload.done' => '完成',
           'batchDownload.back' => '返回',
           'batchDownload.first' => '前 N 张',
@@ -2485,8 +2513,9 @@ extension on TranslationsZhCn {
             ({required num n, required Object count}) =>
                 (_root.$meta.cardinalResolver ??
                 PluralResolvers.cardinal('zh'))(n, other: '已加入 ${count} 张'),
-          'batchDownload.savedTo' =>
-            ({required Object folder}) => '保存到“${folder}”',
+          'batchDownload.savedTo' => ({
+            required Object folder,
+          }) => '保存到“${folder}”',
           'batchDownload.viewDownloads' => '查看下载',
           'frost.retry' => '重试',
           'frost.error' => '错误',
@@ -2523,10 +2552,10 @@ extension on TranslationsZhCn {
           'frost.showPassword' => '显示密码',
           'frost.hidePassword' => '隐藏密码',
           'frost.chooseDate' => '选择日期',
+          'frost.chooseTime' => '选择时间',
           _ => null,
         } ??
         switch (path) {
-          'frost.chooseTime' => '选择时间',
           'frost.increment' => '增加',
           'frost.decrement' => '减少',
           'frost.reorderHandle' => '调整顺序',
@@ -2550,17 +2579,20 @@ extension on TranslationsZhCn {
           'frost.choose' => '选择',
           'frost.showInFolder' => '在文件夹中显示',
           'frost.selectedCount' => ({required Object count}) => '已选 ${count} 项',
-          'frost.pageOf' =>
-            ({required Object page, required Object total}) =>
-                '第 ${page} 页，共 ${total} 页',
+          'frost.pageOf' => ({
+            required Object page,
+            required Object total,
+          }) => '第 ${page} 页，共 ${total} 页',
           'frost.selectAll' => '全选',
           'frost.done' => '完成',
-          'frost.itemPosition' =>
-            ({required Object position, required Object total}) =>
-                '第 ${position} 项，共 ${total} 项',
-          'frost.tableDimensions' =>
-            ({required Object rows, required Object columns}) =>
-                '${rows} 行，${columns} 列',
+          'frost.itemPosition' => ({
+            required Object position,
+            required Object total,
+          }) => '第 ${position} 项，共 ${total} 项',
+          'frost.tableDimensions' => ({
+            required Object rows,
+            required Object columns,
+          }) => '${rows} 行，${columns} 列',
           'frost.taskQueued' => '等待中',
           'frost.taskRunning' => '下载中',
           'frost.taskPaused' => '已暂停',
@@ -2581,8 +2613,9 @@ extension on TranslationsZhCn {
             ({required num n, required Object count}) =>
                 (_root.$meta.cardinalResolver ??
                 PluralResolvers.cardinal('zh'))(n, other: '${count} 项'),
-          'frost.navigationProgress' =>
-            ({required Object progress}) => '已完成 ${progress}%',
+          'frost.navigationProgress' => ({
+            required Object progress,
+          }) => '已完成 ${progress}%',
           'frost.listSeparator' => '，',
           'navigation.browse' => '浏览',
           'navigation.search' => '搜索',
@@ -2628,34 +2661,39 @@ extension on TranslationsZhCn {
             ({required num n, required Object count}) =>
                 (_root.$meta.cardinalResolver ??
                 PluralResolvers.cardinal('zh'))(n, other: '${count} 个主机'),
-          'settingsDetails.updatedAt' =>
-            ({required Object time}) => '更新于 ${time}',
+          'settingsDetails.updatedAt' => ({
+            required Object time,
+          }) => '更新于 ${time}',
           'settingsDetails.sourceStatus' => '图源状态',
           'settingsDetails.apiAndImages' => 'API 与图片可用',
           'settingsDetails.apiOnly' => 'API 可用 · 图片未通过',
           'settingsDetails.status' => '状态',
           'settingsDetails.content' => '内容',
-          'settingsDetails.editSourceAccount' =>
-            ({required Object source}) => '编辑 ${source} 账号',
+          'settingsDetails.editSourceAccount' => ({
+            required Object source,
+          }) => '编辑 ${source} 账号',
           'settingsDetails.proxyApplies' => '应用后用于图源、图片和新的下载。',
-          'settingsDetails.version' =>
-            ({required Object version, required Object build}) =>
-                '版本 ${version} (${build})',
+          'settingsDetails.version' => ({
+            required Object version,
+            required Object build,
+          }) => '版本 ${version} (${build})',
           'settingsDetails.communityTelegram' => 'Telegram 群组',
           'settingsDetails.communityDiscord' => 'Discord 服务器',
           'settingsDetails.savedVerifications' => '已保存的验证',
           'settingsDetails.systemDnsShort' => '系统 DNS',
           'settingsDetails.refresh' => '刷新',
-          'settingsDetails.updateAvailable' =>
-            ({required Object version}) => '有新版本 ${version}',
+          'settingsDetails.updateAvailable' => ({
+            required Object version,
+          }) => '有新版本 ${version}',
           'verificationPage.instructions' => '在下方页面完成人机验证，然后点“完成验证并返回”。',
           'verificationPage.opening' => '正在打开网页',
           'verificationPage.failed' => '网页加载失败',
           'verificationPage.closed' => '验证窗口已关闭',
           'verificationPage.failureHelp' => '可以重新打开，或检查网络设置。',
           'verificationPage.reopen' => '重新打开',
-          'verificationPage.signOut' =>
-            ({required Object source}) => '退出 ${source} 账号？',
+          'verificationPage.signOut' => ({
+            required Object source,
+          }) => '退出 ${source} 账号？',
           'verificationPage.signOutHelp' => '账号信息会从此设备移除。',
           'verificationPage.downloadAdded' => '已加入下载',
           'verificationPage.downloadFailed' => '下载失败',

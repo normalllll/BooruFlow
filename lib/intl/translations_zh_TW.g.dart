@@ -7,6 +7,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:slang/generated.dart';
+
 import 'translations.g.dart';
 
 // Path: <root>
@@ -1918,10 +1919,12 @@ extension on TranslationsZhTw {
           'generic.confirm' => '確認',
           'generic.enabled' => '啟用',
           'generic.disabled' => '停用',
-          'generic.copiedWithValue' =>
-            ({required Object value}) => '已複製到剪貼簿： ${value}',
-          'generic.errorWithValue' =>
-            ({required Object value}) => '發生錯誤： ${value}',
+          'generic.copiedWithValue' => ({
+            required Object value,
+          }) => '已複製到剪貼簿： ${value}',
+          'generic.errorWithValue' => ({
+            required Object value,
+          }) => '發生錯誤： ${value}',
           'generic.loading' => '載入中',
           'generic.loadFailed' => '載入失敗',
           'generic.retry' => '重試',
@@ -1952,13 +1955,15 @@ extension on TranslationsZhTw {
           'update.checkUpdateFailed' => '檢查更新失敗，請檢查您的網路連線。',
           'update.selectDownloadUrlFailed' =>
             '找不到下載連結。請前往專案頁面手動更新，或到 Issue 頁面尋求協助。',
-          'update.newVersionFound' =>
-            ({required Object version}) => '有新版本 ${version}。請前往「關於」下載更新。',
+          'update.newVersionFound' => ({
+            required Object version,
+          }) => '有新版本 ${version}。請前往「關於」下載更新。',
           'update.noNewVersionFound' => '沒有新版本。',
           'postList.short' => '首頁',
           'postList.title' => '首頁',
-          'postList.titleWithTags' =>
-            ({required Object tags}) => '含有標籤的作品：${tags}',
+          'postList.titleWithTags' => ({
+            required Object tags,
+          }) => '含有標籤的作品：${tags}',
           'postDetail.fullscreen' => '全螢幕檢視',
           'postDetail.notFound' => '找不到這個作品',
           'postDetail.parentCount' =>
@@ -2032,12 +2037,15 @@ extension on TranslationsZhTw {
           'downloads.today' => '今天',
           'downloads.yesterday' => '昨天',
           'downloads.transferRate' => ({required Object value}) => '${value}/s',
-          'downloads.remainingSeconds' =>
-            ({required Object count}) => '約 ${count} 秒',
-          'downloads.remainingMinutes' =>
-            ({required Object count}) => '約 ${count} 分鐘',
-          'downloads.remainingHours' =>
-            ({required Object count}) => '約 ${count} 小時',
+          'downloads.remainingSeconds' => ({
+            required Object count,
+          }) => '約 ${count} 秒',
+          'downloads.remainingMinutes' => ({
+            required Object count,
+          }) => '約 ${count} 分鐘',
+          'downloads.remainingHours' => ({
+            required Object count,
+          }) => '約 ${count} 小時',
           'downloads.format' => '格式',
           'downloads.startedAt' => '開始時間',
           'downloads.browse' => '瀏覽',
@@ -2053,9 +2061,10 @@ extension on TranslationsZhTw {
           'downloads.openPost' => '開啟作品',
           'downloads.open' => '開啟',
           'downloads.batch' => '批次下載',
-          'downloads.batchProgress' =>
-            ({required Object completed, required Object total}) =>
-                '${completed} / ${total}',
+          'downloads.batchProgress' => ({
+            required Object completed,
+            required Object total,
+          }) => '${completed} / ${total}',
           'downloads.path' => '儲存路徑',
           'downloads.taskDetails' => '任務詳細資料',
           'downloads.viewLog' => '記錄',
@@ -2103,14 +2112,18 @@ extension on TranslationsZhTw {
           'downloads.messages.photosDenied' => '您已拒絕照片權限。',
           'downloads.messages.downloadTaskExists' => '下載任務已經存在。',
           'downloads.messages.imageFileExists' => '圖片檔案已經存在。',
-          'downloads.messages.downloadRetryWith' =>
-            ({required Object name}) => '重試下載任務： ${name}',
-          'downloads.messages.downloadStartWith' =>
-            ({required Object name}) => '開始下載任務： ${name}',
-          'downloads.messages.downloadFailedWith' =>
-            ({required Object name}) => '下載任務失敗： ${name}',
-          'downloads.messages.saveFailedWith' =>
-            ({required Object name}) => '儲存失敗： 任務 ${name}',
+          'downloads.messages.downloadRetryWith' => ({
+            required Object name,
+          }) => '重試下載任務： ${name}',
+          'downloads.messages.downloadStartWith' => ({
+            required Object name,
+          }) => '開始下載任務： ${name}',
+          'downloads.messages.downloadFailedWith' => ({
+            required Object name,
+          }) => '下載任務失敗： ${name}',
+          'downloads.messages.saveFailedWith' => ({
+            required Object name,
+          }) => '儲存失敗： 任務 ${name}',
           'about.title' => '關於',
           'about.projectUrl' => '專案網址',
           'about.publishPage' => '發佈頁面',
@@ -2164,8 +2177,9 @@ extension on TranslationsZhTw {
           'settings.account.username' => '使用者名稱',
           'settings.account.userId' => '使用者 ID',
           'settings.account.apiKey' => 'API 金鑰',
-          'settings.account.statusValue' =>
-            ({required Object status}) => '狀態 · ${status}',
+          'settings.account.statusValue' => ({
+            required Object status,
+          }) => '狀態 · ${status}',
           'settings.account.statuses.notConfigured' => '尚未設定',
           'settings.account.statuses.configuredUnverified' => '已設定，尚未驗證',
           'settings.account.statuses.verified' => '已驗證',
@@ -2196,27 +2210,26 @@ extension on TranslationsZhTw {
           'settings.network.sourceProbeHelp' =>
             '綠色：API 與圖片可用；黃色：部分可用；紅色：測試失敗。各圖源同時測試，最多約 26 秒。',
           'settings.network.dnsProvider' => 'DNS 服務',
-          'settings.network.sourceSummary' =>
-            ({required Object available, required Object issues}) =>
-                '${available} 個可用 · ${issues} 個異常',
+          'settings.network.sourceSummary' => ({
+            required Object available,
+            required Object issues,
+          }) => '${available} 個可用 · ${issues} 個異常',
           'settings.network.servicesTitle' => '全部圖源狀態',
           'settings.network.servicesHint' =>
             'IP 解析與 API 可用性分別測試；API 可用不代表所有圖片均可下載。',
           'settings.network.noFallback' =>
             'DNS 服務用於更新下方路由。系統 DNS 模式不使用快取 IP；略過 SNI 模式使用快取 IP，失敗時不自動切換。',
-          'settings.network.checkProgress' =>
-            ({
-              required Object done,
-              required Object total,
-              required Object checked,
-              required Object sources,
-            }) => 'DNS 已完成 ${done}/${total} · API 已測試 ${checked}/${sources}',
-          'settings.network.checkSummary' =>
-            ({
-              required Object available,
-              required Object total,
-              required Object failed,
-            }) => 'API 可用 ${available}/${total} · DNS 失敗 ${failed} 項',
+          'settings.network.checkProgress' => ({
+            required Object done,
+            required Object total,
+            required Object checked,
+            required Object sources,
+          }) => 'DNS 已完成 ${done}/${total} · API 已測試 ${checked}/${sources}',
+          'settings.network.checkSummary' => ({
+            required Object available,
+            required Object total,
+            required Object failed,
+          }) => 'API 可用 ${available}/${total} · DNS 失敗 ${failed} 項',
           'settings.network.loadingStatus' => '正在讀取快取狀態',
           'settings.network.apiChecking' => 'API：測試中',
           'settings.network.apiAvailable' => 'API：可用',
@@ -2228,8 +2241,9 @@ extension on TranslationsZhTw {
           'settings.network.dnsCached' => '使用已快取 IP · 尚未重新測試',
           'settings.network.dnsFailed' => '解析失敗 · 目前無可用路由',
           'settings.network.dnsQueued' => '等待解析',
-          'settings.network.ipCachedAt' =>
-            ({required Object time}) => 'IP 已快取 · 更新於 ${time}',
+          'settings.network.ipCachedAt' => ({
+            required Object time,
+          }) => 'IP 已快取 · 更新於 ${time}',
           'settings.network.ipNotCached' => 'IP 已解析 · 尚未寫入快取',
           'settings.network.connectionMode' => '連線模式',
           'settings.network.proxyUrl' => 'Proxy URL',
@@ -2238,8 +2252,9 @@ extension on TranslationsZhTw {
             '目前使用自訂代理，保留正常 SNI 和憑證驗證，不疊加「略過 SNI」。連線模式在停用自訂代理後生效。',
           'settings.network.proxyApply' => '套用',
           'settings.network.proxyDisable' => '停用代理',
-          'settings.network.proxyActive' =>
-            ({required Object endpoint}) => '已套用：${endpoint}（尚不代表連線成功）',
+          'settings.network.proxyActive' => ({
+            required Object endpoint,
+          }) => '已套用：${endpoint}（尚不代表連線成功）',
           'settings.network.proxyInactive' => '未使用',
           'settings.network.proxyPending' => '變更尚未套用，請按一下「套用」。',
           'settings.network.proxyHelp' =>
@@ -2253,9 +2268,10 @@ extension on TranslationsZhTw {
           'settings.network.apply' => '套用網路設定',
           'settings.network.refreshRoutes' => '重新整理路由',
           'settings.network.routeCacheUnavailable' => '無法取得路由快取',
-          'settings.network.routeCacheStatus' =>
-            ({required Object hosts, required Object revision}) =>
-                '${hosts} 個主機 · 修訂 ${revision}',
+          'settings.network.routeCacheStatus' => ({
+            required Object hosts,
+            required Object revision,
+          }) => '${hosts} 個主機 · 修訂 ${revision}',
           'settings.network.applied' => '網路設定已套用',
           'settings.network.invalidSettings' => '網路設定無效',
           'settings.network.routeRefreshFailed' => '路由重新整理失敗',
@@ -2293,11 +2309,13 @@ extension on TranslationsZhTw {
           'discovery.mediaAnimation' => '動圖',
           'discovery.mediaVideo' => '影片',
           'discovery.mediaCollection' => '相關圖片',
-          'discovery.retryIn' =>
-            ({required Object seconds}) => '${seconds} 秒後重試',
+          'discovery.retryIn' => ({
+            required Object seconds,
+          }) => '${seconds} 秒後重試',
           'discovery.searchResults' => '搜尋結果',
-          'discovery.searchTermsTitle' =>
-            ({required Object count}) => '搜尋 ${count} 個關鍵字',
+          'discovery.searchTermsTitle' => ({
+            required Object count,
+          }) => '搜尋 ${count} 個關鍵字',
           'discovery.allAvailable' => '全部可用內容',
           'discovery.defaultRatingsHint' => '未選擇時顯示目前圖源能存取的全部內容。',
           'discovery.resetFilters' => '還原預設',
@@ -2337,8 +2355,9 @@ extension on TranslationsZhTw {
           'discovery.addTagAction' => '新增',
           'discovery.editTagAction' => '編輯',
           'discovery.deleteTag' => '刪除',
-          'discovery.deleteTagConfirm' =>
-            ({required Object name}) => '刪除「${name}」？',
+          'discovery.deleteTagConfirm' => ({
+            required Object name,
+          }) => '刪除「${name}」？',
           'discovery.addTag' => '新增標籤',
           'discovery.noCustomTags' => '還沒有自訂標籤',
           'discovery.customTagsHint' => '給常用標籤取個好記的名字，搜尋時更容易找到。',
@@ -2347,8 +2366,9 @@ extension on TranslationsZhTw {
           'discovery.canonicalTag' => '圖源標籤',
           'discovery.displayName' => '顯示名稱（選填）',
           'discovery.invalidTag' => '請輸入一個非空且不含空格的標籤。',
-          'discovery.searchSource' =>
-            ({required Object source}) => '搜尋 ${source}',
+          'discovery.searchSource' => ({
+            required Object source,
+          }) => '搜尋 ${source}',
           'discovery.noCommonTags' => '目前圖源沒有常用標籤',
           'discovery.category' => '分類',
           'discovery.allCategories' => '全部',
@@ -2374,11 +2394,13 @@ extension on TranslationsZhTw {
           'mediaError.copyDetails' => '複製詳細資料',
           'mediaError.decodeFailed' => '下載的圖片無法解碼。重試會清除這張圖片的快取並重新下載。',
           'webChallenge.title' => '網頁驗證',
-          'webChallenge.pageTitle' =>
-            ({required Object source}) => '${source} 驗證',
+          'webChallenge.pageTitle' => ({
+            required Object source,
+          }) => '${source} 驗證',
           'webChallenge.open' => '開啟網頁驗證',
-          'webChallenge.windowTitle' =>
-            ({required Object source}) => '${source} · 完成驗證後關閉視窗',
+          'webChallenge.windowTitle' => ({
+            required Object source,
+          }) => '${source} · 完成驗證後關閉視窗',
           'webChallenge.instructions' =>
             '請手動完成網頁中的人機驗證，完成後返回或關閉視窗。應用程式會儲存驗證資料並重新載入圖源。',
           'webChallenge.finish' => '完成驗證並返回',
@@ -2422,12 +2444,14 @@ extension on TranslationsZhTw {
                 (_root.$meta.cardinalResolver ??
                 PluralResolvers.cardinal('zh'))(n, other: '/ 最多 ${count} 張'),
           'batchDownload.fetching' => '已找到的圖片',
-          'batchDownload.progress' =>
-            ({required Object current, required Object total}) =>
-                '${current} / ${total}',
-          'batchDownload.fetchProgress' =>
-            ({required Object current, required Object limit}) =>
-                '已取得 ${current} 張，最多 ${limit} 張',
+          'batchDownload.progress' => ({
+            required Object current,
+            required Object total,
+          }) => '${current} / ${total}',
+          'batchDownload.fetchProgress' => ({
+            required Object current,
+            required Object limit,
+          }) => '已取得 ${current} 張，最多 ${limit} 張',
           'batchDownload.stopHint' => '隨時可以停止，並使用已找到的圖片。',
           'batchDownload.stop' => '停止取得',
           'batchDownload.found' => '張圖片可以下載',
@@ -2442,8 +2466,9 @@ extension on TranslationsZhTw {
           'batchDownload.fetchFailed' => '取得未完成。已保留結果，可重試或使用已有圖片。',
           'batchDownload.countLabel' => '下載數量',
           'batchDownload.all' => '全部',
-          'batchDownload.countRange' =>
-            ({required Object max}) => '請輸入 1～${max}',
+          'batchDownload.countRange' => ({
+            required Object max,
+          }) => '請輸入 1～${max}',
           'batchDownload.orderHint' => '按目前搜尋結果順序下載前 N 張圖片。',
           'batchDownload.folderLabel' => '資料夾名稱',
           'batchDownload.folderHint' => '例如：九月收藏',
@@ -2455,12 +2480,14 @@ extension on TranslationsZhTw {
           'batchDownload.photos' => '照片圖庫',
           'batchDownload.photosHint' =>
             'iOS 將本次圖片儲存為來源資料夾下的相簿，沿用相簿需要照片圖庫完整存取權限。',
-          'batchDownload.enqueue' =>
-            ({required Object count}) => '加入下載佇列 · ${count} 張',
+          'batchDownload.enqueue' => ({
+            required Object count,
+          }) => '加入下載佇列 · ${count} 張',
           'batchDownload.enqueueing' => '正在加入下載佇列',
-          'batchDownload.preparing' =>
-            ({required Object current, required Object total}) =>
-                '正在準備 ${current} / ${total} 張圖片',
+          'batchDownload.preparing' => ({
+            required Object current,
+            required Object total,
+          }) => '正在準備 ${current} / ${total} 張圖片',
           'batchDownload.added' => '個任務已加入下載佇列',
           'batchDownload.backgroundHint' =>
             '可以關閉視窗。應用程式執行期間會繼續加入佇列，再次按一下此入口可查看結果。',
@@ -2470,12 +2497,14 @@ extension on TranslationsZhTw {
                 (_root.$meta.cardinalResolver ??
                 PluralResolvers.cardinal('zh'))(n, other: '${count} 張未能加入佇列。'),
           'batchDownload.retryFailed' => '重試失敗項目',
-          'batchDownload.queued' =>
-            ({required Object added, required Object failed}) =>
-                '批次任務：已加入 ${added} 張，加入失敗 ${failed} 張。',
-          'batchDownload.completed' =>
-            ({required Object saved, required Object failed}) =>
-                '批次下載結束：已儲存 ${saved} 張，失敗或取消 ${failed} 張。',
+          'batchDownload.queued' => ({
+            required Object added,
+            required Object failed,
+          }) => '批次任務：已加入 ${added} 張，加入失敗 ${failed} 張。',
+          'batchDownload.completed' => ({
+            required Object saved,
+            required Object failed,
+          }) => '批次下載結束：已儲存 ${saved} 張，失敗或取消 ${failed} 張。',
           'batchDownload.done' => '完成',
           'batchDownload.back' => '返回',
           'batchDownload.first' => '前 N 張',
@@ -2483,8 +2512,9 @@ extension on TranslationsZhTw {
             ({required num n, required Object count}) =>
                 (_root.$meta.cardinalResolver ??
                 PluralResolvers.cardinal('zh'))(n, other: '已加入 ${count} 張'),
-          'batchDownload.savedTo' =>
-            ({required Object folder}) => '儲存至「${folder}」',
+          'batchDownload.savedTo' => ({
+            required Object folder,
+          }) => '儲存至「${folder}」',
           'batchDownload.viewDownloads' => '查看下載',
           'frost.retry' => '重試',
           'frost.error' => '錯誤',
@@ -2521,10 +2551,10 @@ extension on TranslationsZhTw {
           'frost.showPassword' => '顯示密碼',
           'frost.hidePassword' => '隱藏密碼',
           'frost.chooseDate' => '選擇日期',
+          'frost.chooseTime' => '選擇時間',
           _ => null,
         } ??
         switch (path) {
-          'frost.chooseTime' => '選擇時間',
           'frost.increment' => '增加',
           'frost.decrement' => '減少',
           'frost.reorderHandle' => '調整順序',
@@ -2547,19 +2577,23 @@ extension on TranslationsZhTw {
           'frost.clear' => '清除',
           'frost.choose' => '選擇',
           'frost.showInFolder' => '在資料夾中顯示',
-          'frost.selectedCount' =>
-            ({required Object count}) => '已選取 ${count} 項',
-          'frost.pageOf' =>
-            ({required Object page, required Object total}) =>
-                '第 ${page} 頁，共 ${total} 頁',
+          'frost.selectedCount' => ({
+            required Object count,
+          }) => '已選取 ${count} 項',
+          'frost.pageOf' => ({
+            required Object page,
+            required Object total,
+          }) => '第 ${page} 頁，共 ${total} 頁',
           'frost.selectAll' => '全選',
           'frost.done' => '完成',
-          'frost.itemPosition' =>
-            ({required Object position, required Object total}) =>
-                '第 ${position} 項，共 ${total} 項',
-          'frost.tableDimensions' =>
-            ({required Object rows, required Object columns}) =>
-                '${rows} 列，${columns} 欄',
+          'frost.itemPosition' => ({
+            required Object position,
+            required Object total,
+          }) => '第 ${position} 項，共 ${total} 項',
+          'frost.tableDimensions' => ({
+            required Object rows,
+            required Object columns,
+          }) => '${rows} 列，${columns} 欄',
           'frost.taskQueued' => '等待中',
           'frost.taskRunning' => '下載中',
           'frost.taskPaused' => '已暫停',
@@ -2580,8 +2614,9 @@ extension on TranslationsZhTw {
             ({required num n, required Object count}) =>
                 (_root.$meta.cardinalResolver ??
                 PluralResolvers.cardinal('zh'))(n, other: '${count} 項'),
-          'frost.navigationProgress' =>
-            ({required Object progress}) => '已完成 ${progress}%',
+          'frost.navigationProgress' => ({
+            required Object progress,
+          }) => '已完成 ${progress}%',
           'frost.listSeparator' => '，',
           'navigation.browse' => '瀏覽',
           'navigation.search' => '搜尋',
@@ -2627,34 +2662,39 @@ extension on TranslationsZhTw {
             ({required num n, required Object count}) =>
                 (_root.$meta.cardinalResolver ??
                 PluralResolvers.cardinal('zh'))(n, other: '${count} 個主機'),
-          'settingsDetails.updatedAt' =>
-            ({required Object time}) => '更新於 ${time}',
+          'settingsDetails.updatedAt' => ({
+            required Object time,
+          }) => '更新於 ${time}',
           'settingsDetails.sourceStatus' => '圖源狀態',
           'settingsDetails.apiAndImages' => 'API 與圖片可用',
           'settingsDetails.apiOnly' => 'API 可用 · 圖片未通過',
           'settingsDetails.status' => '狀態',
           'settingsDetails.content' => '內容',
-          'settingsDetails.editSourceAccount' =>
-            ({required Object source}) => '編輯 ${source} 帳號',
+          'settingsDetails.editSourceAccount' => ({
+            required Object source,
+          }) => '編輯 ${source} 帳號',
           'settingsDetails.proxyApplies' => '套用後用於圖源、圖片和新的下載。',
-          'settingsDetails.version' =>
-            ({required Object version, required Object build}) =>
-                '版本 ${version} (${build})',
+          'settingsDetails.version' => ({
+            required Object version,
+            required Object build,
+          }) => '版本 ${version} (${build})',
           'settingsDetails.communityTelegram' => 'Telegram 群組',
           'settingsDetails.communityDiscord' => 'Discord 伺服器',
           'settingsDetails.savedVerifications' => '已儲存的驗證',
           'settingsDetails.systemDnsShort' => '系統 DNS',
           'settingsDetails.refresh' => '重新整理',
-          'settingsDetails.updateAvailable' =>
-            ({required Object version}) => '有新版本 ${version}',
+          'settingsDetails.updateAvailable' => ({
+            required Object version,
+          }) => '有新版本 ${version}',
           'verificationPage.instructions' => '在下方頁面完成驗證，再按一下「完成驗證並返回」。',
           'verificationPage.opening' => '正在開啟網頁',
           'verificationPage.failed' => '網頁載入失敗',
           'verificationPage.closed' => '驗證視窗已關閉',
           'verificationPage.failureHelp' => '可以重新開啟，或檢查網路設定。',
           'verificationPage.reopen' => '重新開啟',
-          'verificationPage.signOut' =>
-            ({required Object source}) => '登出 ${source} 帳號？',
+          'verificationPage.signOut' => ({
+            required Object source,
+          }) => '登出 ${source} 帳號？',
           'verificationPage.signOutHelp' => '帳號資訊將從此裝置移除。',
           'verificationPage.downloadAdded' => '已加入下載',
           'verificationPage.downloadFailed' => '下載失敗',

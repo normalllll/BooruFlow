@@ -7,6 +7,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:slang/generated.dart';
+
 import 'translations.g.dart';
 
 // Path: <root>
@@ -1929,10 +1930,12 @@ extension on TranslationsJa {
           'generic.confirm' => '確認',
           'generic.enabled' => '有効',
           'generic.disabled' => '無効',
-          'generic.copiedWithValue' =>
-            ({required Object value}) => '${value} をクリップボードにコピーしました',
-          'generic.errorWithValue' =>
-            ({required Object value}) => 'エラーが発生しました: ${value}',
+          'generic.copiedWithValue' => ({
+            required Object value,
+          }) => '${value} をクリップボードにコピーしました',
+          'generic.errorWithValue' => ({
+            required Object value,
+          }) => 'エラーが発生しました: ${value}',
           'generic.loading' => '読み込み中',
           'generic.loadFailed' => '読み込みに失敗しました',
           'generic.retry' => '再試行',
@@ -1962,16 +1965,16 @@ extension on TranslationsJa {
           'booruError.internal' => 'Booru エンジンの内部エラーが発生しました。',
           'update.checkUpdateStart' => 'アップデートを確認中',
           'update.checkUpdateFailed' => 'アップデートの確認に失敗しました。インターネット接続を確認してください。',
-          'update.selectDownloadUrlFailed' =>
-            'ダウンロードURLが見つかりません。\nプロジェクトページにアクセスし、手動で更新するか、プロジェクトのIssueページでヘルプを求めてください。',
-          'update.newVersionFound' =>
-            ({required Object version}) =>
-                '新しいバージョン ${version} があります。「このアプリについて」から更新できます。',
+          'update.selectDownloadUrlFailed' => 'ダウンロードURLが見つかりません。\nプロジェクトページにアクセスし、手動で更新するか、プロジェクトのIssueページでヘルプを求めてください。',
+          'update.newVersionFound' => ({
+            required Object version,
+          }) => '新しいバージョン ${version} があります。「このアプリについて」から更新できます。',
           'update.noNewVersionFound' => '新しいバージョンが見つかりません。',
           'postList.short' => 'ホーム',
           'postList.title' => 'ホーム',
-          'postList.titleWithTags' =>
-            ({required Object tags}) => 'タグ付き投稿: ${tags}',
+          'postList.titleWithTags' => ({
+            required Object tags,
+          }) => 'タグ付き投稿: ${tags}',
           'postDetail.fullscreen' => '全画面で表示',
           'postDetail.notFound' => '作品が見つかりません',
           'postDetail.parentCount' =>
@@ -2048,12 +2051,15 @@ extension on TranslationsJa {
           'downloads.today' => '今日',
           'downloads.yesterday' => '昨日',
           'downloads.transferRate' => ({required Object value}) => '${value}/秒',
-          'downloads.remainingSeconds' =>
-            ({required Object count}) => '約 ${count} 秒',
-          'downloads.remainingMinutes' =>
-            ({required Object count}) => '約 ${count} 分',
-          'downloads.remainingHours' =>
-            ({required Object count}) => '約 ${count} 時間',
+          'downloads.remainingSeconds' => ({
+            required Object count,
+          }) => '約 ${count} 秒',
+          'downloads.remainingMinutes' => ({
+            required Object count,
+          }) => '約 ${count} 分',
+          'downloads.remainingHours' => ({
+            required Object count,
+          }) => '約 ${count} 時間',
           'downloads.format' => '形式',
           'downloads.startedAt' => '開始日時',
           'downloads.browse' => '閲覧する',
@@ -2069,9 +2075,10 @@ extension on TranslationsJa {
           'downloads.openPost' => '作品を開く',
           'downloads.open' => '開く',
           'downloads.batch' => '一括ダウンロード',
-          'downloads.batchProgress' =>
-            ({required Object completed, required Object total}) =>
-                '${completed} / ${total}',
+          'downloads.batchProgress' => ({
+            required Object completed,
+            required Object total,
+          }) => '${completed} / ${total}',
           'downloads.path' => '保存先',
           'downloads.taskDetails' => 'タスクの詳細',
           'downloads.viewLog' => 'ログ',
@@ -2122,14 +2129,18 @@ extension on TranslationsJa {
           'downloads.messages.photosDenied' => '写真のアクセス許可が拒否されました。',
           'downloads.messages.downloadTaskExists' => 'ダウンロードタスクは既に存在しています。',
           'downloads.messages.imageFileExists' => '画像ファイルは既に存在しています。',
-          'downloads.messages.downloadRetryWith' =>
-            ({required Object name}) => 'ダウンロードタスクを再試行: ${name}',
-          'downloads.messages.downloadStartWith' =>
-            ({required Object name}) => 'ダウンロードタスクを開始: ${name}',
-          'downloads.messages.downloadFailedWith' =>
-            ({required Object name}) => 'ダウンロード失敗: タスク ${name}',
-          'downloads.messages.saveFailedWith' =>
-            ({required Object name}) => '保存失敗: タスク ${name}',
+          'downloads.messages.downloadRetryWith' => ({
+            required Object name,
+          }) => 'ダウンロードタスクを再試行: ${name}',
+          'downloads.messages.downloadStartWith' => ({
+            required Object name,
+          }) => 'ダウンロードタスクを開始: ${name}',
+          'downloads.messages.downloadFailedWith' => ({
+            required Object name,
+          }) => 'ダウンロード失敗: タスク ${name}',
+          'downloads.messages.saveFailedWith' => ({
+            required Object name,
+          }) => '保存失敗: タスク ${name}',
           'about.title' => 'このアプリについて',
           'about.projectUrl' => 'プロジェクトURL',
           'about.publishPage' => '公開ページ',
@@ -2185,8 +2196,9 @@ extension on TranslationsJa {
           'settings.account.username' => 'ユーザー名',
           'settings.account.userId' => 'ユーザー ID',
           'settings.account.apiKey' => 'API キー',
-          'settings.account.statusValue' =>
-            ({required Object status}) => '状態 · ${status}',
+          'settings.account.statusValue' => ({
+            required Object status,
+          }) => '状態 · ${status}',
           'settings.account.statuses.notConfigured' => '未設定',
           'settings.account.statuses.configuredUnverified' => '設定済み・未検証',
           'settings.account.statuses.verified' => '検証済み',
@@ -2218,27 +2230,25 @@ extension on TranslationsJa {
           'settings.network.sourceProbeHelp' =>
             '緑：API と画像が成功、黄：一部成功、赤：失敗。各サイトを並列にテストし、約26秒でタイムアウトします。',
           'settings.network.dnsProvider' => 'DNS サービス',
-          'settings.network.sourceSummary' =>
-            ({required Object available, required Object issues}) =>
-                '利用可能 ${available} · 問題あり ${issues}',
+          'settings.network.sourceSummary' => ({
+            required Object available,
+            required Object issues,
+          }) => '利用可能 ${available} · 問題あり ${issues}',
           'settings.network.servicesTitle' => '全画像サイトの状態',
           'settings.network.servicesHint' =>
             'IP 解決と API の接続を個別に確認します。API が利用可能でも、すべての画像を取得できるとは限りません。',
-          'settings.network.noFallback' =>
-            'DNS プロバイダーは下のルート更新に使用します。システム DNS モードはキャッシュ IP を使用しません。SNI 回避はキャッシュ IP を使用し、失敗時に自動で切り替えません。',
-          'settings.network.checkProgress' =>
-            ({
-              required Object done,
-              required Object total,
-              required Object checked,
-              required Object sources,
-            }) => 'DNS ${done}/${total} · API ${checked}/${sources}',
-          'settings.network.checkSummary' =>
-            ({
-              required Object available,
-              required Object total,
-              required Object failed,
-            }) => 'API 利用可能 ${available}/${total} · DNS 失敗 ${failed} 件',
+          'settings.network.noFallback' => 'DNS プロバイダーは下のルート更新に使用します。システム DNS モードはキャッシュ IP を使用しません。SNI 回避はキャッシュ IP を使用し、失敗時に自動で切り替えません。',
+          'settings.network.checkProgress' => ({
+            required Object done,
+            required Object total,
+            required Object checked,
+            required Object sources,
+          }) => 'DNS ${done}/${total} · API ${checked}/${sources}',
+          'settings.network.checkSummary' => ({
+            required Object available,
+            required Object total,
+            required Object failed,
+          }) => 'API 利用可能 ${available}/${total} · DNS 失敗 ${failed} 件',
           'settings.network.loadingStatus' => 'キャッシュの状態を読み込み中',
           'settings.network.apiChecking' => 'API：確認中',
           'settings.network.apiAvailable' => 'API：利用可能',
@@ -2250,24 +2260,23 @@ extension on TranslationsJa {
           'settings.network.dnsCached' => 'キャッシュ済み IP を使用 · 再確認していません',
           'settings.network.dnsFailed' => '名前解決失敗 · 利用可能なルートなし',
           'settings.network.dnsQueued' => '名前解決を待機中',
-          'settings.network.ipCachedAt' =>
-            ({required Object time}) => 'IP をキャッシュ済み · 更新日時 ${time}',
+          'settings.network.ipCachedAt' => ({
+            required Object time,
+          }) => 'IP をキャッシュ済み · 更新日時 ${time}',
           'settings.network.ipNotCached' => 'IP 解決済み · まだ保存されていません',
           'settings.network.connectionMode' => '接続モード',
           'settings.network.proxyUrl' => 'プロキシ URL',
           'settings.network.proxyTitle' => 'カスタムプロキシ',
-          'settings.network.proxyModeOverride' =>
-            'カスタムプロキシを優先し、通常の SNI と証明書検証を維持します。SNI 回避は併用しません。接続モードはカスタムプロキシを無効にした後に適用されます。',
+          'settings.network.proxyModeOverride' => 'カスタムプロキシを優先し、通常の SNI と証明書検証を維持します。SNI 回避は併用しません。接続モードはカスタムプロキシを無効にした後に適用されます。',
           'settings.network.proxyApply' => '適用',
           'settings.network.proxyDisable' => 'プロキシを無効にする',
-          'settings.network.proxyActive' =>
-            ({required Object endpoint}) => '適用済み：${endpoint}（接続は未確認）',
+          'settings.network.proxyActive' => ({
+            required Object endpoint,
+          }) => '適用済み：${endpoint}（接続は未確認）',
           'settings.network.proxyInactive' => '未使用',
           'settings.network.proxyPending' => '変更は未適用です。「適用」を押してください。',
-          'settings.network.proxyHelp' =>
-            'アドレスを入力して下のボタンを押してください。プロキシサービスの起動が必要です。画像一覧、画像、新しいダウンロード要求に適用されます。',
-          'settings.network.proxyCheckHelp' =>
-            'カスタムプロキシはキャッシュ IP ルートより優先されます。適用後は下の API チェックで接続を確認してください。DNS の成功はプロキシの動作確認にはなりません。',
+          'settings.network.proxyHelp' => 'アドレスを入力して下のボタンを押してください。プロキシサービスの起動が必要です。画像一覧、画像、新しいダウンロード要求に適用されます。',
+          'settings.network.proxyCheckHelp' => 'カスタムプロキシはキャッシュ IP ルートより優先されます。適用後は下の API チェックで接続を確認してください。DNS の成功はプロキシの動作確認にはなりません。',
           'settings.network.proxyInvalid' =>
             '有効な IP またはホスト名とポート（1–65535）を別々に入力してください。アドレスに方式やパスを含めないでください。',
           'settings.network.proxyHint' => '任意 · 例 http://127.0.0.1:7890',
@@ -2275,9 +2284,10 @@ extension on TranslationsJa {
           'settings.network.apply' => 'ネットワーク設定を適用',
           'settings.network.refreshRoutes' => 'ルートを更新',
           'settings.network.routeCacheUnavailable' => 'ルートキャッシュを利用できません',
-          'settings.network.routeCacheStatus' =>
-            ({required Object hosts, required Object revision}) =>
-                '${hosts} ホスト · リビジョン ${revision}',
+          'settings.network.routeCacheStatus' => ({
+            required Object hosts,
+            required Object revision,
+          }) => '${hosts} ホスト · リビジョン ${revision}',
           'settings.network.applied' => 'ネットワーク設定を適用しました',
           'settings.network.invalidSettings' => 'ネットワーク設定が無効です',
           'settings.network.routeRefreshFailed' => 'ルートの更新に失敗しました',
@@ -2315,11 +2325,13 @@ extension on TranslationsJa {
           'discovery.mediaAnimation' => 'アニメ',
           'discovery.mediaVideo' => '動画',
           'discovery.mediaCollection' => '関連画像',
-          'discovery.retryIn' =>
-            ({required Object seconds}) => '${seconds} 秒後に再試行',
+          'discovery.retryIn' => ({
+            required Object seconds,
+          }) => '${seconds} 秒後に再試行',
           'discovery.searchResults' => '検索結果',
-          'discovery.searchTermsTitle' =>
-            ({required Object count}) => '${count}個のキーワードを検索',
+          'discovery.searchTermsTitle' => ({
+            required Object count,
+          }) => '${count}個のキーワードを検索',
           'discovery.allAvailable' => '表示可能なすべてのコンテンツ',
           'discovery.defaultRatingsHint' =>
             '未選択なら現在の画像ソースで閲覧できるすべてのコンテンツを表示します。',
@@ -2360,8 +2372,9 @@ extension on TranslationsJa {
           'discovery.addTagAction' => '追加',
           'discovery.editTagAction' => '編集',
           'discovery.deleteTag' => '削除',
-          'discovery.deleteTagConfirm' =>
-            ({required Object name}) => '「${name}」を削除しますか？',
+          'discovery.deleteTagConfirm' => ({
+            required Object name,
+          }) => '「${name}」を削除しますか？',
           'discovery.addTag' => 'タグを追加',
           'discovery.noCustomTags' => 'カスタムタグはまだありません',
           'discovery.customTagsHint' => 'よく使うタグに覚えやすい名前を付けると、検索で見つけやすくなります。',
@@ -2370,8 +2383,9 @@ extension on TranslationsJa {
           'discovery.canonicalTag' => 'サイトのタグ',
           'discovery.displayName' => '表示名（任意）',
           'discovery.invalidTag' => '空白を含まないタグを1つ入力してください。',
-          'discovery.searchSource' =>
-            ({required Object source}) => '${source} を検索',
+          'discovery.searchSource' => ({
+            required Object source,
+          }) => '${source} を検索',
           'discovery.noCommonTags' => 'このソースには人気タグがありません',
           'discovery.category' => 'カテゴリ',
           'discovery.allCategories' => 'すべて',
@@ -2399,11 +2413,13 @@ extension on TranslationsJa {
           'mediaError.decodeFailed' =>
             'ダウンロードした画像をデコードできませんでした。再試行すると、この画像のキャッシュを削除して再ダウンロードします。',
           'webChallenge.title' => 'ウェブ認証',
-          'webChallenge.pageTitle' =>
-            ({required Object source}) => '${source} の認証',
+          'webChallenge.pageTitle' => ({
+            required Object source,
+          }) => '${source} の認証',
           'webChallenge.open' => 'ウェブ認証を開く',
-          'webChallenge.windowTitle' =>
-            ({required Object source}) => '${source} · 認証後にウィンドウを閉じてください',
+          'webChallenge.windowTitle' => ({
+            required Object source,
+          }) => '${source} · 認証後にウィンドウを閉じてください',
           'webChallenge.instructions' =>
             'ページの人間確認を手動で完了してから、戻るかウィンドウを閉じてください。認証データを保存し、画像ソースを再読み込みします。',
           'webChallenge.finish' => '完了して戻る',
@@ -2421,8 +2437,7 @@ extension on TranslationsJa {
             'ページを読み込めませんでした。認証ページを開き直すか、ネットワーク設定を確認してください。',
           'webChallenge.webViewUnavailable' => 'この環境ではウェブコンポーネントを使用できません。',
           'webChallenge.windowFailed' => 'ウェブ認証を開けませんでした。',
-          'webChallenge.runtimeMissing' =>
-            'Microsoft Edge WebView2 Runtime が見つかりません。インストールまたは更新してから再試行してください。',
+          'webChallenge.runtimeMissing' => 'Microsoft Edge WebView2 Runtime が見つかりません。インストールまたは更新してから再試行してください。',
           'webChallenge.proxyUnsupported' =>
             '現在のプロキシ設定には対応していません。設定を変更して再試行してください。',
           'webChallenge.busy' => '別のウェブ認証またはデータ消去を実行中です。',
@@ -2453,12 +2468,14 @@ extension on TranslationsJa {
                 (_root.$meta.cardinalResolver ??
                 PluralResolvers.cardinal('ja'))(n, other: '/ 最大 ${count} 枚'),
           'batchDownload.fetching' => '見つかった画像',
-          'batchDownload.progress' =>
-            ({required Object current, required Object total}) =>
-                '${current} / ${total}',
-          'batchDownload.fetchProgress' =>
-            ({required Object limit, required Object current}) =>
-                '最大 ${limit} 枚のうち ${current} 枚を取得',
+          'batchDownload.progress' => ({
+            required Object current,
+            required Object total,
+          }) => '${current} / ${total}',
+          'batchDownload.fetchProgress' => ({
+            required Object limit,
+            required Object current,
+          }) => '最大 ${limit} 枚のうち ${current} 枚を取得',
           'batchDownload.stopHint' => 'いつでも停止して、取得済みの画像を使用できます。',
           'batchDownload.stop' => '取得を停止',
           'batchDownload.found' => '枚の画像をダウンロードできます',
@@ -2478,8 +2495,9 @@ extension on TranslationsJa {
             '取得を完了できませんでした。結果は保持されています。再試行するか取得済みの画像を使用してください。',
           'batchDownload.countLabel' => 'ダウンロード枚数',
           'batchDownload.all' => 'すべて',
-          'batchDownload.countRange' =>
-            ({required Object max}) => '1～${max} を入力',
+          'batchDownload.countRange' => ({
+            required Object max,
+          }) => '1～${max} を入力',
           'batchDownload.orderHint' => '現在の検索順で先頭から N 枚をダウンロードします。',
           'batchDownload.folderLabel' => 'フォルダー名',
           'batchDownload.folderHint' => '例：9月のコレクション',
@@ -2491,12 +2509,14 @@ extension on TranslationsJa {
           'batchDownload.photos' => '写真ライブラリ',
           'batchDownload.photosHint' =>
             'iOS では配信元フォルダー内のアルバムに保存します。アルバムの再利用には写真へのフルアクセスが必要です。',
-          'batchDownload.enqueue' =>
-            ({required Object count}) => 'キューに追加 · ${count} 枚',
+          'batchDownload.enqueue' => ({
+            required Object count,
+          }) => 'キューに追加 · ${count} 枚',
           'batchDownload.enqueueing' => 'ダウンロードキューに追加中',
-          'batchDownload.preparing' =>
-            ({required Object current, required Object total}) =>
-                '${current} / ${total} 枚を準備中',
+          'batchDownload.preparing' => ({
+            required Object current,
+            required Object total,
+          }) => '${current} / ${total} 枚を準備中',
           'batchDownload.added' => 'ダウンロードキューに追加したタスク',
           'batchDownload.backgroundHint' =>
             'この画面を閉じてもアプリの実行中は追加を続けます。同じボタンから結果を確認できます。',
@@ -2509,12 +2529,14 @@ extension on TranslationsJa {
                   other: '${count} 枚を追加できませんでした。',
                 ),
           'batchDownload.retryFailed' => '失敗した画像を再試行',
-          'batchDownload.queued' =>
-            ({required Object added, required Object failed}) =>
-                '一括処理：${added} 枚をキューに追加、${failed} 枚の追加に失敗。',
-          'batchDownload.completed' =>
-            ({required Object saved, required Object failed}) =>
-                '一括ダウンロード終了：${saved} 枚を保存、${failed} 枚が失敗またはキャンセル。',
+          'batchDownload.queued' => ({
+            required Object added,
+            required Object failed,
+          }) => '一括処理：${added} 枚をキューに追加、${failed} 枚の追加に失敗。',
+          'batchDownload.completed' => ({
+            required Object saved,
+            required Object failed,
+          }) => '一括ダウンロード終了：${saved} 枚を保存、${failed} 枚が失敗またはキャンセル。',
           'batchDownload.done' => '完了',
           'batchDownload.back' => '戻る',
           'batchDownload.first' => '先頭 N 枚',
@@ -2522,8 +2544,9 @@ extension on TranslationsJa {
             ({required num n, required Object count}) =>
                 (_root.$meta.cardinalResolver ??
                 PluralResolvers.cardinal('ja'))(n, other: '${count} 枚を追加しました'),
-          'batchDownload.savedTo' =>
-            ({required Object folder}) => '保存先「${folder}」',
+          'batchDownload.savedTo' => ({
+            required Object folder,
+          }) => '保存先「${folder}」',
           'batchDownload.viewDownloads' => 'ダウンロードを表示',
           'frost.retry' => '再試行',
           'frost.error' => 'エラー',
@@ -2549,8 +2572,9 @@ extension on TranslationsJa {
           'frost.collapseNavigation' => 'サイドバーを閉じる',
           'frost.clearText' => '入力を消去',
           'frost.search' => '検索',
-          'frost.noResults' =>
-            ({required Object query}) => '「${query}」の結果はありません',
+          'frost.noResults' => ({
+            required Object query,
+          }) => '「${query}」の結果はありません',
           'frost.clearSearch' => '検索を消去',
           'frost.dismiss' => '閉じる',
           'frost.expandText' => 'もっと見る',
@@ -2561,10 +2585,10 @@ extension on TranslationsJa {
           'frost.showPassword' => 'パスワードを表示',
           'frost.hidePassword' => 'パスワードを隠す',
           'frost.chooseDate' => '日付を選択',
+          'frost.chooseTime' => '時刻を選択',
           _ => null,
         } ??
         switch (path) {
-          'frost.chooseTime' => '時刻を選択',
           'frost.increment' => '増やす',
           'frost.decrement' => '減らす',
           'frost.reorderHandle' => '並べ替え',
@@ -2588,17 +2612,20 @@ extension on TranslationsJa {
           'frost.choose' => '選択',
           'frost.showInFolder' => 'フォルダーで表示',
           'frost.selectedCount' => ({required Object count}) => '${count}件を選択中',
-          'frost.pageOf' =>
-            ({required Object total, required Object page}) =>
-                '${total}ページ中${page}ページ',
+          'frost.pageOf' => ({
+            required Object total,
+            required Object page,
+          }) => '${total}ページ中${page}ページ',
           'frost.selectAll' => 'すべて選択',
           'frost.done' => '完了',
-          'frost.itemPosition' =>
-            ({required Object total, required Object position}) =>
-                '${total}件中${position}件目',
-          'frost.tableDimensions' =>
-            ({required Object rows, required Object columns}) =>
-                '${rows}行、${columns}列',
+          'frost.itemPosition' => ({
+            required Object total,
+            required Object position,
+          }) => '${total}件中${position}件目',
+          'frost.tableDimensions' => ({
+            required Object rows,
+            required Object columns,
+          }) => '${rows}行、${columns}列',
           'frost.taskQueued' => '待機中',
           'frost.taskRunning' => 'ダウンロード中',
           'frost.taskPaused' => '一時停止中',
@@ -2619,8 +2646,9 @@ extension on TranslationsJa {
             ({required num n, required Object count}) =>
                 (_root.$meta.cardinalResolver ??
                 PluralResolvers.cardinal('ja'))(n, other: '${count}件'),
-          'frost.navigationProgress' =>
-            ({required Object progress}) => '進捗${progress}%',
+          'frost.navigationProgress' => ({
+            required Object progress,
+          }) => '進捗${progress}%',
           'frost.listSeparator' => '、',
           'navigation.browse' => '閲覧',
           'navigation.search' => '検索',
@@ -2667,34 +2695,39 @@ extension on TranslationsJa {
             ({required num n, required Object count}) =>
                 (_root.$meta.cardinalResolver ??
                 PluralResolvers.cardinal('ja'))(n, other: '${count} ホスト'),
-          'settingsDetails.updatedAt' =>
-            ({required Object time}) => '更新 ${time}',
+          'settingsDetails.updatedAt' => ({
+            required Object time,
+          }) => '更新 ${time}',
           'settingsDetails.sourceStatus' => '画像ソースの状態',
           'settingsDetails.apiAndImages' => 'API と画像を利用可能',
           'settingsDetails.apiOnly' => 'API 利用可能 · 画像に接続不可',
           'settingsDetails.status' => '状態',
           'settingsDetails.content' => 'コンテンツ',
-          'settingsDetails.editSourceAccount' =>
-            ({required Object source}) => '${source} のアカウントを編集',
+          'settingsDetails.editSourceAccount' => ({
+            required Object source,
+          }) => '${source} のアカウントを編集',
           'settingsDetails.proxyApplies' => '画像ソース、画像、新しいダウンロードに適用します。',
-          'settingsDetails.version' =>
-            ({required Object version, required Object build}) =>
-                'バージョン ${version} (${build})',
+          'settingsDetails.version' => ({
+            required Object version,
+            required Object build,
+          }) => 'バージョン ${version} (${build})',
           'settingsDetails.communityTelegram' => 'Telegram グループ',
           'settingsDetails.communityDiscord' => 'Discord サーバー',
           'settingsDetails.savedVerifications' => '保存した認証',
           'settingsDetails.systemDnsShort' => 'システム DNS',
           'settingsDetails.refresh' => '更新',
-          'settingsDetails.updateAvailable' =>
-            ({required Object version}) => '新しいバージョン ${version} があります',
+          'settingsDetails.updateAvailable' => ({
+            required Object version,
+          }) => '新しいバージョン ${version} があります',
           'verificationPage.instructions' => '下のページで認証し、完了して戻るを選んでください。',
           'verificationPage.opening' => 'ページを開いています',
           'verificationPage.failed' => 'ページを読み込めませんでした',
           'verificationPage.closed' => '認証ウィンドウを閉じました',
           'verificationPage.failureHelp' => 'もう一度開くか、ネットワーク設定を確認してください。',
           'verificationPage.reopen' => 'もう一度開く',
-          'verificationPage.signOut' =>
-            ({required Object source}) => '${source} からログアウトしますか？',
+          'verificationPage.signOut' => ({
+            required Object source,
+          }) => '${source} からログアウトしますか？',
           'verificationPage.signOutHelp' => 'この端末からアカウント情報を削除します。',
           'verificationPage.downloadAdded' => 'ダウンロードに追加しました',
           'verificationPage.downloadFailed' => 'ダウンロード失敗',

@@ -2537,10 +2537,12 @@ extension on Translations {
           'generic.confirm' => 'Confirm',
           'generic.enabled' => 'Enabled',
           'generic.disabled' => 'Disabled',
-          'generic.copiedWithValue' =>
-            ({required Object value}) => 'Copied to clipboard: ${value}',
-          'generic.errorWithValue' =>
-            ({required Object value}) => 'An error occurred: ${value}',
+          'generic.copiedWithValue' => ({
+            required Object value,
+          }) => 'Copied to clipboard: ${value}',
+          'generic.errorWithValue' => ({
+            required Object value,
+          }) => 'An error occurred: ${value}',
           'generic.loading' => 'Loading',
           'generic.loadFailed' => 'Load failed',
           'generic.retry' => 'Retry',
@@ -2561,16 +2563,13 @@ extension on Translations {
             'The source denied access to this resource.',
           'booruError.rateLimited' =>
             'The source is limiting requests. Access will resume shortly.',
-          'booruError.challengeRequired' =>
-            'The source requires browser verification. Try opening it in a browser to complete verification, or choose another source.',
-          'booruError.routeUnavailable' =>
-            'No route is available for this domain. Refresh routes in Network settings; system DNS fallback is disabled.',
+          'booruError.challengeRequired' => 'The source requires browser verification. Try opening it in a browser to complete verification, or choose another source.',
+          'booruError.routeUnavailable' => 'No route is available for this domain. Refresh routes in Network settings; system DNS fallback is disabled.',
           'booruError.sourceUnavailable' =>
             'The source is currently unavailable.',
           'booruError.network' =>
             'Network request failed. Check your connection and retry.',
-          'booruError.timeout' =>
-            'The request timed out. Check your internet connection or try again later.',
+          'booruError.timeout' => 'The request timed out. Check your internet connection or try again later.',
           'booruError.invalidResponse' =>
             'The source returned an invalid response.',
           'booruError.unsafeRedirect' =>
@@ -2580,18 +2579,17 @@ extension on Translations {
           'booruError.cancelled' => 'The request was cancelled.',
           'booruError.internal' => 'An internal booru engine error occurred.',
           'update.checkUpdateStart' => 'Checking for updates',
-          'update.checkUpdateFailed' =>
-            'Failed to check for updates. Please check your internet connection.',
-          'update.selectDownloadUrlFailed' =>
-            'Unable to find download URL.\nPlease visit the project page to manually update or seek help on the project issue page.',
-          'update.newVersionFound' =>
-            ({required Object version}) =>
-                'Version ${version} is available. Open About to download the update.',
+          'update.checkUpdateFailed' => 'Failed to check for updates. Please check your internet connection.',
+          'update.selectDownloadUrlFailed' => 'Unable to find download URL.\nPlease visit the project page to manually update or seek help on the project issue page.',
+          'update.newVersionFound' => ({
+            required Object version,
+          }) => 'Version ${version} is available. Open About to download the update.',
           'update.noNewVersionFound' => 'No new version found.',
           'postList.short' => 'Home',
           'postList.title' => 'Home',
-          'postList.titleWithTags' =>
-            ({required Object tags}) => 'Posts with tags: ${tags}',
+          'postList.titleWithTags' => ({
+            required Object tags,
+          }) => 'Posts with tags: ${tags}',
           'postDetail.fullscreen' => 'View fullscreen',
           'postDetail.notFound' => 'Post not found',
           'postDetail.parentCount' =>
@@ -2614,8 +2612,9 @@ extension on Translations {
           'postDetail.zoomOut' => 'Zoom out',
           'postDetail.originalFailed' => 'Original image failed to load',
           'postDetail.previewShown' => 'Showing the preview image.',
-          'postDetail.uploadedAt' =>
-            ({required Object date}) => 'Uploaded ${date}',
+          'postDetail.uploadedAt' => ({
+            required Object date,
+          }) => 'Uploaded ${date}',
           'postDetail.pixels' => 'pixels',
           'postDetail.dimensions' => 'Dimensions',
           'postDetail.searchTag' => 'Search this tag',
@@ -2688,12 +2687,15 @@ extension on Translations {
           'downloads.today' => 'Today',
           'downloads.yesterday' => 'Yesterday',
           'downloads.transferRate' => ({required Object value}) => '${value}/s',
-          'downloads.remainingSeconds' =>
-            ({required Object count}) => 'About ${count} s',
-          'downloads.remainingMinutes' =>
-            ({required Object count}) => 'About ${count} min',
-          'downloads.remainingHours' =>
-            ({required Object count}) => 'About ${count} h',
+          'downloads.remainingSeconds' => ({
+            required Object count,
+          }) => 'About ${count} s',
+          'downloads.remainingMinutes' => ({
+            required Object count,
+          }) => 'About ${count} min',
+          'downloads.remainingHours' => ({
+            required Object count,
+          }) => 'About ${count} h',
           'downloads.format' => 'Format',
           'downloads.startedAt' => 'Started',
           'downloads.browse' => 'Browse',
@@ -2709,9 +2711,10 @@ extension on Translations {
           'downloads.openPost' => 'Open post',
           'downloads.open' => 'Open',
           'downloads.batch' => 'Batch download',
-          'downloads.batchProgress' =>
-            ({required Object completed, required Object total}) =>
-                '${completed} / ${total}',
+          'downloads.batchProgress' => ({
+            required Object completed,
+            required Object total,
+          }) => '${completed} / ${total}',
           'downloads.path' => 'Save path',
           'downloads.taskDetails' => 'Task details',
           'downloads.viewLog' => 'Logs',
@@ -2754,28 +2757,30 @@ extension on Translations {
                   other: '${count} actions failed',
                 ),
           'downloads.copyPath' => 'Copy path',
-          'downloads.messages.storagePermanentlyDenied' =>
-            'You have permanently denied storage permissions.\nPlease manually enable storage permissions in settings.',
+          'downloads.messages.storagePermanentlyDenied' => 'You have permanently denied storage permissions.\nPlease manually enable storage permissions in settings.',
           'downloads.messages.storageDenied' =>
             'You have denied storage permissions.',
           'downloads.messages.deviceInfoError' =>
             'Unable to parse device information.',
-          'downloads.messages.photosPermanentlyDenied' =>
-            'You have permanently denied photos permissions.\nPlease manually enable photos permissions in settings.',
+          'downloads.messages.photosPermanentlyDenied' => 'You have permanently denied photos permissions.\nPlease manually enable photos permissions in settings.',
           'downloads.messages.photosDenied' =>
             'You have denied photos permissions.',
           'downloads.messages.downloadTaskExists' =>
             'The download task already exists.',
           'downloads.messages.imageFileExists' =>
             'The image file already exists.',
-          'downloads.messages.downloadRetryWith' =>
-            ({required Object name}) => 'Retry download task ${name}',
-          'downloads.messages.downloadStartWith' =>
-            ({required Object name}) => 'Start download task ${name}',
-          'downloads.messages.downloadFailedWith' =>
-            ({required Object name}) => 'Download failed for task ${name}',
-          'downloads.messages.saveFailedWith' =>
-            ({required Object name}) => 'Saving failed for task ${name}',
+          'downloads.messages.downloadRetryWith' => ({
+            required Object name,
+          }) => 'Retry download task ${name}',
+          'downloads.messages.downloadStartWith' => ({
+            required Object name,
+          }) => 'Start download task ${name}',
+          'downloads.messages.downloadFailedWith' => ({
+            required Object name,
+          }) => 'Download failed for task ${name}',
+          'downloads.messages.saveFailedWith' => ({
+            required Object name,
+          }) => 'Saving failed for task ${name}',
           'about.title' => 'About',
           'about.projectUrl' => 'Project URL',
           'about.publishPage' => 'Publish page',
@@ -2835,8 +2840,9 @@ extension on Translations {
           'settings.account.username' => 'Username',
           'settings.account.userId' => 'User ID',
           'settings.account.apiKey' => 'API key',
-          'settings.account.statusValue' =>
-            ({required Object status}) => 'Status · ${status}',
+          'settings.account.statusValue' => ({
+            required Object status,
+          }) => 'Status · ${status}',
           'settings.account.statuses.notConfigured' => 'Not configured',
           'settings.account.statuses.configuredUnverified' =>
             'Configured, not verified',
@@ -2857,8 +2863,7 @@ extension on Translations {
           'settings.network.proxyReachable' => 'Reachable',
           'settings.network.proxyUnreachable' => 'Unreachable',
           'settings.network.proxyProbe' => 'Test proxy connectivity',
-          'settings.network.proxyProbeHint' =>
-            'Tests the entered proxy without saving it. Each source is checked independently.',
+          'settings.network.proxyProbeHint' => 'Tests the entered proxy without saving it. Each source is checked independently.',
           'settings.network.sourceAvailable' => 'Available',
           'settings.network.sourcePartial' => 'Partially available',
           'settings.network.sourceUnavailable' => 'Unavailable',
@@ -2868,31 +2873,26 @@ extension on Translations {
             'Images: failed or no test image',
           'settings.network.dnsDetails' =>
             'DNS route details (separate from availability)',
-          'settings.network.sourceProbeHelp' =>
-            'Green: API and image checks passed; yellow: partially passed; red: failed. Sources run concurrently with a 26-second limit.',
+          'settings.network.sourceProbeHelp' => 'Green: API and image checks passed; yellow: partially passed; red: failed. Sources run concurrently with a 26-second limit.',
           'settings.network.dnsProvider' => 'DNS service',
-          'settings.network.sourceSummary' =>
-            ({required Object available, required Object issues}) =>
-                '${available} available · ${issues} issues',
+          'settings.network.sourceSummary' => ({
+            required Object available,
+            required Object issues,
+          }) => '${available} available · ${issues} issues',
           'settings.network.servicesTitle' => 'Services status',
-          'settings.network.servicesHint' =>
-            'IP resolution and API availability are checked separately. API results do not guarantee every image can be downloaded.',
-          'settings.network.noFallback' =>
-            'The DNS provider is used for route refresh below. System DNS mode does not use cached IPs. SNI bypass uses cached IPs without automatic fallback.',
-          'settings.network.checkProgress' =>
-            ({
-              required Object done,
-              required Object total,
-              required Object checked,
-              required Object sources,
-            }) => 'DNS ${done}/${total} · API ${checked}/${sources}',
-          'settings.network.checkSummary' =>
-            ({
-              required Object available,
-              required Object total,
-              required Object failed,
-            }) =>
-                'API available: ${available}/${total} · DNS failures: ${failed}',
+          'settings.network.servicesHint' => 'IP resolution and API availability are checked separately. API results do not guarantee every image can be downloaded.',
+          'settings.network.noFallback' => 'The DNS provider is used for route refresh below. System DNS mode does not use cached IPs. SNI bypass uses cached IPs without automatic fallback.',
+          'settings.network.checkProgress' => ({
+            required Object done,
+            required Object total,
+            required Object checked,
+            required Object sources,
+          }) => 'DNS ${done}/${total} · API ${checked}/${sources}',
+          'settings.network.checkSummary' => ({
+            required Object available,
+            required Object total,
+            required Object failed,
+          }) => 'API available: ${available}/${total} · DNS failures: ${failed}',
           'settings.network.loadingStatus' => 'Reading saved status',
           'settings.network.apiChecking' => 'API: checking',
           'settings.network.apiAvailable' => 'API: available',
@@ -2905,37 +2905,35 @@ extension on Translations {
           'settings.network.dnsCached' => 'Using cached IPs · not rechecked',
           'settings.network.dnsFailed' => 'Resolution failed · no active route',
           'settings.network.dnsQueued' => 'Waiting to resolve',
-          'settings.network.ipCachedAt' =>
-            ({required Object time}) => 'IP cached · updated at ${time}',
+          'settings.network.ipCachedAt' => ({
+            required Object time,
+          }) => 'IP cached · updated at ${time}',
           'settings.network.ipNotCached' => 'IP resolved · not yet saved',
           'settings.network.connectionMode' => 'Connection mode',
           'settings.network.proxyUrl' => 'Proxy URL',
           'settings.network.proxyTitle' => 'Custom proxy',
-          'settings.network.proxyModeOverride' =>
-            'The custom proxy takes priority and keeps normal SNI and certificate verification. SNI bypass is not combined with a proxy. The connection mode takes effect after disabling the custom proxy.',
+          'settings.network.proxyModeOverride' => 'The custom proxy takes priority and keeps normal SNI and certificate verification. SNI bypass is not combined with a proxy. The connection mode takes effect after disabling the custom proxy.',
           'settings.network.proxyApply' => 'Apply',
           'settings.network.proxyDisable' => 'Disable proxy',
-          'settings.network.proxyActive' =>
-            ({required Object endpoint}) =>
-                'Applied: ${endpoint} (connection not confirmed)',
+          'settings.network.proxyActive' => ({
+            required Object endpoint,
+          }) => 'Applied: ${endpoint} (connection not confirmed)',
           'settings.network.proxyInactive' => 'Not in use',
           'settings.network.proxyPending' =>
             'Changes are not applied. Choose Apply to save them.',
-          'settings.network.proxyHelp' =>
-            'Enter a proxy address and click the button below. Start the proxy service first. Applies to source lists, images and new download requests.',
-          'settings.network.proxyCheckHelp' =>
-            'A custom proxy takes priority over cached IP routes. Use the source API checks below to confirm connectivity; successful DNS resolution does not test the proxy.',
-          'settings.network.proxyInvalid' =>
-            'Enter a valid IP or hostname and a port from 1–65535 in separate fields. Omit the protocol and path from the address.',
+          'settings.network.proxyHelp' => 'Enter a proxy address and click the button below. Start the proxy service first. Applies to source lists, images and new download requests.',
+          'settings.network.proxyCheckHelp' => 'A custom proxy takes priority over cached IP routes. Use the source API checks below to confirm connectivity; successful DNS resolution does not test the proxy.',
+          'settings.network.proxyInvalid' => 'Enter a valid IP or hostname and a port from 1–65535 in separate fields. Omit the protocol and path from the address.',
           'settings.network.proxyHint' =>
             'Optional · for example http://127.0.0.1:7890',
           'settings.network.applyAndRouteCache' => 'Apply and route cache',
           'settings.network.apply' => 'Apply network',
           'settings.network.refreshRoutes' => 'Refresh routes',
           'settings.network.routeCacheUnavailable' => 'Route cache unavailable',
-          'settings.network.routeCacheStatus' =>
-            ({required Object hosts, required Object revision}) =>
-                '${hosts} hosts · revision ${revision}',
+          'settings.network.routeCacheStatus' => ({
+            required Object hosts,
+            required Object revision,
+          }) => '${hosts} hosts · revision ${revision}',
           'settings.network.applied' => 'Network settings applied',
           'settings.network.invalidSettings' => 'Invalid network settings',
           'settings.network.routeRefreshFailed' => 'Route refresh failed',
@@ -2974,14 +2972,15 @@ extension on Translations {
           'discovery.mediaAnimation' => 'Animated',
           'discovery.mediaVideo' => 'Video',
           'discovery.mediaCollection' => 'Related images',
-          'discovery.retryIn' =>
-            ({required Object seconds}) => 'Retry in ${seconds} s',
+          'discovery.retryIn' => ({
+            required Object seconds,
+          }) => 'Retry in ${seconds} s',
           'discovery.searchResults' => 'Search results',
-          'discovery.searchTermsTitle' =>
-            ({required Object count}) => 'Search ${count} terms',
+          'discovery.searchTermsTitle' => ({
+            required Object count,
+          }) => 'Search ${count} terms',
           'discovery.allAvailable' => 'All available',
-          'discovery.defaultRatingsHint' =>
-            'Leave all unchecked to show all content available from the current source.',
+          'discovery.defaultRatingsHint' => 'Leave all unchecked to show all content available from the current source.',
           'discovery.resetFilters' => 'Restore defaults',
           'discovery.unsupportedRatings' =>
             'This source does not support the selected ratings.',
@@ -3022,19 +3021,20 @@ extension on Translations {
           'discovery.addTagAction' => 'Add',
           'discovery.editTagAction' => 'Edit',
           'discovery.deleteTag' => 'Delete',
-          'discovery.deleteTagConfirm' =>
-            ({required Object name}) => 'Delete “${name}”?',
+          'discovery.deleteTagConfirm' => ({
+            required Object name,
+          }) => 'Delete “${name}”?',
           'discovery.addTag' => 'Add tag',
           'discovery.noCustomTags' => 'No custom tags yet',
-          'discovery.customTagsHint' =>
-            'Give frequently used tags a memorable name to find them more easily in search.',
+          'discovery.customTagsHint' => 'Give frequently used tags a memorable name to find them more easily in search.',
           'discovery.addCustomTag' => 'Add as a custom tag',
           'discovery.editTag' => 'Edit custom tag',
           'discovery.canonicalTag' => 'Source tag',
           'discovery.displayName' => 'Display name (optional)',
           'discovery.invalidTag' => 'Enter one nonempty tag without spaces.',
-          'discovery.searchSource' =>
-            ({required Object source}) => 'Search ${source}',
+          'discovery.searchSource' => ({
+            required Object source,
+          }) => 'Search ${source}',
           'discovery.noCommonTags' => 'This source has no common tags',
           'discovery.category' => 'Category',
           'discovery.allCategories' => 'All',
@@ -3043,8 +3043,7 @@ extension on Translations {
             'Some tags are not verified for this source. You can still search.',
           'discovery.verifiedTag' => 'Verified for this source',
           'discovery.noSuggestions' => 'No suggestions',
-          'discovery.localFallback' =>
-            'Online suggestions unavailable; local suggestions are still available.',
+          'discovery.localFallback' => 'Online suggestions unavailable; local suggestions are still available.',
           'discovery.artist' => 'Artist',
           'discovery.character' => 'Character',
           'discovery.copyright' => 'Series',
@@ -3053,25 +3052,23 @@ extension on Translations {
           'discovery.random' => 'Random',
           'discovery.lifetimeViews' => 'Lifetime views',
           'discovery.lifetimeFavorites' => 'Lifetime favorites',
-          'mediaError.videoProxyBypassed' =>
-            'The selected SOCKS proxy is not supported for video; this playback attempted a direct connection.',
+          'mediaError.videoProxyBypassed' => 'The selected SOCKS proxy is not supported for video; this playback attempted a direct connection.',
           'mediaError.videoFailed' => 'Video playback failed',
           'mediaError.downloadOriginal' => 'Download original file',
           'mediaError.previewUnsupported' => 'Preview unavailable',
           'mediaError.title' => 'Image failed to load',
           'mediaError.details' => 'Error details',
           'mediaError.copyDetails' => 'Copy details',
-          'mediaError.decodeFailed' =>
-            'The downloaded image could not be decoded. Retry will clear this image’s cache and download it again.',
+          'mediaError.decodeFailed' => 'The downloaded image could not be decoded. Retry will clear this image’s cache and download it again.',
           'webChallenge.title' => 'Web verification',
-          'webChallenge.pageTitle' =>
-            ({required Object source}) => '${source} verification',
+          'webChallenge.pageTitle' => ({
+            required Object source,
+          }) => '${source} verification',
           'webChallenge.open' => 'Open web verification',
-          'webChallenge.windowTitle' =>
-            ({required Object source}) =>
-                '${source} · Close this window after verification',
-          'webChallenge.instructions' =>
-            'Complete the page\'s verification manually, then go back or close the window. The app will save the verification data and reload the source.',
+          'webChallenge.windowTitle' => ({
+            required Object source,
+          }) => '${source} · Close this window after verification',
+          'webChallenge.instructions' => 'Complete the page\'s verification manually, then go back or close the window. The app will save the verification data and reload the source.',
           'webChallenge.finish' => 'Finish and return',
           'webChallenge.saving' => 'Reading and verifying the web session',
           'webChallenge.waiting' => 'Web verification in progress',
@@ -3085,30 +3082,24 @@ extension on Translations {
           'webChallenge.empty' => 'No saved verification data',
           'webChallenge.failed' =>
             'Web verification did not complete. Please retry.',
-          'webChallenge.pageLoadFailed' =>
-            'The page failed to load. Reopen verification or check network settings.',
+          'webChallenge.pageLoadFailed' => 'The page failed to load. Reopen verification or check network settings.',
           'webChallenge.webViewUnavailable' =>
             'The web component is unavailable on this platform.',
           'webChallenge.windowFailed' => 'Could not open web verification.',
-          'webChallenge.runtimeMissing' =>
-            'Microsoft Edge WebView2 Runtime was not found. Install or update it and try again.',
-          'webChallenge.proxyUnsupported' =>
-            'The web component does not support the current proxy settings. Change them and retry.',
+          'webChallenge.runtimeMissing' => 'Microsoft Edge WebView2 Runtime was not found. Install or update it and try again.',
+          'webChallenge.proxyUnsupported' => 'The web component does not support the current proxy settings. Change them and retry.',
           'webChallenge.busy' =>
             'Another web verification or cleanup is in progress.',
           'webChallenge.cancelled' => 'Web verification cancelled.',
           'webChallenge.timedOut' =>
             'Web verification timed out. Open the page again.',
-          'webChallenge.storageFailed' =>
-            'Verification data could not be saved or cleared. The previous session was retained.',
+          'webChallenge.storageFailed' => 'Verification data could not be saved or cleared. The previous session was retained.',
           'webChallenge.captureFailed' =>
             'The web session could not be read. Open verification again.',
           'webChallenge.cleanupFailed' =>
             'Web data cleanup is incomplete. Try clearing it again shortly.',
-          'webChallenge.operationSuperseded' =>
-            'Verification was cancelled by a data clear or network settings change.',
-          'webChallenge.noCookies' =>
-            'The page has not provided usable verification data. Complete verification before returning.',
+          'webChallenge.operationSuperseded' => 'Verification was cancelled by a data clear or network settings change.',
+          'webChallenge.noCookies' => 'The page has not provided usable verification data. Complete verification before returning.',
           'nativeWindow.minimize' => 'Minimize',
           'nativeWindow.maximize' => 'Maximize',
           'nativeWindow.restore' => 'Restore',
@@ -3130,12 +3121,14 @@ extension on Translations {
                   other: '/ up to ${count} images',
                 ),
           'batchDownload.fetching' => 'Images found so far',
-          'batchDownload.progress' =>
-            ({required Object current, required Object total}) =>
-                '${current} / ${total}',
-          'batchDownload.fetchProgress' =>
-            ({required Object current, required Object limit}) =>
-                'Fetched ${current} of at most ${limit} images',
+          'batchDownload.progress' => ({
+            required Object current,
+            required Object total,
+          }) => '${current} / ${total}',
+          'batchDownload.fetchProgress' => ({
+            required Object current,
+            required Object limit,
+          }) => 'Fetched ${current} of at most ${limit} images',
           'batchDownload.stopHint' =>
             'Stop at any time and use the images already found.',
           'batchDownload.stop' => 'Stop fetching',
@@ -3144,46 +3137,40 @@ extension on Translations {
             'Fetch limit reached. More matching images may be available.',
           'batchDownload.exhausted' =>
             'All matching results have been fetched.',
-          'batchDownload.permissionDenied' =>
-            'Download permission is unavailable. Check the app\'s permissions in system settings and retry.',
-          'batchDownload.enqueueFailed' =>
-            'Could not add tasks. Check the save location and available storage, then retry.',
+          'batchDownload.permissionDenied' => 'Download permission is unavailable. Check the app\'s permissions in system settings and retry.',
+          'batchDownload.enqueueFailed' => 'Could not add tasks. Check the save location and available storage, then retry.',
           'batchDownload.stopped' =>
             'Fetching stopped. You can download the images already found.',
           'batchDownload.empty' => 'No matching images were found.',
-          'batchDownload.stalled' =>
-            'The source stopped making progress. Results have been kept; retry or use them below.',
-          'batchDownload.sessionChanged' =>
-            'Source settings changed. Close this window and start again, or use the results already found.',
-          'batchDownload.fetchFailed' =>
-            'Could not finish fetching. Results have been kept; retry or use them below.',
+          'batchDownload.stalled' => 'The source stopped making progress. Results have been kept; retry or use them below.',
+          'batchDownload.sessionChanged' => 'Source settings changed. Close this window and start again, or use the results already found.',
+          'batchDownload.fetchFailed' => 'Could not finish fetching. Results have been kept; retry or use them below.',
           'batchDownload.countLabel' => 'Images to download',
           'batchDownload.all' => 'All',
-          'batchDownload.countRange' =>
-            ({required Object max}) => 'Enter 1–${max}',
+          'batchDownload.countRange' => ({
+            required Object max,
+          }) => 'Enter 1–${max}',
           'batchDownload.orderHint' =>
             'Downloads the first N images in the current search order.',
           'batchDownload.folderLabel' => 'Folder name',
           'batchDownload.folderHint' => 'e.g. September collection',
           'batchDownload.folderPlaceholder' => 'Your folder',
-          'batchDownload.invalidFolder' =>
-            'Use 1–100 characters without path separators, reserved names, leading/trailing spaces or trailing dots.',
-          'batchDownload.folderHelp' =>
-            'Existing folders are reused; existing files are never overwritten.',
+          'batchDownload.invalidFolder' => 'Use 1–100 characters without path separators, reserved names, leading/trailing spaces or trailing dots.',
+          'batchDownload.folderHelp' => 'Existing folders are reused; existing files are never overwritten.',
           'batchDownload.locationFailed' =>
             'Could not resolve the save location.',
           'batchDownload.photos' => 'Photos',
-          'batchDownload.photosHint' =>
-            'On iOS, the batch is saved in an album inside the source folder. Full Photos access is needed to reuse albums.',
-          'batchDownload.enqueue' =>
-            ({required Object count}) => 'Add to queue · ${count}',
+          'batchDownload.photosHint' => 'On iOS, the batch is saved in an album inside the source folder. Full Photos access is needed to reuse albums.',
+          'batchDownload.enqueue' => ({
+            required Object count,
+          }) => 'Add to queue · ${count}',
           'batchDownload.enqueueing' => 'Adding download tasks',
-          'batchDownload.preparing' =>
-            ({required Object current, required Object total}) =>
-                'Preparing ${current} / ${total} images',
+          'batchDownload.preparing' => ({
+            required Object current,
+            required Object total,
+          }) => 'Preparing ${current} / ${total} images',
           'batchDownload.added' => 'Tasks added to the download queue',
-          'batchDownload.backgroundHint' =>
-            'You can close this window. Submission continues while the app is running; reopen here to see its result.',
+          'batchDownload.backgroundHint' => 'You can close this window. Submission continues while the app is running; reopen here to see its result.',
           'batchDownload.queueHint' =>
             'Follow download progress in the download list.',
           'batchDownload.failedHint' =>
@@ -3195,12 +3182,14 @@ extension on Translations {
                   other: '${count} images could not be added.',
                 ),
           'batchDownload.retryFailed' => 'Retry failed items',
-          'batchDownload.queued' =>
-            ({required Object added, required Object failed}) =>
-                'Batch: ${added} added to queue, ${failed} failed to add.',
-          'batchDownload.completed' =>
-            ({required Object saved, required Object failed}) =>
-                'Batch finished: ${saved} saved, ${failed} failed or cancelled.',
+          'batchDownload.queued' => ({
+            required Object added,
+            required Object failed,
+          }) => 'Batch: ${added} added to queue, ${failed} failed to add.',
+          'batchDownload.completed' => ({
+            required Object saved,
+            required Object failed,
+          }) => 'Batch finished: ${saved} saved, ${failed} failed or cancelled.',
           'batchDownload.done' => 'Done',
           'batchDownload.back' => 'Back',
           'batchDownload.first' => 'First N',
@@ -3212,8 +3201,9 @@ extension on Translations {
                   one: '${count} image added',
                   other: '${count} images added',
                 ),
-          'batchDownload.savedTo' =>
-            ({required Object folder}) => 'Save to “${folder}”',
+          'batchDownload.savedTo' => ({
+            required Object folder,
+          }) => 'Save to “${folder}”',
           'batchDownload.viewDownloads' => 'View downloads',
           'frost.retry' => 'Retry',
           'frost.error' => 'Error',
@@ -3239,8 +3229,9 @@ extension on Translations {
           'frost.collapseNavigation' => 'Collapse sidebar',
           'frost.clearText' => 'Clear text',
           'frost.search' => 'Search',
-          'frost.noResults' =>
-            ({required Object query}) => 'No results for “${query}”',
+          'frost.noResults' => ({
+            required Object query,
+          }) => 'No results for “${query}”',
           'frost.clearSearch' => 'Clear search',
           'frost.dismiss' => 'Dismiss',
           'frost.expandText' => 'Show more',
@@ -3251,10 +3242,10 @@ extension on Translations {
           'frost.showPassword' => 'Show password',
           'frost.hidePassword' => 'Hide password',
           'frost.chooseDate' => 'Choose date',
+          'frost.chooseTime' => 'Choose time',
           _ => null,
         } ??
         switch (path) {
-          'frost.chooseTime' => 'Choose time',
           'frost.increment' => 'Increase',
           'frost.decrement' => 'Decrease',
           'frost.reorderHandle' => 'Reorder',
@@ -3277,19 +3268,23 @@ extension on Translations {
           'frost.clear' => 'Clear',
           'frost.choose' => 'Choose',
           'frost.showInFolder' => 'Show in folder',
-          'frost.selectedCount' =>
-            ({required Object count}) => '${count} selected',
-          'frost.pageOf' =>
-            ({required Object page, required Object total}) =>
-                'Page ${page} of ${total}',
+          'frost.selectedCount' => ({
+            required Object count,
+          }) => '${count} selected',
+          'frost.pageOf' => ({
+            required Object page,
+            required Object total,
+          }) => 'Page ${page} of ${total}',
           'frost.selectAll' => 'Select all',
           'frost.done' => 'Done',
-          'frost.itemPosition' =>
-            ({required Object position, required Object total}) =>
-                '${position} of ${total}',
-          'frost.tableDimensions' =>
-            ({required Object rows, required Object columns}) =>
-                '${rows} rows, ${columns} columns',
+          'frost.itemPosition' => ({
+            required Object position,
+            required Object total,
+          }) => '${position} of ${total}',
+          'frost.tableDimensions' => ({
+            required Object rows,
+            required Object columns,
+          }) => '${rows} rows, ${columns} columns',
           'frost.taskQueued' => 'Queued',
           'frost.taskRunning' => 'Downloading',
           'frost.taskPaused' => 'Paused',
@@ -3322,8 +3317,9 @@ extension on Translations {
                   one: '${count} item',
                   other: '${count} items',
                 ),
-          'frost.navigationProgress' =>
-            ({required Object progress}) => '${progress}% complete',
+          'frost.navigationProgress' => ({
+            required Object progress,
+          }) => '${progress}% complete',
           'frost.listSeparator' => ', ',
           'navigation.browse' => 'Browse',
           'navigation.search' => 'Search',
@@ -3336,8 +3332,7 @@ extension on Translations {
           'navigation.downloadsEmpty' => 'Your downloads appear here',
           'navigation.settingsEmpty' => 'Make BooruFlow yours',
           'settingsV2.predictiveBack' => 'Predictive back',
-          'settingsV2.predictiveBackScope' =>
-            'Previews returns within the app. Returning to the home screen uses the system animation.',
+          'settingsV2.predictiveBackScope' => 'Previews returns within the app. Returning to the home screen uses the system animation.',
           'settingsV2.background' => 'Background',
           'settingsV2.ambientBlur' => 'Blur',
           'settingsV2.mica' => 'Mica',
@@ -3378,28 +3373,31 @@ extension on Translations {
                   one: '${count} host',
                   other: '${count} hosts',
                 ),
-          'settingsDetails.updatedAt' =>
-            ({required Object time}) => 'Updated ${time}',
+          'settingsDetails.updatedAt' => ({
+            required Object time,
+          }) => 'Updated ${time}',
           'settingsDetails.sourceStatus' => 'Source status',
           'settingsDetails.apiAndImages' => 'API and images available',
           'settingsDetails.apiOnly' => 'API available · images failed',
           'settingsDetails.status' => 'Status',
           'settingsDetails.content' => 'Content',
-          'settingsDetails.editSourceAccount' =>
-            ({required Object source}) => 'Edit ${source} account',
+          'settingsDetails.editSourceAccount' => ({
+            required Object source,
+          }) => 'Edit ${source} account',
           'settingsDetails.proxyApplies' =>
             'Applies to sources, images and new downloads.',
-          'settingsDetails.version' =>
-            ({required Object version, required Object build}) =>
-                'Version ${version} (${build})',
+          'settingsDetails.version' => ({
+            required Object version,
+            required Object build,
+          }) => 'Version ${version} (${build})',
           'settingsDetails.communityTelegram' => 'Telegram group',
           'settingsDetails.communityDiscord' => 'Discord server',
           'settingsDetails.savedVerifications' => 'Saved verifications',
           'settingsDetails.systemDnsShort' => 'System DNS',
           'settingsDetails.refresh' => 'Refresh',
-          'settingsDetails.updateAvailable' =>
-            ({required Object version}) =>
-                'New version ${version} is available',
+          'settingsDetails.updateAvailable' => ({
+            required Object version,
+          }) => 'New version ${version} is available',
           'verificationPage.instructions' =>
             'Complete the verification below, then choose Finish and return.',
           'verificationPage.opening' => 'Opening webpage',
@@ -3408,8 +3406,9 @@ extension on Translations {
           'verificationPage.failureHelp' =>
             'Reopen it, or check network settings.',
           'verificationPage.reopen' => 'Reopen',
-          'verificationPage.signOut' =>
-            ({required Object source}) => 'Sign out of ${source}?',
+          'verificationPage.signOut' => ({
+            required Object source,
+          }) => 'Sign out of ${source}?',
           'verificationPage.signOutHelp' =>
             'Account information will be removed from this device.',
           'verificationPage.downloadAdded' => 'Added to downloads',

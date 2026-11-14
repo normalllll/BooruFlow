@@ -135,7 +135,7 @@ final class BatchDownloadProvider
   }
 }
 
-String _$batchDownloadHash() => r'8703d5e1d454f6c178ab76663476c7d69b0e9bfb';
+String _$batchDownloadHash() => r'a2618a3417f3253f3ed1af4891592232bf520eda';
 
 final class BatchDownloadFamily extends $Family
     with
