@@ -15,7 +15,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frost_ui/frost_ui.dart';
 
-import 'rust_extended_network_image_provider.dart';
+import 'rust_media_image.dart';
 
 enum PostMediaRecoveryStyle { failure, unsupported, overlay, banner }
 

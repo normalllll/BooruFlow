@@ -11,6 +11,8 @@ import 'package:booruflow/src/rust/api/booru_engine.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../support/media_cache.dart';
+
 const originalRequest = MediaRequest(
   sourceId: 'source',
   postId: '1',
@@ -140,7 +142,7 @@ void main() {
   setUp(() async {
     temp = await Directory.systemTemp.createTemp('download-cache-');
     rust = _Rust(png);
-    cache = EncodedMediaCache(temporaryDirectory: () async => temp);
+    cache = folderMediaCache(temp);
     events = [];
   });
   void bind() {

@@ -5,11 +5,13 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:booruflow/features/posts/widgets/progressive_image_stream.dart';
-import 'package:booruflow/features/posts/widgets/rust_extended_network_image_provider.dart';
+import 'package:booruflow/features/posts/widgets/rust_media_image.dart';
 import 'package:booruflow/src/rust/api/booru_download.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../support/media_cache.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -87,7 +89,7 @@ void main() {
     'clearing a pending preview cache cancels once without re-entering cache iteration',
     () async {
       final transport = StreamController<MediaFetchEvent>();
-      final provider = RustExtendedNetworkImageProvider(
+      final provider = RustMediaImage(
         request: const MediaRequest(
           sourceId: 'test',
           postId: 'clear',
@@ -130,9 +132,9 @@ void main() {
     () async {
       final fixture = await _SlowFixture.open('progressive.jpg');
       addTearDown(fixture.close);
-      final provider = RustExtendedNetworkImageProvider(
+      final provider = RustMediaImage(
         request: fixture.provider.request,
-        cacheFile: fixture.cache,
+        cache: fileMediaCache(fixture.cache),
         decodeWidth: 128,
         progressive: true,
         retries: 0,
@@ -251,7 +253,7 @@ class _SlowFixture {
     return fixture;
   }
 
-  late final provider = RustExtendedNetworkImageProvider(
+  late final provider = RustMediaImage(
     request: MediaRequest(
       sourceId: 'test',
       postId: 'prefix',
@@ -267,7 +269,7 @@ class _SlowFixture {
     retries: 0,
     decodeWidth: 128,
     progressive: true,
-    cacheFile: cache,
+    cache: fileMediaCache(cache),
     mediaStream: (request) async* {
       final client = HttpClient();
       try {

@@ -21,7 +21,7 @@ import 'package:booruflow/features/posts/post_detail_page.dart';
 import 'package:booruflow/features/posts/widgets/post_detail_layout.dart';
 import 'package:booruflow/features/posts/widgets/post_detail_panel.dart';
 import 'package:booruflow/features/posts/widgets/post_media.dart';
-import 'package:booruflow/features/posts/widgets/rust_extended_network_image_provider.dart';
+import 'package:booruflow/features/posts/widgets/rust_media_image.dart';
 import 'package:booruflow/features/search/logic.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_navigation.dart';
@@ -205,7 +205,7 @@ void main() {
     await seed(tester, preview);
     for (final id in ['101', '102']) {
       for (final kind in [MediaVariantKind.sample, MediaVariantKind.original]) {
-        final provider = RustExtendedNetworkImageProvider(
+        final provider = RustMediaImage(
           mediaStream: preseededMedia,
           request: service.engine.request(id, kind),
         );
@@ -215,7 +215,7 @@ void main() {
         for (final width in [180, 390, 644, 720, 1060, 1440]) {
           await seed(
             tester,
-            RustExtendedNetworkImageProvider(
+            RustMediaImage(
               mediaStream: preseededMedia,
               request: service.engine.request(id, kind),
               decodeWidth: width,
@@ -406,7 +406,7 @@ void main() {
         )) {
           await seed(
             tester,
-            RustExtendedNetworkImageProvider(
+            RustMediaImage(
               mediaStream: preseededMedia,
               request: service.engine.request(
                 media.post.id,
@@ -1274,7 +1274,7 @@ void main() {
       )) {
         await seed(
           tester,
-          RustExtendedNetworkImageProvider(
+          RustMediaImage(
             mediaStream: preseededMedia,
             request: service.engine.request(
               media.post.id,
@@ -1386,7 +1386,7 @@ void main() {
       )) {
         await seed(
           tester,
-          RustExtendedNetworkImageProvider(
+          RustMediaImage(
             mediaStream: preseededMedia,
             request: service.engine.request(
               media.post.id,
@@ -1460,7 +1460,7 @@ void main() {
       final media = tester.widget<PostMedia>(stage);
       await seed(
         tester,
-        RustExtendedNetworkImageProvider(
+        RustMediaImage(
           mediaStream: preseededMedia,
           request: service.engine.request('101', MediaVariantKind.original),
           decodeWidth: media.decodeWidth,

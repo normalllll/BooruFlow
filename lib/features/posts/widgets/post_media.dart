@@ -4,7 +4,7 @@ import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/features/posts/media_presentation.dart';
 import 'package:booruflow/features/posts/media_presentation_cache.dart';
 import 'package:booruflow/features/posts/models/post.dart';
-import 'package:booruflow/features/posts/widgets/rust_extended_network_image_provider.dart';
+import 'package:booruflow/features/posts/widgets/rust_media_image.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
@@ -275,7 +275,7 @@ class _PostMediaState extends ConsumerState<PostMedia> {
           ? widget.presentation?.preview
           : null;
       final provider =
-          retained is RustExtendedNetworkImageProvider &&
+          retained is RustMediaImage &&
               retained.request.url == media.url &&
               (_reloadRevision == 0 ||
                   retained.reloadRevision == _reloadRevision) &&
@@ -435,7 +435,7 @@ class _PostMediaState extends ConsumerState<PostMedia> {
     widget.presentation?.retryStarted();
     try {
       final provider = _provider;
-      if (provider is RustExtendedNetworkImageProvider) {
+      if (provider is RustMediaImage) {
         await provider.clearCache();
       }
       if (!mounted || generation != _generation) return;

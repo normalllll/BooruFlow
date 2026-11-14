@@ -1,5 +1,5 @@
 import 'package:booruflow/features/booru/models/web_challenge_failure.dart';
-import 'package:booruflow/features/posts/widgets/rust_extended_network_image_provider.dart';
+import 'package:booruflow/features/posts/widgets/rust_media_image.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
 import 'package:frost_data/frost_data.dart' show FrostRetryAfter;

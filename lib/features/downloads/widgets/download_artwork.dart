@@ -6,7 +6,7 @@ import 'package:booruflow/features/downloads/models/booru_download_item.dart';
 import 'package:booruflow/features/posts/media_presentation.dart';
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/features/posts/widgets/post_media.dart';
-import 'package:booruflow/features/posts/widgets/rust_extended_network_image_provider.dart';
+import 'package:booruflow/features/posts/widgets/rust_media_image.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -107,7 +107,7 @@ class _DownloadArtworkState extends ConsumerState<DownloadArtwork> {
       url: media.url,
       allowDiskCache: true,
     );
-    return RustExtendedNetworkImageProvider(
+    return RustMediaImage(
       request: request,
       mediaStream: (request) => engine.streamMedia(request: request),
       decodeWidth: widget.decodeWidth,

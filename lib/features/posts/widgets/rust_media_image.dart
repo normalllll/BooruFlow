@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -19,9 +18,8 @@ import 'progressive_image_stream.dart';
 enum DecodedImageRetention { cached, liveOnly }
 
 @immutable
-final class RustExtendedNetworkImageProvider
-    extends ImageProvider<RustExtendedNetworkImageProvider> {
-  const RustExtendedNetworkImageProvider({
+final class RustMediaImage extends ImageProvider<RustMediaImage> {
+  const RustMediaImage({
     required this.request,
     this.scale = 1,
     this.retries = 2,
@@ -31,7 +29,7 @@ final class RustExtendedNetworkImageProvider
     this.progressive = false,
     this.retention,
     required this.mediaStream,
-    this.cacheFile,
+    this.cache = const EncodedMediaCache(),
   }) : assert(retries >= 0),
        assert(decodeWidth == null || decodeWidth > 0);
 
@@ -51,8 +49,9 @@ final class RustExtendedNetworkImageProvider
 
   /// Fetch with the same injected engine that prepared this request.
   final Stream<MediaFetchEvent> Function(MediaRequest) mediaStream;
-  @visibleForTesting
-  final File? cacheFile;
+
+  /// Where the encoded bytes are kept between runs.
+  final EncodedMediaCache cache;
 
   Future<void> clearCache() async {
     await evict();
@@ -60,13 +59,12 @@ final class RustExtendedNetworkImageProvider
   }
 
   @override
-  Future<RustExtendedNetworkImageProvider> obtainKey(
-    ImageConfiguration configuration,
-  ) => SynchronousFuture(this);
+  Future<RustMediaImage> obtainKey(ImageConfiguration configuration) =>
+      SynchronousFuture(this);
 
   @override
   ImageStreamCompleter loadImage(
-    RustExtendedNetworkImageProvider key,
+    RustMediaImage key,
     ImageDecoderCallback decode,
   ) {
     final chunks = StreamController<ImageChunkEvent>();
@@ -118,7 +116,7 @@ final class RustExtendedNetworkImageProvider
   }
 
   Future<ui.Codec> _load(
-    RustExtendedNetworkImageProvider key,
+    RustMediaImage key,
     StreamController<ImageChunkEvent> chunkEvents,
     ImageDecoderCallback decode, [
     ProgressiveImageLoading? loading,
@@ -290,20 +288,19 @@ final class RustExtendedNetworkImageProvider
     Error.throwWithStackTrace(makeBooruErrorReadable(lastError!), lastStack!);
   }
 
-  EncodedMediaCache get _cache => EncodedMediaCache(file: cacheFile);
-  Future<Uint8List?> _readCache() => _cache.read(request);
-  Future<void> _deleteCache() => _cache.remove(request);
-  Future<void> _writeCache(Uint8List bytes) => _cache.write(request, bytes);
+  Future<Uint8List?> _readCache() => cache.read(request);
+  Future<void> _deleteCache() => cache.remove(request);
+  Future<void> _writeCache(Uint8List bytes) => cache.write(request, bytes);
 
   /// Only a complete original PNG is eligible for direct clipboard bytes.
   Future<Uint8List?> cachedOriginalPng() =>
       request.variant == MediaVariantKind.original
-      ? _cache.readPng(request)
+      ? cache.readPng(request)
       : Future.value(null);
 
   @override
   bool operator ==(Object other) =>
-      other is RustExtendedNetworkImageProvider &&
+      other is RustMediaImage &&
       other.request.cacheKey == request.cacheKey &&
       other.scale == scale &&
       other.decodeWidth == decodeWidth &&

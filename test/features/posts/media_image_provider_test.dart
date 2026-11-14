@@ -3,14 +3,16 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-import 'package:booruflow/core/media/encoded_media_cache.dart';
+
 import 'package:booruflow/features/posts/models/post.dart';
-import 'package:booruflow/features/posts/widgets/rust_extended_network_image_provider.dart';
+import 'package:booruflow/features/posts/widgets/rust_media_image.dart';
 import 'package:booruflow/src/rust/api/booru_download.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../support/media_cache.dart';
 import '../../support/preseeded_media.dart';
 
 const request = MediaRequest(
@@ -27,7 +29,7 @@ const request = MediaRequest(
 );
 
 Future<ImageInfo> load(
-  RustExtendedNetworkImageProvider provider, {
+  RustMediaImage provider, {
   ImageDecoderCallback? decode,
 }) {
   final result = Completer<ImageInfo>();
@@ -96,11 +98,11 @@ void main() {
   test(
     'original decodes leave the LRU on last listener; card preview survives',
     () async {
-      RustExtendedNetworkImageProvider provider(
+      RustMediaImage provider(
         String id,
         MediaVariantKind variant, {
         DecodedImageRetention? retention,
-      }) => RustExtendedNetworkImageProvider(
+      }) => RustMediaImage(
         request: MediaRequest(
           sourceId: 'source',
           postId: id,
@@ -117,7 +119,7 @@ void main() {
         retention: retention,
       );
       Future<(ImageStream, ImageStreamListener)> display(
-        RustExtendedNetworkImageProvider image,
+        RustMediaImage image,
       ) async {
         final ready = Completer<void>();
         final stream = image.resolve(ImageConfiguration.empty);
@@ -173,41 +175,35 @@ void main() {
     },
   );
 
-  test(
-    'unvalidated legacy PNG is fetched once and only the new transfer becomes reusable',
-    () async {
-      await cache.writeAsBytes(png);
-      var requests = 0;
-      final original = MediaRequest(
-        sourceId: request.sourceId,
-        postId: request.postId,
-        variant: MediaVariantKind.original,
-        url: request.url,
-        headers: [],
-        routeKey: request.routeKey,
-        cacheKey: request.cacheKey,
-        authRevision: request.authRevision,
-        routeRevision: request.routeRevision,
-        allowDiskCache: true,
-      );
-      final provider = RustExtendedNetworkImageProvider(
-        request: original,
-        cacheFile: cache,
-        mediaStream: (_) {
-          requests++;
-          return chunks(png);
-        },
-      );
-      final info = await load(provider);
-      info.dispose();
-      expect(requests, 1);
-      expect(await provider.cachedOriginalPng(), png);
-      expect(await cache.readAsBytes(), png);
-      final cached = await load(provider);
-      cached.dispose();
-      expect(requests, 1);
-    },
-  );
+  test('a stored PNG without its proof is shown from disk and not handed to the clipboard', () async {
+    await cache.writeAsBytes(png);
+    var requests = 0;
+    final original = MediaRequest(
+      sourceId: request.sourceId,
+      postId: request.postId,
+      variant: MediaVariantKind.original,
+      url: request.url,
+      headers: [],
+      routeKey: request.routeKey,
+      cacheKey: request.cacheKey,
+      authRevision: request.authRevision,
+      routeRevision: request.routeRevision,
+      allowDiskCache: true,
+    );
+    final provider = RustMediaImage(
+      request: original,
+      cache: fileMediaCache(cache),
+      mediaStream: (_) {
+        requests++;
+        return chunks(png);
+      },
+    );
+    final info = await load(provider);
+    info.dispose();
+    expect(requests, 0);
+    expect(await provider.cachedOriginalPng(), isNull);
+    expect(await cache.readAsBytes(), png);
+  });
 
   for (final code in [
     BooruErrorCode.challengeRequired,
@@ -224,9 +220,9 @@ void main() {
           userMessageKey: 'upstream',
           diagnosticId: 'stream-failed',
         );
-        final provider = RustExtendedNetworkImageProvider(
+        final provider = RustMediaImage(
           request: request,
-          cacheFile: cache,
+          cache: fileMediaCache(cache),
           mediaStream: (_) {
             calls++;
             return Stream.value(MediaFetchEvent.failed(error: error));
@@ -259,42 +255,39 @@ void main() {
     );
   }
 
-  test(
-    'transcoded payload validates delivered bytes rather than original download size',
-    () async {
-      final provider = RustExtendedNetworkImageProvider(
-        request: request,
-        cacheFile: cache,
-        mediaStream: (_) async* {
-          yield MediaFetchEvent.chunk(
-            bytes: Uint8List(0),
-            receivedBytesDecimal: '37923',
-            totalBytesDecimal: '37923',
-          );
-          yield MediaFetchEvent.chunk(
-            bytes: png,
-            receivedBytesDecimal: '${png.length}',
-            totalBytesDecimal: '${png.length}',
-          );
-        },
-      );
-      final image = await load(provider);
-      expect(image.image.width, 1);
-      image.dispose();
-      expect(await cache.readAsBytes(), png);
-    },
-  );
+  test('transcoded payload validates delivered bytes rather than original download size', () async {
+    final provider = RustMediaImage(
+      request: request,
+      cache: fileMediaCache(cache),
+      mediaStream: (_) async* {
+        yield MediaFetchEvent.chunk(
+          bytes: Uint8List(0),
+          receivedBytesDecimal: '37923',
+          totalBytesDecimal: '37923',
+        );
+        yield MediaFetchEvent.chunk(
+          bytes: png,
+          receivedBytesDecimal: '${png.length}',
+          totalBytesDecimal: '${png.length}',
+        );
+      },
+    );
+    final image = await load(provider);
+    expect(image.image.width, 1);
+    image.dispose();
+    expect(await cache.readAsBytes(), png);
+  });
 
   test(
     'a lazy first-frame failure in disk cache is evicted and downloaded again',
     () async {
-      await EncodedMediaCache(file: cache).write(request, png);
+      await fileMediaCache(cache).write(request, png);
       var downloads = 0;
       var decodes = 0;
       final broken = LazyBrokenCodec();
-      final provider = RustExtendedNetworkImageProvider(
+      final provider = RustMediaImage(
         request: request,
-        cacheFile: cache,
+        cache: fileMediaCache(cache),
         mediaStream: (_) {
           downloads++;
           return chunks(png);
@@ -332,9 +325,9 @@ void main() {
   test(
     'network decode failures retain context and never become disk cache',
     () async {
-      final provider = RustExtendedNetworkImageProvider(
+      final provider = RustMediaImage(
         request: request,
-        cacheFile: cache,
+        cache: fileMediaCache(cache),
         mediaStream: (_) => chunks(Uint8List.fromList([1, 2, 3])),
       );
       await expectLater(
@@ -363,9 +356,9 @@ void main() {
     'downloads with content-length mismatch still decode the received bytes',
     () async {
       var downloads = 0;
-      final provider = RustExtendedNetworkImageProvider(
+      final provider = RustMediaImage(
         request: request,
-        cacheFile: cache,
+        cache: fileMediaCache(cache),
         retries: 1,
         mediaStream: (_) {
           downloads++;
@@ -381,9 +374,9 @@ void main() {
   );
 
   test('cache write failure does not hide a valid decoded image', () async {
-    final provider = RustExtendedNetworkImageProvider(
+    final provider = RustMediaImage(
       request: request,
-      cacheFile: File('${temp.path}/missing/image'),
+      cache: fileMediaCache(File('${temp.path}/missing/image')),
       mediaStream: (_) => chunks(png),
     );
     final image = await load(provider);
@@ -402,15 +395,15 @@ void main() {
       final picture = recorder.endRecording();
       final original = await picture.toImage(200, 100);
       picture.dispose();
-      final bytes = (await original.toByteData(
-        format: ui.ImageByteFormat.png,
-      ))!.buffer.asUint8List();
+      final bytes = (await original.toByteData(format: ui.ImageByteFormat.png))!
+          .buffer
+          .asUint8List();
       original.dispose();
       final image = await load(
-        RustExtendedNetworkImageProvider(
+        RustMediaImage(
           request: request,
           decodeWidth: 40,
-          cacheFile: cache,
+          cache: fileMediaCache(cache),
           mediaStream: (_) => chunks(bytes),
         ),
       );
@@ -420,30 +413,27 @@ void main() {
     },
   );
 
-  test(
-    'card sizing is part of memory cache identity but shares encoded disk bytes',
-    () {
-      final small = RustExtendedNetworkImageProvider(
-        mediaStream: preseededMedia,
-        request: request,
-        decodeWidth: 240,
-      );
-      final large = RustExtendedNetworkImageProvider(
-        mediaStream: preseededMedia,
-        request: request,
-        decodeWidth: 480,
-      );
-      final retried = RustExtendedNetworkImageProvider(
-        mediaStream: preseededMedia,
-        request: request,
-        decodeWidth: 240,
-        reloadRevision: 1,
-      );
-      expect(small, isNot(large));
-      expect(small, isNot(retried));
-      expect(small.request.cacheKey, large.request.cacheKey);
-    },
-  );
+  test('card sizing is part of memory cache identity but shares encoded disk bytes', () {
+    final small = RustMediaImage(
+      mediaStream: preseededMedia,
+      request: request,
+      decodeWidth: 240,
+    );
+    final large = RustMediaImage(
+      mediaStream: preseededMedia,
+      request: request,
+      decodeWidth: 480,
+    );
+    final retried = RustMediaImage(
+      mediaStream: preseededMedia,
+      request: request,
+      decodeWidth: 240,
+      reloadRevision: 1,
+    );
+    expect(small, isNot(large));
+    expect(small, isNot(retried));
+    expect(small.request.cacheKey, large.request.cacheKey);
+  });
 
   test(
     'all sources prefer a sample for browsing and preserve the original',

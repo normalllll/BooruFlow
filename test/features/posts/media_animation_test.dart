@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-import 'package:booruflow/features/posts/widgets/rust_extended_network_image_provider.dart';
+import 'package:booruflow/features/posts/widgets/rust_media_image.dart';
 import 'package:booruflow/src/rust/api/booru_download.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/painting.dart';
@@ -48,7 +48,7 @@ void main() {
             routeRevision: 'test',
             allowDiskCache: false,
           );
-          final provider = RustExtendedNetworkImageProvider(
+          final provider = RustMediaImage(
             request: request,
             firstFrameOnly: frozen,
             mediaStream: (_) => Stream.value(
@@ -106,7 +106,7 @@ void main() {
       final bytes = File(
         'test/fixtures/media/two_frames.$extension',
       ).readAsBytesSync();
-      final provider = RustExtendedNetworkImageProvider(
+      final provider = RustMediaImage(
         request: MediaRequest(
           sourceId: 'test',
           postId: 'animation',
@@ -181,12 +181,12 @@ void main() {
         routeRevision: 'test',
         allowDiskCache: false,
       );
-      const thumbnail = RustExtendedNetworkImageProvider(
+      const thumbnail = RustMediaImage(
         mediaStream: preseededMedia,
         request: request,
         firstFrameOnly: true,
       );
-      const original = RustExtendedNetworkImageProvider(
+      const original = RustMediaImage(
         mediaStream: preseededMedia,
         request: request,
       );

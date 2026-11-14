@@ -2,7 +2,7 @@ import 'package:booruflow/app/ambient_artwork.dart';
 import 'package:booruflow/core/settings/settings_service.dart';
 import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/features/posts/models/post.dart';
-import 'package:booruflow/features/posts/widgets/rust_extended_network_image_provider.dart';
+import 'package:booruflow/features/posts/widgets/rust_media_image.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -78,7 +78,7 @@ void main() {
       await third;
       final selected =
           container.read(ambientArtworkProvider)
-              as RustExtendedNetworkImageProvider;
+              as RustMediaImage;
       expect(selected.request.postId, '3');
       expect(selected.decodeWidth, FrostAmbientBackdropHost.sampleWidth);
       final failed = artwork.select(owner, Post(browsePost(4)));

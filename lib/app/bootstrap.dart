@@ -7,6 +7,7 @@ import 'package:booruflow/core/app_runtime.dart';
 import 'package:booruflow/core/downloads/download_manager.dart';
 import 'package:booruflow/core/downloads/download_manager_configuration.dart';
 import 'package:booruflow/core/downloads/platform/macos_folder_access.dart';
+import 'package:booruflow/core/media/encoded_media_cache.dart';
 import 'package:booruflow/core/settings/settings_service.dart';
 import 'package:booruflow/features/booru/services/booru_service.dart';
 import 'package:booruflow/features/downloads/services/booru_downloads.dart';
@@ -15,6 +16,7 @@ import 'package:booruflow/intl/locale_preferences.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/frb_generated.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_media_cache/flutter_media_cache.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:frost_ui/frost_ui.dart';
@@ -61,8 +63,8 @@ Future<void> bootstrap({
   await MacosFolderAccess.restore();
   await BooruDownloads.instance.initialize();
 
-  PaintingBinding.instance.imageCache.maximumSize = 300;
-  PaintingBinding.instance.imageCache.maximumSizeBytes = 512 << 20;
+  limitDecodedPictureCache(bytes: 512 << 20, count: 300);
+  appPictureStore.trimAutomatically();
   registerAppLicenses();
 
   // The native window stays hidden until the first frame is ready, so the

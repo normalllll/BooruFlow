@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:booruflow/core/media/encoded_media_cache.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:crypto/crypto.dart' as crypto;
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../support/media_cache.dart';
 
 MediaRequest request({
   int account = 0,
@@ -31,7 +34,7 @@ void main() {
   late File destination;
   setUp(() async {
     temp = await Directory.systemTemp.createTemp('encoded-cache-');
-    cache = EncodedMediaCache(temporaryDirectory: () async => temp);
+    cache = folderMediaCache(temp);
     destination = File('${temp.path}/saved.png');
   });
   tearDown(() => temp.delete(recursive: true));
@@ -52,15 +55,20 @@ void main() {
       expect(await destination.readAsBytes(), png);
       expect(await cache.read(request()), png);
       expect(await cache.readPng(request()), png);
-      final manifests = await temp
+      // The image and its proof, neither naming nor holding the address.
+      final kept = await temp
           .list(recursive: true)
-          .where((f) => f.path.endsWith('.verified'))
+          .where((f) => f is File && f.path != destination.path)
+          .cast<File>()
           .toList();
-      expect(manifests, hasLength(1));
-      expect(
-        await File(manifests.single.path).readAsString(),
-        isNot(contains('secret')),
-      );
+      expect(kept.length, greaterThanOrEqualTo(2));
+      for (final file in kept) {
+        expect(file.path, isNot(contains('secret')));
+        expect(
+          latin1.decode(await file.readAsBytes()),
+          isNot(contains('secret')),
+        );
+      }
     },
   );
   test(
@@ -81,53 +89,46 @@ void main() {
       }
     },
   );
-  test(
-    'length, digest and a transcode format mismatch fall back without publishing',
-    () async {
-      await cache.write(request(), png);
-      expect(
-        await cache.copyOriginal(
-          request(),
-          destination,
-          mimeType: 'image/avif',
-        ),
-        false,
-      );
-      expect(
-        await cache.copyOriginal(
-          request(),
-          destination,
-          mimeType: 'image/png',
-          expectedBytes: png.length + 1,
-        ),
-        false,
-      );
-      expect(
-        await cache.copyOriginal(
-          request(),
-          destination,
-          mimeType: 'image/png',
-          sha256: 'wrong',
-        ),
-        false,
-      );
-      expect(
-        await cache.copyOriginal(
-          request(),
-          destination,
-          mimeType: 'image/png',
-          md5: 'wrong',
-        ),
-        false,
-      );
-      expect(await destination.exists(), false);
-    },
-  );
+  test('length, digest and a transcode format mismatch fall back without publishing', () async {
+    await cache.write(request(), png);
+    expect(
+      await cache.copyOriginal(request(), destination, mimeType: 'image/avif'),
+      false,
+    );
+    expect(
+      await cache.copyOriginal(
+        request(),
+        destination,
+        mimeType: 'image/png',
+        expectedBytes: png.length + 1,
+      ),
+      false,
+    );
+    expect(
+      await cache.copyOriginal(
+        request(),
+        destination,
+        mimeType: 'image/png',
+        sha256: 'wrong',
+      ),
+      false,
+    );
+    expect(
+      await cache.copyOriginal(
+        request(),
+        destination,
+        mimeType: 'image/png',
+        md5: 'wrong',
+      ),
+      false,
+    );
+    expect(await destination.exists(), false);
+  });
   test(
     'same-length file corruption is rejected by the worker fingerprint',
     () async {
       final source = File('${temp.path}/entry');
-      cache = EncodedMediaCache(file: source);
+      cache = fileMediaCache(source);
       await cache.write(request(), png);
       final changed = [...png]..[35] ^= 1;
       await source.writeAsBytes(changed);
@@ -140,16 +141,17 @@ void main() {
     },
   );
   test(
-    'unvalidated legacy entries and malformed or incomplete metadata are cache misses',
+    'an image without a valid proof is shown but never saved or copied',
     () async {
       final source = File('${temp.path}/entry');
-      cache = EncodedMediaCache(file: source);
+      cache = fileMediaCache(source);
       await source.writeAsBytes(png);
-      expect(await cache.read(request()), isNull);
+      expect(await cache.read(request()), png);
       expect(
         await cache.copyOriginal(request(), destination, mimeType: 'image/png'),
         false,
       );
+      expect(await cache.readPng(request()), isNull);
       await File('${source.path}.verified').writeAsString('bad json');
       expect(await cache.readPng(request()), isNull);
       await cache.write(request(), png.sublist(0, png.length - 12));

@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 import 'package:booruflow/features/posts/stage_image_presentation.dart';
-import 'package:booruflow/features/posts/widgets/rust_extended_network_image_provider.dart';
+import 'package:booruflow/features/posts/widgets/rust_media_image.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -21,8 +21,8 @@ const original = MediaVariant(
   width: 4000,
   height: 4000,
 );
-RustExtendedNetworkImageProvider image(int width) =>
-    RustExtendedNetworkImageProvider(
+RustMediaImage image(int width) =>
+    RustMediaImage(
       mediaStream: preseededMedia,
       decodeWidth: width,
       request: const MediaRequest(

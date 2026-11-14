@@ -8,7 +8,7 @@ import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/features/posts/stage_image_presentation.dart';
 import 'package:booruflow/features/posts/widgets/post_image_frame.dart';
 import 'package:booruflow/features/posts/widgets/post_media.dart';
-import 'package:booruflow/features/posts/widgets/rust_extended_network_image_provider.dart';
+import 'package:booruflow/features/posts/widgets/rust_media_image.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
@@ -107,7 +107,7 @@ void main() {
     (tester) async {
       final post = Post(browsePost(1));
       final presentation = StageImagePresentation(post: post);
-      const provider = RustExtendedNetworkImageProvider(
+      const provider = RustMediaImage(
         mediaStream: preseededMedia,
         request: _request,
       );
@@ -164,7 +164,7 @@ void main() {
     testWidgets(
       'decoded geometry $dimensions replaces metadata with one natural media rectangle',
       (tester) async {
-        const provider = RustExtendedNetworkImageProvider(
+        const provider = RustMediaImage(
           mediaStream: preseededMedia,
           request: _request,
           decodeWidth: 240,
@@ -296,7 +296,7 @@ void main() {
   testWidgets(
     'ready notification comes directly from a load event outside build and flight child has no loading fade',
     (tester) async {
-      const provider = RustExtendedNetworkImageProvider(
+      const provider = RustMediaImage(
         mediaStream: preseededMedia,
         request: _request,
       );
@@ -394,7 +394,7 @@ void main() {
   testWidgets(
     'layout width and metadata changes retain the live decode without another preparation',
     (tester) async {
-      const provider = RustExtendedNetworkImageProvider(
+      const provider = RustMediaImage(
         mediaStream: preseededMedia,
         request: _request,
         decodeWidth: 200,
@@ -466,7 +466,7 @@ void main() {
         routeRevision: '0',
         allowDiskCache: false,
       );
-      const provider = RustExtendedNetworkImageProvider(
+      const provider = RustMediaImage(
         mediaStream: preseededMedia,
         request: originalRequest,
       );

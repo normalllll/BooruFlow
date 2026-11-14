@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'media_presentation.dart';
 import 'models/post.dart';
-import 'widgets/rust_extended_network_image_provider.dart';
+import 'widgets/rust_media_image.dart';
 
 /// One geometry record for one work, shared by every resolution of that work.
 class PostMediaGeometry {
@@ -120,8 +120,8 @@ class StageImagePresentation extends ChangeNotifier {
     } else if (_originalRequested &&
         !loadingOriginal(post) &&
         !_failed &&
-        _preview is RustExtendedNetworkImageProvider) {
-      final provider = _preview! as RustExtendedNetworkImageProvider;
+        _preview is RustMediaImage) {
+      final provider = _preview! as RustMediaImage;
       // A frame narrower than the hint has already reached native resolution.
       final width = _loadedWidth;
       if (width != null &&

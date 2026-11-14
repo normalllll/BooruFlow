@@ -3,7 +3,7 @@ import 'package:booruflow/src/rust/api/booru_engine.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'widgets/rust_extended_network_image_provider.dart';
+import 'widgets/rust_media_image.dart';
 
 part 'media_presentation_cache.g.dart';
 
@@ -34,10 +34,10 @@ MediaPresentationCache mediaPresentationCache(Ref ref) {
 class MediaPresentationCache {
   MediaPresentationCache(this._engine);
   final BooruEngine _engine;
-  final _entries = <_MediaIdentity, Future<RustExtendedNetworkImageProvider>>{};
+  final _entries = <_MediaIdentity, Future<RustMediaImage>>{};
   bool _disposed = false;
 
-  Future<RustExtendedNetworkImageProvider> resolve({
+  Future<RustMediaImage> resolve({
     required String sourceId,
     required String postId,
     required MediaVariant media,
@@ -66,7 +66,7 @@ class MediaPresentationCache {
         (provider) =>
             provider.decodeWidth != null &&
                 (decodeWidth == null || provider.decodeWidth! < decodeWidth)
-            ? RustExtendedNetworkImageProvider(
+            ? RustMediaImage(
                 request: provider.request,
                 mediaStream: provider.mediaStream,
                 decodeWidth: decodeWidth,
@@ -80,7 +80,7 @@ class MediaPresentationCache {
       _entries[identity] = resized;
       return resized;
     }
-    late final Future<RustExtendedNetworkImageProvider> pending;
+    late final Future<RustMediaImage> pending;
     pending = _engine
         .prepareMediaUrl(
           sourceId: sourceId,
@@ -90,7 +90,7 @@ class MediaPresentationCache {
           allowDiskCache: true,
         )
         .then(
-          (request) => RustExtendedNetworkImageProvider(
+          (request) => RustMediaImage(
             request: request,
             mediaStream: (request) => _engine.streamMedia(request: request),
             decodeWidth: decodeWidth,

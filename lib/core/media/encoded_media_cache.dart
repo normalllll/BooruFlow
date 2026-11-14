@@ -2,94 +2,80 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
+
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:crypto/crypto.dart' as crypto;
-import 'package:extended_image/extended_image.dart'
-    show cacheImageFolderName, keyToMd5;
+import 'package:flutter_media_cache/flutter_media_cache.dart';
 import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
 
-/// Encoded images shared by display, original-file saving and the clipboard.
-/// The Rust cache key includes the URL, account and route revisions. Metadata
-/// contains only a byte fingerprint and MIME type; credentials are never stored.
+/// The encoded images kept on disk between runs; trimmed from startup.
+final appPictureStore = MediaDiskCache.forApp();
+
+/// Encoded images shared by display, original-file saving and the clipboard,
+/// kept in [store]. The Rust cache key includes the URL, account and route
+/// revisions.
+///
+/// Display reads an image as it was written: the store publishes a file whole,
+/// and one that fails to decode is removed by its reader. Saving and the
+/// clipboard hand the bytes on without decoding them, so they also need the
+/// proof written beside each image: a fingerprint of its bytes with its MIME
+/// type, and never credentials. The proof is an entry of its own, so a trim
+/// may remove it before its image; saving then fetches the file again.
 class EncodedMediaCache {
-  const EncodedMediaCache({this.file, this.temporaryDirectory});
-  final File? file;
-  final Future<Directory> Function()? temporaryDirectory;
-  Future<File> _file(MediaRequest request) async {
-    if (file != null) return file!;
-    final temp = await (temporaryDirectory?.call() ?? getTemporaryDirectory());
-    final directory = Directory(path.join(temp.path, cacheImageFolderName));
-    await directory.create(recursive: true);
-    return File(path.join(directory.path, keyToMd5(request.cacheKey)));
+  const EncodedMediaCache({this._store});
+  final MediaDiskCache? _store;
+  MediaDiskCache get store => _store ?? appPictureStore;
+
+  static String _proofKey(MediaRequest request) =>
+      '${request.cacheKey}.verified';
+
+  Future<File> _file(MediaRequest request) async => File(
+    path.join((await store.directory).path, store.fileNameOf(request.cacheKey)),
+  );
+
+  Future<Map<String, Object?>?> _proof(MediaRequest request) async {
+    final bytes = await store.read(_proofKey(request));
+    if (bytes == null) return null;
+    final proof = jsonDecode(utf8.decode(bytes));
+    return proof is Map<String, Object?> &&
+            proof['version'] == 1 &&
+            proof['complete'] == true
+        ? proof
+        : null;
   }
 
-  Future<Uint8List?> read(MediaRequest request) async {
-    if (!request.allowDiskCache) return null;
-    try {
-      final source = await _file(request);
-      final proof = jsonDecode(
-        await File('${source.path}.verified').readAsString(),
-      );
-      if (proof is! Map ||
-          proof['version'] != 1 ||
-          proof['complete'] != true ||
-          proof['length'] != await source.length()) {
-        return null;
-      }
-      return await source.readAsBytes();
-    } on FileSystemException {
-      return null;
-    } on FormatException {
-      return null;
-    }
-  }
+  Future<Uint8List?> read(MediaRequest request) async =>
+      request.allowDiskCache ? store.read(request.cacheKey) : null;
 
   Future<void> remove(MediaRequest request) async {
     if (!request.allowDiskCache) return;
-    try {
-      final source = await _file(request);
-      for (final item in [File('${source.path}.verified'), source]) {
-        if (await item.exists()) await item.delete();
-      }
-    } on FileSystemException {
-      /* A cache miss must not prevent a retry. */
-    }
+    await store.remove(_proofKey(request));
+    await store.remove(request.cacheKey);
   }
 
   /// Called only after a complete transfer and a successful first-frame decode.
   Future<void> write(MediaRequest request, Uint8List bytes) async {
     if (!request.allowDiskCache) return;
-    Directory? staging;
     try {
-      final destination = await _file(request);
-      staging = await destination.parent.createTemp('.image-');
-      final temporary = File(path.join(staging.path, 'data'));
-      await temporary.writeAsBytes(bytes, flush: true);
-      final location = temporary.path;
+      // A proof left by earlier bytes must not vouch for these.
+      await store.remove(_proofKey(request));
+      await store.write(request.cacheKey, bytes);
+      final location = (await _file(request)).path;
       final fingerprint = await Isolate.run(() => _fingerprint(location));
-      final metadata = File(path.join(staging.path, 'verified'));
-      await metadata.writeAsString(jsonEncode(fingerprint), flush: true);
-      await temporary.rename(destination.path);
       // Publish the fingerprint last. A concurrent replacement can only cause
       // a cache miss; it cannot make mismatched bytes pass validation.
-      await metadata.rename('${destination.path}.verified');
+      await store.write(
+        _proofKey(request),
+        utf8.encode(jsonEncode(fingerprint)),
+      );
     } on FileSystemException {
       /* Display success does not depend on caching. */
-    } finally {
-      if (staging != null) {
-        try {
-          await staging.delete(recursive: true);
-        } on FileSystemException {
-          /* Best effort. */
-        }
-      }
     }
   }
 
-  /// Copies original encoded bytes without decoding or re-encoding. Legacy
-  /// display cache entries without a fingerprint are not trusted for export.
-  /// The destination is validated on a worker after the asynchronous OS copy.
+  /// Copies original encoded bytes without decoding or re-encoding. An image
+  /// without its proof is not trusted for export. The destination is validated
+  /// on a worker after the asynchronous OS copy.
   Future<bool> copyOriginal(
     MediaRequest request,
     File destination, {
@@ -101,15 +87,9 @@ class EncodedMediaCache {
   }) async {
     if (!request.allowDiskCache) return false;
     try {
+      final metadata = await _proof(request);
+      if (metadata == null || metadata['mime'] != mimeType) return false;
       final source = await _file(request);
-      final metadata =
-          jsonDecode(await File('${source.path}.verified').readAsString())
-              as Map<String, Object?>;
-      if (metadata['mime'] != mimeType ||
-          metadata['version'] != 1 ||
-          metadata['complete'] != true) {
-        return false;
-      }
       onCopyStarted?.call();
       await source.copy(destination.path);
       final copiedPath = destination.path;
@@ -138,9 +118,7 @@ class EncodedMediaCache {
     } on FileSystemException {
       /* Missing/evicted entries fall back to transport. */
     } on FormatException {
-      /* Old or interrupted metadata is a cache miss. */
-    } on TypeError {
-      /* Malformed cache metadata is a cache miss. */
+      /* An interrupted proof is a cache miss. */
     }
     if (await destination.exists()) await destination.delete();
     return false;
@@ -151,17 +129,10 @@ class EncodedMediaCache {
   Future<Uint8List?> readPng(MediaRequest request) async {
     if (!request.allowDiskCache) return null;
     try {
-      final source = await _file(request);
-      final location = source.path;
+      final metadata = await _proof(request);
+      if (metadata == null || metadata['mime'] != 'image/png') return null;
+      final location = (await _file(request)).path;
       final transferred = await Isolate.run(() async {
-        final metadata =
-            jsonDecode(await File('$location.verified').readAsString())
-                as Map<String, Object?>;
-        if (metadata['version'] != 1 ||
-            metadata['mime'] != 'image/png' ||
-            metadata['complete'] != true) {
-          return null;
-        }
         final bytes = await File(location).readAsBytes();
         if (bytes.length != metadata['length'] ||
             crypto.sha256.convert(bytes).toString() != metadata['sha256'] ||
@@ -174,8 +145,6 @@ class EncodedMediaCache {
     } on FileSystemException {
       return null;
     } on FormatException {
-      return null;
-    } on TypeError {
       return null;
     }
   }
@@ -242,9 +211,8 @@ String? encodedImageMimeForExtension(String extension) =>
 bool _completeImage(String? mime, Uint8List head, Uint8List tail, int length) {
   bool ends(List<int> marker) =>
       tail.length >= marker.length &&
-      Iterable<int>.generate(
-        marker.length,
-      ).every((i) => tail[tail.length - marker.length + i] == marker[i]);
+      Iterable<int>.generate(marker.length)
+          .every((i) => tail[tail.length - marker.length + i] == marker[i]);
   return switch (mime) {
     'image/jpeg' => ends([255, 217]),
     'image/png' => ends([0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]),
