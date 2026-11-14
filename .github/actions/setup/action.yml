@@ -100,12 +100,12 @@ runs:
         # source-install mode checks out the same pinned release tag, then Flutter
         # bootstraps its native Dart SDK and downloads the matching engine.
         channel: ${{ runner.arch == 'ARM64' && runner.os == 'Linux' && 'main' || 'stable' }}
-        flutter-version: '3.47.9'
+        flutter-version: '3.50.0'
         cache: true
         pub-cache: true
-        cache-key: flutter-v1-${{ runner.os }}-${{ runner.arch }}-3.47.9-${{ inputs.platform }}
+        cache-key: flutter-v1-${{ runner.os }}-${{ runner.arch }}-3.50.0-${{ inputs.platform }}
         # flutter-action appends the pubspec.lock hash automatically.
-        pub-cache-key: pub-v1-${{ runner.os }}-${{ runner.arch }}-3.47.9
+        pub-cache-key: pub-v1-${{ runner.os }}-${{ runner.arch }}-3.50.0
 
     - name: Restore Flutter dependencies
       shell: bash
