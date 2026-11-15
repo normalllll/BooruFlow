@@ -8,7 +8,7 @@ Search, browse, and download artwork from Danbooru, Gelbooru, Yande.re, and othe
 
 [Download](https://github.com/normalllll/BooruFlow/releases/latest) | [Features](#features) | [Screenshots](#screenshots)
 
-![Desktop — Yande.re search results for muryo](screenshots/0.webp)
+![Desktop — Konachan.net search results for nekomimi](screenshots/0.webp)
 
 ## Features
 
@@ -54,7 +54,7 @@ Report bugs or suggest features in [Issues](https://github.com/normalllll/BooruF
 
 ### Desktop
 
-| ![Details of Yande.re post 1244387](screenshots/desktop/img0.webp) | ![Download tasks](screenshots/desktop/img1.webp) |
+| ![Details of Anime-Pictures post 934973](screenshots/desktop/img0.webp) | ![Download tasks](screenshots/desktop/img1.webp) |
 |--------------------------------------------------------|--------------------------------------------------------|
 
 ### Mobile

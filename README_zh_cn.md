@@ -8,7 +8,7 @@
 
 [下载最新版](https://github.com/normalllll/BooruFlow/releases/latest) · [功能](#功能) · [截图](#截图)
 
-![桌面端：Yande.re 搜索 muryo 的瀑布页](screenshots/0.webp)
+![桌面端：Konachan.net 搜索 nekomimi 的瀑布页](screenshots/0.webp)
 
 ## 功能
 
@@ -56,7 +56,7 @@ iOS 会将支持的图片与视频保存到“照片”，压缩包和“照片�
 
 ### 桌面端
 
-| ![Yande.re 图片 1244387 的详情页](screenshots/desktop/img0.webp) | ![下载任务](screenshots/desktop/img1.webp) |
+| ![Anime-Pictures 图片 934973 的详情页](screenshots/desktop/img0.webp) | ![下载任务](screenshots/desktop/img1.webp) |
 |--------------------------------------------------------|--------------------------------------------------------|
 
 ### 移动端
