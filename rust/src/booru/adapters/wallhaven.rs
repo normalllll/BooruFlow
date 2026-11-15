@@ -34,25 +34,13 @@ impl WallhavenAdapter {
         let width = unsigned32(value, "dimension_x");
         let height = unsigned32(value, "dimension_y");
         let mut variants = Vec::new();
-        if let Some(item) = media(
-            MediaVariantKind::Thumbnail,
-            value
-                .get("thumbs")
-                .and_then(|thumbs| string(thumbs, "small")),
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-        ) {
-            variants.push(item);
-        }
+        // The `small` and `large` thumbs are cropped to a fixed ratio; only the
+        // `original` thumb keeps the wallpaper's shape.
         if let Some(item) = media(
             MediaVariantKind::Preview,
             value
                 .get("thumbs")
-                .and_then(|thumbs| string(thumbs, "large")),
+                .and_then(|thumbs| string(thumbs, "original")),
             None,
             None,
             None,
@@ -341,7 +329,7 @@ mod tests {
     }
     #[test]
     fn parses_alphanumeric_id_and_pagination_seed() {
-        let fixture = br#"{"data":[{"id":"94x38z","url":"https://wallhaven.cc/w/94x38z","purity":"sketchy","dimension_x":1920,"dimension_y":1080,"file_size":123,"file_type":"image/jpeg","path":"https://w.wallhaven.cc/full/94/wallhaven-94x38z.jpg","thumbs":{"small":"https://th.wallhaven.cc/small/94/94x38z.jpg"}}],"meta":{"current_page":1,"last_page":2,"seed":"abc123"}}"#;
+        let fixture = br#"{"data":[{"id":"94x38z","url":"https://wallhaven.cc/w/94x38z","purity":"sketchy","dimension_x":1920,"dimension_y":1080,"file_size":123,"file_type":"image/jpeg","path":"https://w.wallhaven.cc/full/94/wallhaven-94x38z.jpg","thumbs":{"large":"https://th.wallhaven.cc/lg/94/94x38z.jpg","original":"https://th.wallhaven.cc/orig/94/94x38z.jpg","small":"https://th.wallhaven.cc/small/94/94x38z.jpg"}}],"meta":{"current_page":1,"last_page":2,"seed":"abc123"}}"#;
         let (posts, current, last, seed) = adapter().parse_listing(fixture).unwrap();
         assert_eq!(posts[0].id.0, "94x38z");
         assert_eq!(posts[0].rating, ContentRating::Sensitive);
@@ -350,6 +338,8 @@ mod tests {
         assert_eq!((post.width, post.height), (Some(1920), Some(1080)));
         assert_eq!(post.original_file_size_decimal.as_deref(), Some("123"));
         assert_eq!(post.original_file_extension.as_deref(), Some("jpg"));
+        assert_eq!(post.media.len(), 2);
+        assert_eq!(post.media[0].url, "https://th.wallhaven.cc/orig/94/94x38z.jpg");
         assert_eq!(post.media[0].width, None);
         assert_eq!(post.media[1].media_type, Some(MediaType::Jpeg));
     }
