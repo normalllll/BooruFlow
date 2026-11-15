@@ -38,6 +38,7 @@ class PostMedia extends ConsumerStatefulWidget {
     this.stageBuilder,
     this.stageRadius = 0,
     this.onPlay,
+    this.variantsPending = false,
     super.key,
   });
   final Post post;
@@ -75,6 +76,11 @@ class PostMedia extends ConsumerStatefulWidget {
   /// Load-event notification for a card that supplies its own corner badge.
   /// Never invoked by build or a widget lifecycle method.
   final ValueChanged<bool>? onAuthenticationRequired;
+
+  /// More variants of [post] may still arrive (its detail is loading). An
+  /// undecodable AVIF with nothing to fall back to waits for them instead of
+  /// showing a failure that the arriving original would replace.
+  final bool variantsPending;
   @override
   ConsumerState<PostMedia> createState() => _PostMediaState();
 }
@@ -91,6 +97,7 @@ class _PostMediaState extends ConsumerState<PostMedia> {
   int _generation = 0, _reloadRevision = 0, _displayedGeneration = 0;
   int? _activeDecodeWidth, _decodedWidth;
   bool _failed = false, _retrying = false, _unsupported = false;
+  Object? _heldFailure;
   double? _progress;
   String? _requestedUrl;
   int _presentationRevision = 0;
@@ -160,6 +167,9 @@ class _PostMediaState extends ConsumerState<PostMedia> {
       _prepare();
     } else {
       if (oldWidget.preview != widget.preview) _listenPreview();
+      if (_heldFailure case final error? when !widget.variantsPending) {
+        _handleFailure(error, _generation);
+      }
       if (oldWidget.refreshRevision != widget.refreshRevision && _failed) {
         unawaited(_retry());
       }
@@ -203,6 +213,7 @@ class _PostMediaState extends ConsumerState<PostMedia> {
     _listenPreview(retained: retained);
     _unlisten();
     _preparationError = null;
+    _heldFailure = null;
     _failed = false;
     _retrying = false;
     unawaited(_resolve(generation));
@@ -359,6 +370,7 @@ class _PostMediaState extends ConsumerState<PostMedia> {
 
   void _handleFailure(Object error, int generation) {
     if (!mounted || generation != _generation) return;
+    _heldFailure = null;
     final underlying = mediaImageCause(error);
     final avifDecode =
         postMediaType(_media!) == MediaType.avif &&
@@ -381,6 +393,10 @@ class _PostMediaState extends ConsumerState<PostMedia> {
       });
       _notifyReady(null, next);
       unawaited(_resolve(next));
+      return;
+    }
+    if (avifDecode && widget.variantsPending) {
+      _heldFailure = error;
       return;
     }
     widget.onAuthenticationRequired?.call(

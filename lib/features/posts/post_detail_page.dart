@@ -403,6 +403,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage>
             post: post,
             onPlay: play,
             purpose: PostMediaPurpose.stage,
+            variantsPending: _session.detail(post).request.isLoading,
             fit: BoxFit.contain,
             // Capture the initial displayed width once per media identity.
             // Tall natural images never request an original-pixel decode.
