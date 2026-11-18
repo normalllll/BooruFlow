@@ -17,7 +17,7 @@ dependencies:
     git:
       url: &frost https://github.com/normalllll/frost_ui.git
       path: packages/frost_ui
-      ref: &frost_ref 04b065210cca9497f740e3c805aa3e1b9af47587
+      ref: &frost_ref 076332f69f0106a59c1728ca55dee59b99d3a80a
   frost_data:
     git: {url: *frost, path: packages/frost_data, ref: *frost_ref}
   flutter_media_cache:
