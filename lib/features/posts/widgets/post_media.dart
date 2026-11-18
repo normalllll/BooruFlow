@@ -1,15 +1,16 @@
 import 'dart:async';
 
+import 'package:booruflow/core/media/booru_media_source.dart';
 import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/features/posts/media_presentation.dart';
 import 'package:booruflow/features/posts/media_presentation_cache.dart';
 import 'package:booruflow/features/posts/models/post.dart';
-import 'package:booruflow/features/posts/widgets/rust_media_image.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_media_cache/flutter_media_cache.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frost_ui/frost_ui.dart';
 
@@ -17,7 +18,19 @@ import '../displayed_media_frame.dart';
 import '../stage_image_presentation.dart';
 import 'post_image_frame.dart';
 import 'post_media_recovery.dart';
-import 'progressive_image_stream.dart';
+
+/// Whether a picture shows its JPEG or PNG scans while it downloads: only
+/// when it is decoded at a set width, since each scan is decoded as the final
+/// picture is.
+@visibleForTesting
+bool postMediaProgressive({
+  required PostMediaPurpose purpose,
+  required MediaVariant media,
+  required int? decodeWidth,
+}) =>
+    decodeWidth != null &&
+    purpose != PostMediaPurpose.thumbnail &&
+    {MediaType.jpeg, MediaType.png}.contains(postMediaType(media));
 
 /// Authenticated requests, cache identity and retries keep the existing Rust
 /// and image-provider path. Frost owns the fade, loading shape and clipping.
@@ -115,6 +128,12 @@ class _PostMediaState extends ConsumerState<PostMedia> {
   List<MediaVariant> _candidates = const [];
   int _candidateIndex = 0;
   MediaVariant? get _media => _candidates.elementAtOrNull(_candidateIndex);
+  bool _progressive(MediaVariant media) => postMediaProgressive(
+    purpose: widget.purpose,
+    media: media,
+    decodeWidth: _activeDecodeWidth,
+  );
+
   bool get _firstFrameOnly =>
       widget.purpose == PostMediaPurpose.thumbnail &&
       _media != null &&
@@ -286,8 +305,8 @@ class _PostMediaState extends ConsumerState<PostMedia> {
           ? widget.presentation?.preview
           : null;
       final provider =
-          retained is RustMediaImage &&
-              retained.request.url == media.url &&
+          retained is CachedMediaImage &&
+              retained.request?.url == media.url &&
               (_reloadRevision == 0 ||
                   retained.reloadRevision == _reloadRevision) &&
               (widget.presentation?.minimumDecodeWidth == null ||
@@ -299,19 +318,14 @@ class _PostMediaState extends ConsumerState<PostMedia> {
               postId: widget.post.id,
               media: media,
               decodeWidth: _activeDecodeWidth,
-              retention:
+              retainDecoded:
                   widget.presentation?.minimumDecodeWidth != null &&
                       widget.presentation!.originalRequested
-                  ? DecodedImageRetention.liveOnly
+                  ? false
                   : null,
               reloadRevision: _reloadRevision,
               firstFrameOnly: _firstFrameOnly,
-              progressive:
-                  widget.purpose != PostMediaPurpose.thumbnail &&
-                  {
-                    MediaType.jpeg,
-                    MediaType.png,
-                  }.contains(postMediaType(media)),
+              progressive: _progressive(media),
             );
       if (!mounted || generation != _generation) return;
       _activeDecodeWidth = provider.decodeWidth;
@@ -319,10 +333,10 @@ class _PostMediaState extends ConsumerState<PostMedia> {
         (image, _) {
           if (mounted && generation == _generation) {
             _failed = false;
-            final complete =
-                _stream?.completer is! ProgressiveImageStreamCompleter ||
-                (_stream!.completer! as ProgressiveImageStreamCompleter)
-                    .complete;
+            final complete = switch (_stream?.completer) {
+              final completer? => showsFinalPicture(completer),
+              null => true,
+            };
             widget.displayedFrame?.show(
               widget.post.postKey,
               complete ? provider : image.image,
@@ -451,7 +465,7 @@ class _PostMediaState extends ConsumerState<PostMedia> {
     widget.presentation?.retryStarted();
     try {
       final provider = _provider;
-      if (provider is RustMediaImage) {
+      if (provider is CachedMediaImage) {
         await provider.clearCache();
       }
       if (!mounted || generation != _generation) return;
@@ -462,9 +476,7 @@ class _PostMediaState extends ConsumerState<PostMedia> {
             postId: widget.post.id,
             media: media,
             firstFrameOnly: _firstFrameOnly,
-            progressive:
-                widget.purpose != PostMediaPurpose.thumbnail &&
-                {MediaType.jpeg, MediaType.png}.contains(postMediaType(media)),
+            progressive: _progressive(media),
           );
       setState(() {
         _reloadRevision++;

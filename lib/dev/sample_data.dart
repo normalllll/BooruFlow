@@ -18,7 +18,7 @@ import 'package:booruflow/features/settings/network/services/proxy_connection.da
 import 'package:booruflow/features/update/logic.dart';
 import 'package:booruflow/src/rust/api/booru_auth.dart';
 import 'package:booruflow/src/rust/api/booru_download.dart'
-    show MediaFetchEvent, PreparedDownload;
+    show MediaCancel, MediaFetchEvent, PreparedDownload;
 import 'package:booruflow/src/rust/api/booru_engine.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/api/web_challenge.dart';
@@ -185,7 +185,10 @@ class SampleEngine implements BooruEngine {
   );
 
   @override
-  Stream<MediaFetchEvent> streamMedia({required MediaRequest request}) async* {
+  Stream<MediaFetchEvent> streamMedia({
+    required MediaRequest request,
+    required MediaCancel cancel,
+  }) async* {
     final index = int.parse(
       Uri.parse(request.url).pathSegments.last.split('.').first,
     );

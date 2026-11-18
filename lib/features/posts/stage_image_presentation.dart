@@ -1,9 +1,11 @@
+import 'package:booruflow/core/media/booru_media_source.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
+import 'package:flutter_media_cache/flutter_media_cache.dart';
+
 import 'media_presentation.dart';
 import 'models/post.dart';
-import 'widgets/rust_media_image.dart';
 
 /// One geometry record for one work, shared by every resolution of that work.
 class PostMediaGeometry {
@@ -120,8 +122,8 @@ class StageImagePresentation extends ChangeNotifier {
     } else if (_originalRequested &&
         !loadingOriginal(post) &&
         !_failed &&
-        _preview is RustMediaImage) {
-      final provider = _preview! as RustMediaImage;
+        _preview is CachedMediaImage) {
+      final provider = _preview! as CachedMediaImage;
       // A frame narrower than the hint has already reached native resolution.
       final width = _loadedWidth;
       if (width != null &&

@@ -12,10 +12,9 @@ import 'package:booruflow/features/posts/post_actions.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_media_cache/flutter_media_cache.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frost_ui/frost_ui.dart';
-
-import 'rust_media_image.dart';
 
 enum PostMediaRecoveryStyle { failure, unsupported, overlay, banner }
 

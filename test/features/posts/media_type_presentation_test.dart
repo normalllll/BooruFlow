@@ -105,7 +105,10 @@ class _Engine implements BooruEngine {
   }
 
   @override
-  Stream<MediaFetchEvent> streamMedia({required MediaRequest request}) async* {
+  Stream<MediaFetchEvent> streamMedia({
+    required MediaRequest request,
+    required MediaCancel cancel,
+  }) async* {
     final bytes = request.url.endsWith('.avif')
         ? Uint8List.fromList([0, 1, 2])
         : base64Decode(

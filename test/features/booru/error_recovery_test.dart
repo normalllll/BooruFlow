@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'package:booruflow/app/frost_config.dart';
+import 'package:booruflow/core/media/booru_media_source.dart';
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/features/booru/services/web_challenge_service.dart';
 import 'package:booruflow/features/booru/web_challenge_logic.dart';
@@ -7,15 +9,17 @@ import 'package:booruflow/features/browse/collection_logic.dart';
 import 'package:booruflow/features/browse/widgets/post_waterfall.dart';
 import 'package:booruflow/features/posts/media_presentation.dart';
 import 'package:booruflow/features/posts/widgets/post_media_recovery.dart';
-import 'package:booruflow/features/posts/widgets/rust_media_image.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_media_cache/flutter_media_cache.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
+
 import '../../support/browse_support.dart' show browseTestApp;
+import '../../support/preseeded_media.dart';
 import '../posts/media_type_presentation_test.dart' show mediaPost, variant;
 import 'web_challenge_service_test.dart' show Backend, candidate;
 
@@ -57,19 +61,22 @@ void main() {
                         purpose: PostMediaPurpose.stage,
                         style: PostMediaRecoveryStyle.failure,
                         error: MediaImageException(
-                          request: const MediaRequest(
-                            sourceId: 'danbooru',
-                            postId: '1',
-                            variant: MediaVariantKind.sample,
-                            url: 'https://example.invalid/1.jpg',
-                            headers: [],
-                            routeKey: 'test',
-                            cacheKey: 'test',
-                            authRevision: 0,
-                            routeRevision: 'test',
-                            allowDiskCache: false,
+                          source: BooruMediaSource(
+                            const MediaRequest(
+                              sourceId: 'danbooru',
+                              postId: '1',
+                              variant: MediaVariantKind.sample,
+                              url: 'https://example.invalid/1.jpg',
+                              headers: [],
+                              routeKey: 'test',
+                              cacheKey: 'test',
+                              authRevision: 0,
+                              routeRevision: 'test',
+                              allowDiskCache: false,
+                            ),
+                            preseededMedia,
                           ),
-                          stage: 'fetch',
+                          stage: MediaImageStage.fetch,
                           cause: error,
                         ),
                         onRetry: () async {

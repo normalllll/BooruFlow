@@ -1,7 +1,8 @@
+import 'package:booruflow/core/media/booru_media_source.dart';
 import 'package:booruflow/features/booru/models/web_challenge_failure.dart';
-import 'package:booruflow/features/posts/widgets/rust_media_image.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
+import 'package:flutter_media_cache/flutter_media_cache.dart';
 import 'package:frost_data/frost_data.dart' show FrostRetryAfter;
 
 String describeBooruError(Object? error, {bool includeDiagnostics = true}) {
@@ -91,16 +92,21 @@ String? booruErrorDetails(Object error) => switch (error) {
 };
 
 String _mediaDiagnostics(MediaImageException error) {
-  final request = error.request;
-  final uri = Uri.tryParse(request.url);
+  final request = switch (error.source) {
+    BooruMediaSource(:final request) => request,
+    _ => null,
+  };
+  if (request == null) return error.toString();
   // Keep diagnostics free of headers, credentials and signed query parameters.
-  final location = uri == null
-      ? '(invalid URL)'
-      : '${uri.scheme}://${uri.host}${uri.path}';
+  final location = mediaLocation(request);
   final cause = (booruErrorDetails(error.cause) ?? error.cause.toString())
       .replaceAll(request.url, location);
+  final stage = switch (error.stage) {
+    MediaImageStage.fetch => 'download',
+    MediaImageStage.decode => 'decode',
+  };
   return 'source=${request.sourceId} · post=${request.postId} · variant=${request.variant.name}\n'
-      'stage=${error.stage} · cache=${error.fromCache}${error.byteCount == null ? "" : " · bytes=${error.byteCount}"}\n'
+      'stage=$stage · cache=${error.fromDisk}${error.byteCount == null ? "" : " · bytes=${error.byteCount}"}\n'
       '$location\n$cause';
 }
 

@@ -1,5 +1,28 @@
 use crate::api::booru_models::{Checksum, HttpHeader, MediaKind, MediaVariantKind};
+use flutter_rust_bridge::frb;
 use serde::{Deserialize, Serialize};
+use tokio_util::sync::CancellationToken;
+
+/// Stops a `stream_media` download from Dart as soon as its stream is
+/// cancelled, including while the request still waits for its response.
+#[frb(opaque)]
+pub struct MediaCancel {
+    pub(crate) token: CancellationToken,
+}
+
+impl MediaCancel {
+    #[frb(sync)]
+    pub fn new() -> Self {
+        Self {
+            token: CancellationToken::new(),
+        }
+    }
+
+    #[frb(sync)]
+    pub fn cancel(&self) {
+        self.token.cancel();
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum UgoiraExport {

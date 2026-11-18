@@ -68,7 +68,7 @@ void main() {
         try {
           await for (final event
               in engine
-                  .streamMedia(request: request)
+                  .streamMedia(request: request, cancel: MediaCancel())
                   .timeout(const Duration(seconds: 30))) {
             if (event case MediaFetchEvent_Chunk(
               :final bytes,

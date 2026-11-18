@@ -6,6 +6,7 @@ import 'dart:ui' show PointerDeviceKind;
 import 'package:booruflow/app/ambient_artwork.dart';
 import 'package:booruflow/app/app_router.dart';
 import 'package:booruflow/app/booru_flow_app.dart';
+import 'package:booruflow/core/media/booru_media_source.dart';
 import 'package:booruflow/core/settings/settings_service.dart';
 import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/features/booru/services/booru_service.dart';
@@ -21,7 +22,6 @@ import 'package:booruflow/features/posts/post_detail_page.dart';
 import 'package:booruflow/features/posts/widgets/post_detail_layout.dart';
 import 'package:booruflow/features/posts/widgets/post_detail_panel.dart';
 import 'package:booruflow/features/posts/widgets/post_media.dart';
-import 'package:booruflow/features/posts/widgets/rust_media_image.dart';
 import 'package:booruflow/features/search/logic.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_navigation.dart';
@@ -129,7 +129,10 @@ class _Engine extends PendingMediaEngine {
   }
 
   @override
-  Stream<MediaFetchEvent> streamMedia({required MediaRequest request}) async* {
+  Stream<MediaFetchEvent> streamMedia({
+    required MediaRequest request,
+    required MediaCancel cancel,
+  }) async* {
     final bytes = base64Decode(
       'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
     );
@@ -205,8 +208,8 @@ void main() {
     await seed(tester, preview);
     for (final id in ['101', '102']) {
       for (final kind in [MediaVariantKind.sample, MediaVariantKind.original]) {
-        final provider = RustMediaImage(
-          mediaStream: preseededMedia,
+        final provider = booruMediaImage(
+          stream: preseededMedia,
           request: service.engine.request(id, kind),
         );
         await seed(tester, provider);
@@ -215,8 +218,8 @@ void main() {
         for (final width in [180, 390, 644, 720, 1060, 1440]) {
           await seed(
             tester,
-            RustMediaImage(
-              mediaStream: preseededMedia,
+            booruMediaImage(
+              stream: preseededMedia,
               request: service.engine.request(id, kind),
               decodeWidth: width,
             ),
@@ -406,8 +409,8 @@ void main() {
         )) {
           await seed(
             tester,
-            RustMediaImage(
-              mediaStream: preseededMedia,
+            booruMediaImage(
+              stream: preseededMedia,
               request: service.engine.request(
                 media.post.id,
                 media.media?.kind ?? MediaVariantKind.sample,
@@ -1274,8 +1277,8 @@ void main() {
       )) {
         await seed(
           tester,
-          RustMediaImage(
-            mediaStream: preseededMedia,
+          booruMediaImage(
+            stream: preseededMedia,
             request: service.engine.request(
               media.post.id,
               media.media?.kind ?? MediaVariantKind.sample,
@@ -1386,8 +1389,8 @@ void main() {
       )) {
         await seed(
           tester,
-          RustMediaImage(
-            mediaStream: preseededMedia,
+          booruMediaImage(
+            stream: preseededMedia,
             request: service.engine.request(
               media.post.id,
               media.media?.kind ?? MediaVariantKind.sample,
@@ -1460,10 +1463,11 @@ void main() {
       final media = tester.widget<PostMedia>(stage);
       await seed(
         tester,
-        RustMediaImage(
-          mediaStream: preseededMedia,
+        booruMediaImage(
+          stream: preseededMedia,
           request: service.engine.request('101', MediaVariantKind.original),
           decodeWidth: media.decodeWidth,
+          progressive: true,
         ),
       );
       service.engine.holdMedia = false;
@@ -1556,8 +1560,7 @@ void main() {
       expect(
         find.byType(FrostShellDestination).hitTestable(),
         findsNothing,
-        reason:
-            'Opaque viewport paint and modal hit testing cover the retained shell',
+        reason: 'Opaque viewport paint and modal hit testing cover the retained shell',
       );
       expect(find.byType(FrostShell, skipOffstage: false), findsOneWidget);
       final viewer = tester.element(find.byType(ImageZoomPage));
@@ -1682,8 +1685,7 @@ void main() {
         expect(
           find.byType(FrostShellDestination).hitTestable(),
           findsNothing,
-          reason:
-              'Opaque viewport paint and modal hit testing cover the retained shell',
+          reason: 'Opaque viewport paint and modal hit testing cover the retained shell',
         );
         expect(find.byType(FrostMediaViewport), findsOneWidget);
         if (visit == 0 && defaultTargetPlatform == TargetPlatform.android) {
@@ -1778,8 +1780,7 @@ void main() {
           expect(
             viewerRoute.animation!.value,
             1,
-            reason:
-                'The viewport owns the complete exit; the route cannot fade early.',
+            reason: 'The viewport owns the complete exit; the route cannot fade early.',
           );
           await tester.pump(FrostMotion.exit);
           await tester.pump();

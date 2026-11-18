@@ -1,6 +1,6 @@
 use crate::api::booru_auth::{AuthSchema, AuthState, SourceCredentials, WebCookie};
 use crate::api::booru_download::{
-    DownloadEvent, DownloadRequest, MediaFetchEvent, PreparedDownload, UgoiraExport,
+    DownloadEvent, DownloadRequest, MediaCancel, MediaFetchEvent, PreparedDownload, UgoiraExport,
 };
 use crate::api::booru_models::{
     BooruEngineConfig, BooruPost, BooruSource, BooruTagSuggestion, MediaRequest, MediaVariantKind,
@@ -28,8 +28,10 @@ use crate::booru::web_challenge::{self, ChallengeCoordinator};
 use crate::frb_generated::StreamSink;
 use futures_util::StreamExt;
 use std::collections::BTreeMap;
+use std::future::Future;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
+use tokio_util::sync::CancellationToken;
 
 pub struct BooruEngine {
     registry: SourceRegistry,
@@ -576,10 +578,15 @@ impl BooruEngine {
         Ok(request)
     }
 
-    pub async fn stream_media(&self, request: MediaRequest, sink: StreamSink<MediaFetchEvent>) {
+    pub async fn stream_media(
+        &self,
+        request: MediaRequest,
+        cancel: &MediaCancel,
+        sink: StreamSink<MediaFetchEvent>,
+    ) {
         // FRB exposes the sink as a Dart stream; a returned Result belongs to a
         // separate, unawaited Future. Deliver failures on the same event stream.
-        if let Err(error) = self.stream_media_inner(request, &sink).await {
+        if let Err(error) = self.stream_media_inner(request, &cancel.token, &sink).await {
             let _ = sink.add(MediaFetchEvent::Failed { error });
         }
     }
@@ -587,6 +594,7 @@ impl BooruEngine {
     async fn stream_media_inner(
         &self,
         request: MediaRequest,
+        cancel: &CancellationToken,
         sink: &StreamSink<MediaFetchEvent>,
     ) -> BooruResult<()> {
         let adapter = self.registry.get(&request.source_id)?;
@@ -602,8 +610,15 @@ impl BooruEngine {
             checksum: None,
             filename: "media.bin".to_owned(),
         };
-        let response =
-            open_prepared_unthrottled(&self.runtime, adapter.definition(), &prepared).await?;
+        let Some(response) = until_cancelled(
+            cancel,
+            open_prepared_unthrottled(&self.runtime, adapter.definition(), &prepared),
+        )
+        .await
+        else {
+            return Ok(());
+        };
+        let response = response?;
         crate::booru::media::validation::validate_image_preview_content_type(
             &request.source_id,
             response
@@ -625,7 +640,13 @@ impl BooruEngine {
         let mut received = 0_u64;
         let mut avif_bytes = Vec::new();
         let mut chunks = response.bytes_stream();
-        while let Some(chunk) = chunks.next().await {
+        loop {
+            let Some(next) = until_cancelled(cancel, chunks.next()).await else {
+                return Ok(());
+            };
+            let Some(chunk) = next else {
+                break;
+            };
             let chunk = chunk.map_err(|_| {
                 BooruError::new(
                     BooruErrorCode::Network,
@@ -1024,11 +1045,58 @@ fn unsupported(source_id: &str) -> BooruError {
     )
 }
 
+/// Awaits `work` unless `cancel` fires first, in which case `work` is dropped
+/// at once, which closes its request's connection, and `None` is returned.
+async fn until_cancelled<T>(
+    cancel: &CancellationToken,
+    work: impl Future<Output = T>,
+) -> Option<T> {
+    tokio::select! {
+        biased;
+        _ = cancel.cancelled() => None,
+        value = work => Some(value),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::api::booru_models::{ContentRating, NetworkFallbackMode};
     use std::collections::BTreeSet;
+    use std::time::Duration;
+    use tokio::io::AsyncReadExt;
+
+    #[tokio::test]
+    async fn a_cancel_before_the_response_ends_the_download_and_closes_its_connection() {
+        let _ = rustls::crypto::ring::default_provider().install_default();
+        // A server that accepts the connection and never answers it.
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let cancel = CancellationToken::new();
+        let download = {
+            let cancel = cancel.clone();
+            tokio::spawn(async move {
+                until_cancelled(
+                    &cancel,
+                    reqwest::get(format!("http://127.0.0.1:{port}/picture.jpg")),
+                )
+                .await
+                .is_none()
+            })
+        };
+        let (mut socket, _) = listener.accept().await.unwrap();
+        let mut hello = vec![0; 4096];
+        assert!(socket.read(&mut hello).await.unwrap() > 0);
+
+        cancel.cancel();
+        let ended = tokio::time::timeout(Duration::from_secs(1), download).await;
+        assert!(ended.expect("the download ends").unwrap());
+        let closed = tokio::time::timeout(Duration::from_secs(1), socket.read(&mut hello)).await;
+        assert!(matches!(
+            closed.expect("the connection closes"),
+            Ok(0) | Err(_)
+        ));
+    }
 
     fn post_with(media: Vec<crate::api::booru_models::MediaVariant>) -> BooruPost {
         BooruPost {

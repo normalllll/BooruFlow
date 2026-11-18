@@ -12,6 +12,14 @@ part 'booru_download.freezed.dart';
 
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`
 
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<MediaCancel>>
+abstract class MediaCancel implements RustOpaqueInterface {
+  void cancel();
+
+  factory MediaCancel() =>
+      RustLib.instance.api.crateApiBooruDownloadMediaCancelNew();
+}
+
 @freezed
 sealed class DownloadEvent with _$DownloadEvent {
   const DownloadEvent._();

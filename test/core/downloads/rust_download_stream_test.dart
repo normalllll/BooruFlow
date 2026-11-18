@@ -62,6 +62,7 @@ void main() {
               routeRevision: 'test',
               allowDiskCache: false,
             ),
+            cancel: MediaCancel(),
           ),
           emitsInOrder([
             isA<MediaFetchEvent_Failed>().having(

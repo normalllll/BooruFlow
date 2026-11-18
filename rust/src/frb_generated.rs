@@ -27,6 +27,7 @@
 
 // Section: imports
 
+use crate::api::booru_download::*;
 use crate::api::booru_engine::*;
 use flutter_rust_bridge::for_generated::byteorder::{NativeEndian, ReadBytesExt, WriteBytesExt};
 use flutter_rust_bridge::for_generated::{transform_result_dco, Lifetimeable, Lockable};
@@ -40,7 +41,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.14.0-beta.2";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1396656763;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1471653920;
 
 // Section: executor
 
@@ -2006,6 +2007,9 @@ fn wire__crate__api__booru_engine__BooruEngine_stream_media_impl(
             >>::sse_decode(&mut deserializer);
             let api_request =
                 <crate::api::booru_models::MediaRequest>::sse_decode(&mut deserializer);
+            let api_cancel = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<MediaCancel>,
+            >>::sse_decode(&mut deserializer);
             let api_sink = <StreamSink<
                 crate::api::booru_download::MediaFetchEvent,
                 flutter_rust_bridge::for_generated::SseCodec,
@@ -2015,11 +2019,19 @@ fn wire__crate__api__booru_engine__BooruEngine_stream_media_impl(
                 transform_result_sse::<_, ()>(
                     (move || async move {
                         let mut api_that_guard = None;
+                        let mut api_cancel_guard = None;
                         let decode_indices_ =
                             flutter_rust_bridge::for_generated::lockable_compute_decode_order(
-                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
-                                    &api_that, 0, false,
-                                )],
+                                vec![
+                                    flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                        &api_that, 0, false,
+                                    ),
+                                    flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                        &api_cancel,
+                                        1,
+                                        false,
+                                    ),
+                                ],
                             );
                         for i in decode_indices_ {
                             match i {
@@ -2027,14 +2039,20 @@ fn wire__crate__api__booru_engine__BooruEngine_stream_media_impl(
                                     api_that_guard =
                                         Some(api_that.lockable_decode_async_ref().await)
                                 }
+                                1 => {
+                                    api_cancel_guard =
+                                        Some(api_cancel.lockable_decode_async_ref().await)
+                                }
                                 _ => unreachable!(),
                             }
                         }
                         let api_that_guard = api_that_guard.unwrap();
+                        let api_cancel_guard = api_cancel_guard.unwrap();
                         let output_ok = Ok::<_, ()>({
                             crate::api::booru_engine::BooruEngine::stream_media(
                                 &*api_that_guard,
                                 api_request,
+                                &*api_cancel_guard,
                                 api_sink,
                             )
                             .await;
@@ -2157,6 +2175,83 @@ fn wire__crate__api__booru_engine__BooruEngine_web_challenge_state_impl(
                     std::result::Result::Ok(output_ok)
                 })())
             }
+        },
+    )
+}
+fn wire__crate__api__booru_download__MediaCancel_cancel_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "MediaCancel_cancel",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<MediaCancel>,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let mut api_that_guard = None;
+                let decode_indices_ =
+                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_that, 0, false,
+                        ),
+                    ]);
+                for i in decode_indices_ {
+                    match i {
+                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                        _ => unreachable!(),
+                    }
+                }
+                let api_that_guard = api_that_guard.unwrap();
+                let output_ok = Ok::<_, ()>({
+                    crate::api::booru_download::MediaCancel::cancel(&*api_that_guard);
+                })?;
+                std::result::Result::Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__booru_download__MediaCancel_new_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "MediaCancel_new",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Ok::<_, ()>(crate::api::booru_download::MediaCancel::new())?;
+                std::result::Result::Ok(output_ok)
+            })())
         },
     )
 }
@@ -2564,6 +2659,9 @@ fn wire__crate__api__booru_models__tag_category_default_impl(
 flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
     flutter_rust_bridge::for_generated::RustAutoOpaqueInner<BooruEngine>
 );
+flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
+    flutter_rust_bridge::for_generated::RustAutoOpaqueInner<MediaCancel>
+);
 
 // Section: dart2rust
 
@@ -2585,8 +2683,28 @@ impl SseDecode for BooruEngine {
     }
 }
 
+impl SseDecode for MediaCancel {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <RustOpaqueMoi<
+            flutter_rust_bridge::for_generated::RustAutoOpaqueInner<MediaCancel>,
+        >>::sse_decode(deserializer);
+        return flutter_rust_bridge::for_generated::rust_auto_opaque_decode_owned(inner);
+    }
+}
+
 impl SseDecode
     for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<BooruEngine>>
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <usize>::sse_decode(deserializer);
+        return decode_rust_opaque_moi(inner);
+    }
+}
+
+impl SseDecode
+    for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<MediaCancel>>
 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -4307,65 +4425,65 @@ fn pde_ffi_dispatcher_primary_impl(
             rust_vec_len,
             data_len,
         ),
-        37 => wire__crate__api__booru_models__auth_kind_default_impl(
+        39 => wire__crate__api__booru_models__auth_kind_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        38 => wire__crate__api__booru_auth__auth_status_default_impl(
+        40 => wire__crate__api__booru_auth__auth_status_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        39 => wire__crate__api__booru_models__checksum_algorithm_default_impl(
+        41 => wire__crate__api__booru_models__checksum_algorithm_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        40 => wire__crate__api__booru_models__content_rating_default_impl(
+        42 => wire__crate__api__booru_models__content_rating_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        41 => wire__crate__api__booru_models__media_type_from_mime_impl(
+        43 => wire__crate__api__booru_models__media_type_from_mime_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        42 => {
+        44 => {
             wire__crate__api__booru_models__media_type_kind_impl(port, ptr, rust_vec_len, data_len)
         }
-        43 => wire__crate__api__booru_models__media_variant_kind_default_impl(
+        45 => wire__crate__api__booru_models__media_variant_kind_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        44 => wire__crate__api__booru_models__network_fallback_mode_default_impl(
+        46 => wire__crate__api__booru_models__network_fallback_mode_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        45 => wire__crate__api__booru_models__post_flags_default_impl(
+        47 => wire__crate__api__booru_models__post_flags_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        46 => wire__crate__api__booru_models__post_key_impl(port, ptr, rust_vec_len, data_len),
-        47 => wire__crate__api__booru_auth__source_credentials_default_impl(
+        48 => wire__crate__api__booru_models__post_key_impl(port, ptr, rust_vec_len, data_len),
+        49 => wire__crate__api__booru_auth__source_credentials_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        48 => wire__crate__api__booru_models__tag_category_default_impl(
+        50 => wire__crate__api__booru_models__tag_category_default_impl(
             port,
             ptr,
             rust_vec_len,
@@ -4391,6 +4509,10 @@ fn pde_ffi_dispatcher_sync_impl(
         2 => {
             wire__crate__api__booru_engine__BooruEngine_auth_state_impl(ptr, rust_vec_len, data_len)
         }
+        37 => {
+            wire__crate__api__booru_download__MediaCancel_cancel_impl(ptr, rust_vec_len, data_len)
+        }
+        38 => wire__crate__api__booru_download__MediaCancel_new_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -4408,6 +4530,21 @@ impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for FrbWrapper<
 
 impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<BooruEngine>> for BooruEngine {
     fn into_into_dart(self) -> FrbWrapper<BooruEngine> {
+        self.into()
+    }
+}
+
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<MediaCancel> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        flutter_rust_bridge::for_generated::rust_auto_opaque_encode::<_, MoiArc<_>>(self.0)
+            .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for FrbWrapper<MediaCancel> {}
+
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<MediaCancel>> for MediaCancel {
+    fn into_into_dart(self) -> FrbWrapper<MediaCancel> {
         self.into()
     }
 }
@@ -5818,8 +5955,26 @@ impl SseEncode for BooruEngine {
     }
 }
 
+impl SseEncode for MediaCancel {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<MediaCancel>>>::sse_encode(flutter_rust_bridge::for_generated::rust_auto_opaque_encode::<_, MoiArc<_>>(self), serializer);
+    }
+}
+
 impl SseEncode
     for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<BooruEngine>>
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        let (ptr, size) = self.sse_encode_raw();
+        <usize>::sse_encode(ptr, serializer);
+        <i32>::sse_encode(size, serializer);
+    }
+}
+
+impl SseEncode
+    for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<MediaCancel>>
 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -7056,6 +7211,7 @@ mod io {
     // Section: imports
 
     use super::*;
+    use crate::api::booru_download::*;
     use crate::api::booru_engine::*;
     use flutter_rust_bridge::for_generated::byteorder::{
         NativeEndian, ReadBytesExt, WriteBytesExt,
@@ -7080,6 +7236,20 @@ mod io {
     ) {
         MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<BooruEngine>>::decrement_strong_count(ptr as _);
     }
+
+    #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_booruflow_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMediaCancel(
+        ptr: *const std::ffi::c_void,
+    ) {
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<MediaCancel>>::increment_strong_count(ptr as _);
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_booruflow_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMediaCancel(
+        ptr: *const std::ffi::c_void,
+    ) {
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<MediaCancel>>::decrement_strong_count(ptr as _);
+    }
 }
 #[cfg(not(target_family = "wasm"))]
 pub use io::*;
@@ -7093,6 +7263,7 @@ mod web {
     // Section: imports
 
     use super::*;
+    use crate::api::booru_download::*;
     use crate::api::booru_engine::*;
     use flutter_rust_bridge::for_generated::byteorder::{
         NativeEndian, ReadBytesExt, WriteBytesExt,
@@ -7118,6 +7289,20 @@ mod web {
         ptr: *const std::ffi::c_void,
     ) {
         MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<BooruEngine>>::decrement_strong_count(ptr as _);
+    }
+
+    #[wasm_bindgen]
+    pub fn rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMediaCancel(
+        ptr: *const std::ffi::c_void,
+    ) {
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<MediaCancel>>::increment_strong_count(ptr as _);
+    }
+
+    #[wasm_bindgen]
+    pub fn rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMediaCancel(
+        ptr: *const std::ffi::c_void,
+    ) {
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<MediaCancel>>::decrement_strong_count(ptr as _);
     }
 }
 #[cfg(target_family = "wasm")]

@@ -1,14 +1,16 @@
+import 'package:booruflow/core/media/booru_media_source.dart';
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
-import 'package:booruflow/features/posts/widgets/rust_media_image.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_media_cache/flutter_media_cache.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_data/frost_data.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 import '../../support/browse_support.dart' show browseTestApp;
+import '../../support/preseeded_media.dart';
 
 void main() {
   const error = BooruError(
@@ -149,15 +151,15 @@ void main() {
         routeRevision: 'test',
         allowDiskCache: false,
       );
-      const image = MediaImageException(
-        request: request,
-        stage: 'fetch',
+      final image = MediaImageException(
+        source: BooruMediaSource(request, preseededMedia),
+        stage: MediaImageStage.fetch,
         cause: error,
         byteCount: 512,
       );
       final details = booruErrorDetails(image)!;
       expect(details, contains('source=danbooru · post=1 · variant=sample'));
-      expect(details, contains('stage=fetch · cache=false · bytes=512'));
+      expect(details, contains('stage=download · cache=false · bytes=512'));
       expect(details, contains('https://example.test/image.jpg'));
       expect(details, contains('code=rateLimited'));
       expect(details, isNot(contains('secret')));

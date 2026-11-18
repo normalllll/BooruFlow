@@ -19,7 +19,7 @@ import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_navigation.dart';
 import 'package:booruflow/shared/app_page.dart';
 import 'package:booruflow/src/rust/api/booru_download.dart'
-    show MediaFetchEvent;
+    show MediaCancel, MediaFetchEvent;
 import 'package:booruflow/src/rust/api/booru_engine.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:booruflow/src/rust/booru/error.dart';
@@ -146,7 +146,10 @@ class _Engine implements BooruEngine {
     allowDiskCache: false,
   );
   @override
-  Stream<MediaFetchEvent> streamMedia({required MediaRequest request}) async* {
+  Stream<MediaFetchEvent> streamMedia({
+    required MediaRequest request,
+    required MediaCancel cancel,
+  }) async* {
     final bytes = base64Decode(_png);
     yield MediaFetchEvent.chunk(
       bytes: bytes,

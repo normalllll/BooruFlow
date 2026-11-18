@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-import 'package:booruflow/features/posts/widgets/rust_media_image.dart';
+
+import 'package:booruflow/core/media/booru_media_source.dart';
 import 'package:booruflow/src/rust/api/booru_download.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
+
 import '../../support/preseeded_media.dart';
 
 class _TrackedCodec implements ui.Codec {
@@ -33,9 +35,8 @@ void main() {
       testWidgets(
         '$extension ${frozen ? 'grid decodes only one frame' : 'stage and viewer retain animation'}',
         (tester) async {
-          final bytes = File(
-            'test/fixtures/media/two_frames.$extension',
-          ).readAsBytesSync();
+          final bytes = File('test/fixtures/media/two_frames.$extension')
+              .readAsBytesSync();
           final request = MediaRequest(
             sourceId: 'test',
             postId: 'animation',
@@ -48,10 +49,10 @@ void main() {
             routeRevision: 'test',
             allowDiskCache: false,
           );
-          final provider = RustMediaImage(
+          final provider = booruMediaImage(
             request: request,
             firstFrameOnly: frozen,
-            mediaStream: (_) => Stream.value(
+            stream: (_, _) => Stream.value(
               MediaFetchEvent.chunk(
                 bytes: bytes,
                 receivedBytesDecimal: '${bytes.length}',
@@ -103,10 +104,9 @@ void main() {
     testWidgets('scan-enabled $extension retains animation and cache pause', (
       tester,
     ) async {
-      final bytes = File(
-        'test/fixtures/media/two_frames.$extension',
-      ).readAsBytesSync();
-      final provider = RustMediaImage(
+      final bytes = File('test/fixtures/media/two_frames.$extension')
+          .readAsBytesSync();
+      final provider = booruMediaImage(
         request: MediaRequest(
           sourceId: 'test',
           postId: 'animation',
@@ -121,7 +121,7 @@ void main() {
         ),
         progressive: true,
         decodeWidth: 16,
-        mediaStream: (_) => Stream.value(
+        stream: (_, _) => Stream.value(
           MediaFetchEvent.chunk(
             bytes: bytes,
             receivedBytesDecimal: '${bytes.length}',
@@ -166,49 +166,40 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
-  test(
-    'static thumbnail and animated original do not share decoded cache identity',
-    () {
-      const request = MediaRequest(
-        sourceId: 'test',
-        postId: 'animation',
-        variant: MediaVariantKind.original,
-        url: 'https://example.invalid/a.gif',
-        headers: [],
-        routeKey: 'test',
-        cacheKey: 'same',
-        authRevision: 0,
-        routeRevision: 'test',
-        allowDiskCache: false,
-      );
-      const thumbnail = RustMediaImage(
-        mediaStream: preseededMedia,
-        request: request,
-        firstFrameOnly: true,
-      );
-      const original = RustMediaImage(
-        mediaStream: preseededMedia,
-        request: request,
-      );
-      expect(thumbnail, isNot(original));
-      expect(thumbnail.request.cacheKey, original.request.cacheKey);
-    },
-  );
-  test(
-    'current host Flutter AVIF codec capability is observed independently of Rust conversion',
-    () async {
-      final bytes = File('test/fixtures/media/white.avif').readAsBytesSync();
-      ui.Codec? codec;
-      try {
-        codec = await ui.instantiateImageCodec(Uint8List.fromList(bytes));
-        final frame = await codec.getNextFrame();
-        expect(frame.image.width, 16);
-        frame.image.dispose();
-      } catch (_) {
-        // Host codec support varies; the Rust conversion is tested separately.
-      } finally {
-        codec?.dispose();
-      }
-    },
-  );
+  test('static thumbnail and animated original do not share decoded cache identity', () {
+    const request = MediaRequest(
+      sourceId: 'test',
+      postId: 'animation',
+      variant: MediaVariantKind.original,
+      url: 'https://example.invalid/a.gif',
+      headers: [],
+      routeKey: 'test',
+      cacheKey: 'same',
+      authRevision: 0,
+      routeRevision: 'test',
+      allowDiskCache: false,
+    );
+    final thumbnail = booruMediaImage(
+      stream: preseededMedia,
+      request: request,
+      firstFrameOnly: true,
+    );
+    final original = booruMediaImage(stream: preseededMedia, request: request);
+    expect(thumbnail, isNot(original));
+    expect(thumbnail.request!.cacheKey, original.request!.cacheKey);
+  });
+  test('current host Flutter AVIF codec capability is observed independently of Rust conversion', () async {
+    final bytes = File('test/fixtures/media/white.avif').readAsBytesSync();
+    ui.Codec? codec;
+    try {
+      codec = await ui.instantiateImageCodec(Uint8List.fromList(bytes));
+      final frame = await codec.getNextFrame();
+      expect(frame.image.width, 16);
+      frame.image.dispose();
+    } catch (_) {
+      // Host codec support varies; the Rust conversion is tested separately.
+    } finally {
+      codec?.dispose();
+    }
+  });
 }

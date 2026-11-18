@@ -45,7 +45,7 @@ void main() {
         allowDiskCache: true,
       );
       final bytes = BytesBuilder(copy: false);
-      await for (final event in engine.streamMedia(request: request)) {
+      await for (final event in engine.streamMedia(request: request, cancel: MediaCancel())) {
         switch (event) {
           case MediaFetchEvent_Failed(:final error):
             throw error;

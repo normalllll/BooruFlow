@@ -9,11 +9,14 @@ import 'api/booru_engine.dart';
 import 'api/booru_models.dart';
 import 'api/web_challenge.dart';
 import 'booru/error.dart';
+
 import 'dart:async';
 import 'dart:convert';
+
 import 'frb_generated.dart';
 import 'frb_generated.io.dart'
     if (dart.library.js_interop) 'frb_generated.web.dart';
+
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 /// Main entrypoint of the Rust API
@@ -69,7 +72,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.14.0-beta.2';
 
   @override
-  int get rustContentHash => 1396656763;
+  int get rustContentHash => -1471653920;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -274,6 +277,7 @@ abstract class RustLibApi extends BaseApi {
   Stream<MediaFetchEvent> crateApiBooruEngineBooruEngineStreamMedia({
     required BooruEngine that,
     required MediaRequest request,
+    required MediaCancel cancel,
   });
 
   Future<AuthState> crateApiBooruEngineBooruEngineVerifyAuth({
@@ -285,6 +289,10 @@ abstract class RustLibApi extends BaseApi {
     required BooruEngine that,
     required String sourceId,
   });
+
+  void crateApiBooruDownloadMediaCancelCancel({required MediaCancel that});
+
+  MediaCancel crateApiBooruDownloadMediaCancelNew();
 
   Future<AuthKind> crateApiBooruModelsAuthKindDefault();
 
@@ -322,6 +330,14 @@ abstract class RustLibApi extends BaseApi {
   get rust_arc_decrement_strong_count_BooruEngine;
 
   CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_BooruEnginePtr;
+
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_MediaCancel;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_MediaCancel;
+
+  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_MediaCancelPtr;
 }
 
 class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
@@ -1651,6 +1667,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Stream<MediaFetchEvent> crateApiBooruEngineBooruEngineStreamMedia({
     required BooruEngine that,
     required MediaRequest request,
+    required MediaCancel cancel,
   }) {
     final sink = RustStreamSink<MediaFetchEvent>();
     unawaited(
@@ -1663,6 +1680,10 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               serializer,
             );
             sse_encode_box_autoadd_media_request(request, serializer);
+            sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMediaCancel(
+              cancel,
+              serializer,
+            );
             sse_encode_StreamSink_media_fetch_event_Sse(sink, serializer);
             pdeCallFfi(
               generalizedFrbRustBinding,
@@ -1676,7 +1697,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             decodeErrorData: null,
           ),
           constMeta: kCrateApiBooruEngineBooruEngineStreamMediaConstMeta,
-          argValues: [that, request, sink],
+          argValues: [that, request, cancel, sink],
           apiImpl: this,
         ),
       ),
@@ -1687,7 +1708,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiBooruEngineBooruEngineStreamMediaConstMeta =>
       const TaskConstMeta(
         debugName: "BooruEngine_stream_media",
-        argNames: ["that", "request", "sink"],
+        argNames: ["that", "request", "cancel", "sink"],
       );
 
   @override
@@ -1767,6 +1788,55 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  void crateApiBooruDownloadMediaCancelCancel({required MediaCancel that}) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMediaCancel(
+            that,
+            serializer,
+          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 37)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiBooruDownloadMediaCancelCancelConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruDownloadMediaCancelCancelConstMeta =>
+      const TaskConstMeta(debugName: "MediaCancel_cancel", argNames: ["that"]);
+
+  @override
+  MediaCancel crateApiBooruDownloadMediaCancelNew() {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 38)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData:
+              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMediaCancel,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiBooruDownloadMediaCancelNewConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruDownloadMediaCancelNewConstMeta =>
+      const TaskConstMeta(debugName: "MediaCancel_new", argNames: []);
+
+  @override
   Future<AuthKind> crateApiBooruModelsAuthKindDefault() {
     return handler.executeNormal(
       NormalTask(
@@ -1775,7 +1845,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 37,
+            funcId: 39,
             port: port_,
           );
         },
@@ -1802,7 +1872,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 38,
+            funcId: 40,
             port: port_,
           );
         },
@@ -1829,7 +1899,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 39,
+            funcId: 41,
             port: port_,
           );
         },
@@ -1859,7 +1929,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 40,
+            funcId: 42,
             port: port_,
           );
         },
@@ -1889,7 +1959,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 41,
+            funcId: 43,
             port: port_,
           );
         },
@@ -1922,7 +1992,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 42,
+            funcId: 44,
             port: port_,
           );
         },
@@ -1949,7 +2019,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 43,
+            funcId: 45,
             port: port_,
           );
         },
@@ -1979,7 +2049,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 44,
+            funcId: 46,
             port: port_,
           );
         },
@@ -2009,7 +2079,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 45,
+            funcId: 47,
             port: port_,
           );
         },
@@ -2041,7 +2111,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 46,
+            funcId: 48,
             port: port_,
           );
         },
@@ -2070,7 +2140,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 47,
+            funcId: 49,
             port: port_,
           );
         },
@@ -2100,7 +2170,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 48,
+            funcId: 50,
             port: port_,
           );
         },
@@ -2126,6 +2196,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   get rust_arc_decrement_strong_count_BooruEngine => wire
       .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine;
 
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_MediaCancel => wire
+      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMediaCancel;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_MediaCancel => wire
+      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMediaCancel;
+
   @protected
   AnyhowException dco_decode_AnyhowException(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
@@ -2142,6 +2220,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  MediaCancel
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMediaCancel(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return MediaCancelImpl.frbInternalDcoDecode(dcoDecodeList(raw));
+  }
+
+  @protected
   BooruEngine
   dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     dynamic raw,
@@ -2151,12 +2238,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  MediaCancel
+  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMediaCancel(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return MediaCancelImpl.frbInternalDcoDecode(dcoDecodeList(raw));
+  }
+
+  @protected
   BooruEngine
   dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     dynamic raw,
   ) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return BooruEngineImpl.frbInternalDcoDecode(dcoDecodeList(raw));
+  }
+
+  @protected
+  MediaCancel
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMediaCancel(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return MediaCancelImpl.frbInternalDcoDecode(dcoDecodeList(raw));
   }
 
   @protected
@@ -3235,6 +3340,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  MediaCancel
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMediaCancel(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return MediaCancelImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
   BooruEngine
   sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     SseDeserializer deserializer,
@@ -3247,12 +3364,36 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  MediaCancel
+  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMediaCancel(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return MediaCancelImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
   BooruEngine
   sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return BooruEngineImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  MediaCancel
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMediaCancel(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return MediaCancelImpl.frbInternalSseDecode(
       sse_decode_usize(deserializer),
       sse_decode_i_32(deserializer),
     );
@@ -4674,6 +4815,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMediaCancel(
+    MediaCancel self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as MediaCancelImpl).frbInternalSseEncode(move: true),
+      serializer,
+    );
+  }
+
+  @protected
+  void
   sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     BooruEngine self,
     SseSerializer serializer,
@@ -4687,6 +4841,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   void
+  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMediaCancel(
+    MediaCancel self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as MediaCancelImpl).frbInternalSseEncode(move: false),
+      serializer,
+    );
+  }
+
+  @protected
+  void
   sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBooruEngine(
     BooruEngine self,
     SseSerializer serializer,
@@ -4694,6 +4861,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_usize(
       (self as BooruEngineImpl).frbInternalSseEncode(move: null),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMediaCancel(
+    MediaCancel self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as MediaCancelImpl).frbInternalSseEncode(move: null),
       serializer,
     );
   }
@@ -6164,11 +6344,14 @@ class BooruEngineImpl extends RustOpaque implements BooruEngine {
     userAgent: userAgent,
   );
 
-  Stream<MediaFetchEvent> streamMedia({required MediaRequest request}) =>
-      RustLib.instance.api.crateApiBooruEngineBooruEngineStreamMedia(
-        that: this,
-        request: request,
-      );
+  Stream<MediaFetchEvent> streamMedia({
+    required MediaRequest request,
+    required MediaCancel cancel,
+  }) => RustLib.instance.api.crateApiBooruEngineBooruEngineStreamMedia(
+    that: this,
+    request: request,
+    cancel: cancel,
+  );
 
   Future<AuthState> verifyAuth({required String sourceId}) => RustLib
       .instance
@@ -6180,4 +6363,27 @@ class BooruEngineImpl extends RustOpaque implements BooruEngine {
         that: this,
         sourceId: sourceId,
       );
+}
+
+@sealed
+class MediaCancelImpl extends RustOpaque implements MediaCancel {
+  // Not to be used by end users
+  MediaCancelImpl.frbInternalDcoDecode(List<dynamic> wire)
+    : super.frbInternalDcoDecode(wire, _kStaticData);
+
+  // Not to be used by end users
+  MediaCancelImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative)
+    : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
+
+  static final _kStaticData = RustArcStaticData(
+    rustArcIncrementStrongCount:
+        RustLib.instance.api.rust_arc_increment_strong_count_MediaCancel,
+    rustArcDecrementStrongCount:
+        RustLib.instance.api.rust_arc_decrement_strong_count_MediaCancel,
+    rustArcDecrementStrongCountPtr:
+        RustLib.instance.api.rust_arc_decrement_strong_count_MediaCancelPtr,
+  );
+
+  void cancel() =>
+      RustLib.instance.api.crateApiBooruDownloadMediaCancelCancel(that: this);
 }

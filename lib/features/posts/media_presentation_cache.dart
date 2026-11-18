@@ -1,9 +1,10 @@
+import 'package:booruflow/core/media/booru_media_source.dart';
 import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/src/rust/api/booru_engine.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
+import 'package:flutter_media_cache/flutter_media_cache.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'widgets/rust_media_image.dart';
 
 part 'media_presentation_cache.g.dart';
 
@@ -16,7 +17,7 @@ typedef _MediaIdentity = (
   String,
   bool,
   bool,
-  DecodedImageRetention,
+  bool,
 );
 
 /// Shares authenticated preparation and satisfies the largest requested decode.
@@ -34,10 +35,10 @@ MediaPresentationCache mediaPresentationCache(Ref ref) {
 class MediaPresentationCache {
   MediaPresentationCache(this._engine);
   final BooruEngine _engine;
-  final _entries = <_MediaIdentity, Future<RustMediaImage>>{};
+  final _entries = <_MediaIdentity, Future<CachedMediaImage>>{};
   bool _disposed = false;
 
-  Future<RustMediaImage> resolve({
+  Future<CachedMediaImage> resolve({
     required String sourceId,
     required String postId,
     required MediaVariant media,
@@ -45,13 +46,9 @@ class MediaPresentationCache {
     required int reloadRevision,
     bool firstFrameOnly = false,
     bool progressive = false,
-    DecodedImageRetention? retention,
+    bool? retainDecoded,
   }) {
-    final decodedRetention =
-        retention ??
-        (media.kind == MediaVariantKind.original
-            ? DecodedImageRetention.liveOnly
-            : DecodedImageRetention.cached);
+    final retained = retainDecoded ?? media.kind != MediaVariantKind.original;
     final identity = (
       sourceId,
       postId,
@@ -59,28 +56,28 @@ class MediaPresentationCache {
       media.url,
       firstFrameOnly,
       progressive,
-      decodedRetention,
+      retained,
     );
     if (_entries.remove(identity) case final cached?) {
       final resized = cached.then(
         (provider) =>
             provider.decodeWidth != null &&
                 (decodeWidth == null || provider.decodeWidth! < decodeWidth)
-            ? RustMediaImage(
-                request: provider.request,
-                mediaStream: provider.mediaStream,
+            ? booruMediaImage(
+                request: provider.request!,
+                stream: provider.stream!,
                 decodeWidth: decodeWidth,
                 reloadRevision: provider.reloadRevision,
                 firstFrameOnly: provider.firstFrameOnly,
                 progressive: provider.progressive,
-                retention: decodedRetention,
+                retainDecoded: retained,
               )
             : provider,
       );
       _entries[identity] = resized;
       return resized;
     }
-    late final Future<RustMediaImage> pending;
+    late final Future<CachedMediaImage> pending;
     pending = _engine
         .prepareMediaUrl(
           sourceId: sourceId,
@@ -90,14 +87,15 @@ class MediaPresentationCache {
           allowDiskCache: true,
         )
         .then(
-          (request) => RustMediaImage(
+          (request) => booruMediaImage(
             request: request,
-            mediaStream: (request) => _engine.streamMedia(request: request),
+            stream: (request, cancel) =>
+                _engine.streamMedia(request: request, cancel: cancel),
             decodeWidth: decodeWidth,
             reloadRevision: reloadRevision,
             firstFrameOnly: firstFrameOnly,
             progressive: progressive,
-            retention: decodedRetention,
+            retainDecoded: retained,
           ),
           onError: (Object error, StackTrace stack) {
             if (!_disposed && identical(_entries[identity], pending)) {

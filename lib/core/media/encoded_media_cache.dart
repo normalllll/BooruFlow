@@ -26,15 +26,14 @@ class EncodedMediaCache {
   final MediaDiskCache? _store;
   MediaDiskCache get store => _store ?? appPictureStore;
 
-  static String _proofKey(MediaRequest request) =>
-      '${request.cacheKey}.verified';
+  /// The store handed to `CachedMediaImage`: it writes each picture's proof
+  /// beside it.
+  MediaStore get imageStore => ProvenMediaStore(store);
 
-  Future<File> _file(MediaRequest request) async => File(
-    path.join((await store.directory).path, store.fileNameOf(request.cacheKey)),
-  );
+  Future<File> _file(MediaRequest request) => _fileOf(store, request.cacheKey);
 
   Future<Map<String, Object?>?> _proof(MediaRequest request) async {
-    final bytes = await store.read(_proofKey(request));
+    final bytes = await store.read(_proofKey(request.cacheKey));
     if (bytes == null) return null;
     final proof = jsonDecode(utf8.decode(bytes));
     return proof is Map<String, Object?> &&
@@ -49,28 +48,13 @@ class EncodedMediaCache {
 
   Future<void> remove(MediaRequest request) async {
     if (!request.allowDiskCache) return;
-    await store.remove(_proofKey(request));
-    await store.remove(request.cacheKey);
+    await imageStore.remove(request.cacheKey);
   }
 
   /// Called only after a complete transfer and a successful first-frame decode.
   Future<void> write(MediaRequest request, Uint8List bytes) async {
     if (!request.allowDiskCache) return;
-    try {
-      // A proof left by earlier bytes must not vouch for these.
-      await store.remove(_proofKey(request));
-      await store.write(request.cacheKey, bytes);
-      final location = (await _file(request)).path;
-      final fingerprint = await Isolate.run(() => _fingerprint(location));
-      // Publish the fingerprint last. A concurrent replacement can only cause
-      // a cache miss; it cannot make mismatched bytes pass validation.
-      await store.write(
-        _proofKey(request),
-        utf8.encode(jsonEncode(fingerprint)),
-      );
-    } on FileSystemException {
-      /* Display success does not depend on caching. */
-    }
+    await imageStore.write(request.cacheKey, bytes);
   }
 
   /// Copies original encoded bytes without decoding or re-encoding. An image
@@ -147,6 +131,57 @@ class EncodedMediaCache {
     } on FormatException {
       return null;
     }
+  }
+}
+
+String _proofKey(String cacheKey) => '$cacheKey.verified';
+
+Future<File> _fileOf(MediaDiskCache store, String key) async =>
+    File(path.join((await store.directory).path, store.fileNameOf(key)));
+
+/// [MediaDiskCache] that vouches for each image it keeps: the bytes are
+/// written first, then the proof of their fingerprint, and removing an image
+/// removes both.
+final class ProvenMediaStore implements MediaStore {
+  const ProvenMediaStore(this._store);
+  final MediaDiskCache _store;
+
+  /// The folder the images and their proofs are kept in.
+  MediaDiskCache get disk => _store;
+
+  @override
+  Future<Uint8List?> read(String key) => _store.read(key);
+
+  @override
+  Future<void> write(String key, Uint8List bytes) async {
+    try {
+      // A proof left by earlier bytes must not vouch for these.
+      await _store.remove(_proofKey(key));
+      await _store.write(key, bytes);
+    } on FileSystemException {
+      /* Display success does not depend on caching. */
+      return;
+    }
+    // Nothing awaits this write, and the picture is already shown: a proof
+    // that cannot be written only means saving fetches the file again.
+    try {
+      final location = (await _fileOf(_store, key)).path;
+      final fingerprint = await Isolate.run(() => _fingerprint(location));
+      // Publish the fingerprint last. A concurrent replacement can only cause
+      // a cache miss; it cannot make mismatched bytes pass validation.
+      await _store.write(
+        _proofKey(key),
+        Uint8List.fromList(utf8.encode(jsonEncode(fingerprint))),
+      );
+    } catch (_) {
+      /* The image stays without its proof. */
+    }
+  }
+
+  @override
+  Future<void> remove(String key) async {
+    await _store.remove(_proofKey(key));
+    await _store.remove(key);
   }
 }
 

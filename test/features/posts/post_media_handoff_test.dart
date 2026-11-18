@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:ui' as ui;
 
+import 'package:booruflow/core/media/booru_media_source.dart';
 import 'package:booruflow/core/settings/settings_service.dart';
 import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/features/posts/stage_image_presentation.dart';
 import 'package:booruflow/features/posts/widgets/post_image_frame.dart';
 import 'package:booruflow/features/posts/widgets/post_media.dart';
-import 'package:booruflow/features/posts/widgets/rust_media_image.dart';
 import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
@@ -107,8 +107,8 @@ void main() {
     (tester) async {
       final post = Post(browsePost(1));
       final presentation = StageImagePresentation(post: post);
-      const provider = RustMediaImage(
-        mediaStream: preseededMedia,
+      final provider = booruMediaImage(
+        stream: preseededMedia,
         request: _request,
       );
       await seed(tester, provider);
@@ -164,8 +164,8 @@ void main() {
     testWidgets(
       'decoded geometry $dimensions replaces metadata with one natural media rectangle',
       (tester) async {
-        const provider = RustMediaImage(
-          mediaStream: preseededMedia,
+        final provider = booruMediaImage(
+          stream: preseededMedia,
           request: _request,
           decodeWidth: 240,
         );
@@ -212,9 +212,8 @@ void main() {
         await tester.pump();
         final image = (await tester.runAsync(() async {
           final recorder = ui.PictureRecorder();
-          ui.Canvas(
-            recorder,
-          ).drawColor(const ui.Color(0xff24b0cc), ui.BlendMode.src);
+          ui.Canvas(recorder)
+              .drawColor(const ui.Color(0xff24b0cc), ui.BlendMode.src);
           final picture = recorder.endRecording();
           final image = await picture.toImage(
             dimensions.width.toInt(),
@@ -263,41 +262,42 @@ void main() {
     );
   }
 
-  testWidgets('decoded preview and target Hero are present on the first frame', (
-    tester,
-  ) async {
-    final preview = MemoryImage(
-      base64Decode(
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
-      ),
-    );
-    await seed(tester, preview);
-    final tag = FrostMediaHeroTag(image: preview, aspectRatio: .75);
-    await tester.pumpWidget(
-      app(
-        PostMedia(
-          post: Post(browsePost(1)),
-          preview: preview,
-          fit: BoxFit.contain,
-          frameBuilder: (image) =>
-              FrostMediaHero(tag: tag, fit: BoxFit.contain, child: image),
+  testWidgets(
+    'decoded preview and target Hero are present on the first frame',
+    (tester) async {
+      final preview = MemoryImage(
+        base64Decode(
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
         ),
-      ),
-    );
-    expect(find.byType(FrostMediaHero), findsOneWidget);
-    final pixels = tester.renderObject<RenderImage>(find.byType(RawImage));
-    expect(pixels.image, isNotNull);
-    expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.contain);
-    expect(service.mediaEngine.pending, hasLength(1));
-    expect(tester.takeException(), isNull);
-    await tester.pumpWidget(const SizedBox());
-  });
+      );
+      await seed(tester, preview);
+      final tag = FrostMediaHeroTag(image: preview, aspectRatio: .75);
+      await tester.pumpWidget(
+        app(
+          PostMedia(
+            post: Post(browsePost(1)),
+            preview: preview,
+            fit: BoxFit.contain,
+            frameBuilder: (image) =>
+                FrostMediaHero(tag: tag, fit: BoxFit.contain, child: image),
+          ),
+        ),
+      );
+      expect(find.byType(FrostMediaHero), findsOneWidget);
+      final pixels = tester.renderObject<RenderImage>(find.byType(RawImage));
+      expect(pixels.image, isNotNull);
+      expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.contain);
+      expect(service.mediaEngine.pending, hasLength(1));
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
 
   testWidgets(
     'ready notification comes directly from a load event outside build and flight child has no loading fade',
     (tester) async {
-      const provider = RustMediaImage(
-        mediaStream: preseededMedia,
+      final provider = booruMediaImage(
+        stream: preseededMedia,
         request: _request,
       );
       await seed(tester, provider);
@@ -394,8 +394,8 @@ void main() {
   testWidgets(
     'layout width and metadata changes retain the live decode without another preparation',
     (tester) async {
-      const provider = RustMediaImage(
-        mediaStream: preseededMedia,
+      final provider = booruMediaImage(
+        stream: preseededMedia,
         request: _request,
         decodeWidth: 200,
       );
@@ -466,8 +466,8 @@ void main() {
         routeRevision: '0',
         allowDiskCache: false,
       );
-      const provider = RustMediaImage(
-        mediaStream: preseededMedia,
+      final provider = booruMediaImage(
+        stream: preseededMedia,
         request: originalRequest,
       );
       final decoded = Completer<ImageInfo>();
@@ -500,9 +500,8 @@ void main() {
       final heroState = tester.state(find.byType(FrostMediaHero));
       final original = await tester.runAsync(() async {
         final recorder = ui.PictureRecorder();
-        ui.Canvas(
-          recorder,
-        ).drawColor(const ui.Color(0xff24b0cc), ui.BlendMode.src);
+        ui.Canvas(recorder)
+            .drawColor(const ui.Color(0xff24b0cc), ui.BlendMode.src);
         final picture = recorder.endRecording();
         final image = await picture.toImage(40, 30);
         picture.dispose();
