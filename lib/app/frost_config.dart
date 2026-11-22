@@ -1,3 +1,4 @@
+import 'package:booruflow/app/bundled_fonts.dart';
 import 'package:booruflow/app/icons.g.dart';
 import 'package:booruflow/features/booru/booru_error_presentation.dart';
 import 'package:booruflow/features/booru/web_challenge_logic.dart';
@@ -71,11 +72,13 @@ const appIcons = FrostIconSet(
 
 final appFrostConfig = FrostConfig(
   palettes: FrostPalettes.pink,
-  fonts: const FrostFonts(
-    japanese: 'Noto Sans JP',
-    simplifiedChinese: 'Noto Sans SC',
-    defaultScript: FrostContentScript.japanese,
-  ),
+  fonts: bundlesCjkFonts
+      ? const FrostFonts(
+          japanese: bundledJapaneseFamily,
+          simplifiedChinese: bundledSimplifiedChineseFamily,
+          defaultScript: FrostContentScript.japanese,
+        )
+      : const FrostFonts(defaultScript: FrostContentScript.japanese),
   icons: appIcons,
   labels: appFrostLabels,
   // A full grid of pulsing placeholders flashes in step; a still fill is calm

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:booruflow/app/app_http_overrides.dart';
 import 'package:booruflow/app/booru_flow_app.dart';
+import 'package:booruflow/app/bundled_fonts.dart';
 import 'package:booruflow/app/licenses.dart';
 import 'package:booruflow/core/app_runtime.dart';
 import 'package:booruflow/core/downloads/download_manager.dart';
@@ -39,6 +40,7 @@ Future<void> bootstrap({
 }) async {
   final binding = WidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = AppHttpOverrides();
+  final fonts = loadBundledFonts();
 
   await initializeDateFormatting();
   await RustLib.init();
@@ -66,6 +68,7 @@ Future<void> bootstrap({
   limitDecodedPictureCache(bytes: 512 << 20, count: 300);
   appPictureStore.trimAutomatically();
   registerAppLicenses();
+  await fonts;
 
   // The native window stays hidden until the first frame is ready, so the
   // runner's template rectangle never shows. A saved placement that no longer

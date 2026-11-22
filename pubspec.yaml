@@ -72,15 +72,17 @@ flutter:
     - assets/images/freepiv-icon.png
     - assets/images/app-icon.png
 
-    - assets/fonts/OFL-NotoSansCJK.txt
     - assets/fonts/LICENSE-Lucide.txt
+
+    # CJK subsets for the platforms without good system CJK fonts; they are
+    # registered at startup by lib/app/bundled_fonts.dart.
+    - path: assets/fonts/NotoSansSC-Subset.ttf
+      platforms: [windows, linux]
+    - path: assets/fonts/NotoSansJP-Subset.ttf
+      platforms: [windows, linux]
+    - path: assets/fonts/OFL-NotoSansCJK.txt
+      platforms: [windows, linux]
   fonts:
     - family: BooruFlowIcons
       fonts:
         - asset: assets/fonts/BooruFlowIcons.ttf
-    - family: Noto Sans SC
-      fonts:
-        - asset: assets/fonts/NotoSansSC-Subset.ttf
-    - family: Noto Sans JP
-      fonts:
-        - asset: assets/fonts/NotoSansJP-Subset.ttf
