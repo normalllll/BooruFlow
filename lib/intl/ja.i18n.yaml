@@ -613,6 +613,7 @@ frost:
   taskCancelled: キャンセル済み
   remove: "削除"
   seek: "再生位置"
+  live: "ライブ"
   showReplies(plural, param=n):
     other: "$count件の返信を表示"
   moreMedia(plural, param=n):

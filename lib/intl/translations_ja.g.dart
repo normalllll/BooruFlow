@@ -1241,6 +1241,8 @@ class _Translations$frost$ja extends Translations$frost$en {
   @override
   String get seek => '再生位置';
   @override
+  String get live => 'ライブ';
+  @override
   String showReplies({required num n, required Object count}) =>
       (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('ja'))(
         n,
@@ -2634,6 +2636,7 @@ extension on TranslationsJa {
           'frost.taskCancelled' => 'キャンセル済み',
           'frost.remove' => '削除',
           'frost.seek' => '再生位置',
+          'frost.live' => 'ライブ',
           'frost.showReplies' =>
             ({required num n, required Object count}) =>
                 (_root.$meta.cardinalResolver ??

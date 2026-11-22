@@ -622,6 +622,7 @@ frost:
   taskCancelled: Cancelled
   remove: "Remove"
   seek: "Playback position"
+  live: "Live"
   showReplies(plural, param=n):
     one: "Show $count reply"
     other: "Show $count replies"

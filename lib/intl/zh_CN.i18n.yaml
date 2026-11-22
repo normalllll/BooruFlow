@@ -613,6 +613,7 @@ frost:
   taskCancelled: 已取消
   remove: "移除"
   seek: "播放位置"
+  live: "直播"
   showReplies(plural, param=n):
     other: "显示 $count 条回复"
   moreMedia(plural, param=n):

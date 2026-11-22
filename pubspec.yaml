@@ -17,21 +17,21 @@ dependencies:
     git:
       url: &frost https://github.com/normalllll/frost_ui.git
       path: packages/frost_ui
-      ref: &frost_ref 076332f69f0106a59c1728ca55dee59b99d3a80a
+      ref: &frost_ref dd0fa30eae16a45df7228ed529ecb7dd19db1f36
   frost_data:
     git: {url: *frost, path: packages/frost_data, ref: *frost_ref}
   flutter_media_cache:
     git:
       url: https://github.com/normalllll/flutter_media_cache.git
       ref: fd058fbdbc91368e6477df795c596957e95a209f
-  pasteboard: ^0.6.0
+  pasteboard: ^0.6.2
   flutter_rust_bridge: 2.14.0-beta.2
   flutter_rust_bridge_hooks: 2.14.0-beta.2
   code_assets: ^2.2.0
   package_info_plus: ^10.2.2
   device_info_plus: ^13.3.0
-  hive_ce: ^2.23.3
-  hive_ce_flutter: ^2.5.0
+  hive_ce: ^2.24.0
+  hive_ce_flutter: ^2.6.0
 
   flutter_riverpod: ^3.5.0
   riverpod_annotation: ^4.0.8
@@ -40,7 +40,7 @@ dependencies:
   go_router: ^18.1.4
   url_launcher: ^6.3.3
   webview_flutter: ^4.14.1
-  file_picker: ^13.3.3
+  file_picker: ^13.4.1
   slang: ^4.19.2
   slang_flutter: ^4.19.0
   drift: ^2.35.4
@@ -54,7 +54,7 @@ dependencies:
 dev_dependencies:
   flutter_driver:
     sdk: flutter
-  material_ui: ^1.11.0
+  material_ui: ^1.11.1
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0

@@ -1232,6 +1232,8 @@ class Translations$frost$zh_TW extends Translations$frost$en {
   @override
   String get seek => '播放位置';
   @override
+  String get live => '直播';
+  @override
   String showReplies({required num n, required Object count}) =>
       (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('zh'))(
         n,
@@ -2602,6 +2604,7 @@ extension on TranslationsZhTw {
           'frost.taskCancelled' => '已取消',
           'frost.remove' => '移除',
           'frost.seek' => '播放位置',
+          'frost.live' => '直播',
           'frost.showReplies' =>
             ({required num n, required Object count}) =>
                 (_root.$meta.cardinalResolver ??

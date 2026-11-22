@@ -1657,6 +1657,9 @@ class Translations$frost$en {
   /// en: 'Playback position'
   String get seek => 'Playback position';
 
+  /// en: 'Live'
+  String get live => 'Live';
+
   /// en: '(one) {Show $count reply} (other) {Show $count replies}'
   String showReplies({required num n, required Object count}) =>
       (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(
@@ -3293,6 +3296,7 @@ extension on Translations {
           'frost.taskCancelled' => 'Cancelled',
           'frost.remove' => 'Remove',
           'frost.seek' => 'Playback position',
+          'frost.live' => 'Live',
           'frost.showReplies' =>
             ({required num n, required Object count}) =>
                 (_root.$meta.cardinalResolver ??

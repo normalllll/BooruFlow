@@ -222,6 +222,7 @@ FrostLabels appFrostLabels(BuildContext context) {
     taskCancelled: labels.taskCancelled,
     remove: labels.remove,
     seek: labels.seek,
+    live: labels.live,
     showReplies: (count) =>
         labels.showReplies(n: count, count: formatCount(count)),
     moreMedia: (count) => labels.moreMedia(n: count, count: formatCount(count)),

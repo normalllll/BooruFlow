@@ -526,13 +526,14 @@ class _DownloadSettingsState extends ConsumerState<_DownloadSettings> {
   Future<void> _choose() async {
     if (!ref.read(downloadPlatformProvider).canChooseDirectory) return;
     final settings = ref.read(settingsProvider);
-    final selected = await FilePicker.getDirectoryPath(
+    final picked = await FilePicker.pickDirectory(
       dialogTitle: t.settings.downloadDirectoryDialog.pickerTitle,
       initialDirectory: settings.downloadPath,
       windowsOptions: const WindowsOptions(lockParentWindow: true),
       linuxOptions: const LinuxOptions(lockParentWindow: true),
     );
-    if (selected == null || !mounted) return;
+    if (picked == null || !mounted) return;
+    final selected = picked.toFilePath();
     if (!path.isAbsolute(selected)) {
       AppToast.error(
         t.settings.downloadDirectoryDialog.messages.pathNotAbsolute,
