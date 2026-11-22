@@ -26,7 +26,7 @@ url = "2.5.8"
 tempfile = "3.27.0"
 getrandom = "0.4.3"
 
-tokio = { version = "1.53.2", features = ["test-util", "full"] }
+tokio = { version = "1.53.2", features = ["fs", "io-util", "macros", "rt", "sync", "time"] }
 tokio-util = "0.7.20"
 futures-util = "0.3.34"
 md-5 = "0.11.0"
@@ -58,7 +58,28 @@ webview2-com = { version = "=0.39.1", optional = true }
 
 [dev-dependencies]
 tempfile = "3.27.0"
+tokio = { version = "1.53.2", features = ["net", "test-util"] }
 webpki-root-certs = "1.0.9"
+
+# The library ships inside every app package, so release builds favour size.
+# Panics must keep unwinding: flutter_rust_bridge turns them into Dart errors.
+[profile.release]
+lto = "fat"
+codegen-units = 1
+opt-level = "s"
+
+# Image codecs run on whole pictures and stay optimized for speed.
+[profile.release.package.avif-rust]
+opt-level = 3
+
+[profile.release.package.image-webp]
+opt-level = 3
+
+[profile.release.package.lodepng]
+opt-level = 3
+
+[profile.release.package.zune-jpeg]
+opt-level = 3
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }
