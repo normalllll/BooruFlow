@@ -85,6 +85,8 @@ Map<String, Object?> _state() => {
           'platform': Platform.operatingSystem,
           'pid': pid,
           'bundleId': ?_bundleId,
+          if (Platform.isAndroid) 'package': ?_bundleId,
+          'instanceToken': ?_instanceToken,
         },
 };
 
@@ -275,9 +277,21 @@ Future<void> main(List<String> args) async {
   await startSample(sampleData: !realData && !args.contains('--real-data'));
   // The iOS Simulator session checks the app's bundle identifier.
   _bundleId = (await PackageInfo.fromPlatform()).packageName;
+  if (Platform.isAndroid) {
+    // An Android session reads this file through `run-as` to tell this
+    // process from an earlier or replaced instance of the app.
+    final token = '$pid-${DateTime.now().microsecondsSinceEpoch}';
+    // The isolated profile redirects path_provider, so name the app's own
+    // files directory directly.
+    await File(
+      '/data/data/$_bundleId/files/capture-instance',
+    ).writeAsString(token);
+    _instanceToken = token;
+  }
 }
 
 String? _bundleId;
+String? _instanceToken;
 
 final _errors = <String>[];
 
