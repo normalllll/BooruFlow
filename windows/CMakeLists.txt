@@ -59,6 +59,12 @@ add_subdirectory("runner")
 # them to the application.
 include(flutter/generated_plugins.cmake)
 
+# media_kit's ANGLE build ships its Vulkan backend, SwiftShader and the HLSL
+# compiler. media_kit_video only opens ANGLE's D3D11 and D3D9 displays, and
+# d3dcompiler_47.dll is part of Windows 10 and later.
+list(FILTER PLUGIN_BUNDLED_LIBRARIES EXCLUDE REGEX
+  "/(vk_swiftshader|vulkan-1|d3dcompiler_47)\\.dll$")
+
 
 # === Installation ===
 # Support files are copied into place next to the executable, so that it can
