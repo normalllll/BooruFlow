@@ -110,10 +110,18 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           flutter build apk --release \
+            --split-debug-info=build/app/outputs/symbols \
             --android-project-arg=KEYSTORE_FILE=booruflow-key.jks \
             --android-project-arg=KEYSTORE_PASSWORD="$KEYSTORE_PASSWORD" \
             --android-project-arg=KEY_ALIAS="$KEY_ALIAS" \
             --android-project-arg=KEY_PASSWORD="$KEY_PASSWORD"
+
+      # Dart stack traces from the release APKs are symbolized with
+      # `flutter symbolize` against the files of the same release.
+      - name: Package android symbols
+        run: |
+          cd build/app/outputs/symbols
+          zip -r ../apk/release/android-symbols.zip .
 
       - name: Upload android artifacts
         uses: actions/upload-artifact@v7.0.1
@@ -127,6 +135,7 @@ jobs:
             build/app/outputs/apk/release/app-armeabi-v7a-release.apk
             build/app/outputs/apk/release/app-universal-release.apk
             build/app/outputs/apk/release/app-x86_64-release.apk
+            build/app/outputs/apk/release/android-symbols.zip
 
   build-and-release-windows-x64:
     name: Build Windows x64
@@ -482,7 +491,7 @@ jobs:
         run: |
           for asset in \
             app-arm64-v8a-release.apk app-armeabi-v7a-release.apk \
-            app-universal-release.apk app-x86_64-release.apk \
+            app-universal-release.apk app-x86_64-release.apk android-symbols.zip \
             windows-x64.zip linux-x64.tar.gz linux_amd64.deb linux_amd64.rpm \
             linux-arm64.tar.gz linux_arm64.deb linux_arm64.rpm \
             ios-nosigned.ipa \
