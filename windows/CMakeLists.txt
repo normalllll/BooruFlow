@@ -65,6 +65,25 @@ include(flutter/generated_plugins.cmake)
 list(FILTER PLUGIN_BUNDLED_LIBRARIES EXCLUDE REGEX
   "/(vk_swiftshader|vulkan-1|d3dcompiler_47)\\.dll$")
 
+# The app ships the reduced libmpv of tool/libmpv instead of media_kit's. It
+# exports the same libmpv API under the same DLL name, so media_kit_video keeps
+# linking against media_kit's import library.
+set(LIBMPV_URL "https://github.com/normalllll/BooruFlow/releases/download/libmpv-0.42.0-1/libmpv-windows-x86_64.zip")
+set(LIBMPV_SHA256 "0ce6b2cd8ede0dacde018fa4b78b58e2a8349554d803d91073f025318e88a892")
+set(LIBMPV_ZIP "${CMAKE_BINARY_DIR}/libmpv-${LIBMPV_SHA256}.zip")
+set(LIBMPV_DIR "${CMAKE_BINARY_DIR}/libmpv-${LIBMPV_SHA256}")
+if(NOT EXISTS "${LIBMPV_DIR}/libmpv-2.dll")
+  file(DOWNLOAD "${LIBMPV_URL}" "${LIBMPV_ZIP}"
+    EXPECTED_HASH SHA256=${LIBMPV_SHA256} TLS_VERIFY ON STATUS LIBMPV_STATUS)
+  list(GET LIBMPV_STATUS 0 LIBMPV_ERROR)
+  if(NOT LIBMPV_ERROR EQUAL 0)
+    message(FATAL_ERROR "Downloading ${LIBMPV_URL} failed: ${LIBMPV_STATUS}")
+  endif()
+  file(ARCHIVE_EXTRACT INPUT "${LIBMPV_ZIP}" DESTINATION "${LIBMPV_DIR}")
+endif()
+list(FILTER PLUGIN_BUNDLED_LIBRARIES EXCLUDE REGEX "/libmpv-2\\.dll$")
+list(APPEND PLUGIN_BUNDLED_LIBRARIES "${LIBMPV_DIR}/libmpv-2.dll")
+
 
 # === Installation ===
 # Support files are copied into place next to the executable, so that it can

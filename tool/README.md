@@ -101,6 +101,39 @@ masters are retained outside assets. Noto OFL and Lucide ISC remain explicit
 runtime resources, registered in lib/app/licenses.dart. Keep these required
 licenses; source SVG, editing masters and README documents do not belong in assets.
 
+## Reduced libmpv
+
+Video plays through media_kit, but the app ships its own libmpv instead of
+media_kit's prebuilt libraries: FFmpeg keeps only what booru posts use (H.264,
+HEVC, VP8, VP9, AV1 and MPEG-4 video; AAC, MP3, Opus, Vorbis, FLAC and PCM
+audio; MP4 and Matroska/WebM; HTTP(S) with an HTTP proxy) plus each platform's
+hardware decoder, and mpv leaves out scripting, disc, Vulkan and similar
+features. Everything is linked into one library per platform:
+`libmpv-2.dll` on Windows, `libmpv.so` per Android ABI and `Mpv.framework` in
+an `Mpv.xcframework` for macOS and iOS. Linux uses the system libmpv.
+
+`tool/libmpv/build.sh` builds all of them on macOS (Xcode, the Android NDK of
+`android/app/build.gradle.kts`, and `brew install meson ninja nasm cmake
+pkgconf`; it downloads llvm-mingw for Windows) and writes the release archives
+and `SHA256SUMS` to `build/libmpv/dist`. Source versions are pinned at the top
+of the script. `patch_mac_gl.py` lets mpv use VideoToolbox's OpenGL interop on
+macOS without its Cocoa backend, which needs Swift and Metal;
+`patch_audiounit.py` lets several players share the iOS audio session. mpv is
+built without GPL parts; with mbedTLS the Android build is LGPL v3, the others
+LGPL v2.1 or later.
+
+A build is published as a `libmpv-<mpv version>-<build>` GitHub release of
+this repository. The app's builds download from it and check the SHA-256 in:
+
+- `windows/CMakeLists.txt` (`libmpv-windows-x86_64.zip`)
+- `android/app/build.gradle.kts` (`libmpv-android.zip`)
+- `third_party/media_kit_libs_macos_video/macos/Makefile` and
+  `third_party/media_kit_libs_ios_video/ios/Makefile` (`Mpv.xcframework.zip`)
+
+The two `third_party` packages are media_kit's macOS and iOS library packages
+with only their Makefile changed; `pubspec.yaml` overrides them, and a local
+`pubspec_overrides.yaml` has to repeat those two overrides.
+
 ## macOS media prerequisites
 
 After `flutter pub get`, run `bash tool/ci/prepare_macos_media.sh` before the

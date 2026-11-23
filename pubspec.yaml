@@ -51,6 +51,16 @@ dependencies:
   media_kit: 1.2.6
   media_kit_video: 2.0.1
   media_kit_libs_video: 1.0.7
+
+# media_kit's macOS and iOS library packages, fetching the reduced libmpv of
+# tool/libmpv. A local pubspec_overrides.yaml replaces this whole section and
+# must repeat both entries.
+dependency_overrides:
+  media_kit_libs_macos_video:
+    path: third_party/media_kit_libs_macos_video
+  media_kit_libs_ios_video:
+    path: third_party/media_kit_libs_ios_video
+
 dev_dependencies:
   flutter_driver:
     sdk: flutter

@@ -1,0 +1,19 @@
+name: media_kit_libs_macos_video
+description: media_kit's macOS library package, providing BooruFlow's reduced libmpv build.
+version: 1.1.4
+publish_to: none
+
+environment:
+  sdk: ">=2.17.0 <4.0.0"
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  plugin_platform_interface: ^2.0.2
+
+flutter:
+  plugin:
+    platforms:
+      macos:
+        pluginClass: MediaKitLibsMacosVideoPlugin
