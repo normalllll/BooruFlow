@@ -723,8 +723,6 @@ class _Translations$discovery$ja extends Translations$discovery$en {
   @override
   String get calendarMonth => '月別';
   @override
-  String get latest => '最新';
-  @override
   String get popular => '人気';
   @override
   String get today => '今日';
@@ -825,11 +823,10 @@ class _Translations$discovery$ja extends Translations$discovery$en {
   @override
   String get general => '一般';
   @override
-  String get random => 'ランダム';
+  String get all => 'すべて';
   @override
-  String get lifetimeViews => '累計閲覧数';
-  @override
-  String get lifetimeFavorites => '累計お気に入り数';
+  late final _Translations$discovery$sort$ja sort =
+      _Translations$discovery$sort$ja._(_root);
 }
 
 // Path: mediaError
@@ -1880,6 +1877,51 @@ class _Translations$settings$maxSegmentsPerTaskDialog$ja
   String get title => 'タスクごとの最大分割数';
 }
 
+// Path: discovery.sort
+class _Translations$discovery$sort$ja extends Translations$discovery$sort$en {
+  _Translations$discovery$sort$ja._(TranslationsJa root)
+    : this._root = root,
+      super.internal(root);
+
+  final TranslationsJa _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get title => '並べ替え';
+  @override
+  String get more => 'その他';
+  @override
+  String get latest => '新着';
+  @override
+  String get oldest => '古い順';
+  @override
+  String get relevance => '関連度';
+  @override
+  String get score => 'スコア';
+  @override
+  String get favorites => 'お気に入り数';
+  @override
+  String get views => '閲覧数';
+  @override
+  String get upvotes => '高評価数';
+  @override
+  String get hot => '注目';
+  @override
+  String get updated => '更新順';
+  @override
+  String get resolution => '解像度';
+  @override
+  String get landscape => '横長優先';
+  @override
+  String get portrait => '縦長優先';
+  @override
+  String get fileSize => 'ファイルサイズ';
+  @override
+  String get tagCount => 'タグ数';
+  @override
+  String get random => 'ランダム';
+}
+
 // Path: settings.account.statuses
 class _Translations$settings$account$statuses$ja
     extends Translations$settings$account$statuses$en {
@@ -2346,7 +2388,6 @@ extension on TranslationsJa {
           'discovery.calendarDay' => '日別',
           'discovery.calendarWeek' => '週別',
           'discovery.calendarMonth' => '月別',
-          'discovery.latest' => '最新',
           'discovery.popular' => '人気',
           'discovery.today' => '今日',
           'discovery.thisWeek' => '今週',
@@ -2401,9 +2442,24 @@ extension on TranslationsJa {
           'discovery.copyright' => '作品',
           'discovery.meta' => 'メタ',
           'discovery.general' => '一般',
-          'discovery.random' => 'ランダム',
-          'discovery.lifetimeViews' => '累計閲覧数',
-          'discovery.lifetimeFavorites' => '累計お気に入り数',
+          'discovery.all' => 'すべて',
+          'discovery.sort.title' => '並べ替え',
+          'discovery.sort.more' => 'その他',
+          'discovery.sort.latest' => '新着',
+          'discovery.sort.oldest' => '古い順',
+          'discovery.sort.relevance' => '関連度',
+          'discovery.sort.score' => 'スコア',
+          'discovery.sort.favorites' => 'お気に入り数',
+          'discovery.sort.views' => '閲覧数',
+          'discovery.sort.upvotes' => '高評価数',
+          'discovery.sort.hot' => '注目',
+          'discovery.sort.updated' => '更新順',
+          'discovery.sort.resolution' => '解像度',
+          'discovery.sort.landscape' => '横長優先',
+          'discovery.sort.portrait' => '縦長優先',
+          'discovery.sort.fileSize' => 'ファイルサイズ',
+          'discovery.sort.tagCount' => 'タグ数',
+          'discovery.sort.random' => 'ランダム',
           'mediaError.videoProxyBypassed' =>
             '動画では SOCKS プロキシを利用できないため、今回は直接接続しました。',
           'mediaError.videoFailed' => '動画の再生に失敗しました',
@@ -2572,6 +2628,9 @@ extension on TranslationsJa {
           'frost.more' => 'その他',
           'frost.expandNavigation' => 'サイドバーを開く',
           'frost.collapseNavigation' => 'サイドバーを閉じる',
+          _ => null,
+        } ??
+        switch (path) {
           'frost.clearText' => '入力を消去',
           'frost.search' => '検索',
           'frost.noResults' => ({
@@ -2588,9 +2647,6 @@ extension on TranslationsJa {
           'frost.hidePassword' => 'パスワードを隠す',
           'frost.chooseDate' => '日付を選択',
           'frost.chooseTime' => '時刻を選択',
-          _ => null,
-        } ??
-        switch (path) {
           'frost.increment' => '増やす',
           'frost.decrement' => '減らす',
           'frost.reorderHandle' => '並べ替え',

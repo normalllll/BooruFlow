@@ -1,9 +1,9 @@
 use crate::api::booru_auth::{AuthState, AuthStatus};
-use crate::api::booru_models::{MediaVariantKind, TagCategory};
+use crate::api::booru_models::{MediaVariantKind, SortOrder, TagCategory};
 use crate::booru::adapter::{BooruAdapter, RequestContext};
 use crate::booru::adapters::common::{
     boolean, md5_checksum, media, parent_id, parse_json, rating, signed32, string, tag_list,
-    unix_to_iso8601, unsigned, unsigned32, username, validate_media_hosts,
+    unix_to_iso8601, unsigned, unsigned32, username, validate_media_hosts, with_sort_tag,
 };
 use crate::booru::error::{BooruError, BooruErrorCode, BooruResult};
 use crate::booru::model::{Post, PostFlags, PostId, PostPage, SearchQuery};
@@ -309,20 +309,15 @@ impl BooruAdapter for GelbooruAdapter {
     }
 
     async fn search(&self, ctx: &RequestContext, query: SearchQuery) -> BooruResult<PostPage> {
-        let page = query
-            .cursor
-            .as_deref()
-            .unwrap_or("0")
-            .parse::<u32>()
-            .map_err(|_| BooruError::invalid_request(Some(self.definition.id)))?;
+        let (page, cursor_seed) = parse_cursor(query.cursor.as_deref())
+            .ok_or_else(|| BooruError::invalid_request(Some(self.definition.id)))?;
+        let (tags, seed) = resolve_sort(&query.text, query.sort, cursor_seed, random_seed)?;
+        let next = |page: u32| format_cursor(page, seed);
         let limit = query.page_size.clamp(1, self.definition.max_page_size);
         if ctx.runtime.auth_state(self.definition.id)?.status == AuthStatus::NotConfigured {
             let response = ctx
                 .runtime
-                .execute(
-                    &self.definition,
-                    self.public_listing_request(query.text.trim(), page)?,
-                )
+                .execute(&self.definition, self.public_listing_request(&tags, page)?)
                 .await?;
             let mut items = self.parse_public_listing(&response.body, limit as usize)?;
             let item_count = u32::try_from(items.len()).unwrap_or(0);
@@ -331,17 +326,13 @@ impl BooruAdapter for GelbooruAdapter {
             }
             return Ok(PostPage {
                 exhausted: item_count < limit,
-                next_cursor: (item_count >= limit)
-                    .then(|| page.saturating_add(item_count).to_string()),
+                next_cursor: (item_count >= limit).then(|| next(page.saturating_add(item_count))),
                 items,
             });
         }
         let response = ctx
             .runtime
-            .execute(
-                &self.definition,
-                self.request(query.text.trim(), limit, page)?,
-            )
+            .execute(&self.definition, self.request(&tags, limit, page)?)
             .await?;
         let mut items = self.parse_posts(&response.body)?;
         let exhausted = items.len() < limit as usize || page == u32::MAX;
@@ -350,7 +341,7 @@ impl BooruAdapter for GelbooruAdapter {
         }
         Ok(PostPage {
             items,
-            next_cursor: (!exhausted).then(|| (page + 1).to_string()),
+            next_cursor: (!exhausted).then(|| next(page + 1)),
             exhausted,
         })
     }
@@ -395,6 +386,86 @@ impl BooruAdapter for GelbooruAdapter {
             }
             Err(error) => Err(error),
         }
+    }
+}
+
+/// The tags to request and the seed the cursor must carry. A random order needs
+/// one seed for all its pages, which the first page picks. A random the user
+/// typed without a seed gets one the same way, and one typed with a seed keeps
+/// it. Any other sort the user typed is left alone.
+fn resolve_sort(
+    text: &str,
+    sort: SortOrder,
+    cursor_seed: Option<u32>,
+    new_seed: impl FnOnce() -> u32,
+) -> BooruResult<(String, Option<u32>)> {
+    let invalid = || BooruError::invalid_request(Some("gelbooru"));
+    let mut parts = text
+        .split_whitespace()
+        .map(str::to_owned)
+        .collect::<Vec<_>>();
+    let typed = parts
+        .iter()
+        .position(|part| part.to_ascii_lowercase().starts_with("sort:"));
+    let Some(index) = typed else {
+        let seed = match (sort, cursor_seed) {
+            (SortOrder::Random, seed) => Some(seed.unwrap_or_else(new_seed)),
+            (_, None) => None,
+            (_, Some(_)) => return Err(invalid()),
+        };
+        let tag = sort_tag(sort, seed)?;
+        return Ok((with_sort_tag(text, tag.as_deref(), "sort:"), seed));
+    };
+    if parts[index].eq_ignore_ascii_case("sort:random") {
+        let seed = cursor_seed.unwrap_or_else(new_seed);
+        parts[index] = format!("sort:random:{seed}");
+        return Ok((parts.join(" "), Some(seed)));
+    }
+    if cursor_seed.is_some() {
+        return Err(invalid());
+    }
+    Ok((parts.join(" "), None))
+}
+
+/// The `sort:` meta-tag for a sort; the newest-first default sends none.
+/// A random order takes a seed from 0 to 10000, which pins its sequence.
+pub fn sort_tag(sort: SortOrder, seed: Option<u32>) -> BooruResult<Option<String>> {
+    Ok(Some(match sort {
+        SortOrder::Latest => return Ok(None),
+        SortOrder::Oldest => "sort:id:asc".to_owned(),
+        SortOrder::Score => "sort:score:desc".to_owned(),
+        SortOrder::Updated => "sort:updated:desc".to_owned(),
+        SortOrder::Random => match seed {
+            Some(seed) => format!("sort:random:{seed}"),
+            None => "sort:random".to_owned(),
+        },
+        _ => return Err(BooruError::invalid_request(Some("gelbooru"))),
+    }))
+}
+
+fn random_seed() -> u32 {
+    getrandom::u32().unwrap_or_default() % 10_001
+}
+
+/// `<page>` or, for a random order, `<page>:<seed>`.
+fn parse_cursor(cursor: Option<&str>) -> Option<(u32, Option<u32>)> {
+    let Some(cursor) = cursor else {
+        return Some((0, None));
+    };
+    let (page, seed) = match cursor.split_once(':') {
+        Some((page, seed)) => (
+            page,
+            Some(seed.parse::<u32>().ok().filter(|s| *s <= 10_000)?),
+        ),
+        None => (cursor, None),
+    };
+    Some((page.parse().ok()?, seed))
+}
+
+fn format_cursor(page: u32, seed: Option<u32>) -> String {
+    match seed {
+        Some(seed) => format!("{page}:{seed}"),
+        None => page.to_string(),
     }
 }
 
@@ -448,6 +519,99 @@ mod tests {
                 .find(|source| source.id == "gelbooru")
                 .unwrap(),
         )
+    }
+
+    #[test]
+    fn each_declared_sort_maps_to_a_sort_tag() {
+        for option in &adapter().definition.capabilities.sorts.search {
+            let tag = sort_tag(option.order, Some(42)).unwrap();
+            assert_eq!(tag.is_none(), option.order == SortOrder::Latest);
+        }
+        let tag = |sort, seed| sort_tag(sort, seed).unwrap();
+        assert_eq!(tag(SortOrder::Oldest, None).as_deref(), Some("sort:id:asc"));
+        assert_eq!(
+            tag(SortOrder::Score, None).as_deref(),
+            Some("sort:score:desc")
+        );
+        assert_eq!(
+            tag(SortOrder::Updated, None).as_deref(),
+            Some("sort:updated:desc")
+        );
+        assert_eq!(
+            tag(SortOrder::Random, Some(3456)).as_deref(),
+            Some("sort:random:3456")
+        );
+        assert!(sort_tag(SortOrder::Views, None).is_err());
+    }
+
+    #[test]
+    fn random_cursor_carries_the_seed_and_other_cursors_do_not() {
+        assert_eq!(parse_cursor(None), Some((0, None)));
+        assert_eq!(parse_cursor(Some("40")), Some((40, None)));
+        assert_eq!(parse_cursor(Some("2:3456")), Some((2, Some(3456))));
+        assert_eq!(parse_cursor(Some("2:10001")), None);
+        assert_eq!(parse_cursor(Some("2:x")), None);
+        assert_eq!(parse_cursor(Some("x")), None);
+        assert_eq!(format_cursor(2, Some(3456)), "2:3456");
+        assert_eq!(format_cursor(2, None), "2");
+        assert!(random_seed() <= 10_000);
+    }
+
+    #[test]
+    fn typed_sorts_are_respected_and_random_always_carries_a_seed() {
+        let seed = || 777;
+        let resolve = |text, sort, cursor| resolve_sort(text, sort, cursor, seed).unwrap();
+        // Picked sorts.
+        assert_eq!(
+            resolve("sky", SortOrder::Random, None),
+            ("sky sort:random:777".into(), Some(777))
+        );
+        assert_eq!(
+            resolve("sky", SortOrder::Random, Some(12)),
+            ("sky sort:random:12".into(), Some(12))
+        );
+        assert_eq!(
+            resolve("sky", SortOrder::Score, None),
+            ("sky sort:score:desc".into(), None)
+        );
+        // A typed random without a seed gets one, kept for the later pages.
+        assert_eq!(
+            resolve("sky sort:random", SortOrder::Latest, None),
+            ("sky sort:random:777".into(), Some(777))
+        );
+        assert_eq!(
+            resolve("SORT:random sky", SortOrder::Latest, Some(5)),
+            ("sort:random:5 sky".into(), Some(5))
+        );
+        // A typed seed is the user's own.
+        assert_eq!(
+            resolve("sky sort:random:42", SortOrder::Latest, None),
+            ("sky sort:random:42".into(), None)
+        );
+        // Other typed sorts stay as written; a picked sort adds nothing.
+        assert_eq!(
+            resolve("sky sort:id:asc", SortOrder::Score, None),
+            ("sky sort:id:asc".into(), None)
+        );
+        // `order:` is an ordinary tag here.
+        assert_eq!(
+            resolve("sky order:score", SortOrder::Score, None),
+            ("sky order:score sort:score:desc".into(), None)
+        );
+        // A seed in the cursor needs a random order to belong to.
+        assert!(resolve_sort("sky", SortOrder::Score, Some(5), seed).is_err());
+        assert!(resolve_sort("sky sort:id:asc", SortOrder::Latest, Some(5), seed).is_err());
+    }
+
+    #[test]
+    fn the_request_carries_the_resolved_tags_and_page() {
+        let spec = adapter().request("sky sort:random:9", 20, 3).unwrap();
+        let query = spec
+            .query
+            .into_iter()
+            .collect::<std::collections::BTreeMap<_, _>>();
+        assert_eq!(query["tags"], "sky sort:random:9");
+        assert_eq!(query["pid"], "3");
     }
 
     #[test]

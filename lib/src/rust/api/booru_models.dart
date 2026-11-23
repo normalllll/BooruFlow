@@ -5,9 +5,10 @@
 
 import '../booru/error.dart';
 import '../frb_generated.dart';
+
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `hash`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `hash`, `hash`
 
 Future<String> postKey({required String sourceId, required String postId}) =>
     RustLib.instance.api.crateApiBooruModelsPostKey(
@@ -337,7 +338,6 @@ class DiscoveryCapabilities {
   final List<PopularRange> historicalRanges;
   final PopularTimeBasis timeBasis;
   final int? finitePopularLimit;
-  final List<FeedKind> additionalFeeds;
   final int autocompleteMinChars;
 
   const DiscoveryCapabilities({
@@ -347,7 +347,6 @@ class DiscoveryCapabilities {
     required this.historicalRanges,
     required this.timeBasis,
     this.finitePopularLimit,
-    required this.additionalFeeds,
     required this.autocompleteMinChars,
   });
 
@@ -359,7 +358,6 @@ class DiscoveryCapabilities {
       historicalRanges.hashCode ^
       timeBasis.hashCode ^
       finitePopularLimit.hashCode ^
-      additionalFeeds.hashCode ^
       autocompleteMinChars.hashCode;
 
   @override
@@ -373,18 +371,10 @@ class DiscoveryCapabilities {
           historicalRanges == other.historicalRanges &&
           timeBasis == other.timeBasis &&
           finitePopularLimit == other.finitePopularLimit &&
-          additionalFeeds == other.additionalFeeds &&
           autocompleteMinChars == other.autocompleteMinChars;
 }
 
-enum FeedKind {
-  latest,
-  recentPopular,
-  historicalPopular,
-  random,
-  lifetimeViews,
-  lifetimeFavorites,
-}
+enum FeedKind { all, recentPopular, historicalPopular }
 
 class FeedRequest {
   final String sourceId;
@@ -393,7 +383,9 @@ class FeedRequest {
 
   /// A date, not an instant. Calendar feeds are anchored in their cursor.
   final String? date;
-  final String? seed;
+
+  /// Required for `FeedKind::All`, empty for the popular kinds.
+  final SortOrder? sort;
   final List<ContentRating> ratings;
 
   /// Upstream page-size hint; finite rankings may return their whole list.
@@ -405,7 +397,7 @@ class FeedRequest {
     required this.kind,
     this.range,
     this.date,
-    this.seed,
+    this.sort,
     required this.ratings,
     required this.pageSize,
     this.cursor,
@@ -417,7 +409,7 @@ class FeedRequest {
       kind.hashCode ^
       range.hashCode ^
       date.hashCode ^
-      seed.hashCode ^
+      sort.hashCode ^
       ratings.hashCode ^
       pageSize.hashCode ^
       cursor.hashCode;
@@ -431,7 +423,7 @@ class FeedRequest {
           kind == other.kind &&
           range == other.range &&
           date == other.date &&
-          seed == other.seed &&
+          sort == other.sort &&
           ratings == other.ratings &&
           pageSize == other.pageSize &&
           cursor == other.cursor;
@@ -781,6 +773,7 @@ enum RouteProvider { uncensoredDns, dohSb }
 class SearchRequest {
   final String sourceId;
   final String queryText;
+  final SortOrder sort;
   final List<ContentRating> ratings;
   final int pageSize;
   final String? cursor;
@@ -788,6 +781,7 @@ class SearchRequest {
   const SearchRequest({
     required this.sourceId,
     required this.queryText,
+    required this.sort,
     required this.ratings,
     required this.pageSize,
     this.cursor,
@@ -797,6 +791,7 @@ class SearchRequest {
   int get hashCode =>
       sourceId.hashCode ^
       queryText.hashCode ^
+      sort.hashCode ^
       ratings.hashCode ^
       pageSize.hashCode ^
       cursor.hashCode;
@@ -808,13 +803,75 @@ class SearchRequest {
           runtimeType == other.runtimeType &&
           sourceId == other.sourceId &&
           queryText == other.queryText &&
+          sort == other.sort &&
           ratings == other.ratings &&
           pageSize == other.pageSize &&
           cursor == other.cursor;
 }
 
+/// The first option of each list is its default.
+class SortCapabilities {
+  final List<SortOption> feed;
+  final List<SortOption> search;
+
+  const SortCapabilities({required this.feed, required this.search});
+
+  @override
+  int get hashCode => feed.hashCode ^ search.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SortCapabilities &&
+          runtimeType == other.runtimeType &&
+          feed == other.feed &&
+          search == other.search;
+}
+
+/// A sort a source can apply. `primary` options are listed directly in the
+/// menu; the others go under a secondary entry.
+class SortOption {
+  final SortOrder order;
+  final bool primary;
+
+  const SortOption({required this.order, required this.primary});
+
+  @override
+  int get hashCode => order.hashCode ^ primary.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SortOption &&
+          runtimeType == other.runtimeType &&
+          order == other.order &&
+          primary == other.primary;
+}
+
+enum SortOrder {
+  latest,
+  oldest,
+  relevance,
+  score,
+  favorites,
+  views,
+  upvotes,
+  hot,
+  updated,
+  resolution,
+  landscape,
+  portrait,
+  fileSize,
+  tagCount,
+  random;
+
+  static Future<SortOrder> default_() =>
+      RustLib.instance.api.crateApiBooruModelsSortOrderDefault();
+}
+
 class SourceCapabilities {
   final DiscoveryCapabilities discovery;
+  final SortCapabilities sorts;
   final List<ContentRating> ratings;
   final AuthKind authKind;
   final bool supportsSearch;
@@ -827,6 +884,7 @@ class SourceCapabilities {
 
   const SourceCapabilities({
     required this.discovery,
+    required this.sorts,
     required this.ratings,
     required this.authKind,
     required this.supportsSearch,
@@ -841,6 +899,7 @@ class SourceCapabilities {
   @override
   int get hashCode =>
       discovery.hashCode ^
+      sorts.hashCode ^
       ratings.hashCode ^
       authKind.hashCode ^
       supportsSearch.hashCode ^
@@ -857,6 +916,7 @@ class SourceCapabilities {
       other is SourceCapabilities &&
           runtimeType == other.runtimeType &&
           discovery == other.discovery &&
+          sorts == other.sorts &&
           ratings == other.ratings &&
           authKind == other.authKind &&
           supportsSearch == other.supportsSearch &&

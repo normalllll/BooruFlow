@@ -16,6 +16,15 @@ class FeedSelection extends _$FeedSelection {
       state = Map.unmodifiable({...state, sourceId: request});
 }
 
+/// The sort last chosen on a tag results page, per source. Kept in memory only.
+@Riverpod(keepAlive: true)
+class SearchSortSelection extends _$SearchSortSelection {
+  @override
+  Map<String, SortOrder> build() => const {};
+  void select(String sourceId, SortOrder order) =>
+      state = Map.unmodifiable({...state, sourceId: order});
+}
+
 @Riverpod(keepAlive: true)
 DiscoveryAvailability discoveryAvailability(Ref ref) =>
     DiscoveryAvailability(service: ref.watch(booruServiceProvider));

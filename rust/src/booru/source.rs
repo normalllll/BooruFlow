@@ -238,6 +238,7 @@ pub fn builtin_sources() -> Vec<SourceDefinition> {
     ];
     for source in &mut sources {
         source.capabilities.discovery = crate::booru::discovery::capabilities(source);
+        source.capabilities.sorts = crate::booru::capabilities::sort_capabilities(source);
         if source.family == ProtocolFamily::Gelbooru {
             source.capabilities.supports_autocomplete = true;
         }

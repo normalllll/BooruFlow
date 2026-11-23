@@ -5,6 +5,7 @@ import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/features/booru/services/booru_service.dart';
 import 'package:booruflow/features/browse/collection_logic.dart';
 import 'package:booruflow/features/browse/widgets/rating_filter.dart';
+import 'package:booruflow/features/browse/widgets/sort_menu.dart';
 import 'package:booruflow/features/downloads/batch/batch_download_dialog.dart';
 import 'package:booruflow/features/downloads/batch/logic.dart';
 import 'package:booruflow/intl/translations.g.dart';
@@ -57,21 +58,29 @@ mixin CollectionActions<T extends ConsumerStatefulWidget> on ConsumerState<T> {
       final key = collectionKey;
       final ratings = ratingsForSource(key, source.capabilities.ratings);
       final url = await switch (key.request) {
-        TagSearchCollectionRequest(:final tags) => service.engine.searchWebUrl(
-          request: SearchRequest(
-            sourceId: key.sourceId,
-            queryText: tags.join(' '),
-            ratings: ratings,
-            pageSize: 40,
+        TagSearchCollectionRequest(:final tags, :final sort) =>
+          service.engine.searchWebUrl(
+            request: SearchRequest(
+              sourceId: key.sourceId,
+              queryText: tags.join(' '),
+              sort: sort,
+              ratings: ratings,
+              pageSize: 40,
+            ),
           ),
-        ),
-        FeedCollectionRequest(:final kind, :final range, :final date) =>
+        FeedCollectionRequest(
+          :final kind,
+          :final range,
+          :final date,
+          :final sort,
+        ) =>
           service.engine.feedWebUrl(
             request: FeedRequest(
               sourceId: key.sourceId,
               kind: kind,
               range: range,
               date: date,
+              sort: kind == FeedKind.all ? sort : null,
               ratings: ratings,
               pageSize: 40,
             ),
@@ -84,16 +93,19 @@ mixin CollectionActions<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     }
   }
 
-  /// Filter, batch download and the more menu. Batch download moves into the
-  /// more menu where the layout is the compact bottom bar.
+  /// Sort, filter, batch download and the more menu. Batch download moves into
+  /// the more menu where the layout is the compact bottom bar. [sort] is the
+  /// page's sort control, for a page that has no tab row to hold it.
   List<FrostToolbarItem> toolbar(
     PostListSource collection, {
+    SortChoice? sort,
     List<FrostMenuEntry> more = const [],
   }) {
     final compact = !FrostAutoScaffold.usesHorizontalLayoutOf(context);
     final batchReady =
         collection.lastError == null || collection.items.isNotEmpty;
     return [
+      if (sort != null && sort.isOffered && !compact) sort.toolbarItem(context),
       FrostToolbarItem.custom(
         minWidth: FrostDensity.of(context).targetHeight,
         priority: FrostToolbarPriority.high,
@@ -115,6 +127,9 @@ mixin CollectionActions<T extends ConsumerStatefulWidget> on ConsumerState<T> {
         icon: appIcons.more,
         showsLabel: false,
         entries: [
+          // Beside the search field the button would squeeze it, so a compact
+          // layout keeps the sort in this menu.
+          if (sort != null && sort.isOffered && compact) sort.menuEntry,
           if (compact)
             FrostMenuAction(
               t.batchDownload.title,

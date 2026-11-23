@@ -39,6 +39,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 import '../../support/browse_support.dart';
+import '../../support/source_sorts.dart';
 
 // ---------------------------------------------------------------------------
 // Fakes and data
@@ -64,13 +65,13 @@ BooruSource _source(String id) => BooruSource(
   enabledByDefault: true,
   isAiSource: false,
   capabilities: const SourceCapabilities(
+    sorts: newestOnlySorts,
     discovery: DiscoveryCapabilities(
       popular: CapabilityAvailability.unsupported,
       commonTags: CapabilityAvailability.available,
       popularRanges: [],
       historicalRanges: [],
       timeBasis: PopularTimeBasis.indexTimeWindow,
-      additionalFeeds: [],
       autocompleteMinChars: 1,
     ),
     ratings: [ContentRating.general],

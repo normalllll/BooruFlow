@@ -316,7 +316,8 @@ class _AccountCredentialsFormState
                       .feedWebUrl(
                         request: FeedRequest(
                           sourceId: widget.sourceId,
-                          kind: FeedKind.latest,
+                          kind: FeedKind.all,
+                          sort: SortOrder.latest,
                           ratings: const [],
                           pageSize: 1,
                         ),

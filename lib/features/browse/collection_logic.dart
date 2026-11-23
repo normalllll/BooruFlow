@@ -17,25 +17,38 @@ sealed class PostCollectionRequest {
 
 final class FeedCollectionRequest extends PostCollectionRequest {
   const FeedCollectionRequest({
-    this.kind = FeedKind.latest,
+    this.kind = FeedKind.all,
     this.range,
     this.date,
+    this.sort = SortOrder.latest,
   });
   final FeedKind kind;
   final PopularRange? range;
   final String? date;
+
+  /// How the all-posts feed is ordered; the popular feeds have their own order.
+  final SortOrder sort;
   @override
-  List<Object?> get identity => ['feed', kind.name, range?.name, date];
+  List<Object?> get identity => [
+    'feed',
+    kind.name,
+    range?.name,
+    date,
+    sort.name,
+  ];
 }
 
 final class TagSearchCollectionRequest extends PostCollectionRequest {
-  TagSearchCollectionRequest(Iterable<String> tags)
-    : tags = List.unmodifiable(
-        tags.map((t) => t.trim()).where((t) => t.isNotEmpty),
-      );
+  TagSearchCollectionRequest(
+    Iterable<String> tags, {
+    this.sort = SortOrder.latest,
+  }) : tags = List.unmodifiable(
+         tags.map((t) => t.trim()).where((t) => t.isNotEmpty),
+       );
   final List<String> tags;
+  final SortOrder sort;
   @override
-  List<Object?> get identity => ['search', ...tags];
+  List<Object?> get identity => ['search', sort.name, ...tags];
 }
 
 final class CollectionKey {
@@ -95,22 +108,29 @@ Future<PostPage> loadCollection(
     service.sourceById(key.sourceId).capabilities.ratings,
   );
   return switch (key.request) {
-    FeedCollectionRequest(:final kind, :final range, :final date) =>
+    FeedCollectionRequest(
+      :final kind,
+      :final range,
+      :final date,
+      :final sort,
+    ) =>
       engine.feed(
         request: FeedRequest(
           sourceId: key.sourceId,
           kind: kind,
           range: range,
           date: date,
+          sort: kind == FeedKind.all ? sort : null,
           ratings: ratings,
           pageSize: 40,
           cursor: cursor,
         ),
       ),
-    TagSearchCollectionRequest(:final tags) => engine.search(
+    TagSearchCollectionRequest(:final tags, :final sort) => engine.search(
       request: SearchRequest(
         sourceId: key.sourceId,
         queryText: tags.join(' '),
+        sort: sort,
         ratings: ratings,
         pageSize: 40,
         cursor: cursor,

@@ -721,8 +721,6 @@ class Translations$discovery$zh_TW extends Translations$discovery$en {
   @override
   String get calendarMonth => '每月';
   @override
-  String get latest => '最新';
-  @override
   String get popular => '熱門';
   @override
   String get today => '今日';
@@ -823,11 +821,10 @@ class Translations$discovery$zh_TW extends Translations$discovery$en {
   @override
   String get general => '一般';
   @override
-  String get random => '隨機';
+  String get all => '全部';
   @override
-  String get lifetimeViews => '累計瀏覽量';
-  @override
-  String get lifetimeFavorites => '累計收藏數';
+  late final Translations$discovery$sort$zh_TW sort =
+      Translations$discovery$sort$zh_TW.internal(_root);
 }
 
 // Path: mediaError
@@ -1869,6 +1866,51 @@ class Translations$settings$maxSegmentsPerTaskDialog$zh_TW
   String get title => '每個下載任務的最大分段數';
 }
 
+// Path: discovery.sort
+class Translations$discovery$sort$zh_TW extends Translations$discovery$sort$en {
+  Translations$discovery$sort$zh_TW.internal(TranslationsZhTw root)
+    : this._root = root,
+      super.internal(root);
+
+  final TranslationsZhTw _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get title => '排序';
+  @override
+  String get more => '更多排序方式';
+  @override
+  String get latest => '最新';
+  @override
+  String get oldest => '最舊';
+  @override
+  String get relevance => '相關性';
+  @override
+  String get score => '評分';
+  @override
+  String get favorites => '收藏數';
+  @override
+  String get views => '瀏覽次數';
+  @override
+  String get upvotes => '讚數';
+  @override
+  String get hot => '熱度';
+  @override
+  String get updated => '最近更新';
+  @override
+  String get resolution => '解析度';
+  @override
+  String get landscape => '橫圖優先';
+  @override
+  String get portrait => '直圖優先';
+  @override
+  String get fileSize => '檔案大小';
+  @override
+  String get tagCount => '標籤數';
+  @override
+  String get random => '隨機';
+}
+
 // Path: settings.account.statuses
 class Translations$settings$account$statuses$zh_TW
     extends Translations$settings$account$statuses$en {
@@ -2329,7 +2371,6 @@ extension on TranslationsZhTw {
           'discovery.calendarDay' => '每日',
           'discovery.calendarWeek' => '每週',
           'discovery.calendarMonth' => '每月',
-          'discovery.latest' => '最新',
           'discovery.popular' => '熱門',
           'discovery.today' => '今日',
           'discovery.thisWeek' => '本週',
@@ -2384,9 +2425,24 @@ extension on TranslationsZhTw {
           'discovery.copyright' => '作品',
           'discovery.meta' => '中繼標籤',
           'discovery.general' => '一般',
-          'discovery.random' => '隨機',
-          'discovery.lifetimeViews' => '累計瀏覽量',
-          'discovery.lifetimeFavorites' => '累計收藏數',
+          'discovery.all' => '全部',
+          'discovery.sort.title' => '排序',
+          'discovery.sort.more' => '更多排序方式',
+          'discovery.sort.latest' => '最新',
+          'discovery.sort.oldest' => '最舊',
+          'discovery.sort.relevance' => '相關性',
+          'discovery.sort.score' => '評分',
+          'discovery.sort.favorites' => '收藏數',
+          'discovery.sort.views' => '瀏覽次數',
+          'discovery.sort.upvotes' => '讚數',
+          'discovery.sort.hot' => '熱度',
+          'discovery.sort.updated' => '最近更新',
+          'discovery.sort.resolution' => '解析度',
+          'discovery.sort.landscape' => '橫圖優先',
+          'discovery.sort.portrait' => '直圖優先',
+          'discovery.sort.fileSize' => '檔案大小',
+          'discovery.sort.tagCount' => '標籤數',
+          'discovery.sort.random' => '隨機',
           'mediaError.videoProxyBypassed' => '影片不支援目前的 SOCKS 代理，本次播放使用直接連線。',
           'mediaError.videoFailed' => '影片播放失敗',
           'mediaError.downloadOriginal' => '下載原檔案',
@@ -2540,6 +2596,9 @@ extension on TranslationsZhTw {
           'frost.more' => '更多',
           'frost.expandNavigation' => '展開側欄',
           'frost.collapseNavigation' => '收合側欄',
+          _ => null,
+        } ??
+        switch (path) {
           'frost.clearText' => '清除文字',
           'frost.search' => '搜尋',
           'frost.noResults' => ({required Object query}) => '找不到「${query}」的結果',
@@ -2554,9 +2613,6 @@ extension on TranslationsZhTw {
           'frost.hidePassword' => '隱藏密碼',
           'frost.chooseDate' => '選擇日期',
           'frost.chooseTime' => '選擇時間',
-          _ => null,
-        } ??
-        switch (path) {
           'frost.increment' => '增加',
           'frost.decrement' => '減少',
           'frost.reorderHandle' => '調整順序',

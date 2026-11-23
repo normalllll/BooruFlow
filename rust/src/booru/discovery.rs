@@ -15,7 +15,6 @@ pub fn unsupported_capabilities() -> DiscoveryCapabilities {
         historical_ranges: vec![],
         time_basis: PopularTimeBasis::IndexTimeWindow,
         finite_popular_limit: None,
-        additional_feeds: vec![],
         autocomplete_min_chars: 1,
     }
 }
@@ -51,20 +50,16 @@ pub fn capabilities(source: &SourceDefinition) -> DiscoveryCapabilities {
             caps.popular = Available;
             caps.popular_ranges = vec![Day, ThreeDays, Week, Month, ThreeMonths, SixMonths, Year];
             caps.time_basis = PopularTimeBasis::SourceActivityWindow;
-            caps.additional_feeds = vec![
-                FeedKind::Random,
-                FeedKind::LifetimeViews,
-                FeedKind::LifetimeFavorites,
-            ];
         }
         ProtocolFamily::AnimePictures => {}
     }
     caps
 }
 
-pub fn latest_query(request: FeedRequest) -> SearchQuery {
+pub fn all_query(request: FeedRequest) -> SearchQuery {
     SearchQuery {
         text: String::new(),
+        sort: request.sort.unwrap_or_default(),
         ratings: request.ratings,
         page_size: request.page_size,
         cursor: request.cursor,
@@ -106,8 +101,18 @@ pub fn validate_feed(source: &SourceDefinition, request: &FeedRequest) -> BooruR
     }
     let caps = &source.capabilities.discovery;
     match request.kind {
-        FeedKind::Latest => {
-            if request.range.is_some() || request.date.is_some() || request.seed.is_some() {
+        FeedKind::All => {
+            if request.range.is_some() || request.date.is_some() {
+                return Err(invalid());
+            }
+            let sort = request.sort.ok_or_else(invalid)?;
+            if !source
+                .capabilities
+                .sorts
+                .feed
+                .iter()
+                .any(|o| o.order == sort)
+            {
                 return Err(invalid());
             }
         }
@@ -120,7 +125,7 @@ pub fn validate_feed(source: &SourceDefinition, request: &FeedRequest) -> BooruR
             } else {
                 &caps.popular_ranges
             };
-            if !request.range.is_some_and(|r| ranges.contains(&r)) || request.seed.is_some() {
+            if !request.range.is_some_and(|r| ranges.contains(&r)) || request.sort.is_some() {
                 return Err(invalid());
             }
             if request.kind == FeedKind::HistoricalPopular {
@@ -129,24 +134,23 @@ pub fn validate_feed(source: &SourceDefinition, request: &FeedRequest) -> BooruR
                 return Err(invalid());
             }
         }
-        _ => {
-            if !caps.additional_feeds.contains(&request.kind) {
-                return Err(unsupported(source.id));
-            }
-            if request.range.is_some() || request.date.is_some() {
-                return Err(invalid());
-            }
-            if let Some(seed) = &request.seed {
-                if request.kind != FeedKind::Random
-                    || seed.len() != 6
-                    || !seed.bytes().all(|b| b.is_ascii_alphanumeric())
-                {
-                    return Err(invalid());
-                }
-            }
-        }
     }
     Ok(())
+}
+
+/// A search may only use a sort the source declares for tag search.
+pub fn validate_search_sort(source: &SourceDefinition, sort: SortOrder) -> BooruResult<()> {
+    if source
+        .capabilities
+        .sorts
+        .search
+        .iter()
+        .any(|option| option.order == sort)
+    {
+        Ok(())
+    } else {
+        Err(BooruError::invalid_request(Some(source.id)))
+    }
 }
 
 pub fn unsupported(source: &str) -> BooruError {
@@ -356,7 +360,7 @@ mod tests {
             kind: FeedKind::RecentPopular,
             range: Some(PopularRange::Day),
             date: None,
-            seed: None,
+            sort: None,
             ratings: vec![ContentRating::General],
             page_size: 40,
             cursor: None,
@@ -377,13 +381,90 @@ mod tests {
         assert!(parse_date("danbooru", "2024-02-29").is_ok());
         let source = crate::booru::source::builtin_sources().remove(0);
         let mut req = request(source.id);
-        req.kind = FeedKind::Latest;
+        req.kind = FeedKind::All;
+        req.sort = Some(SortOrder::Latest);
         assert!(validate_feed(&source, &req).is_err());
         req.range = None;
         assert!(validate_feed(&source, &req).is_ok());
         req.ratings.clear();
         assert!(validate_feed(&source, &req).is_ok());
     }
+    #[test]
+    fn feed_sort_is_required_for_all_and_forbidden_for_popular() {
+        for source in crate::booru::source::builtin_sources() {
+            let mut all = request(source.id);
+            all.kind = FeedKind::All;
+            all.range = None;
+            all.sort = None;
+            assert!(validate_feed(&source, &all).is_err(), "{}", source.id);
+            for option in &source.capabilities.sorts.feed {
+                all.sort = Some(option.order);
+                assert!(validate_feed(&source, &all).is_ok(), "{}", source.id);
+            }
+            for order in ALL_SORTS {
+                all.sort = Some(order);
+                let declared = source
+                    .capabilities
+                    .sorts
+                    .feed
+                    .iter()
+                    .any(|option| option.order == order);
+                assert_eq!(validate_feed(&source, &all).is_ok(), declared);
+            }
+            if source.capabilities.discovery.popular != CapabilityAvailability::Unsupported {
+                let mut popular = request(source.id);
+                popular.sort = Some(SortOrder::Latest);
+                assert!(validate_feed(&source, &popular).is_err(), "{}", source.id);
+            }
+        }
+    }
+    #[test]
+    fn search_sort_must_be_declared() {
+        for source in crate::booru::source::builtin_sources() {
+            for order in ALL_SORTS {
+                let declared = source
+                    .capabilities
+                    .sorts
+                    .search
+                    .iter()
+                    .any(|option| option.order == order);
+                assert_eq!(validate_search_sort(&source, order).is_ok(), declared);
+            }
+        }
+    }
+    #[test]
+    fn every_sort_list_starts_with_the_default_and_has_unique_entries() {
+        for source in crate::booru::source::builtin_sources() {
+            for list in [
+                &source.capabilities.sorts.feed,
+                &source.capabilities.sorts.search,
+            ] {
+                assert_eq!(list[0].order, SortOrder::Latest, "{}", source.id);
+                assert!(list[0].primary);
+                let mut orders = list.iter().map(|o| o.order).collect::<Vec<_>>();
+                orders.sort_by_key(|order| *order as u8);
+                orders.dedup();
+                assert_eq!(orders.len(), list.len(), "{}", source.id);
+            }
+        }
+    }
+    const ALL_SORTS: [SortOrder; 15] = [
+        SortOrder::Latest,
+        SortOrder::Oldest,
+        SortOrder::Relevance,
+        SortOrder::Score,
+        SortOrder::Favorites,
+        SortOrder::Views,
+        SortOrder::Upvotes,
+        SortOrder::Hot,
+        SortOrder::Updated,
+        SortOrder::Resolution,
+        SortOrder::Landscape,
+        SortOrder::Portrait,
+        SortOrder::FileSize,
+        SortOrder::TagCount,
+        SortOrder::Random,
+    ];
     #[test]
     fn default_ratings_cover_each_source_without_requesting_anonymous_nsfw() {
         for source in crate::booru::source::builtin_sources() {

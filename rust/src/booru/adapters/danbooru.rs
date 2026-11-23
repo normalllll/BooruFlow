@@ -1,9 +1,11 @@
 use crate::api::booru_auth::AuthState;
-use crate::api::booru_models::{BooruTagSuggestion, ContentRating, MediaVariantKind, TagCategory};
+use crate::api::booru_models::{
+    BooruTagSuggestion, ContentRating, MediaVariantKind, SortOrder, TagCategory,
+};
 use crate::booru::adapter::{BooruAdapter, RequestContext};
 use crate::booru::adapters::common::{
     boolean, md5_checksum, media, parent_id, parse_json, signed32, string, tag_list, unsigned,
-    unsigned32, username, validate_media_hosts,
+    unsigned32, user_sorted, username, validate_media_hosts, with_sort_tag,
 };
 use crate::booru::error::{BooruError, BooruErrorCode, BooruResult};
 use crate::booru::model::{Post, PostFlags, PostId, PostPage, SearchQuery, Tag};
@@ -52,6 +54,72 @@ impl DanbooruAdapter {
             items,
             raw_count: values.len(),
             last_id,
+        })
+    }
+
+    fn posts_request(
+        &self,
+        tags: &str,
+        limit: usize,
+        page: Option<&str>,
+    ) -> BooruResult<RequestSpec> {
+        let url = reqwest::Url::parse(&format!("{}/posts.json", self.definition.api_base))
+            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
+        let mut spec = RequestSpec::get(url, ResponseKind::Json);
+        spec.query = vec![
+            ("only".to_owned(), POST_FIELDS.to_owned()),
+            ("tags".to_owned(), tags.to_owned()),
+            ("limit".to_owned(), limit.to_string()),
+        ];
+        if let Some(page) = page {
+            spec.query.push(("page".to_owned(), page.to_owned()));
+        }
+        Ok(spec)
+    }
+
+    /// Numbered pages keep a fixed page size, so that page boundaries match
+    /// between calls. Ratings are filtered after the fact, and a page the filter
+    /// thins out is topped up with the following whole pages, so none is skipped.
+    async fn search_numbered(
+        &self,
+        ctx: &RequestContext,
+        tags: String,
+        limit: u32,
+        query: SearchQuery,
+    ) -> BooruResult<PostPage> {
+        let mut page = match query.cursor.as_deref() {
+            Some(cursor) => {
+                validate_danbooru_cursor(cursor, true)?;
+                cursor.parse::<u32>().unwrap_or(1)
+            }
+            None => 1,
+        };
+        let mut items: Vec<Post> = Vec::new();
+        let mut exhausted = false;
+        for _ in 0..3 {
+            let spec = self.posts_request(&tags, limit as usize, Some(&page.to_string()))?;
+            let response = ctx.runtime.execute(&self.definition, spec).await?;
+            let upstream = self.parse_posts(&response.body)?;
+            exhausted = upstream.raw_count < limit as usize || page == u32::MAX;
+            for post in upstream.items {
+                if rating_selected(post.rating, &query.ratings)
+                    && !items.iter().any(|existing| existing.id == post.id)
+                {
+                    items.push(post);
+                }
+            }
+            if exhausted {
+                break;
+            }
+            page += 1;
+            if items.len() >= limit as usize {
+                break;
+            }
+        }
+        Ok(PostPage {
+            items,
+            next_cursor: (!exhausted).then(|| page.to_string()),
+            exhausted,
         })
     }
 
@@ -163,26 +231,19 @@ impl BooruAdapter for DanbooruAdapter {
 
     async fn search(&self, ctx: &RequestContext, query: SearchQuery) -> BooruResult<PostPage> {
         let limit = query.page_size.clamp(1, self.definition.max_page_size);
+        let tags = with_sort_tag(&query.text, order_tag(query.sort)?, "order:");
+        if pages_by_number(&query.text, query.sort) {
+            return self.search_numbered(ctx, tags, limit, query).await;
+        }
         let mut cursor = query.cursor.clone();
         let mut result = Vec::new();
         let mut exhausted = false;
         for _ in 0..3 {
-            let url = reqwest::Url::parse(&format!("{}/posts.json", self.definition.api_base))
-                .map_err(|_| BooruError::invalid_response(self.definition.id))?;
-            let mut spec = RequestSpec::get(url, ResponseKind::Json);
-            spec.query = vec![
-                ("only".to_owned(), POST_FIELDS.to_owned()),
-                ("tags".to_owned(), query.text.trim().to_owned()),
-                (
-                    "limit".to_owned(),
-                    (limit as usize - result.len()).to_string(),
-                ),
-            ];
             if let Some(cursor_value) = cursor.as_deref() {
-                validate_danbooru_cursor(cursor_value)?;
-                spec.query
-                    .push(("page".to_owned(), cursor_value.to_owned()));
+                validate_danbooru_cursor(cursor_value, false)?;
             }
+            let spec =
+                self.posts_request(&tags, limit as usize - result.len(), cursor.as_deref())?;
             let response = ctx.runtime.execute(&self.definition, spec).await?;
             let upstream = self.parse_posts(&response.body)?;
             if upstream.raw_count == 0 {
@@ -223,15 +284,9 @@ impl BooruAdapter for DanbooruAdapter {
         request: crate::api::booru_models::FeedRequest,
     ) -> BooruResult<PostPage> {
         use crate::api::booru_models::FeedKind;
-        use crate::booru::discovery::{latest_query, scale, RankingCursor};
-        if request.kind == FeedKind::Latest {
-            return self.search(ctx, latest_query(request)).await;
-        }
-        if !matches!(
-            request.kind,
-            FeedKind::RecentPopular | FeedKind::HistoricalPopular
-        ) {
-            return Err(self.unsupported());
+        use crate::booru::discovery::{all_query, scale, RankingCursor};
+        if request.kind == FeedKind::All {
+            return self.search(ctx, all_query(request)).await;
         }
         let cursor = RankingCursor::new(&request)?;
         let limit = request.page_size.min(self.definition.max_page_size);
@@ -366,10 +421,40 @@ fn danbooru_rating(value: Option<&str>) -> ContentRating {
     }
 }
 
-fn validate_danbooru_cursor(cursor: &str) -> BooruResult<()> {
-    let valid = cursor
-        .strip_prefix('b')
-        .is_some_and(|value| !value.is_empty() && value.bytes().all(|byte| byte.is_ascii_digit()));
+/// Only newest-first can be cut at a post id. Any other order, picked or typed
+/// by the user, has no id boundary, so its pages are numbered.
+pub fn pages_by_number(text: &str, sort: SortOrder) -> bool {
+    sort != SortOrder::Latest || user_sorted(text, "order:")
+}
+
+/// The `order:` meta-tag for a sort; the newest-first default sends none.
+pub fn order_tag(sort: SortOrder) -> BooruResult<Option<&'static str>> {
+    Ok(Some(match sort {
+        SortOrder::Latest => return Ok(None),
+        SortOrder::Oldest => "order:id",
+        SortOrder::Score => "order:score",
+        SortOrder::Favorites => "order:favcount",
+        SortOrder::Upvotes => "order:upvotes",
+        SortOrder::Hot => "order:rank",
+        SortOrder::Views => "order:views",
+        SortOrder::Random => "order:random",
+        SortOrder::Resolution => "order:mpixels",
+        SortOrder::Landscape => "order:landscape",
+        SortOrder::Portrait => "order:portrait",
+        _ => return Err(BooruError::invalid_request(None)),
+    }))
+}
+
+/// Newest-first pages are cut by the last post id (`b<id>`), which keeps pages
+/// stable while posts arrive. Every other order has no id boundary to cut at,
+/// so its pages are numbered.
+fn validate_danbooru_cursor(cursor: &str, numbered: bool) -> BooruResult<()> {
+    let digits = |value: &str| !value.is_empty() && value.bytes().all(|byte| byte.is_ascii_digit());
+    let valid = if numbered {
+        digits(cursor) && cursor.parse::<u32>().is_ok_and(|page| page > 0)
+    } else {
+        cursor.strip_prefix('b').is_some_and(digits)
+    };
     if valid {
         Ok(())
     } else {
@@ -542,8 +627,73 @@ mod tests {
 
     #[test]
     fn cursor_is_opaque_and_validated() {
-        assert!(validate_danbooru_cursor("b8123456").is_ok());
-        assert!(validate_danbooru_cursor("2").is_err());
+        assert!(validate_danbooru_cursor("b8123456", false).is_ok());
+        assert!(validate_danbooru_cursor("2", false).is_err());
+        assert!(validate_danbooru_cursor("b", false).is_err());
+        assert!(validate_danbooru_cursor("2", true).is_ok());
+        assert!(validate_danbooru_cursor("0", true).is_err());
+        assert!(validate_danbooru_cursor("b8123456", true).is_err());
+        assert!(validate_danbooru_cursor("", true).is_err());
+    }
+
+    #[test]
+    fn only_newest_first_pages_by_post_id() {
+        assert!(!pages_by_number("sky", SortOrder::Latest));
+        assert!(!pages_by_number("sky sort:score", SortOrder::Latest));
+        assert!(pages_by_number("sky order:score", SortOrder::Latest));
+        assert!(pages_by_number("sky ORDER:random", SortOrder::Latest));
+        for sort in [SortOrder::Oldest, SortOrder::Score, SortOrder::Random] {
+            assert!(pages_by_number("sky", sort));
+        }
+    }
+
+    #[test]
+    fn list_requests_carry_the_sort_tag_and_the_page() {
+        let adapter = adapter("danbooru");
+        let query = |spec: RequestSpec| {
+            spec.query
+                .into_iter()
+                .collect::<std::collections::BTreeMap<_, _>>()
+        };
+        let numbered = query(
+            adapter
+                .posts_request("sky order:score", 20, Some("3"))
+                .unwrap(),
+        );
+        assert_eq!(numbered["tags"], "sky order:score");
+        assert_eq!(numbered["page"], "3");
+        assert_eq!(numbered["limit"], "20");
+        let by_id = query(adapter.posts_request("sky", 20, Some("b99")).unwrap());
+        assert_eq!(by_id["page"], "b99");
+        assert!(!query(adapter.posts_request("sky", 20, None).unwrap()).contains_key("page"));
+        for (sort, text, tags) in [
+            (SortOrder::Hot, "sky", "sky order:rank"),
+            (SortOrder::Oldest, "", "order:id"),
+            (SortOrder::Score, "sky order:views", "sky order:views"),
+        ] {
+            assert_eq!(
+                with_sort_tag(text, order_tag(sort).unwrap(), "order:"),
+                tags
+            );
+        }
+    }
+
+    #[test]
+    fn each_declared_sort_maps_to_an_order_tag() {
+        for source_id in ["danbooru", "aibooru"] {
+            let source = adapter(source_id);
+            for option in &source.definition.capabilities.sorts.search {
+                let tag = order_tag(option.order).unwrap();
+                assert_eq!(tag.is_none(), option.order == SortOrder::Latest);
+            }
+        }
+        assert_eq!(order_tag(SortOrder::Hot).unwrap(), Some("order:rank"));
+        assert_eq!(order_tag(SortOrder::Oldest).unwrap(), Some("order:id"));
+        assert_eq!(
+            order_tag(SortOrder::Favorites).unwrap(),
+            Some("order:favcount")
+        );
+        assert!(order_tag(SortOrder::Relevance).is_err());
     }
 
     #[test]

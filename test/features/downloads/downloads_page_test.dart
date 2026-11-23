@@ -29,6 +29,7 @@ import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../support/frost_app_layers.dart';
+import '../../support/source_sorts.dart';
 
 // ---------------------------------------------------------------------------
 // Fakes
@@ -112,13 +113,13 @@ BooruSource _source(String id) => BooruSource(
   enabledByDefault: true,
   isAiSource: false,
   capabilities: const SourceCapabilities(
+    sorts: newestOnlySorts,
     discovery: DiscoveryCapabilities(
       popular: CapabilityAvailability.unsupported,
       commonTags: CapabilityAvailability.available,
       popularRanges: [],
       historicalRanges: [],
       timeBasis: PopularTimeBasis.indexTimeWindow,
-      additionalFeeds: [],
       autocompleteMinChars: 1,
     ),
     ratings: [ContentRating.general],

@@ -1,6 +1,7 @@
 import 'package:booruflow/app/frost_config.dart';
 import 'package:booruflow/core/settings/logic.dart';
 import 'package:booruflow/core/settings/settings_service.dart';
+import 'package:booruflow/features/browse/widgets/sort_menu.dart';
 import 'package:booruflow/features/posts/models/post.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:flutter/widgets.dart';
@@ -99,42 +100,55 @@ class _RatingChoices extends ConsumerWidget {
   }
 }
 
-/// The conditions bar: shown only while a rating filter is in effect.
-class RatingConditions extends ConsumerStatefulWidget {
-  const RatingConditions({super.key});
+/// The conditions bar: shown only while a condition is in effect, a rating
+/// filter or, with [sort] given, a sort other than the default.
+class FilterConditions extends ConsumerStatefulWidget {
+  const FilterConditions({this.sort, super.key});
+  final SortChoice? sort;
   @override
-  ConsumerState<RatingConditions> createState() => _RatingConditionsState();
+  ConsumerState<FilterConditions> createState() => _FilterConditionsState();
 }
 
-class _RatingConditionsState extends ConsumerState<RatingConditions> {
-  // Kept while the bar collapses, after the filter has been cleared.
-  String _last = '';
+class _FilterConditionsState extends ConsumerState<FilterConditions> {
+  final _sortChip = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
     final t = Translations.of(context);
     final ratings = ref.watch(settingsProvider).ratings;
-    if (ratings.isNotEmpty) {
-      _last = ratings
-          .map((rating) => rating.displayLabel)
-          .join(t.discovery.ratingSeparator);
-    }
-    void reset() => ref.read(settingsProvider.notifier).setRatings([]);
+    final sort = widget.sort;
+    final sorted = sort != null && !sort.isDefault;
+    void resetRatings() => ref.read(settingsProvider.notifier).setRatings([]);
+    // The bar keeps its last chips while it collapses.
     return FrostPresence(
-      visible: ratings.isNotEmpty,
+      visible: ratings.isNotEmpty || sorted,
       effect: FrostPresenceEffect.expand,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: FrostGap.related),
         child: FrostFilterBar(
           chips: [
-            FrostFilterChip(
-              label: t.discovery.ratingLabel,
-              value: _last,
-              onPressed: () => showRatingFilterSheet(context),
-              onClear: reset,
-            ),
+            if (ratings.isNotEmpty)
+              FrostFilterChip(
+                label: t.discovery.ratingLabel,
+                value: ratings
+                    .map((rating) => rating.displayLabel)
+                    .join(t.discovery.ratingSeparator),
+                onPressed: () => showRatingFilterSheet(context),
+                onClear: resetRatings,
+              ),
+            if (sort != null && sorted)
+              FrostFilterChip(
+                key: _sortChip,
+                label: t.discovery.sort.title,
+                value: sortLabel(sort.selected),
+                onPressed: () => showSortMenu(_sortChip.currentContext!, sort),
+                onClear: sort.reset,
+              ),
           ],
-          onClearAll: reset,
+          onClearAll: () {
+            resetRatings();
+            if (sorted) sort.reset();
+          },
         ),
       ),
     );

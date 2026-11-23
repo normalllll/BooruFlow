@@ -16,6 +16,8 @@ import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../support/source_sorts.dart';
+
 BooruSource testSource(String id) => BooruSource(
   sourceId: id,
   displayName: id,
@@ -23,13 +25,13 @@ BooruSource testSource(String id) => BooruSource(
   enabledByDefault: true,
   isAiSource: false,
   capabilities: const SourceCapabilities(
+    sorts: newestOnlySorts,
     discovery: DiscoveryCapabilities(
       popular: CapabilityAvailability.unsupported,
       commonTags: CapabilityAvailability.available,
       popularRanges: [],
       historicalRanges: [],
       timeBasis: PopularTimeBasis.indexTimeWindow,
-      additionalFeeds: [],
       autocompleteMinChars: 1,
     ),
     ratings: [ContentRating.general],

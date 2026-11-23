@@ -16,6 +16,54 @@ pub fn string(value: &Value, key: &str) -> Option<String> {
     value.get(key).and_then(value_string)
 }
 
+/// Whether the query already carries the sort meta-tag of the source's family
+/// (`order:` for Danbooru and Moebooru, `sort:` for Gelbooru). Another
+/// family's prefix is an ordinary tag there.
+pub fn user_sorted(text: &str, prefix: &str) -> bool {
+    text.split_whitespace()
+        .any(|part| part.to_ascii_lowercase().starts_with(prefix))
+}
+
+/// Appends a sort meta-tag to a tag query, unless the user already wrote one
+/// with this family's [prefix]; the user's own tag decides then.
+pub fn with_sort_tag(text: &str, tag: Option<&str>, prefix: &str) -> String {
+    let mut tags = text.trim().to_owned();
+    if let (Some(tag), false) = (tag, user_sorted(&tags, prefix)) {
+        if !tags.is_empty() {
+            tags.push(' ');
+        }
+        tags.push_str(tag);
+    }
+    tags
+}
+
+#[test]
+fn sort_tags_are_appended_unless_the_user_already_sorted() {
+    let add = |text, tag| with_sort_tag(text, tag, "order:");
+    assert_eq!(add(" sky ", Some("order:score")), "sky order:score");
+    assert_eq!(add("", Some("order:score")), "order:score");
+    assert_eq!(add("sky", None), "sky");
+    for user in ["sky order:views", "Order:random sky"] {
+        assert_eq!(add(user, Some("order:score")), user);
+    }
+    assert_eq!(add("reorder:x", Some("order:id")), "reorder:x order:id");
+}
+
+#[test]
+fn only_the_sort_tag_of_the_sources_family_counts_as_the_users_sort() {
+    assert!(user_sorted("sky sort:score:asc", "sort:"));
+    assert!(!user_sorted("sky sort:score:asc", "order:"));
+    assert!(!user_sorted("sky order:score", "sort:"));
+    assert_eq!(
+        with_sort_tag("sky sort:x", Some("order:score"), "order:"),
+        "sky sort:x order:score"
+    );
+    assert_eq!(
+        with_sort_tag("sky order:x", Some("sort:id:asc"), "sort:"),
+        "sky order:x sort:id:asc"
+    );
+}
+
 /// Usernames must be supplied as text by the source, never inferred from IDs.
 pub fn username(value: &Value, pointer: &str) -> Option<String> {
     value

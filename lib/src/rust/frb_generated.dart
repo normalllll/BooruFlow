@@ -72,7 +72,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.14.0-beta.2';
 
   @override
-  int get rustContentHash => -1471653920;
+  int get rustContentHash => 989704391;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -318,6 +318,8 @@ abstract class RustLibApi extends BaseApi {
     required String sourceId,
     required String postId,
   });
+
+  Future<SortOrder> crateApiBooruModelsSortOrderDefault();
 
   Future<SourceCredentials> crateApiBooruAuthSourceCredentialsDefault();
 
@@ -2132,7 +2134,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
-  Future<SourceCredentials> crateApiBooruAuthSourceCredentialsDefault() {
+  Future<SortOrder> crateApiBooruModelsSortOrderDefault() {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -2141,6 +2143,33 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             generalizedFrbRustBinding,
             serializer,
             funcId: 49,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_sort_order,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiBooruModelsSortOrderDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBooruModelsSortOrderDefaultConstMeta =>
+      const TaskConstMeta(debugName: "sort_order_default", argNames: []);
+
+  @override
+  Future<SourceCredentials> crateApiBooruAuthSourceCredentialsDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 50,
             port: port_,
           );
         },
@@ -2170,7 +2199,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 50,
+            funcId: 51,
             port: port_,
           );
         },
@@ -2551,6 +2580,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SortOrder dco_decode_box_autoadd_sort_order(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_sort_order(raw);
+  }
+
+  @protected
   SourceCredentials dco_decode_box_autoadd_source_credentials(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_source_credentials(raw);
@@ -2635,8 +2670,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   DiscoveryCapabilities dco_decode_discovery_capabilities(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = dcoDecodeList(raw);
-    if (arr.length != 8)
-      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
     return DiscoveryCapabilities(
       popular: dco_decode_capability_availability(arr[0]),
       commonTags: dco_decode_capability_availability(arr[1]),
@@ -2644,8 +2679,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       historicalRanges: dco_decode_list_popular_range(arr[3]),
       timeBasis: dco_decode_popular_time_basis(arr[4]),
       finitePopularLimit: dco_decode_opt_box_autoadd_u_32(arr[5]),
-      additionalFeeds: dco_decode_list_feed_kind(arr[6]),
-      autocompleteMinChars: dco_decode_u_32(arr[7]),
+      autocompleteMinChars: dco_decode_u_32(arr[6]),
     );
   }
 
@@ -2718,7 +2752,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       kind: dco_decode_feed_kind(arr[1]),
       range: dco_decode_opt_box_autoadd_popular_range(arr[2]),
       date: dco_decode_opt_String(arr[3]),
-      seed: dco_decode_opt_String(arr[4]),
+      sort: dco_decode_opt_box_autoadd_sort_order(arr[4]),
       ratings: dco_decode_list_content_rating(arr[5]),
       pageSize: dco_decode_u_32(arr[6]),
       cursor: dco_decode_opt_String(arr[7]),
@@ -2786,12 +2820,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  List<FeedKind> dco_decode_list_feed_kind(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return dcoDecodeList(raw).map(dco_decode_feed_kind).toList();
-  }
-
-  @protected
   List<HttpHeader> dco_decode_list_http_header(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dcoDecodeList(raw).map(dco_decode_http_header).toList();
@@ -2831,6 +2859,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   List<RouteDiagnostic> dco_decode_list_route_diagnostic(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dcoDecodeList(raw).map(dco_decode_route_diagnostic).toList();
+  }
+
+  @protected
+  List<SortOption> dco_decode_list_sort_option(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dcoDecodeList(raw).map(dco_decode_sort_option).toList();
   }
 
   @protected
@@ -2990,6 +3024,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SortOrder? dco_decode_opt_box_autoadd_sort_order(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_sort_order(raw);
+  }
+
+  @protected
   int? dco_decode_opt_box_autoadd_u_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_u_32(raw);
@@ -3123,34 +3163,66 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   SearchRequest dco_decode_search_request(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = dcoDecodeList(raw);
-    if (arr.length != 5)
-      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
     return SearchRequest(
       sourceId: dco_decode_String(arr[0]),
       queryText: dco_decode_String(arr[1]),
-      ratings: dco_decode_list_content_rating(arr[2]),
-      pageSize: dco_decode_u_32(arr[3]),
-      cursor: dco_decode_opt_String(arr[4]),
+      sort: dco_decode_sort_order(arr[2]),
+      ratings: dco_decode_list_content_rating(arr[3]),
+      pageSize: dco_decode_u_32(arr[4]),
+      cursor: dco_decode_opt_String(arr[5]),
     );
+  }
+
+  @protected
+  SortCapabilities dco_decode_sort_capabilities(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = dcoDecodeList(raw);
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return SortCapabilities(
+      feed: dco_decode_list_sort_option(arr[0]),
+      search: dco_decode_list_sort_option(arr[1]),
+    );
+  }
+
+  @protected
+  SortOption dco_decode_sort_option(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = dcoDecodeList(raw);
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return SortOption(
+      order: dco_decode_sort_order(arr[0]),
+      primary: dco_decode_bool(arr[1]),
+    );
+  }
+
+  @protected
+  SortOrder dco_decode_sort_order(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return SortOrder.values[dcoDecodePrimitiveInt(raw)];
   }
 
   @protected
   SourceCapabilities dco_decode_source_capabilities(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = dcoDecodeList(raw);
-    if (arr.length != 10)
-      throw Exception('unexpected arr length: expect 10 but see ${arr.length}');
+    if (arr.length != 11)
+      throw Exception('unexpected arr length: expect 11 but see ${arr.length}');
     return SourceCapabilities(
       discovery: dco_decode_discovery_capabilities(arr[0]),
-      ratings: dco_decode_list_content_rating(arr[1]),
-      authKind: dco_decode_auth_kind(arr[2]),
-      supportsSearch: dco_decode_bool(arr[3]),
-      supportsPostDetail: dco_decode_bool(arr[4]),
-      supportsAutocomplete: dco_decode_bool(arr[5]),
-      supportsRelatedPosts: dco_decode_bool(arr[6]),
-      supportsOriginal: dco_decode_bool(arr[7]),
-      supportsAuthenticatedMedia: dco_decode_bool(arr[8]),
-      supportsBackgroundDownload: dco_decode_bool(arr[9]),
+      sorts: dco_decode_sort_capabilities(arr[1]),
+      ratings: dco_decode_list_content_rating(arr[2]),
+      authKind: dco_decode_auth_kind(arr[3]),
+      supportsSearch: dco_decode_bool(arr[4]),
+      supportsPostDetail: dco_decode_bool(arr[5]),
+      supportsAutocomplete: dco_decode_bool(arr[6]),
+      supportsRelatedPosts: dco_decode_bool(arr[7]),
+      supportsOriginal: dco_decode_bool(arr[8]),
+      supportsAuthenticatedMedia: dco_decode_bool(arr[9]),
+      supportsBackgroundDownload: dco_decode_bool(arr[10]),
     );
   }
 
@@ -3740,6 +3812,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SortOrder sse_decode_box_autoadd_sort_order(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_sort_order(deserializer));
+  }
+
+  @protected
   SourceCredentials sse_decode_box_autoadd_source_credentials(
     SseDeserializer deserializer,
   ) {
@@ -3836,7 +3914,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_historicalRanges = sse_decode_list_popular_range(deserializer);
     var var_timeBasis = sse_decode_popular_time_basis(deserializer);
     var var_finitePopularLimit = sse_decode_opt_box_autoadd_u_32(deserializer);
-    var var_additionalFeeds = sse_decode_list_feed_kind(deserializer);
     var var_autocompleteMinChars = sse_decode_u_32(deserializer);
     return DiscoveryCapabilities(
       popular: var_popular,
@@ -3845,7 +3922,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       historicalRanges: var_historicalRanges,
       timeBasis: var_timeBasis,
       finitePopularLimit: var_finitePopularLimit,
-      additionalFeeds: var_additionalFeeds,
       autocompleteMinChars: var_autocompleteMinChars,
     );
   }
@@ -3927,7 +4003,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_kind = sse_decode_feed_kind(deserializer);
     var var_range = sse_decode_opt_box_autoadd_popular_range(deserializer);
     var var_date = sse_decode_opt_String(deserializer);
-    var var_seed = sse_decode_opt_String(deserializer);
+    var var_sort = sse_decode_opt_box_autoadd_sort_order(deserializer);
     var var_ratings = sse_decode_list_content_rating(deserializer);
     var var_pageSize = sse_decode_u_32(deserializer);
     var var_cursor = sse_decode_opt_String(deserializer);
@@ -3936,7 +4012,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       kind: var_kind,
       range: var_range,
       date: var_date,
-      seed: var_seed,
+      sort: var_sort,
       ratings: var_ratings,
       pageSize: var_pageSize,
       cursor: var_cursor,
@@ -4046,18 +4122,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  List<FeedKind> sse_decode_list_feed_kind(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-
-    var len_ = sse_decode_i_32(deserializer);
-    var ans_ = <FeedKind>[];
-    for (var idx_ = 0; idx_ < len_; ++idx_) {
-      ans_.add(sse_decode_feed_kind(deserializer));
-    }
-    return ans_;
-  }
-
-  @protected
   List<HttpHeader> sse_decode_list_http_header(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -4140,6 +4204,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <RouteDiagnostic>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_route_diagnostic(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SortOption> sse_decode_list_sort_option(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SortOption>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_sort_option(deserializer));
     }
     return ans_;
   }
@@ -4400,6 +4476,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SortOrder? sse_decode_opt_box_autoadd_sort_order(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_sort_order(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -4568,16 +4657,41 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_sourceId = sse_decode_String(deserializer);
     var var_queryText = sse_decode_String(deserializer);
+    var var_sort = sse_decode_sort_order(deserializer);
     var var_ratings = sse_decode_list_content_rating(deserializer);
     var var_pageSize = sse_decode_u_32(deserializer);
     var var_cursor = sse_decode_opt_String(deserializer);
     return SearchRequest(
       sourceId: var_sourceId,
       queryText: var_queryText,
+      sort: var_sort,
       ratings: var_ratings,
       pageSize: var_pageSize,
       cursor: var_cursor,
     );
+  }
+
+  @protected
+  SortCapabilities sse_decode_sort_capabilities(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_feed = sse_decode_list_sort_option(deserializer);
+    var var_search = sse_decode_list_sort_option(deserializer);
+    return SortCapabilities(feed: var_feed, search: var_search);
+  }
+
+  @protected
+  SortOption sse_decode_sort_option(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_order = sse_decode_sort_order(deserializer);
+    var var_primary = sse_decode_bool(deserializer);
+    return SortOption(order: var_order, primary: var_primary);
+  }
+
+  @protected
+  SortOrder sse_decode_sort_order(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return SortOrder.values[inner];
   }
 
   @protected
@@ -4586,6 +4700,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_discovery = sse_decode_discovery_capabilities(deserializer);
+    var var_sorts = sse_decode_sort_capabilities(deserializer);
     var var_ratings = sse_decode_list_content_rating(deserializer);
     var var_authKind = sse_decode_auth_kind(deserializer);
     var var_supportsSearch = sse_decode_bool(deserializer);
@@ -4597,6 +4712,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_supportsBackgroundDownload = sse_decode_bool(deserializer);
     return SourceCapabilities(
       discovery: var_discovery,
+      sorts: var_sorts,
       ratings: var_ratings,
       authKind: var_authKind,
       supportsSearch: var_supportsSearch,
@@ -5189,6 +5305,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_sort_order(
+    SortOrder self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_sort_order(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_source_credentials(
     SourceCredentials self,
     SseSerializer serializer,
@@ -5285,7 +5410,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_list_popular_range(self.historicalRanges, serializer);
     sse_encode_popular_time_basis(self.timeBasis, serializer);
     sse_encode_opt_box_autoadd_u_32(self.finitePopularLimit, serializer);
-    sse_encode_list_feed_kind(self.additionalFeeds, serializer);
     sse_encode_u_32(self.autocompleteMinChars, serializer);
   }
 
@@ -5355,7 +5479,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_feed_kind(self.kind, serializer);
     sse_encode_opt_box_autoadd_popular_range(self.range, serializer);
     sse_encode_opt_String(self.date, serializer);
-    sse_encode_opt_String(self.seed, serializer);
+    sse_encode_opt_box_autoadd_sort_order(self.sort, serializer);
     sse_encode_list_content_rating(self.ratings, serializer);
     sse_encode_u_32(self.pageSize, serializer);
     sse_encode_opt_String(self.cursor, serializer);
@@ -5456,18 +5580,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_list_feed_kind(
-    List<FeedKind> self,
-    SseSerializer serializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_i_32(self.length, serializer);
-    for (final item in self) {
-      sse_encode_feed_kind(item, serializer);
-    }
-  }
-
-  @protected
   void sse_encode_list_http_header(
     List<HttpHeader> self,
     SseSerializer serializer,
@@ -5546,6 +5658,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_route_diagnostic(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_sort_option(
+    List<SortOption> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_sort_option(item, serializer);
     }
   }
 
@@ -5776,6 +5900,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_box_autoadd_sort_order(
+    SortOrder? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_sort_order(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -5909,9 +6046,33 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(self.sourceId, serializer);
     sse_encode_String(self.queryText, serializer);
+    sse_encode_sort_order(self.sort, serializer);
     sse_encode_list_content_rating(self.ratings, serializer);
     sse_encode_u_32(self.pageSize, serializer);
     sse_encode_opt_String(self.cursor, serializer);
+  }
+
+  @protected
+  void sse_encode_sort_capabilities(
+    SortCapabilities self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_sort_option(self.feed, serializer);
+    sse_encode_list_sort_option(self.search, serializer);
+  }
+
+  @protected
+  void sse_encode_sort_option(SortOption self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_sort_order(self.order, serializer);
+    sse_encode_bool(self.primary, serializer);
+  }
+
+  @protected
+  void sse_encode_sort_order(SortOrder self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
   }
 
   @protected
@@ -5921,6 +6082,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_discovery_capabilities(self.discovery, serializer);
+    sse_encode_sort_capabilities(self.sorts, serializer);
     sse_encode_list_content_rating(self.ratings, serializer);
     sse_encode_auth_kind(self.authKind, serializer);
     sse_encode_bool(self.supportsSearch, serializer);

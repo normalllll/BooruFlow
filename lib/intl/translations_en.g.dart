@@ -905,9 +905,6 @@ class Translations$discovery$en {
   /// en: 'Month'
   String get calendarMonth => 'Month';
 
-  /// en: 'Latest'
-  String get latest => 'Latest';
-
   /// en: 'Popular'
   String get popular => 'Popular';
 
@@ -1061,14 +1058,11 @@ class Translations$discovery$en {
   /// en: 'General'
   String get general => 'General';
 
-  /// en: 'Random'
-  String get random => 'Random';
+  /// en: 'All'
+  String get all => 'All';
 
-  /// en: 'Lifetime views'
-  String get lifetimeViews => 'Lifetime views';
-
-  /// en: 'Lifetime favorites'
-  String get lifetimeFavorites => 'Lifetime favorites';
+  late final Translations$discovery$sort$en sort =
+      Translations$discovery$sort$en.internal(_root);
 }
 
 // Path: mediaError
@@ -2486,6 +2480,66 @@ class Translations$settings$maxSegmentsPerTaskDialog$en {
   String get title => 'Max segments per download task';
 }
 
+// Path: discovery.sort
+class Translations$discovery$sort$en {
+  Translations$discovery$sort$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'Sort'
+  String get title => 'Sort';
+
+  /// en: 'More'
+  String get more => 'More';
+
+  /// en: 'Newest'
+  String get latest => 'Newest';
+
+  /// en: 'Oldest'
+  String get oldest => 'Oldest';
+
+  /// en: 'Relevance'
+  String get relevance => 'Relevance';
+
+  /// en: 'Score'
+  String get score => 'Score';
+
+  /// en: 'Favorites'
+  String get favorites => 'Favorites';
+
+  /// en: 'Views'
+  String get views => 'Views';
+
+  /// en: 'Upvotes'
+  String get upvotes => 'Upvotes';
+
+  /// en: 'Hot'
+  String get hot => 'Hot';
+
+  /// en: 'Updated'
+  String get updated => 'Updated';
+
+  /// en: 'Resolution'
+  String get resolution => 'Resolution';
+
+  /// en: 'Landscape'
+  String get landscape => 'Landscape';
+
+  /// en: 'Portrait'
+  String get portrait => 'Portrait';
+
+  /// en: 'File size'
+  String get fileSize => 'File size';
+
+  /// en: 'Tag count'
+  String get tagCount => 'Tag count';
+
+  /// en: 'Random'
+  String get random => 'Random';
+}
+
 // Path: settings.account.statuses
 class Translations$settings$account$statuses$en {
   Translations$settings$account$statuses$en.internal(this._root);
@@ -2995,7 +3049,6 @@ extension on Translations {
           'discovery.calendarDay' => 'Day',
           'discovery.calendarWeek' => 'Week',
           'discovery.calendarMonth' => 'Month',
-          'discovery.latest' => 'Latest',
           'discovery.popular' => 'Popular',
           'discovery.today' => 'Today',
           'discovery.thisWeek' => 'This week',
@@ -3052,9 +3105,24 @@ extension on Translations {
           'discovery.copyright' => 'Series',
           'discovery.meta' => 'Meta',
           'discovery.general' => 'General',
-          'discovery.random' => 'Random',
-          'discovery.lifetimeViews' => 'Lifetime views',
-          'discovery.lifetimeFavorites' => 'Lifetime favorites',
+          'discovery.all' => 'All',
+          'discovery.sort.title' => 'Sort',
+          'discovery.sort.more' => 'More',
+          'discovery.sort.latest' => 'Newest',
+          'discovery.sort.oldest' => 'Oldest',
+          'discovery.sort.relevance' => 'Relevance',
+          'discovery.sort.score' => 'Score',
+          'discovery.sort.favorites' => 'Favorites',
+          'discovery.sort.views' => 'Views',
+          'discovery.sort.upvotes' => 'Upvotes',
+          'discovery.sort.hot' => 'Hot',
+          'discovery.sort.updated' => 'Updated',
+          'discovery.sort.resolution' => 'Resolution',
+          'discovery.sort.landscape' => 'Landscape',
+          'discovery.sort.portrait' => 'Portrait',
+          'discovery.sort.fileSize' => 'File size',
+          'discovery.sort.tagCount' => 'Tag count',
+          'discovery.sort.random' => 'Random',
           'mediaError.videoProxyBypassed' => 'The selected SOCKS proxy is not supported for video; this playback attempted a direct connection.',
           'mediaError.videoFailed' => 'Video playback failed',
           'mediaError.downloadOriginal' => 'Download original file',
@@ -3230,6 +3298,9 @@ extension on Translations {
           'frost.more' => 'More',
           'frost.expandNavigation' => 'Expand sidebar',
           'frost.collapseNavigation' => 'Collapse sidebar',
+          _ => null,
+        } ??
+        switch (path) {
           'frost.clearText' => 'Clear text',
           'frost.search' => 'Search',
           'frost.noResults' => ({
@@ -3246,9 +3317,6 @@ extension on Translations {
           'frost.hidePassword' => 'Hide password',
           'frost.chooseDate' => 'Choose date',
           'frost.chooseTime' => 'Choose time',
-          _ => null,
-        } ??
-        switch (path) {
           'frost.increment' => 'Increase',
           'frost.decrement' => 'Decrease',
           'frost.reorderHandle' => 'Reorder',

@@ -25,6 +25,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 import '../../support/browse_support.dart';
+import '../../support/source_sorts.dart';
 import '../discovery/search_interaction_test.dart' show testSource;
 
 class _Store implements SettingsServiceStore {
@@ -78,13 +79,13 @@ BooruSource _popularSource() {
       supportsOriginal: true,
       supportsAuthenticatedMedia: false,
       supportsBackgroundDownload: true,
+      sorts: newestOnlySorts,
       discovery: const DiscoveryCapabilities(
         popular: CapabilityAvailability.available,
         commonTags: CapabilityAvailability.available,
         popularRanges: [PopularRange.day, PopularRange.week],
         historicalRanges: [PopularRange.day],
         timeBasis: PopularTimeBasis.calendarUploadPeriod,
-        additionalFeeds: [],
         autocompleteMinChars: 1,
       ),
     ),

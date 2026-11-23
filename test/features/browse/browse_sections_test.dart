@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 import '../../support/browse_support.dart';
+import '../../support/source_sorts.dart';
 import '../discovery/search_interaction_test.dart' show testSource;
 
 class _Store implements SettingsServiceStore {
@@ -39,13 +40,13 @@ BooruSource _popularSource() {
       supportsOriginal: true,
       supportsAuthenticatedMedia: false,
       supportsBackgroundDownload: true,
+      sorts: newestOnlySorts,
       discovery: const DiscoveryCapabilities(
         popular: CapabilityAvailability.available,
         commonTags: CapabilityAvailability.available,
         popularRanges: [PopularRange.day, PopularRange.week],
         historicalRanges: [PopularRange.day],
         timeBasis: PopularTimeBasis.indexTimeWindow,
-        additionalFeeds: [],
         autocompleteMinChars: 1,
       ),
     ),
@@ -330,7 +331,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
     }
     expect(find.byType(AppSectionPage), findsOneWidget);
-    expect(loads, {FeedKind.latest: 1});
+    expect(loads, {FeedKind.all: 1});
 
     final latest = find.byType(CustomScrollView).first;
     await tester.drag(latest, const Offset(0, -900));
@@ -355,15 +356,15 @@ void main() {
     for (var i = 0; i < 20; i++) {
       await tester.pump(const Duration(milliseconds: 50));
     }
-    expect(loads, {FeedKind.latest: 1, FeedKind.recentPopular: 1});
+    expect(loads, {FeedKind.all: 1, FeedKind.recentPopular: 1});
     expect(find.byType(BrowseCard), findsWidgets);
 
-    await tester.tap(find.text(t.discovery.latest).hitTestable().last);
+    await tester.tap(find.text(t.discovery.all).hitTestable().last);
     for (var i = 0; i < 20; i++) {
       await tester.pump(const Duration(milliseconds: 50));
     }
     expect(loads, {
-      FeedKind.latest: 1,
+      FeedKind.all: 1,
       FeedKind.recentPopular: 1,
     }, reason: 'switching back does not reload a section');
     expect(offset(), scrolled, reason: 'the first section kept its position');
@@ -397,7 +398,7 @@ void main() {
     for (var i = 0; i < 12; i++) {
       await tester.pump(const Duration(milliseconds: 50));
     }
-    expect(feeds, [FeedKind.latest]);
+    expect(feeds, [FeedKind.all]);
     await tester.fling(
       find.byType(BrowseCard).first,
       const Offset(-300, 0),
@@ -406,7 +407,7 @@ void main() {
     for (var i = 0; i < 30; i++) {
       await tester.pump(const Duration(milliseconds: 50));
     }
-    expect(feeds, [FeedKind.latest, FeedKind.recentPopular]);
+    expect(feeds, [FeedKind.all, FeedKind.recentPopular]);
     expect(tester.takeException(), isNull);
   });
 }

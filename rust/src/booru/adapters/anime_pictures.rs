@@ -1,5 +1,7 @@
 use crate::api::booru_auth::{AuthState, AuthStatus};
-use crate::api::booru_models::{ContentRating, MediaType, MediaVariantKind, TagCategory};
+use crate::api::booru_models::{
+    ContentRating, MediaType, MediaVariantKind, SortOrder, TagCategory,
+};
 use crate::booru::adapter::{BooruAdapter, PreparedMedia, RequestContext};
 use crate::booru::adapters::common::{
     md5_checksum, media, parse_json, signed32, source_time, string, unsigned, unsigned32, username,
@@ -16,9 +18,42 @@ pub struct AnimePicturesAdapter {
     definition: SourceDefinition,
 }
 
+/// The `order_by` value for a sort; the newest-first default sends none.
+pub fn order_by(sort: SortOrder) -> BooruResult<Option<&'static str>> {
+    Ok(Some(match sort {
+        SortOrder::Latest => return Ok(None),
+        SortOrder::Oldest => "date_r",
+        SortOrder::Score => "rating",
+        SortOrder::Views => "views",
+        SortOrder::FileSize => "size",
+        SortOrder::TagCount => "tag_num",
+        _ => return Err(BooruError::invalid_request(Some("anime_pictures"))),
+    }))
+}
+
 impl AnimePicturesAdapter {
     pub fn new(definition: SourceDefinition) -> Self {
         Self { definition }
+    }
+
+    fn list_request(&self, query: &SearchQuery, page: u32) -> BooruResult<RequestSpec> {
+        let url = reqwest::Url::parse(&format!("{}/posts", self.definition.api_base))
+            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
+        let mut spec = RequestSpec::get(url, ResponseKind::Json);
+        spec.query = vec![
+            ("page".to_owned(), page.to_string()),
+            ("lang".to_owned(), "en".to_owned()),
+            ("ldate".to_owned(), "0".to_owned()),
+        ];
+        if !query.text.trim().is_empty() {
+            spec.query
+                .push(("search_tag".to_owned(), query.text.trim().to_owned()));
+        }
+        if let Some(order_by) = order_by(query.sort)? {
+            spec.query
+                .push(("order_by".to_owned(), order_by.to_owned()));
+        }
+        Ok(spec)
     }
 
     fn parse_listing(&self, bytes: &[u8]) -> BooruResult<(Vec<Post>, Option<u32>)> {
@@ -176,18 +211,7 @@ impl BooruAdapter for AnimePicturesAdapter {
             .unwrap_or("0")
             .parse::<u32>()
             .map_err(|_| BooruError::invalid_request(Some(self.definition.id)))?;
-        let url = reqwest::Url::parse(&format!("{}/posts", self.definition.api_base))
-            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
-        let mut spec = RequestSpec::get(url, ResponseKind::Json);
-        spec.query = vec![
-            ("page".to_owned(), page.to_string()),
-            ("lang".to_owned(), "en".to_owned()),
-            ("ldate".to_owned(), "0".to_owned()),
-        ];
-        if !query.text.trim().is_empty() {
-            spec.query
-                .push(("search_tag".to_owned(), query.text.trim().to_owned()));
-        }
+        let spec = self.list_request(&query, page)?;
         let response = ctx.runtime.execute(&self.definition, spec).await?;
         let (mut items, max_pages) = self.parse_listing(&response.body)?;
         let upstream_was_empty = items.is_empty();
@@ -326,6 +350,44 @@ mod tests {
                 .find(|source| source.id == "anime_pictures")
                 .unwrap(),
         )
+    }
+
+    #[test]
+    fn each_declared_sort_maps_to_an_order_by_value() {
+        for option in &adapter().definition.capabilities.sorts.search {
+            let value = order_by(option.order).unwrap();
+            assert_eq!(value.is_none(), option.order == SortOrder::Latest);
+        }
+        assert_eq!(order_by(SortOrder::Oldest).unwrap(), Some("date_r"));
+        assert_eq!(order_by(SortOrder::Score).unwrap(), Some("rating"));
+        assert_eq!(order_by(SortOrder::TagCount).unwrap(), Some("tag_num"));
+        assert!(order_by(SortOrder::Random).is_err());
+    }
+
+    #[test]
+    fn list_requests_carry_order_by_only_for_a_non_default_sort() {
+        let params = |sort| {
+            adapter()
+                .list_request(
+                    &SearchQuery {
+                        text: "sky".into(),
+                        sort,
+                        ratings: vec![],
+                        page_size: 80,
+                        cursor: None,
+                    },
+                    2,
+                )
+                .unwrap()
+                .query
+                .into_iter()
+                .collect::<std::collections::BTreeMap<_, _>>()
+        };
+        assert!(!params(SortOrder::Latest).contains_key("order_by"));
+        assert_eq!(params(SortOrder::Views)["order_by"], "views");
+        assert_eq!(params(SortOrder::Oldest)["order_by"], "date_r");
+        assert_eq!(params(SortOrder::Views)["search_tag"], "sky");
+        assert_eq!(params(SortOrder::Views)["page"], "2");
     }
 
     #[test]

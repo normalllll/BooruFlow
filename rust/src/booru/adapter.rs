@@ -29,10 +29,10 @@ pub trait BooruAdapter: Send + Sync {
         ctx: &RequestContext,
         request: crate::api::booru_models::FeedRequest,
     ) -> BooruResult<PostPage> {
-        if request.kind != crate::api::booru_models::FeedKind::Latest {
+        if request.kind != crate::api::booru_models::FeedKind::All {
             return Err(self.unsupported());
         }
-        self.search(ctx, crate::booru::discovery::latest_query(request))
+        self.search(ctx, crate::booru::discovery::all_query(request))
             .await
     }
 

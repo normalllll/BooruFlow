@@ -722,8 +722,6 @@ class Translations$discovery$zh_CN extends Translations$discovery$en {
   @override
   String get calendarMonth => '自然月';
   @override
-  String get latest => '最新';
-  @override
   String get popular => '热门';
   @override
   String get today => '今日';
@@ -824,11 +822,10 @@ class Translations$discovery$zh_CN extends Translations$discovery$en {
   @override
   String get general => '通用';
   @override
-  String get random => '随机';
+  String get all => '全部';
   @override
-  String get lifetimeViews => '累计浏览量';
-  @override
-  String get lifetimeFavorites => '累计收藏数';
+  late final Translations$discovery$sort$zh_CN sort =
+      Translations$discovery$sort$zh_CN.internal(_root);
 }
 
 // Path: mediaError
@@ -1870,6 +1867,51 @@ class Translations$settings$maxSegmentsPerTaskDialog$zh_CN
   String get title => '每个下载任务的最大分段数';
 }
 
+// Path: discovery.sort
+class Translations$discovery$sort$zh_CN extends Translations$discovery$sort$en {
+  Translations$discovery$sort$zh_CN.internal(TranslationsZhCn root)
+    : this._root = root,
+      super.internal(root);
+
+  final TranslationsZhCn _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get title => '排序';
+  @override
+  String get more => '更多排序';
+  @override
+  String get latest => '最新';
+  @override
+  String get oldest => '最早';
+  @override
+  String get relevance => '相关性';
+  @override
+  String get score => '评分';
+  @override
+  String get favorites => '收藏数';
+  @override
+  String get views => '浏览量';
+  @override
+  String get upvotes => '赞成票';
+  @override
+  String get hot => '热度';
+  @override
+  String get updated => '最近更新';
+  @override
+  String get resolution => '分辨率';
+  @override
+  String get landscape => '横图优先';
+  @override
+  String get portrait => '竖图优先';
+  @override
+  String get fileSize => '文件大小';
+  @override
+  String get tagCount => '标签数';
+  @override
+  String get random => '随机';
+}
+
 // Path: settings.account.statuses
 class Translations$settings$account$statuses$zh_CN
     extends Translations$settings$account$statuses$en {
@@ -2331,7 +2373,6 @@ extension on TranslationsZhCn {
           'discovery.calendarDay' => '自然日',
           'discovery.calendarWeek' => '自然周',
           'discovery.calendarMonth' => '自然月',
-          'discovery.latest' => '最新',
           'discovery.popular' => '热门',
           'discovery.today' => '今日',
           'discovery.thisWeek' => '本周',
@@ -2386,9 +2427,24 @@ extension on TranslationsZhCn {
           'discovery.copyright' => '作品',
           'discovery.meta' => '元标签',
           'discovery.general' => '通用',
-          'discovery.random' => '随机',
-          'discovery.lifetimeViews' => '累计浏览量',
-          'discovery.lifetimeFavorites' => '累计收藏数',
+          'discovery.all' => '全部',
+          'discovery.sort.title' => '排序',
+          'discovery.sort.more' => '更多排序',
+          'discovery.sort.latest' => '最新',
+          'discovery.sort.oldest' => '最早',
+          'discovery.sort.relevance' => '相关性',
+          'discovery.sort.score' => '评分',
+          'discovery.sort.favorites' => '收藏数',
+          'discovery.sort.views' => '浏览量',
+          'discovery.sort.upvotes' => '赞成票',
+          'discovery.sort.hot' => '热度',
+          'discovery.sort.updated' => '最近更新',
+          'discovery.sort.resolution' => '分辨率',
+          'discovery.sort.landscape' => '横图优先',
+          'discovery.sort.portrait' => '竖图优先',
+          'discovery.sort.fileSize' => '文件大小',
+          'discovery.sort.tagCount' => '标签数',
+          'discovery.sort.random' => '随机',
           'mediaError.videoProxyBypassed' => '视频不支持当前的 SOCKS 代理，本次播放使用了直连。',
           'mediaError.videoFailed' => '视频播放失败',
           'mediaError.downloadOriginal' => '下载原文件',
@@ -2541,6 +2597,9 @@ extension on TranslationsZhCn {
           'frost.more' => '更多',
           'frost.expandNavigation' => '展开侧栏',
           'frost.collapseNavigation' => '收起侧栏',
+          _ => null,
+        } ??
+        switch (path) {
           'frost.clearText' => '清除文字',
           'frost.search' => '搜索',
           'frost.noResults' => ({required Object query}) => '未找到“${query}”的结果',
@@ -2555,9 +2614,6 @@ extension on TranslationsZhCn {
           'frost.hidePassword' => '隐藏密码',
           'frost.chooseDate' => '选择日期',
           'frost.chooseTime' => '选择时间',
-          _ => null,
-        } ??
-        switch (path) {
           'frost.increment' => '增加',
           'frost.decrement' => '减少',
           'frost.reorderHandle' => '调整顺序',

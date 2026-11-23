@@ -73,6 +73,66 @@ abstract class _$FeedSelection
   }
 }
 
+/// The sort last chosen on a tag results page, per source. Kept in memory only.
+
+@ProviderFor(SearchSortSelection)
+final searchSortSelectionProvider = SearchSortSelectionProvider._();
+
+/// The sort last chosen on a tag results page, per source. Kept in memory only.
+final class SearchSortSelectionProvider
+    extends $NotifierProvider<SearchSortSelection, Map<String, SortOrder>> {
+  /// The sort last chosen on a tag results page, per source. Kept in memory only.
+  SearchSortSelectionProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'searchSortSelectionProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$searchSortSelectionHash();
+
+  @$internal
+  @override
+  SearchSortSelection create() => SearchSortSelection();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Map<String, SortOrder> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Map<String, SortOrder>>(value),
+    );
+  }
+}
+
+String _$searchSortSelectionHash() =>
+    r'e20bcad606b5623609bc3a1387442e4937900224';
+
+/// The sort last chosen on a tag results page, per source. Kept in memory only.
+
+abstract class _$SearchSortSelection extends $Notifier<Map<String, SortOrder>> {
+  Map<String, SortOrder> build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref =
+        this.ref as $Ref<Map<String, SortOrder>, Map<String, SortOrder>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<Map<String, SortOrder>, Map<String, SortOrder>>,
+              Map<String, SortOrder>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
 @ProviderFor(discoveryAvailability)
 final discoveryAvailabilityProvider = DiscoveryAvailabilityProvider._();
 

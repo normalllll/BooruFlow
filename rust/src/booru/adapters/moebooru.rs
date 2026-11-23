@@ -1,12 +1,12 @@
 use crate::api::booru_models::{
-    BooruTagSuggestion, ContentRating, MediaType, MediaVariantKind, TagCategory,
+    BooruTagSuggestion, ContentRating, MediaType, MediaVariantKind, SortOrder, TagCategory,
 };
 #[cfg(test)]
 use crate::api::booru_models::{Checksum, ChecksumAlgorithm};
 use crate::booru::adapter::{BooruAdapter, RequestContext};
 use crate::booru::adapters::common::{
     boolean, md5_checksum, media, parent_id, parse_json, rating, signed32, string, tag_list,
-    unix_to_iso8601, unsigned, unsigned32, username, validate_media_hosts,
+    unix_to_iso8601, unsigned, unsigned32, username, validate_media_hosts, with_sort_tag,
 };
 use crate::booru::error::{BooruError, BooruResult};
 use crate::booru::model::{Post, PostFlags, PostId, PostPage, SearchQuery};
@@ -20,9 +20,52 @@ pub struct MoebooruAdapter {
     definition: SourceDefinition,
 }
 
+/// The `order:` meta-tag for a sort; the newest-first default sends none.
+pub fn order_tag(sort: SortOrder) -> BooruResult<Option<&'static str>> {
+    Ok(Some(match sort {
+        SortOrder::Latest => return Ok(None),
+        SortOrder::Oldest => "order:id",
+        SortOrder::Score => "order:score",
+        SortOrder::Resolution => "order:mpixels",
+        SortOrder::Landscape => "order:landscape",
+        SortOrder::Portrait => "order:portrait",
+        SortOrder::Random => "order:random",
+        _ => return Err(BooruError::invalid_request(None)),
+    }))
+}
+
 impl MoebooruAdapter {
     pub fn new(definition: SourceDefinition) -> Self {
         Self { definition }
+    }
+
+    fn list_request(&self, query: &SearchQuery, limit: u32, page: u32) -> BooruResult<RequestSpec> {
+        let mut tags = with_sort_tag(&query.text, order_tag(query.sort)?, "order:");
+        if query.ratings.len() == 1 {
+            let filter = match query.ratings[0] {
+                ContentRating::General | ContentRating::Sensitive => Some("rating:s"),
+                ContentRating::Questionable => Some("rating:q"),
+                ContentRating::Explicit => Some("rating:e"),
+                ContentRating::Unknown => None,
+            };
+            if let Some(filter) = filter {
+                if !tags.is_empty() {
+                    tags.push(' ');
+                }
+                tags.push_str(filter);
+            }
+        }
+        let url = reqwest::Url::parse(&format!("{}/post.json", self.definition.api_base))
+            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
+        let mut spec = RequestSpec::get(url, ResponseKind::Json);
+        spec.query = vec![
+            ("tags".to_owned(), tags),
+            ("api_version".to_owned(), "2".to_owned()),
+            ("include_tags".to_owned(), "1".to_owned()),
+            ("limit".to_owned(), limit.to_string()),
+            ("page".to_owned(), page.to_string()),
+        ];
+        Ok(spec)
     }
 
     fn parse_posts(&self, bytes: &[u8]) -> BooruResult<Vec<Post>> {
@@ -170,31 +213,7 @@ impl BooruAdapter for MoebooruAdapter {
             .parse::<u32>()
             .map_err(|_| BooruError::invalid_request(Some(self.definition.id)))?;
         let limit = query.page_size.clamp(1, self.definition.max_page_size);
-        let mut tags = query.text.trim().to_owned();
-        if query.ratings.len() == 1 {
-            let filter = match query.ratings[0] {
-                ContentRating::General | ContentRating::Sensitive => Some("rating:s"),
-                ContentRating::Questionable => Some("rating:q"),
-                ContentRating::Explicit => Some("rating:e"),
-                ContentRating::Unknown => None,
-            };
-            if let Some(filter) = filter {
-                if !tags.is_empty() {
-                    tags.push(' ');
-                }
-                tags.push_str(filter);
-            }
-        }
-        let url = reqwest::Url::parse(&format!("{}/post.json", self.definition.api_base))
-            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
-        let mut spec = RequestSpec::get(url, ResponseKind::Json);
-        spec.query = vec![
-            ("tags".to_owned(), tags),
-            ("api_version".to_owned(), "2".to_owned()),
-            ("include_tags".to_owned(), "1".to_owned()),
-            ("limit".to_owned(), limit.to_string()),
-            ("page".to_owned(), page.to_string()),
-        ];
+        let spec = self.list_request(&query, limit, page)?;
         let response = ctx.runtime.execute(&self.definition, spec).await?;
         let mut items = self.parse_posts(&response.body)?;
         let exhausted = items.len() < limit as usize || page == u32::MAX;
@@ -214,9 +233,9 @@ impl BooruAdapter for MoebooruAdapter {
         request: crate::api::booru_models::FeedRequest,
     ) -> BooruResult<PostPage> {
         use crate::api::booru_models::FeedKind;
-        use crate::booru::discovery::{latest_query, parse_date, period, scale};
-        if request.kind == FeedKind::Latest {
-            return self.search(ctx, latest_query(request)).await;
+        use crate::booru::discovery::{all_query, parse_date, period, scale};
+        if request.kind == FeedKind::All {
+            return self.search(ctx, all_query(request)).await;
         }
         if request.cursor.is_some() {
             return Err(BooruError::invalid_request(Some(self.definition.id)));
@@ -362,6 +381,64 @@ mod tests {
                 .find(|source| source.id == "yande")
                 .unwrap(),
         )
+    }
+
+    #[test]
+    fn each_declared_sort_maps_to_an_order_tag() {
+        for source in builtin_sources()
+            .into_iter()
+            .filter(|source| source.family == crate::booru::source::ProtocolFamily::Moebooru)
+        {
+            for option in &source.capabilities.sorts.search {
+                let tag = order_tag(option.order).unwrap();
+                assert_eq!(tag.is_none(), option.order == SortOrder::Latest);
+            }
+        }
+        assert_eq!(order_tag(SortOrder::Oldest).unwrap(), Some("order:id"));
+        assert_eq!(
+            order_tag(SortOrder::Resolution).unwrap(),
+            Some("order:mpixels")
+        );
+        assert!(order_tag(SortOrder::Hot).is_err());
+    }
+    #[test]
+    fn list_requests_carry_the_order_tag_before_the_rating() {
+        let spec = |sort, text: &str, ratings: Vec<ContentRating>| {
+            adapter()
+                .list_request(
+                    &SearchQuery {
+                        text: text.into(),
+                        sort,
+                        ratings,
+                        page_size: 20,
+                        cursor: None,
+                    },
+                    20,
+                    4,
+                )
+                .unwrap()
+                .query
+                .into_iter()
+                .collect::<std::collections::BTreeMap<_, _>>()
+        };
+        let general = vec![ContentRating::General];
+        assert_eq!(
+            spec(SortOrder::Latest, "sky", general.clone())["tags"],
+            "sky rating:s"
+        );
+        let score = spec(SortOrder::Score, "sky", general.clone());
+        assert_eq!(score["tags"], "sky order:score rating:s");
+        assert_eq!(score["page"], "4");
+        assert_eq!(spec(SortOrder::Oldest, "", vec![])["tags"], "order:id");
+        assert_eq!(
+            spec(SortOrder::Landscape, "sky order:mpixels", vec![])["tags"],
+            "sky order:mpixels"
+        );
+        // `sort:` is not a Moebooru meta-tag.
+        assert_eq!(
+            spec(SortOrder::Score, "sky sort:x", vec![])["tags"],
+            "sky sort:x order:score"
+        );
     }
 
     #[test]

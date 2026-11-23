@@ -7,6 +7,7 @@ import 'package:booruflow/features/browse/collection_logic.dart';
 import 'package:booruflow/features/browse/discovery_logic.dart';
 import 'package:booruflow/features/browse/widgets/post_waterfall.dart';
 import 'package:booruflow/features/browse/widgets/rating_filter.dart';
+import 'package:booruflow/features/browse/widgets/sort_menu.dart';
 import 'package:booruflow/features/search/inline_search.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_page.dart';
@@ -17,7 +18,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 /// The first destination: the current source's feed as a waterfall, with the
-/// source's sections (latest, popular and so on) as tabs in the page header.
+/// source's sections (all posts, popular) as tabs in the page header.
 class BrowsePage extends ConsumerStatefulWidget {
   const BrowsePage({super.key});
   @override
@@ -43,7 +44,7 @@ class _BrowsePageState extends ConsumerState<BrowsePage>
   String get sourceId => ref.read(booruSessionProvider).sourceId;
   FeedCollectionRequest get _feed =>
       ref.read(feedSelectionProvider)[sourceId] ??
-      const FeedCollectionRequest();
+      _defaultRequest(FeedKind.all);
   PopularProbeKey get _probeKey =>
       (sourceId: sourceId, revision: ref.read(booruSessionProvider).revision);
   bool get _popularAvailable =>
@@ -82,6 +83,7 @@ class _BrowsePageState extends ConsumerState<BrowsePage>
     final caps = source.capabilities.discovery;
     return FeedCollectionRequest(
       kind: kind,
+      sort: source.capabilities.sorts.feed.first.order,
       range: switch (kind) {
         FeedKind.recentPopular => caps.popularRanges.first,
         FeedKind.historicalPopular => caps.historicalRanges.first,
@@ -122,7 +124,7 @@ class _BrowsePageState extends ConsumerState<BrowsePage>
   }
 
   void _selectSource(String id) {
-    if (_feed.kind != FeedKind.latest &&
+    if (_feed.kind != FeedKind.all &&
         service.sourceById(id).capabilities.discovery.popular ==
             CapabilityAvailability.unsupported) {
       FrostToast.info(t.discovery.latestFallback);
@@ -202,6 +204,20 @@ class _BrowsePageState extends ConsumerState<BrowsePage>
             date: chosen.$1.toIso8601String().substring(0, 10),
           ),
         );
+  }
+
+  void _setSort(SortOrder order) => ref
+      .read(feedSelectionProvider.notifier)
+      .select(sourceId, FeedCollectionRequest(sort: order));
+
+  /// The all-posts feed's sort, shown only where the source offers a choice.
+  SortChoice? get _sortChoice {
+    final choice = SortChoice(
+      options: source.capabilities.sorts.feed,
+      selected: _requestFor(FeedKind.all).sort,
+      onSelected: _setSort,
+    );
+    return choice.isOffered ? choice : null;
   }
 
   void _setRange(FeedKind kind, PopularRange range) {
@@ -293,11 +309,7 @@ class _BrowsePageState extends ConsumerState<BrowsePage>
     final probe = ref.watch(popularProbeProvider(_probeKey));
     final feed = _feed;
     final caps = source.capabilities.discovery;
-    final modes = [
-      FeedKind.latest,
-      if (_popularAvailable) FeedKind.recentPopular,
-      ...caps.additionalFeeds,
-    ];
+    final modes = [FeedKind.all, if (_popularAvailable) FeedKind.recentPopular];
     final selectedMode = _selectedMode;
     final identity = [
       sourceId,
@@ -344,6 +356,8 @@ class _BrowsePageState extends ConsumerState<BrowsePage>
       ],
       actions: toolbar(
         collection,
+        // With a tab row the sort sits at its end instead.
+        sort: modes.length == 1 ? _sortChoice : null,
         more: [
           if (probe.value?.failedAt != null)
             FrostMenuAction(
@@ -358,7 +372,7 @@ class _BrowsePageState extends ConsumerState<BrowsePage>
     if (modes.length == 1) {
       return PostWaterfall(
         collection: (key: collectionKey, loader: null),
-        filterBar: const RatingConditions(),
+        filterBar: FilterConditions(sort: _sortChoice),
         header: (context, collection) => header(collection),
       );
     }
@@ -397,7 +411,12 @@ class _BrowsePageState extends ConsumerState<BrowsePage>
                   for (final mode in modes) FrostTab(label: feedLabel(mode)),
                 ],
               ),
-              trailing: popularSelected && rangeText != null
+              trailing: !popularSelected
+                  ? switch (_sortChoice) {
+                      final choice? => SortTabButton(choice),
+                      null => null,
+                    }
+                  : rangeText != null
                   ? FrostMenuAnchor(
                       entries: _ranges(),
                       builder: (context, focus, toggle) => Focus(
@@ -414,7 +433,7 @@ class _BrowsePageState extends ConsumerState<BrowsePage>
               sectionBuilder: (context, index) {
                 final mode = modes[index];
                 return AppSection(
-                  filterBar: const RatingConditions(),
+                  filterBar: const FilterConditions(),
                   onRefresh: () => _sectionFor(mode).source.refresh(),
                   slivers: [_SectionGrid(mode)],
                 );

@@ -29,9 +29,6 @@ String rangeLabel(PopularRange range, PopularTimeBasis basis) {
 
 String feedLabel(FeedKind kind) => switch (kind) {
   FeedKind.historicalPopular => t.discovery.historicalPopular,
-  FeedKind.random => t.discovery.random,
-  FeedKind.lifetimeViews => t.discovery.lifetimeViews,
-  FeedKind.lifetimeFavorites => t.discovery.lifetimeFavorites,
-  FeedKind.latest => t.discovery.latest,
-  _ => t.discovery.popular,
+  FeedKind.all => t.discovery.all,
+  FeedKind.recentPopular => t.discovery.popular,
 };

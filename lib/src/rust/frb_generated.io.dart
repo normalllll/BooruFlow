@@ -174,6 +174,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SearchRequest dco_decode_box_autoadd_search_request(dynamic raw);
 
   @protected
+  SortOrder dco_decode_box_autoadd_sort_order(dynamic raw);
+
+  @protected
   SourceCredentials dco_decode_box_autoadd_source_credentials(dynamic raw);
 
   @protected
@@ -251,9 +254,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<ContentRating> dco_decode_list_content_rating(dynamic raw);
 
   @protected
-  List<FeedKind> dco_decode_list_feed_kind(dynamic raw);
-
-  @protected
   List<HttpHeader> dco_decode_list_http_header(dynamic raw);
 
   @protected
@@ -273,6 +273,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<RouteDiagnostic> dco_decode_list_route_diagnostic(dynamic raw);
+
+  @protected
+  List<SortOption> dco_decode_list_sort_option(dynamic raw);
 
   @protected
   List<WebChallengeSnapshot> dco_decode_list_web_challenge_snapshot(
@@ -334,6 +337,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   RouteProvider? dco_decode_opt_box_autoadd_route_provider(dynamic raw);
 
   @protected
+  SortOrder? dco_decode_opt_box_autoadd_sort_order(dynamic raw);
+
+  @protected
   int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
 
   @protected
@@ -371,6 +377,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SearchRequest dco_decode_search_request(dynamic raw);
+
+  @protected
+  SortCapabilities dco_decode_sort_capabilities(dynamic raw);
+
+  @protected
+  SortOption dco_decode_sort_option(dynamic raw);
+
+  @protected
+  SortOrder dco_decode_sort_order(dynamic raw);
 
   @protected
   SourceCapabilities dco_decode_source_capabilities(dynamic raw);
@@ -583,6 +598,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SortOrder sse_decode_box_autoadd_sort_order(SseDeserializer deserializer);
+
+  @protected
   SourceCredentials sse_decode_box_autoadd_source_credentials(
     SseDeserializer deserializer,
   );
@@ -674,9 +692,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  List<FeedKind> sse_decode_list_feed_kind(SseDeserializer deserializer);
-
-  @protected
   List<HttpHeader> sse_decode_list_http_header(SseDeserializer deserializer);
 
   @protected
@@ -704,6 +719,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<RouteDiagnostic> sse_decode_list_route_diagnostic(
     SseDeserializer deserializer,
   );
+
+  @protected
+  List<SortOption> sse_decode_list_sort_option(SseDeserializer deserializer);
 
   @protected
   List<WebChallengeSnapshot> sse_decode_list_web_challenge_snapshot(
@@ -781,6 +799,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SortOrder? sse_decode_opt_box_autoadd_sort_order(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
@@ -822,6 +845,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SearchRequest sse_decode_search_request(SseDeserializer deserializer);
+
+  @protected
+  SortCapabilities sse_decode_sort_capabilities(SseDeserializer deserializer);
+
+  @protected
+  SortOption sse_decode_sort_option(SseDeserializer deserializer);
+
+  @protected
+  SortOrder sse_decode_sort_order(SseDeserializer deserializer);
 
   @protected
   SourceCapabilities sse_decode_source_capabilities(
@@ -1084,6 +1116,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_sort_order(
+    SortOrder self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_source_credentials(
     SourceCredentials self,
     SseSerializer serializer,
@@ -1201,9 +1239,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_list_feed_kind(List<FeedKind> self, SseSerializer serializer);
-
-  @protected
   void sse_encode_list_http_header(
     List<HttpHeader> self,
     SseSerializer serializer,
@@ -1242,6 +1277,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_route_diagnostic(
     List<RouteDiagnostic> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_sort_option(
+    List<SortOption> self,
     SseSerializer serializer,
   );
 
@@ -1342,6 +1383,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_sort_order(
+    SortOrder? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);
 
   @protected
@@ -1400,6 +1447,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_search_request(SearchRequest self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_sort_capabilities(
+    SortCapabilities self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_sort_option(SortOption self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_sort_order(SortOrder self, SseSerializer serializer);
 
   @protected
   void sse_encode_source_capabilities(

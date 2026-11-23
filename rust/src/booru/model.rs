@@ -1,6 +1,7 @@
 use crate::api::booru_models::{
     post_key, BooruPost, BooruTag, Checksum, ContentRating, MediaType,
-    MediaVariant as ApiMediaVariant, MediaVariantKind, PostFlags as ApiPostFlags, TagCategory,
+    MediaVariant as ApiMediaVariant, MediaVariantKind, PostFlags as ApiPostFlags, SortOrder,
+    TagCategory,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -9,6 +10,7 @@ pub struct PostId(pub String);
 #[derive(Debug, Clone)]
 pub struct SearchQuery {
     pub text: String,
+    pub sort: SortOrder,
     pub ratings: Vec<ContentRating>,
     pub page_size: u32,
     pub cursor: Option<String>,

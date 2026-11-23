@@ -187,6 +187,7 @@ pub struct BooruPost {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SourceCapabilities {
     pub discovery: DiscoveryCapabilities,
+    pub sorts: SortCapabilities,
     pub ratings: Vec<ContentRating>,
     pub auth_kind: AuthKind,
     pub supports_search: bool,
@@ -208,12 +209,44 @@ pub enum CapabilityAvailability {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum FeedKind {
-    Latest,
+    All,
     RecentPopular,
     HistoricalPopular,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum SortOrder {
+    #[default]
+    Latest,
+    Oldest,
+    Relevance,
+    Score,
+    Favorites,
+    Views,
+    Upvotes,
+    Hot,
+    Updated,
+    Resolution,
+    Landscape,
+    Portrait,
+    FileSize,
+    TagCount,
     Random,
-    LifetimeViews,
-    LifetimeFavorites,
+}
+
+/// A sort a source can apply. `primary` options are listed directly in the
+/// menu; the others go under a secondary entry.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SortOption {
+    pub order: SortOrder,
+    pub primary: bool,
+}
+
+/// The first option of each list is its default.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SortCapabilities {
+    pub feed: Vec<SortOption>,
+    pub search: Vec<SortOption>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -242,7 +275,6 @@ pub struct DiscoveryCapabilities {
     pub historical_ranges: Vec<PopularRange>,
     pub time_basis: PopularTimeBasis,
     pub finite_popular_limit: Option<u32>,
-    pub additional_feeds: Vec<FeedKind>,
     pub autocomplete_min_chars: u32,
 }
 
@@ -253,7 +285,8 @@ pub struct FeedRequest {
     pub range: Option<PopularRange>,
     /// A date, not an instant. Calendar feeds are anchored in their cursor.
     pub date: Option<String>,
-    pub seed: Option<String>,
+    /// Required for `FeedKind::All`, empty for the popular kinds.
+    pub sort: Option<SortOrder>,
     pub ratings: Vec<ContentRating>,
     /// Upstream page-size hint; finite rankings may return their whole list.
     pub page_size: u32,
@@ -287,6 +320,7 @@ pub struct BooruSource {
 pub struct SearchRequest {
     pub source_id: String,
     pub query_text: String,
+    pub sort: SortOrder,
     pub ratings: Vec<ContentRating>,
     pub page_size: u32,
     pub cursor: Option<String>,

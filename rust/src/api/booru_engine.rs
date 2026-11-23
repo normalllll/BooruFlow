@@ -4,7 +4,7 @@ use crate::api::booru_download::{
 };
 use crate::api::booru_models::{
     BooruEngineConfig, BooruPost, BooruSource, BooruTagSuggestion, MediaRequest, MediaVariantKind,
-    PostPage, RouteCacheState, SearchRequest,
+    PostPage, RouteCacheState, SearchRequest, SortOrder,
 };
 use crate::api::web_challenge::{WebChallengeCandidate, WebChallengeOperation, WebChallengeState};
 use crate::booru::adapter::{BooruAdapter, PreparedMedia, RequestContext};
@@ -152,6 +152,7 @@ impl BooruEngine {
             &context,
             SearchQuery {
                 text: String::new(),
+                sort: SortOrder::Latest,
                 ratings: vec![crate::api::booru_models::ContentRating::General],
                 page_size: 1,
                 cursor: None,
@@ -302,8 +303,10 @@ impl BooruEngine {
         {
             return Err(BooruError::invalid_request(Some(&request.source_id)));
         }
+        crate::booru::discovery::validate_search_sort(adapter.definition(), request.sort)?;
         let query = SearchQuery {
             text: request.query_text,
+            sort: request.sort,
             ratings: crate::booru::discovery::resolve_ratings(
                 adapter.definition(),
                 request.ratings,
@@ -914,6 +917,7 @@ impl BooruEngine {
                 &context,
                 SearchQuery {
                     text: String::new(),
+                    sort: SortOrder::Latest,
                     ratings: vec![crate::api::booru_models::ContentRating::General],
                     page_size: 1,
                     cursor: None,
@@ -1179,6 +1183,7 @@ mod tests {
                 .search(SearchRequest {
                     source_id: source.source_id,
                     query_text: " ".into(),
+                    sort: SortOrder::Latest,
                     ratings: vec![ContentRating::General],
                     page_size: 40,
                     cursor: None,
@@ -1200,10 +1205,10 @@ mod tests {
                 std::time::Duration::from_secs(30),
                 engine.feed(FeedRequest {
                     source_id: source.source_id.clone(),
-                    kind: FeedKind::Latest,
+                    kind: FeedKind::All,
                     range: None,
                     date: None,
-                    seed: None,
+                    sort: Some(SortOrder::Latest),
                     ratings: vec![],
                     page_size: 40,
                     cursor: None,
@@ -1239,7 +1244,7 @@ mod tests {
             {
                 continue;
             }
-            let mut modes = vec![(FeedKind::Latest, None)];
+            let mut modes = vec![(FeedKind::All, None)];
             modes.extend(
                 source
                     .capabilities
@@ -1263,7 +1268,7 @@ mod tests {
                     kind,
                     range,
                     date: (kind == FeedKind::HistoricalPopular).then(|| "2026-08-01".into()),
-                    seed: None,
+                    sort: (kind == FeedKind::All).then_some(SortOrder::Latest),
                     ratings: vec![ContentRating::General],
                     page_size: 12,
                     cursor: None,
@@ -1329,48 +1334,137 @@ mod tests {
     }
 
     #[tokio::test]
-    #[ignore = "manual Wallhaven extra discovery acceptance"]
-    async fn live_wallhaven_extra_feeds() {
-        use crate::api::booru_models::{FeedKind, FeedRequest};
+    #[ignore = "manual live sort acceptance; set BOORUFLOW_LIVE_SOURCE to limit it"]
+    async fn live_sort_orders() {
         let engine = engine();
-        for kind in [
-            FeedKind::Random,
-            FeedKind::LifetimeViews,
-            FeedKind::LifetimeFavorites,
-        ] {
-            let mut cursor = None;
-            let mut ids = BTreeSet::new();
-            for page in 1..=3 {
-                let result = engine
-                    .feed(FeedRequest {
-                        source_id: "wallhaven".into(),
-                        kind,
-                        range: None,
-                        date: None,
-                        seed: if kind == FeedKind::Random {
-                            Some("bflow1".into())
-                        } else {
-                            None
-                        },
+        let source_filter = std::env::var("BOORUFLOW_LIVE_SOURCE").ok();
+        let tag = std::env::var("BOORUFLOW_LIVE_TAG").unwrap_or_else(|_| "landscape".into());
+        // `search` (default): a tag with the General rating; `search_all`: the
+        // same without a rating condition; `feed`: the all-posts feed.
+        let mode = std::env::var("BOORUFLOW_LIVE_MODE").unwrap_or_else(|_| "search".into());
+        for source in engine.list_sources() {
+            if source_filter
+                .as_deref()
+                .is_some_and(|id| id != source.source_id)
+            {
+                continue;
+            }
+            let options = if mode == "feed" {
+                &source.capabilities.sorts.feed
+            } else {
+                &source.capabilities.sorts.search
+            };
+            for option in options {
+                let mut cursor = None;
+                let mut ids = BTreeSet::new();
+                for page in 1..=2 {
+                    let result = if mode == "feed" {
+                        engine
+                            .feed(crate::api::booru_models::FeedRequest {
+                                source_id: source.source_id.clone(),
+                                kind: crate::api::booru_models::FeedKind::All,
+                                range: None,
+                                date: None,
+                                sort: Some(option.order),
+                                ratings: vec![],
+                                page_size: 20,
+                                cursor,
+                            })
+                            .await
+                    } else {
+                        engine
+                            .search(SearchRequest {
+                                source_id: source.source_id.clone(),
+                                query_text: tag.clone(),
+                                sort: option.order,
+                                ratings: if mode == "search" {
+                                    vec![ContentRating::General]
+                                } else {
+                                    vec![]
+                                },
+                                page_size: 20,
+                                cursor,
+                            })
+                            .await
+                    };
+                    let result = match result {
+                        Ok(result) => result,
+                        Err(error) => {
+                            println!(
+                                "SORT {} {:?} page={page}: ERROR {:?} HTTP={:?}",
+                                source.source_id, option.order, error.code, error.http_status
+                            );
+                            break;
+                        }
+                    };
+                    let duplicates = result
+                        .items
+                        .iter()
+                        .filter(|post| !ids.insert(post.post_key.clone()))
+                        .count();
+                    let sample = result
+                        .items
+                        .iter()
+                        .map(|post| {
+                            format!(
+                                "{}|s={:?}|{}x{}|{}B|{}|t={}",
+                                post.post_id,
+                                post.score,
+                                post.width.unwrap_or(0),
+                                post.height.unwrap_or(0),
+                                post.original_file_size_decimal.as_deref().unwrap_or("-"),
+                                post.created_at_iso8601.as_deref().unwrap_or("-"),
+                                post.tags.len()
+                            )
+                        })
+                        .collect::<Vec<_>>()
+                        .join(" ; ");
+                    println!(
+                        "SORT {} {:?} page={page} items={} dup={duplicates} cursor={:?} :: {sample}",
+                        source.source_id,
+                        option.order,
+                        result.items.len(),
+                        result.next_cursor
+                    );
+                    cursor = result.next_cursor;
+                    if result.exhausted || cursor.is_none() {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn search_with_an_undeclared_sort_is_rejected_without_network() {
+        let engine = engine();
+        for source in engine.list_sources() {
+            for order in [
+                SortOrder::Relevance,
+                SortOrder::Updated,
+                SortOrder::FileSize,
+            ] {
+                if source
+                    .capabilities
+                    .sorts
+                    .search
+                    .iter()
+                    .any(|option| option.order == order)
+                {
+                    continue;
+                }
+                let error = engine
+                    .search(SearchRequest {
+                        source_id: source.source_id.clone(),
+                        query_text: "sky".into(),
+                        sort: order,
                         ratings: vec![ContentRating::General],
-                        page_size: 24,
-                        cursor,
+                        page_size: 20,
+                        cursor: None,
                     })
                     .await
-                    .unwrap();
-                assert!(!result.items.is_empty());
-                for post in &result.items {
-                    assert!(ids.insert(post.post_key.clone()), "duplicate in {kind:?}");
-                }
-                println!(
-                    "EXTRA {kind:?} page={page} items={} unique={}",
-                    result.items.len(),
-                    ids.len()
-                );
-                cursor = result.next_cursor;
-                if result.exhausted {
-                    break;
-                }
+                    .unwrap_err();
+                assert_eq!(error.code, BooruErrorCode::InvalidRequest);
             }
         }
     }
@@ -1472,6 +1566,7 @@ mod tests {
             .search(SearchRequest {
                 source_id: "yande".to_owned(),
                 query_text: String::new(),
+                sort: SortOrder::Latest,
                 ratings: vec![ContentRating::Sensitive],
                 page_size: 20,
                 cursor: None,
@@ -1758,10 +1853,10 @@ mod tests {
                 match engine
                     .feed(crate::api::booru_models::FeedRequest {
                         source_id: source.source_id.clone(),
-                        kind: crate::api::booru_models::FeedKind::Latest,
+                        kind: crate::api::booru_models::FeedKind::All,
                         range: None,
                         date: None,
-                        seed: None,
+                        sort: Some(SortOrder::Latest),
                         ratings: source.capabilities.ratings.clone(),
                         page_size: 5,
                         cursor: None,

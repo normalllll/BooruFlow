@@ -32,6 +32,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../support/frost_app_layers.dart';
+import '../../support/source_sorts.dart';
 
 class _Store implements SettingsServiceStore {
   @override
@@ -60,6 +61,7 @@ BooruSource _source(String id, {String? name, bool popular = false}) =>
       enabledByDefault: true,
       isAiSource: false,
       capabilities: SourceCapabilities(
+        sorts: newestOnlySorts,
         discovery: DiscoveryCapabilities(
           popular: popular
               ? CapabilityAvailability.available
@@ -72,7 +74,6 @@ BooruSource _source(String id, {String? name, bool popular = false}) =>
               ? const [PopularRange.day, PopularRange.week, PopularRange.month]
               : const [],
           timeBasis: PopularTimeBasis.indexTimeWindow,
-          additionalFeeds: const [],
           autocompleteMinChars: 1,
         ),
         ratings: const [ContentRating.general],
@@ -264,7 +265,7 @@ void main() {
         expect(find.byType(FrostTabBar), findsOneWidget);
         final tabs = tester.widget<FrostTabBar>(find.byType(FrostTabBar)).tabs;
         expect(tabs.map((tab) => tab.label), [
-          t.discovery.latest,
+          t.discovery.all,
           t.discovery.popular,
         ]);
         // 5.1: the header starts with the source title menu.

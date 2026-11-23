@@ -706,7 +706,7 @@ void main() {
               : 'https://yande.re/post?tags=sky',
         );
         if (tags == null) {
-          expect(service.mediaEngine.lastFeed?.kind, FeedKind.latest);
+          expect(service.mediaEngine.lastFeed?.kind, FeedKind.all);
         } else {
           expect(service.mediaEngine.lastSearch?.queryText, 'sky');
         }

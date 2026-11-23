@@ -3,14 +3,17 @@ import 'package:booruflow/core/settings/logic.dart';
 import 'package:booruflow/features/booru/booru_logic.dart';
 import 'package:booruflow/features/browse/collection_actions.dart';
 import 'package:booruflow/features/browse/collection_logic.dart';
+import 'package:booruflow/features/browse/discovery_logic.dart';
 import 'package:booruflow/features/browse/widgets/post_waterfall.dart';
 import 'package:booruflow/features/browse/widgets/query_title.dart';
 import 'package:booruflow/features/browse/widgets/rating_filter.dart';
+import 'package:booruflow/features/browse/widgets/sort_menu.dart';
 import 'package:booruflow/features/search/inline_search.dart';
 import 'package:booruflow/features/search/query.dart';
 import 'package:booruflow/features/tags/edit_user_tag.dart';
 import 'package:booruflow/intl/translations.g.dart';
 import 'package:booruflow/shared/app_navigation.dart';
+import 'package:booruflow/src/rust/api/booru_models.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frost_ui/frost_ui.dart';
@@ -32,6 +35,28 @@ class _ResultsPageState extends ConsumerState<ResultsPage>
   @override
   String get sourceId => widget.sourceId;
 
+  // Opens on the sort last chosen for this source, else the source's default.
+  late SortOrder _sort = _sortFor(sourceId);
+
+  SortOrder _sortFor(String id) {
+    final options = service.sourceById(id).capabilities.sorts.search;
+    final remembered = ref.read(searchSortSelectionProvider)[id];
+    return options.any((option) => option.order == remembered)
+        ? remembered!
+        : options.first.order;
+  }
+
+  void _setSort(SortOrder order) {
+    ref.read(searchSortSelectionProvider.notifier).select(sourceId, order);
+    setState(() => _sort = order);
+  }
+
+  SortChoice get _sortChoice => SortChoice(
+    options: source.capabilities.sorts.search,
+    selected: _sort,
+    onSelected: _setSort,
+  );
+
   @override
   void dispose() {
     _search.dispose();
@@ -41,7 +66,7 @@ class _ResultsPageState extends ConsumerState<ResultsPage>
   @override
   CollectionKey get collectionKey => CollectionKey(
     sourceId: sourceId,
-    request: TagSearchCollectionRequest(widget.tags),
+    request: TagSearchCollectionRequest(widget.tags, sort: _sort),
     ratings: ref.read(settingsProvider).ratings,
     revision: ref.read(booruSessionProvider).revision,
   );
@@ -49,6 +74,17 @@ class _ResultsPageState extends ConsumerState<ResultsPage>
   /// Another source runs the same query in place of this page.
   void _selectSource(String id) {
     if (id == sourceId) return;
+    // The new page opens on this sort when its source has it. Otherwise the
+    // source keeps what it remembered, else its default.
+    final carries = service
+        .sourceById(id)
+        .capabilities
+        .sorts
+        .search
+        .any((option) => option.order == _sort);
+    if (carries) {
+      ref.read(searchSortSelectionProvider.notifier).select(id, _sort);
+    }
     ref.read(booruSessionProvider.notifier).selectSource(id);
     context.replaceTaggedPosts(widget.tags, sourceId: id);
   }
@@ -100,7 +136,9 @@ class _ResultsPageState extends ConsumerState<ResultsPage>
     ];
     return PostWaterfall(
       collection: (key: collectionKey, loader: null),
-      filterBar: const RatingConditions(),
+      filterBar: FilterConditions(
+        sort: _sortChoice.isOffered ? _sortChoice : null,
+      ),
       header: (context, collection) => FrostPageHeader(
         middle: inlineSearch
             ? InlineSearch(
@@ -120,6 +158,7 @@ class _ResultsPageState extends ConsumerState<ResultsPage>
         title: inlineSearch ? null : QueryTitle(widget.tags),
         actions: toolbar(
           collection,
+          sort: _sortChoice,
           more: [
             if (inlineSearch)
               FrostMenuSubmenu(

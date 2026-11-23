@@ -22,6 +22,7 @@ BooruSource _accountSource(String id) {
     isAiSource: false,
     capabilities: SourceCapabilities(
       discovery: capabilities.discovery,
+      sorts: capabilities.sorts,
       ratings: capabilities.ratings,
       authKind: AuthKind.loginApiKey,
       supportsSearch: true,

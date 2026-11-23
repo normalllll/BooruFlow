@@ -41,7 +41,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.14.0-beta.2";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1471653920;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 989704391;
 
 // Section: executor
 
@@ -2588,6 +2588,38 @@ fn wire__crate__api__booru_models__post_key_impl(
         },
     )
 }
+fn wire__crate__api__booru_models__sort_order_default_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "sort_order_default",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, ()>((move || {
+                    let output_ok = Ok::<_, ()>(crate::api::booru_models::SortOrder::default())?;
+                    std::result::Result::Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
 fn wire__crate__api__booru_auth__source_credentials_default_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -3116,8 +3148,6 @@ impl SseDecode for crate::api::booru_models::DiscoveryCapabilities {
         let mut var_timeBasis =
             <crate::api::booru_models::PopularTimeBasis>::sse_decode(deserializer);
         let mut var_finitePopularLimit = <Option<u32>>::sse_decode(deserializer);
-        let mut var_additionalFeeds =
-            <Vec<crate::api::booru_models::FeedKind>>::sse_decode(deserializer);
         let mut var_autocompleteMinChars = <u32>::sse_decode(deserializer);
         return crate::api::booru_models::DiscoveryCapabilities {
             popular: var_popular,
@@ -3126,7 +3156,6 @@ impl SseDecode for crate::api::booru_models::DiscoveryCapabilities {
             historical_ranges: var_historicalRanges,
             time_basis: var_timeBasis,
             finite_popular_limit: var_finitePopularLimit,
-            additional_feeds: var_additionalFeeds,
             autocomplete_min_chars: var_autocompleteMinChars,
         };
     }
@@ -3211,12 +3240,9 @@ impl SseDecode for crate::api::booru_models::FeedKind {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut inner = <i32>::sse_decode(deserializer);
         return match inner {
-            0 => crate::api::booru_models::FeedKind::Latest,
+            0 => crate::api::booru_models::FeedKind::All,
             1 => crate::api::booru_models::FeedKind::RecentPopular,
             2 => crate::api::booru_models::FeedKind::HistoricalPopular,
-            3 => crate::api::booru_models::FeedKind::Random,
-            4 => crate::api::booru_models::FeedKind::LifetimeViews,
-            5 => crate::api::booru_models::FeedKind::LifetimeFavorites,
             _ => unreachable!("Invalid variant for FeedKind: {}", inner),
         };
     }
@@ -3230,7 +3256,7 @@ impl SseDecode for crate::api::booru_models::FeedRequest {
         let mut var_range =
             <Option<crate::api::booru_models::PopularRange>>::sse_decode(deserializer);
         let mut var_date = <Option<String>>::sse_decode(deserializer);
-        let mut var_seed = <Option<String>>::sse_decode(deserializer);
+        let mut var_sort = <Option<crate::api::booru_models::SortOrder>>::sse_decode(deserializer);
         let mut var_ratings =
             <Vec<crate::api::booru_models::ContentRating>>::sse_decode(deserializer);
         let mut var_pageSize = <u32>::sse_decode(deserializer);
@@ -3240,7 +3266,7 @@ impl SseDecode for crate::api::booru_models::FeedRequest {
             kind: var_kind,
             range: var_range,
             date: var_date,
-            seed: var_seed,
+            sort: var_sort,
             ratings: var_ratings,
             page_size: var_pageSize,
             cursor: var_cursor,
@@ -3363,20 +3389,6 @@ impl SseDecode for Vec<crate::api::booru_models::ContentRating> {
     }
 }
 
-impl SseDecode for Vec<crate::api::booru_models::FeedKind> {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        let mut len_ = <i32>::sse_decode(deserializer);
-        let mut ans_ = Vec::with_capacity(len_ as usize);
-        for idx_ in 0..len_ {
-            ans_.push(<crate::api::booru_models::FeedKind>::sse_decode(
-                deserializer,
-            ));
-        }
-        return ans_;
-    }
-}
-
 impl SseDecode for Vec<crate::api::booru_models::HttpHeader> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -3466,6 +3478,20 @@ impl SseDecode for Vec<crate::api::booru_models::RouteDiagnostic> {
         let mut ans_ = Vec::with_capacity(len_ as usize);
         for idx_ in 0..len_ {
             ans_.push(<crate::api::booru_models::RouteDiagnostic>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::booru_models::SortOption> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::booru_models::SortOption>::sse_decode(
                 deserializer,
             ));
         }
@@ -3763,6 +3789,19 @@ impl SseDecode for Option<crate::api::booru_models::RouteProvider> {
     }
 }
 
+impl SseDecode for Option<crate::api::booru_models::SortOrder> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::booru_models::SortOrder>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
 impl SseDecode for Option<u32> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -3971,6 +4010,7 @@ impl SseDecode for crate::api::booru_models::SearchRequest {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_sourceId = <String>::sse_decode(deserializer);
         let mut var_queryText = <String>::sse_decode(deserializer);
+        let mut var_sort = <crate::api::booru_models::SortOrder>::sse_decode(deserializer);
         let mut var_ratings =
             <Vec<crate::api::booru_models::ContentRating>>::sse_decode(deserializer);
         let mut var_pageSize = <u32>::sse_decode(deserializer);
@@ -3978,9 +4018,59 @@ impl SseDecode for crate::api::booru_models::SearchRequest {
         return crate::api::booru_models::SearchRequest {
             source_id: var_sourceId,
             query_text: var_queryText,
+            sort: var_sort,
             ratings: var_ratings,
             page_size: var_pageSize,
             cursor: var_cursor,
+        };
+    }
+}
+
+impl SseDecode for crate::api::booru_models::SortCapabilities {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_feed = <Vec<crate::api::booru_models::SortOption>>::sse_decode(deserializer);
+        let mut var_search = <Vec<crate::api::booru_models::SortOption>>::sse_decode(deserializer);
+        return crate::api::booru_models::SortCapabilities {
+            feed: var_feed,
+            search: var_search,
+        };
+    }
+}
+
+impl SseDecode for crate::api::booru_models::SortOption {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_order = <crate::api::booru_models::SortOrder>::sse_decode(deserializer);
+        let mut var_primary = <bool>::sse_decode(deserializer);
+        return crate::api::booru_models::SortOption {
+            order: var_order,
+            primary: var_primary,
+        };
+    }
+}
+
+impl SseDecode for crate::api::booru_models::SortOrder {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::booru_models::SortOrder::Latest,
+            1 => crate::api::booru_models::SortOrder::Oldest,
+            2 => crate::api::booru_models::SortOrder::Relevance,
+            3 => crate::api::booru_models::SortOrder::Score,
+            4 => crate::api::booru_models::SortOrder::Favorites,
+            5 => crate::api::booru_models::SortOrder::Views,
+            6 => crate::api::booru_models::SortOrder::Upvotes,
+            7 => crate::api::booru_models::SortOrder::Hot,
+            8 => crate::api::booru_models::SortOrder::Updated,
+            9 => crate::api::booru_models::SortOrder::Resolution,
+            10 => crate::api::booru_models::SortOrder::Landscape,
+            11 => crate::api::booru_models::SortOrder::Portrait,
+            12 => crate::api::booru_models::SortOrder::FileSize,
+            13 => crate::api::booru_models::SortOrder::TagCount,
+            14 => crate::api::booru_models::SortOrder::Random,
+            _ => unreachable!("Invalid variant for SortOrder: {}", inner),
         };
     }
 }
@@ -3990,6 +4080,7 @@ impl SseDecode for crate::api::booru_models::SourceCapabilities {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_discovery =
             <crate::api::booru_models::DiscoveryCapabilities>::sse_decode(deserializer);
+        let mut var_sorts = <crate::api::booru_models::SortCapabilities>::sse_decode(deserializer);
         let mut var_ratings =
             <Vec<crate::api::booru_models::ContentRating>>::sse_decode(deserializer);
         let mut var_authKind = <crate::api::booru_models::AuthKind>::sse_decode(deserializer);
@@ -4002,6 +4093,7 @@ impl SseDecode for crate::api::booru_models::SourceCapabilities {
         let mut var_supportsBackgroundDownload = <bool>::sse_decode(deserializer);
         return crate::api::booru_models::SourceCapabilities {
             discovery: var_discovery,
+            sorts: var_sorts,
             ratings: var_ratings,
             auth_kind: var_authKind,
             supports_search: var_supportsSearch,
@@ -4477,13 +4569,19 @@ fn pde_ffi_dispatcher_primary_impl(
             data_len,
         ),
         48 => wire__crate__api__booru_models__post_key_impl(port, ptr, rust_vec_len, data_len),
-        49 => wire__crate__api__booru_auth__source_credentials_default_impl(
+        49 => wire__crate__api__booru_models__sort_order_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        50 => wire__crate__api__booru_models__tag_category_default_impl(
+        50 => wire__crate__api__booru_auth__source_credentials_default_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        51 => wire__crate__api__booru_models__tag_category_default_impl(
             port,
             ptr,
             rust_vec_len,
@@ -5043,7 +5141,6 @@ impl flutter_rust_bridge::IntoDart for crate::api::booru_models::DiscoveryCapabi
             self.historical_ranges.into_into_dart().into_dart(),
             self.time_basis.into_into_dart().into_dart(),
             self.finite_popular_limit.into_into_dart().into_dart(),
-            self.additional_feeds.into_into_dart().into_dart(),
             self.autocomplete_min_chars.into_into_dart().into_dart(),
         ]
         .into_dart()
@@ -5139,12 +5236,9 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::booru_download::DownloadReque
 impl flutter_rust_bridge::IntoDart for crate::api::booru_models::FeedKind {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         match self {
-            Self::Latest => 0.into_dart(),
+            Self::All => 0.into_dart(),
             Self::RecentPopular => 1.into_dart(),
             Self::HistoricalPopular => 2.into_dart(),
-            Self::Random => 3.into_dart(),
-            Self::LifetimeViews => 4.into_dart(),
-            Self::LifetimeFavorites => 5.into_dart(),
             _ => unreachable!(),
         }
     }
@@ -5168,7 +5262,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::booru_models::FeedRequest {
             self.kind.into_into_dart().into_dart(),
             self.range.into_into_dart().into_dart(),
             self.date.into_into_dart().into_dart(),
-            self.seed.into_into_dart().into_dart(),
+            self.sort.into_into_dart().into_dart(),
             self.ratings.into_into_dart().into_dart(),
             self.page_size.into_into_dart().into_dart(),
             self.cursor.into_into_dart().into_dart(),
@@ -5639,6 +5733,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::booru_models::SearchRequest {
         [
             self.source_id.into_into_dart().into_dart(),
             self.query_text.into_into_dart().into_dart(),
+            self.sort.into_into_dart().into_dart(),
             self.ratings.into_into_dart().into_dart(),
             self.page_size.into_into_dart().into_dart(),
             self.cursor.into_into_dart().into_dart(),
@@ -5658,10 +5753,87 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::booru_models::SearchRequest>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::booru_models::SortCapabilities {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.feed.into_into_dart().into_dart(),
+            self.search.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::booru_models::SortCapabilities
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::booru_models::SortCapabilities>
+    for crate::api::booru_models::SortCapabilities
+{
+    fn into_into_dart(self) -> crate::api::booru_models::SortCapabilities {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::booru_models::SortOption {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.order.into_into_dart().into_dart(),
+            self.primary.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::booru_models::SortOption
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::booru_models::SortOption>
+    for crate::api::booru_models::SortOption
+{
+    fn into_into_dart(self) -> crate::api::booru_models::SortOption {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::booru_models::SortOrder {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::Latest => 0.into_dart(),
+            Self::Oldest => 1.into_dart(),
+            Self::Relevance => 2.into_dart(),
+            Self::Score => 3.into_dart(),
+            Self::Favorites => 4.into_dart(),
+            Self::Views => 5.into_dart(),
+            Self::Upvotes => 6.into_dart(),
+            Self::Hot => 7.into_dart(),
+            Self::Updated => 8.into_dart(),
+            Self::Resolution => 9.into_dart(),
+            Self::Landscape => 10.into_dart(),
+            Self::Portrait => 11.into_dart(),
+            Self::FileSize => 12.into_dart(),
+            Self::TagCount => 13.into_dart(),
+            Self::Random => 14.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::booru_models::SortOrder
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::booru_models::SortOrder>
+    for crate::api::booru_models::SortOrder
+{
+    fn into_into_dart(self) -> crate::api::booru_models::SortOrder {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::booru_models::SourceCapabilities {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
             self.discovery.into_into_dart().into_dart(),
+            self.sorts.into_into_dart().into_dart(),
             self.ratings.into_into_dart().into_dart(),
             self.auth_kind.into_into_dart().into_dart(),
             self.supports_search.into_into_dart().into_dart(),
@@ -6328,7 +6500,6 @@ impl SseEncode for crate::api::booru_models::DiscoveryCapabilities {
         );
         <crate::api::booru_models::PopularTimeBasis>::sse_encode(self.time_basis, serializer);
         <Option<u32>>::sse_encode(self.finite_popular_limit, serializer);
-        <Vec<crate::api::booru_models::FeedKind>>::sse_encode(self.additional_feeds, serializer);
         <u32>::sse_encode(self.autocomplete_min_chars, serializer);
     }
 }
@@ -6403,12 +6574,9 @@ impl SseEncode for crate::api::booru_models::FeedKind {
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <i32>::sse_encode(
             match self {
-                crate::api::booru_models::FeedKind::Latest => 0,
+                crate::api::booru_models::FeedKind::All => 0,
                 crate::api::booru_models::FeedKind::RecentPopular => 1,
                 crate::api::booru_models::FeedKind::HistoricalPopular => 2,
-                crate::api::booru_models::FeedKind::Random => 3,
-                crate::api::booru_models::FeedKind::LifetimeViews => 4,
-                crate::api::booru_models::FeedKind::LifetimeFavorites => 5,
                 _ => {
                     unimplemented!("");
                 }
@@ -6425,7 +6593,7 @@ impl SseEncode for crate::api::booru_models::FeedRequest {
         <crate::api::booru_models::FeedKind>::sse_encode(self.kind, serializer);
         <Option<crate::api::booru_models::PopularRange>>::sse_encode(self.range, serializer);
         <Option<String>>::sse_encode(self.date, serializer);
-        <Option<String>>::sse_encode(self.seed, serializer);
+        <Option<crate::api::booru_models::SortOrder>>::sse_encode(self.sort, serializer);
         <Vec<crate::api::booru_models::ContentRating>>::sse_encode(self.ratings, serializer);
         <u32>::sse_encode(self.page_size, serializer);
         <Option<String>>::sse_encode(self.cursor, serializer);
@@ -6517,16 +6685,6 @@ impl SseEncode for Vec<crate::api::booru_models::ContentRating> {
     }
 }
 
-impl SseEncode for Vec<crate::api::booru_models::FeedKind> {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        <i32>::sse_encode(self.len() as _, serializer);
-        for item in self {
-            <crate::api::booru_models::FeedKind>::sse_encode(item, serializer);
-        }
-    }
-}
-
 impl SseEncode for Vec<crate::api::booru_models::HttpHeader> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -6593,6 +6751,16 @@ impl SseEncode for Vec<crate::api::booru_models::RouteDiagnostic> {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
             <crate::api::booru_models::RouteDiagnostic>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::booru_models::SortOption> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::booru_models::SortOption>::sse_encode(item, serializer);
         }
     }
 }
@@ -6845,6 +7013,16 @@ impl SseEncode for Option<crate::api::booru_models::RouteProvider> {
     }
 }
 
+impl SseEncode for Option<crate::api::booru_models::SortOrder> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::booru_models::SortOrder>::sse_encode(value, serializer);
+        }
+    }
+}
+
 impl SseEncode for Option<u32> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -7016,9 +7194,55 @@ impl SseEncode for crate::api::booru_models::SearchRequest {
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <String>::sse_encode(self.source_id, serializer);
         <String>::sse_encode(self.query_text, serializer);
+        <crate::api::booru_models::SortOrder>::sse_encode(self.sort, serializer);
         <Vec<crate::api::booru_models::ContentRating>>::sse_encode(self.ratings, serializer);
         <u32>::sse_encode(self.page_size, serializer);
         <Option<String>>::sse_encode(self.cursor, serializer);
+    }
+}
+
+impl SseEncode for crate::api::booru_models::SortCapabilities {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<crate::api::booru_models::SortOption>>::sse_encode(self.feed, serializer);
+        <Vec<crate::api::booru_models::SortOption>>::sse_encode(self.search, serializer);
+    }
+}
+
+impl SseEncode for crate::api::booru_models::SortOption {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <crate::api::booru_models::SortOrder>::sse_encode(self.order, serializer);
+        <bool>::sse_encode(self.primary, serializer);
+    }
+}
+
+impl SseEncode for crate::api::booru_models::SortOrder {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::booru_models::SortOrder::Latest => 0,
+                crate::api::booru_models::SortOrder::Oldest => 1,
+                crate::api::booru_models::SortOrder::Relevance => 2,
+                crate::api::booru_models::SortOrder::Score => 3,
+                crate::api::booru_models::SortOrder::Favorites => 4,
+                crate::api::booru_models::SortOrder::Views => 5,
+                crate::api::booru_models::SortOrder::Upvotes => 6,
+                crate::api::booru_models::SortOrder::Hot => 7,
+                crate::api::booru_models::SortOrder::Updated => 8,
+                crate::api::booru_models::SortOrder::Resolution => 9,
+                crate::api::booru_models::SortOrder::Landscape => 10,
+                crate::api::booru_models::SortOrder::Portrait => 11,
+                crate::api::booru_models::SortOrder::FileSize => 12,
+                crate::api::booru_models::SortOrder::TagCount => 13,
+                crate::api::booru_models::SortOrder::Random => 14,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
     }
 }
 
@@ -7026,6 +7250,7 @@ impl SseEncode for crate::api::booru_models::SourceCapabilities {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <crate::api::booru_models::DiscoveryCapabilities>::sse_encode(self.discovery, serializer);
+        <crate::api::booru_models::SortCapabilities>::sse_encode(self.sorts, serializer);
         <Vec<crate::api::booru_models::ContentRating>>::sse_encode(self.ratings, serializer);
         <crate::api::booru_models::AuthKind>::sse_encode(self.auth_kind, serializer);
         <bool>::sse_encode(self.supports_search, serializer);

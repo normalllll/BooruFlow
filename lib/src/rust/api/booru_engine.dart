@@ -8,7 +8,9 @@ import '../frb_generated.dart';
 import 'booru_auth.dart';
 import 'booru_download.dart';
 import 'booru_models.dart';
+
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+
 import 'web_challenge.dart';
 
 // These functions are ignored because they are not marked as `pub`: `context`, `media_from_post`, `stream_media_inner`, `unsupported`, `until_cancelled`, `verify_and_commit_challenge`

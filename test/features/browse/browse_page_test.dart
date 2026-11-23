@@ -16,6 +16,7 @@ import 'package:frost_ui/frost_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../support/browse_support.dart';
+import '../../support/source_sorts.dart';
 import '../discovery/search_interaction_test.dart' show testSource;
 
 class _Store implements SettingsServiceStore {
@@ -76,7 +77,7 @@ void main() {
         find.byWidgetPredicate(
           (widget) =>
               widget is FrostToolbarMenuButton &&
-              widget.label == t.discovery.latest,
+              widget.label == t.discovery.all,
         ),
         findsNothing,
       );
@@ -250,7 +251,7 @@ void main() {
           (key) =>
               key.ratings.isEmpty &&
               key.request is FeedCollectionRequest &&
-              (key.request as FeedCollectionRequest).kind == FeedKind.latest,
+              (key.request as FeedCollectionRequest).kind == FeedKind.all,
         ),
         true,
       );
@@ -337,6 +338,7 @@ void main() {
             supportsOriginal: true,
             supportsAuthenticatedMedia: false,
             supportsBackgroundDownload: true,
+            sorts: newestOnlySorts,
             discovery: const DiscoveryCapabilities(
               popular: CapabilityAvailability.available,
               commonTags: CapabilityAvailability.available,
@@ -351,7 +353,6 @@ void main() {
                 PopularRange.month,
               ],
               timeBasis: PopularTimeBasis.calendarUploadPeriod,
-              additionalFeeds: [],
               autocompleteMinChars: 1,
             ),
           ),
@@ -421,6 +422,7 @@ void main() {
                 supportsOriginal: true,
                 supportsAuthenticatedMedia: false,
                 supportsBackgroundDownload: true,
+                sorts: newestOnlySorts,
                 discovery: const DiscoveryCapabilities(
                   popular: CapabilityAvailability.available,
                   commonTags: CapabilityAvailability.available,
@@ -435,7 +437,6 @@ void main() {
                     PopularRange.month,
                   ],
                   timeBasis: PopularTimeBasis.indexTimeWindow,
-                  additionalFeeds: [],
                   autocompleteMinChars: 1,
                 ),
               ),
@@ -512,7 +513,7 @@ void main() {
           for (final kind in [
             FeedKind.recentPopular,
             FeedKind.historicalPopular,
-            FeedKind.latest,
+            FeedKind.all,
           ]) {
             ProviderScope.containerOf(tester.element(find.byType(BrowsePage)))
                 .read(feedSelectionProvider.notifier)
@@ -520,7 +521,7 @@ void main() {
                   'yande',
                   FeedCollectionRequest(
                     kind: kind,
-                    range: kind == FeedKind.latest ? null : PopularRange.month,
+                    range: kind == FeedKind.all ? null : PopularRange.month,
                     date: kind == FeedKind.historicalPopular
                         ? '2026-09-05'
                         : null,

@@ -1,5 +1,7 @@
 use crate::api::booru_auth::{AuthState, AuthStatus};
-use crate::api::booru_models::{ContentRating, MediaType, MediaVariantKind, TagCategory};
+use crate::api::booru_models::{
+    ContentRating, MediaType, MediaVariantKind, SortOrder, TagCategory,
+};
 use crate::booru::adapter::{BooruAdapter, RequestContext};
 use crate::booru::adapters::common::{
     media, parse_json, rating, signed32, source_time, string, tag_list, unsigned, unsigned32,
@@ -106,6 +108,30 @@ impl WallhavenAdapter {
         })
     }
 
+    fn list_request(
+        &self,
+        query: &SearchQuery,
+        page: u32,
+        seed: Option<&str>,
+    ) -> BooruResult<RequestSpec> {
+        let (sorting, order) = sorting(query.sort)?;
+        let url = reqwest::Url::parse(&format!("{}/search", self.definition.api_base))
+            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
+        let mut spec = RequestSpec::get(url, ResponseKind::Json);
+        spec.query = vec![
+            ("sorting".to_owned(), sorting.to_owned()),
+            ("order".to_owned(), order.to_owned()),
+            ("q".to_owned(), query.text.trim().to_owned()),
+            ("categories".to_owned(), "010".to_owned()),
+            ("purity".to_owned(), wallhaven_purity_bits(&query.ratings)),
+            ("page".to_owned(), page.to_string()),
+        ];
+        if let Some(seed) = seed {
+            spec.query.push(("seed".to_owned(), seed.to_owned()));
+        }
+        Ok(spec)
+    }
+
     fn parse_listing(&self, bytes: &[u8]) -> BooruResult<(Vec<Post>, u32, u32, Option<String>)> {
         let json = parse_json(self.definition.id, bytes)?;
         let values = json
@@ -143,26 +169,18 @@ impl BooruAdapter for WallhavenAdapter {
             ));
         }
         let (page, seed) = parse_cursor(query.cursor.as_deref())?;
-        let url = reqwest::Url::parse(&format!("{}/search", self.definition.api_base))
-            .map_err(|_| BooruError::invalid_response(self.definition.id))?;
-        let mut spec = RequestSpec::get(url, ResponseKind::Json);
-        spec.query = vec![
-            ("sorting".to_owned(), "date_added".to_owned()),
-            ("order".to_owned(), "desc".to_owned()),
-            ("q".to_owned(), query.text.trim().to_owned()),
-            ("categories".to_owned(), "010".to_owned()),
-            ("purity".to_owned(), wallhaven_purity_bits(&query.ratings)),
-            ("page".to_owned(), page.to_string()),
-        ];
-        if let Some(seed) = seed {
-            spec.query.push(("seed".to_owned(), seed));
-        }
+        let spec = self.list_request(&query, page, seed.as_deref())?;
         let response = ctx.runtime.execute(&self.definition, spec).await?;
         let (items, current, last, response_seed) = self.parse_listing(&response.body)?;
-        let exhausted = current >= last || items.is_empty();
+        // Random pages are only reproducible with the seed the first page returns.
+        let seed = response_seed.or(seed);
+        if query.sort == SortOrder::Random && seed.is_none() {
+            return Err(BooruError::invalid_response(self.definition.id));
+        }
+        let exhausted = current >= last || items.is_empty() || current == u32::MAX;
         Ok(PostPage {
             items,
-            next_cursor: (!exhausted).then(|| format_cursor(current + 1, response_seed.as_deref())),
+            next_cursor: (!exhausted).then(|| format_cursor(current + 1, seed.as_deref())),
             exhausted,
         })
     }
@@ -173,18 +191,15 @@ impl BooruAdapter for WallhavenAdapter {
         request: crate::api::booru_models::FeedRequest,
     ) -> BooruResult<PostPage> {
         use crate::api::booru_models::FeedKind;
-        if request.kind == FeedKind::Latest {
-            return self
-                .search(ctx, crate::booru::discovery::latest_query(request))
-                .await;
+        match request.kind {
+            FeedKind::All => {
+                return self
+                    .search(ctx, crate::booru::discovery::all_query(request))
+                    .await;
+            }
+            FeedKind::RecentPopular => {}
+            FeedKind::HistoricalPopular => return Err(self.unsupported()),
         }
-        let sorting = match request.kind {
-            FeedKind::RecentPopular => "toplist",
-            FeedKind::Random => "random",
-            FeedKind::LifetimeViews => "views",
-            FeedKind::LifetimeFavorites => "favorites",
-            _ => return Err(self.unsupported()),
-        };
         if request.ratings.contains(&ContentRating::Explicit)
             && ctx.runtime.auth_state(self.definition.id)?.status == AuthStatus::NotConfigured
         {
@@ -194,12 +209,12 @@ impl BooruAdapter for WallhavenAdapter {
                 "booru.error.authenticationRequired",
             ));
         }
-        let (page, cursor_seed) = parse_cursor(request.cursor.as_deref())?;
+        let (page, _) = parse_cursor(request.cursor.as_deref())?;
         let url = reqwest::Url::parse(&format!("{}/search", self.definition.api_base))
             .map_err(|_| BooruError::invalid_response(self.definition.id))?;
         let mut spec = RequestSpec::get(url, ResponseKind::Json);
         spec.query = vec![
-            ("sorting".into(), sorting.into()),
+            ("sorting".into(), "toplist".into()),
             ("order".into(), "desc".into()),
             ("categories".into(), "010".into()),
             ("purity".into(), wallhaven_purity_bits(&request.ratings)),
@@ -211,20 +226,12 @@ impl BooruAdapter for WallhavenAdapter {
                 crate::booru::discovery::period(range, true).into(),
             ));
         }
-        let seed = cursor_seed.or(request.seed);
-        if let Some(seed) = &seed {
-            spec.query.push(("seed".into(), seed.clone()));
-        }
         let response = ctx.runtime.execute(&self.definition, spec).await?;
-        let (items, current, last, response_seed) = self.parse_listing(&response.body)?;
-        let seed = response_seed.or(seed);
-        if request.kind == FeedKind::Random && seed.is_none() {
-            return Err(BooruError::invalid_response(self.definition.id));
-        }
+        let (items, current, last, _) = self.parse_listing(&response.body)?;
         let exhausted = current >= last || items.is_empty() || current == u32::MAX;
         Ok(PostPage {
             items,
-            next_cursor: (!exhausted).then(|| format_cursor(current + 1, seed.as_deref())),
+            next_cursor: (!exhausted).then(|| format_cursor(current + 1, None)),
             exhausted,
         })
     }
@@ -276,6 +283,20 @@ impl BooruAdapter for WallhavenAdapter {
     }
 }
 
+/// The `sorting` and `order` parameters for a sort.
+pub fn sorting(sort: SortOrder) -> BooruResult<(&'static str, &'static str)> {
+    Ok(match sort {
+        SortOrder::Latest => ("date_added", "desc"),
+        SortOrder::Oldest => ("date_added", "asc"),
+        SortOrder::Relevance => ("relevance", "desc"),
+        SortOrder::Hot => ("hot", "desc"),
+        SortOrder::Views => ("views", "desc"),
+        SortOrder::Favorites => ("favorites", "desc"),
+        SortOrder::Random => ("random", "desc"),
+        _ => return Err(BooruError::invalid_request(Some("wallhaven"))),
+    })
+}
+
 fn parse_cursor(cursor: Option<&str>) -> BooruResult<(u32, Option<String>)> {
     let Some(cursor) = cursor else {
         return Ok((1, None));
@@ -321,6 +342,46 @@ mod tests {
     }
 
     #[test]
+    fn list_requests_carry_sorting_order_page_and_seed() {
+        let query = |sort, text: &str| SearchQuery {
+            text: text.into(),
+            sort,
+            ratings: vec![ContentRating::General],
+            page_size: 24,
+            cursor: None,
+        };
+        let params = |sort, seed| {
+            adapter()
+                .list_request(&query(sort, "sky"), 2, seed)
+                .unwrap()
+                .query
+                .into_iter()
+                .collect::<std::collections::BTreeMap<_, _>>()
+        };
+        let latest = params(SortOrder::Latest, None);
+        assert_eq!(latest["sorting"], "date_added");
+        assert_eq!(latest["order"], "desc");
+        assert_eq!(latest["q"], "sky");
+        assert_eq!(latest["page"], "2");
+        assert!(!latest.contains_key("seed"));
+        let oldest = params(SortOrder::Oldest, None);
+        assert_eq!(
+            (oldest["sorting"].as_str(), oldest["order"].as_str()),
+            ("date_added", "asc")
+        );
+        for (sort, sorting) in [
+            (SortOrder::Relevance, "relevance"),
+            (SortOrder::Hot, "hot"),
+            (SortOrder::Views, "views"),
+            (SortOrder::Favorites, "favorites"),
+            (SortOrder::Random, "random"),
+        ] {
+            assert_eq!(params(sort, None)["sorting"], sorting);
+        }
+        assert_eq!(params(SortOrder::Random, Some("abc123"))["seed"], "abc123");
+    }
+
+    #[test]
     fn preserves_source_username_in_api_model() {
         let fixture = serde_json::json!({"id":"94x38z","path":"https://w.wallhaven.cc/full/94/wallhaven-94x38z.jpg","uploader":{"username":" Alice "}});
         let post = adapter().parse_post(&fixture).unwrap();
@@ -351,6 +412,35 @@ mod tests {
             wallhaven_purity_bits(&[ContentRating::Questionable, ContentRating::Explicit]),
             "011"
         );
+    }
+
+    #[test]
+    fn each_declared_sort_maps_to_sorting_and_order() {
+        let source = adapter();
+        for option in source
+            .definition
+            .capabilities
+            .sorts
+            .search
+            .iter()
+            .chain(&source.definition.capabilities.sorts.feed)
+        {
+            assert!(sorting(option.order).is_ok(), "{:?}", option.order);
+        }
+        assert_eq!(sorting(SortOrder::Latest).unwrap(), ("date_added", "desc"));
+        assert_eq!(sorting(SortOrder::Oldest).unwrap(), ("date_added", "asc"));
+        assert_eq!(sorting(SortOrder::Hot).unwrap().0, "hot");
+        assert!(sorting(SortOrder::Score).is_err());
+    }
+
+    #[test]
+    fn random_cursor_keeps_the_seed_between_pages() {
+        assert_eq!(format_cursor(2, Some("abc123")), "2:abc123");
+        assert_eq!(
+            parse_cursor(Some("2:abc123")).unwrap(),
+            (2, Some("abc123".into()))
+        );
+        assert_eq!(parse_cursor(Some("3")).unwrap(), (3, None));
     }
 
     #[test]
