@@ -23,7 +23,7 @@ dependencies:
   flutter_media_cache:
     git:
       url: https://github.com/normalllll/flutter_media_cache.git
-      ref: fd058fbdbc91368e6477df795c596957e95a209f
+      ref: 8bec633929d17f5cb5286c8c8698d92464bec175
   pasteboard: ^0.6.2
   flutter_rust_bridge: 2.14.0-beta.2
   flutter_rust_bridge_hooks: 2.14.0-beta.2
