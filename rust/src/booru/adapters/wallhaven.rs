@@ -400,7 +400,10 @@ mod tests {
         assert_eq!(post.original_file_size_decimal.as_deref(), Some("123"));
         assert_eq!(post.original_file_extension.as_deref(), Some("jpg"));
         assert_eq!(post.media.len(), 2);
-        assert_eq!(post.media[0].url, "https://th.wallhaven.cc/orig/94/94x38z.jpg");
+        assert_eq!(
+            post.media[0].url,
+            "https://th.wallhaven.cc/orig/94/94x38z.jpg"
+        );
         assert_eq!(post.media[0].width, None);
         assert_eq!(post.media[1].media_type, Some(MediaType::Jpeg));
     }
